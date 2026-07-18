@@ -294,6 +294,7 @@
           '<button type="button" id="efh-join" style="cursor:pointer">Ligar</button>' +
           '<div id="efh-hh" style="margin-top:4px;color:#666"></div></div>' +
           '<div id="efh-bars" style="margin-top:8px"></div>' +
+          '<div id="efh-opt" style="margin-top:8px"></div>' +
           '<div style="margin-top:6px;color:#666">Tetos de 2026. S\u00f3 conseguimos ver as faturas <b>desta</b> conta \u2014 se entregam em conjunto, ' +
           'os tetos s\u00e3o do agregado e o que falta ser\u00e1 menos do que aqui aparece.</div></div>' +
           '<div style="max-height:52vh;overflow:auto"><table style="width:100%;border-collapse:collapse">' +
@@ -304,6 +305,33 @@
           '<span id="efh-status" role="status" aria-live="polite" style="color:#555"></span></div>';
         document.getElementById("efh-apply").onclick = applySelected;
         renderBars();
+        (function () {
+          var o = optimise(), box = document.getElementById("efh-opt");
+          if (!box) return;
+          var bits = [];
+          if (o.wasted > 1) {
+            bits.push('<b style="color:#b00">\u20ac' + o.wasted.toFixed(0) + ' de dedu\u00e7\u00e3o desperdi\u00e7ada</b> ' +
+                      '(tetos j\u00e1 cheios \u2014 essas faturas n\u00e3o valem nada onde est\u00e3o)');
+          }
+          var reg = o.moves.filter(function (m) { return m.x.estadoBeneficio === "R"; });
+          if (o.after - o.before > 1) {
+            bits.push('Realoca\u00e7\u00e3o \u00f3tima valeria <b>+\u20ac' + (o.after - o.before).toFixed(0) + '</b>' +
+                      (reg.length ? ' (inclui <b>' + reg.length + '</b> j\u00e1 registadas que podes alterar no e-Fatura)' : ''));
+          }
+          if (!bits.length) { box.innerHTML = '<div style="color:#128a3a;font-size:12px">\u2713 Nada por aproveitar \u2014 as tuas faturas j\u00e1 est\u00e3o nos melhores setores poss\u00edveis.</div>'; return; }
+          box.innerHTML = '<div style="background:#fff8e6;border:1px solid #e8d9a8;border-radius:6px;padding:8px;font-size:12px">' +
+            bits.join('<br>') +
+            (reg.length ? ' <a href="#" id="efh-optmore" style="color:#0b3d6b">ver quais</a>' : '') + '</div>';
+          var more = document.getElementById("efh-optmore");
+          if (more) more.onclick = function (ev) {
+            ev.preventDefault();
+            more.outerHTML = '<div style="margin-top:6px;max-height:130px;overflow:auto">' +
+              reg.slice(0, 40).map(function (m) {
+                return '<div>' + esc(m.x.dataEmissaoDocumento) + ' \u00b7 ' + esc(name34(m.x)) +
+                       ' \u00b7 \u20ac' + eur(m.x.valorTotal) + ' \u2014 <b>' + m.from + ' \u2192 ' + m.to + '</b></div>';
+              }).join("") + '</div>';
+          };
+        })();
         document.querySelectorAll(".efh-ck").forEach(function (el) { el.onchange = renderBars; });
         document.querySelectorAll(".efh-sec").forEach(function (el) { el.onchange = renderBars; });
         // changing the household re-runs the whole suggestion pass (ceilings move, so do sectors)
