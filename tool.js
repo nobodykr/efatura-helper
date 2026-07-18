@@ -365,6 +365,15 @@
         }
 
         document.getElementById("efh-body").innerHTML =
+          '<div style="margin:-4px 0 10px;padding:7px 9px;background:#eef5ff;border:1px solid #cfe0f7;border-radius:6px;font-size:11px;color:#33475b;display:flex;align-items:center;gap:7px">' +
+          '<a href="https://revolut.com/referral/?referral-code=nobodykr!JUL2-26-AR-L1&amp;geo-redirect" ' +
+          'target="_blank" rel="noopener sponsored nofollow" ' +
+          'style="display:inline-flex;align-items:center;gap:5px;color:#0075eb;font-weight:600;text-decoration:none">' +
+          '<span style="background:#0075eb;border-radius:3px;padding:2px;display:inline-flex">' +
+          '</span>Abrir conta Revolut</a>' +
+          '<span style="color:#7a8aa0">Ferramenta gratuita. Se te ajudar, isto retribui '
+          + '<span style="white-space:nowrap">(link de refer\u00eancia)</span>.</span>' +
+          '</div>' +
           '<p style="margin:0 0 8px"><b>' + pend.length + ' faturas pendentes</b> em ' + year +
           '. Sugest\u00f5es do seu hist\u00f3rico + mapa CAE p\u00fablico, j\u00e1 a saltar setores cheios. <b>Reveja</b> - a classifica\u00e7\u00e3o \u00e9 uma declara\u00e7\u00e3o sua \u00e0 AT.</p>' +
           '<div style="background:#f4f7fa;border:1px solid #dde5ee;border-radius:6px;padding:8px;margin-bottom:10px;font-size:12px">' +
@@ -388,20 +397,7 @@
           '<tbody>' + trs + '</tbody></table></div>' +
           '<div style="margin-top:12px;display:flex;gap:8px;align-items:center">' +
           '<button id="efh-apply" style="background:#128a3a;color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:600">Aplicar selecionadas</button>' +
-          '<span id="efh-status" role="status" aria-live="polite" style="color:#555"></span></div>' +
-          /* Deliberately small and at the very bottom. This panel sits on top of the user's own
-           * Financas page, so anything that reads like an ad there costs more trust than it earns.
-           * Marked plainly as a referral; the tool behaves identically whether or not it is used. */
-          '<div style="margin-top:10px;padding-top:8px;border-top:1px solid #e3e9f0;font-size:11px;color:#777">' +
-          'Gratuita, sem an\u00fancios, e nada teu \u00e9 recolhido. Se quiseres retribuir: ' +
-          '<a href="https://revolut.com/referral/?referral-code=nobodykr!JUL2-26-AR-L1&amp;geo-redirect" ' +
-          'target="_blank" rel="noopener sponsored nofollow" ' +
-          'style="color:#0075eb;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:4px">' +
-          '<span style="background:#0075eb;border-radius:3px;padding:2px;display:inline-flex">' +
-          '<svg aria-hidden="true" style="width:13px;height:13px;display:block" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 800 800" style="enable-background:new 0 0 800 800;" xml:space="preserve"><style type="text/css">	.st0{fill:#FFFFFF;}</style><rect class="st0" width="800" height="800"/><g>	<rect x="209.051" y="262.097" width="101.445" height="410.21"/>	<path d="M628.623,285.554c0-87.043-70.882-157.86-158.011-157.86H209.051v87.603h249.125c39.43,0,72.093,30.978,72.814,69.051		c0.361,19.064-6.794,37.056-20.146,50.66c-13.357,13.61-31.204,21.109-50.251,21.109h-97.046c-3.446,0-6.25,2.8-6.25,6.245v77.859		c0,1.324,0.409,2.59,1.179,3.656l164.655,228.43h120.53L478.623,443.253C561.736,439.08,628.623,369.248,628.623,285.554z"/></g></svg></span>abrir conta Revolut</a> ' +
-          '<span style="color:#999">(link de refer\u00eancia)</span> \u00b7 ' +
-          '<a href="https://faturas.diogoandrade.com" target="_blank" rel="noopener" style="color:#0b3d6b">sobre</a>' +
-          '</div>';
+          '<span id="efh-status" role="status" aria-live="polite" style="color:#555"></span></div>';
         document.getElementById("efh-apply").onclick = applySelected;
         restoreEdits(pend);               // re-apply edits made before a household change
         renderBars();
