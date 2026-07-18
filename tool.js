@@ -153,6 +153,27 @@
   fetch(CAEMAP_URL).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
     .then(function (caemap) { run(caemap || {}); });
 
+  /* Changing the household re-runs the whole pass, which rebuilds the table - so anything already
+   * edited (a corrected sector, an unticked row) would be silently thrown away. Snapshot the choices
+   * by idDocumento rather than row index, because row order can change, and restore after rebuild. */
+  var userEdits = {};
+  function snapshotEdits(pend) {
+    document.querySelectorAll(".efh-sec").forEach(function (el) {
+      var x = pend[+el.dataset.i]; if (!x) return;
+      var ck = document.querySelector('.efh-ck[data-i="' + el.dataset.i + '"]');
+      userEdits[x.idDocumento] = { sec: el.value, on: ck ? ck.checked : true };
+    });
+  }
+  function restoreEdits(pend) {
+    document.querySelectorAll(".efh-sec").forEach(function (el) {
+      var x = pend[+el.dataset.i]; if (!x) return;
+      var e = userEdits[x.idDocumento]; if (!e) return;
+      el.value = e.sec;
+      var ck = document.querySelector('.efh-ck[data-i="' + el.dataset.i + '"]');
+      if (ck) ck.checked = e.on;
+    });
+  }
+
   function run(caemap) {
     fetch("/json/obterDocumentosAdquirente.action?dataInicioFilter=" + year + "-01-01&dataFimFilter=" + year + "-12-31",
       { credentials: "include", headers: { Accept: "application/json" } })
@@ -369,6 +390,7 @@
           '<button id="efh-apply" style="background:#128a3a;color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:600">Aplicar selecionadas</button>' +
           '<span id="efh-status" role="status" aria-live="polite" style="color:#555"></span></div>';
         document.getElementById("efh-apply").onclick = applySelected;
+        restoreEdits(pend);               // re-apply edits made before a household change
         renderBars();
         (function () {
           var o = optimise(), box = document.getElementById("efh-opt");
@@ -401,6 +423,7 @@
         document.querySelectorAll(".efh-sec").forEach(function (el) { el.onchange = renderBars; });
         // changing the household re-runs the whole suggestion pass (ceilings move, so do sectors)
         var reprofile = function () {
+          snapshotEdits(pend);              // keep the user's corrections across the rebuild
           saveProfile({ joint: document.getElementById("efh-joint").checked,
                         mono: document.getElementById("efh-mono").checked });
           run(caemap);
