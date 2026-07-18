@@ -23,8 +23,10 @@ export async function onRequestPost({ request, env }) {
   if (body.website) return new Response(JSON.stringify({ ok: true }), {
     headers: { "content-type": "application/json" } });
 
-  // 3. dwell time
-  const dwell = Date.now() - Number(body.t || 0);
+  // 3. dwell time. Measured entirely client-side and sent as a duration: comparing the visitor's
+  //    clock to ours would lock out anyone whose clock runs a few seconds ahead. A bot can lie
+  //    about it either way, so Turnstile and the honeypot are the real gates; this is just cheap.
+  const dwell = Number(body.elapsed);
   if (!Number.isFinite(dwell) || dwell < MIN_DWELL_MS) return bad("Demasiado rapido. Tenta outra vez.");
 
   const message = String(body.message || "").trim();

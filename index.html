@@ -3,8 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>e-Fatura Helper: classificar faturas de IRS a partir de fontes oficiais</title>
-<meta name="description" content="Ferramenta gratuita que corre no teu navegador e sugere o setor de cada fatura pendente a partir da atividade oficial de cada comerciante. Nunca pede a password, as faturas nao saem do teu navegador, e o codigo esta a vista.">
+<title>Fatura Boa | Classificar faturas pendentes no e-Fatura (IRS)</title>
+<meta name="description" content="Ferramenta gratuita que sugere o setor certo para cada fatura pendente no e-Fatura, a partir da atividade oficial de cada comerciante no SICAE, e mostra-te os tetos de deducao do IRS. Corre no teu navegador e nunca pede a password.">
+<link rel="canonical" href="https://faturas.diogoandrade.com/">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+<meta name="author" content="Diogo Andrade">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_PT">
+<meta property="og:site_name" content="Fatura Boa">
+<meta property="og:url" content="https://faturas.diogoandrade.com/">
+<meta property="og:title" content="Fatura Boa | Classificar faturas pendentes no e-Fatura">
+<meta property="og:description" content="Sugere o setor certo para cada fatura a partir da atividade oficial do comerciante, e mostra-te quanto ja gastaste de cada teto de deducao do IRS. Gratuita, corre no teu navegador, nunca pede a password.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Fatura Boa | Classificar faturas pendentes no e-Fatura">
+<meta name="twitter:description" content="Sugere o setor certo para cada fatura a partir da atividade oficial do comerciante, e mostra os tetos de deducao do IRS.">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication",
+ "name":"Fatura Boa",
+ "applicationCategory":"FinanceApplication",
+ "operatingSystem":"Qualquer navegador",
+ "url":"https://faturas.diogoandrade.com/",
+ "inLanguage":"pt-PT",
+ "description":"Ferramenta gratuita que sugere o setor certo para cada fatura pendente no e-Fatura, a partir da atividade oficial de cada comerciante, e mostra os tetos de deducao do IRS.",
+ "author":{"@type":"Person","name":"Diogo Andrade","url":"https://diogoandrade.com"},
+ "offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},
+ "isAccessibleForFree":true,
+ "license":"https://polyformproject.org/licenses/noncommercial/1.0.0"}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -165,8 +190,8 @@
 </div>
 <div class="mast">
   <div class="wrap">
-    <div class="mark" aria-hidden="true">eF</div>
-    <div class="nm">e-Fatura Helper<span>Classificação de faturas para deduções de IRS</span></div>
+    <div class="mark" aria-hidden="true">FB</div>
+    <div class="nm">Fatura Boa<span>Classificar faturas pendentes do e-Fatura, por setor, para o IRS</span></div>
   </div>
 </div>
 
@@ -291,10 +316,10 @@
 </div></section>
 
 <section>
-  <h2>Como funciona</h2>
+  <h2>Como classificar as faturas pendentes do e-Fatura</h2>
   <div class="steps">
     <div class="step"><div class="n" aria-hidden="true">01</div><div>Faz <b>login normal</b> no <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a>, como sempre fazes.</div></div>
-    <div class="step"><div class="n" aria-hidden="true">02</div><div>Clica no marcador <b>e-Fatura Helper</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu histórico e na atividade oficial de cada comerciante</b>, já a saltar os setores cujo teto anual esteja cheio.</div></div>
+    <div class="step"><div class="n" aria-hidden="true">02</div><div>Clica no marcador <b>Fatura Boa</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu histórico e na atividade oficial de cada comerciante</b>, já a saltar os setores cujo teto anual esteja cheio.</div></div>
     <div class="step"><div class="n" aria-hidden="true">03</div><div><b>Revês</b> a tabela e corriges o que quiseres. Depois <b>copias o plano</b> (ou envias para o teu email) e aplicas no e-Fatura. <b>A ferramenta não submete nada.</b></div></div>
   </div>
 </section>
@@ -315,12 +340,12 @@
 <section>
   <h2>Instalar</h2>
   <p>Arrasta este botão para a tua barra de favoritos:</p>
-  <p><a class="bm" id="bookmarklet" href="#"> e-Fatura Helper</a></p>
+  <p><a class="bm" id="bookmarklet" href="#"> Fatura Boa</a></p>
   <p class="note">Depois, abre o e-Fatura, faz login, e clica no favorito. (Se o teu navegador não deixar arrastar, clica com o botão direito -> Adicionar aos favoritos, e cola o endereço do botão.)</p>
 </section>
 
 <section>
-  <h2>Guia rápido: o que conta em cada setor <span class="note">(ano de rendimentos 2026)</span></h2>
+  <h2>Que setor escolher para cada fatura <span class="note">(ano de rendimentos 2026)</span></h2>
   <div class="tscroll"><table>
     <caption class="note" style="text-align:left;padding-bottom:6px">Resumo dos setores de dedução e respetivos limites</caption>
     <tr><th scope="col">Setor</th><th scope="col">O que inclui</th><th scope="col">Benefício</th></tr>
@@ -335,7 +360,7 @@
 </section>
 
 <section>
-  <h2>Porque é que isto existe</h2>
+  <h2>Porque é que a Fatura Boa existe</h2>
   <p>
     Sempre tive problemas com isto. Todos os anos a mesma coisa: dezenas de faturas pendentes à espera
     de serem classificadas, uma a uma, num menu que não ajuda nada. Deixava andar, esquecia-me, e
@@ -396,6 +421,9 @@
     <p><button type="submit" class="bm" id="fb-send">Enviar</button></p>
     <p id="fb-status" role="status" aria-live="polite" class="note"></p>
   </form>
+  <p id="fb-fallback" class="box" hidden>
+    O formulário está a ser preparado. Entretanto, o caminho mais rápido é o GitHub ou o email.
+  </p>
   <p class="note">
     Preferes o GitHub? Abre um <a id="ghissues" href="#" target="_blank" rel="noopener">issue</a>,
     ou fala comigo em <a href="https://diogoandrade.com" target="_blank" rel="noopener">diogoandrade.com</a>.
@@ -454,6 +482,14 @@
   document.getElementById("ghissues2").href = GH + "/issues";
   document.getElementById("gh2").href = GH;
   // Feedback form. Turnstile fills the token; the server re-verifies it, so this is only plumbing.
+  // Flip to true once FORMS_TURNSTILE_SECRET, RESEND_API_KEY and FEEDBACK_TO are set on the
+  // Pages project. Until then the form would render, accept input and always fail, so it stays
+  // hidden and the GitHub route below it does the job.
+  var FEEDBACK_ENABLED = false;
+  if (!FEEDBACK_ENABLED) {
+    document.getElementById("fb").hidden = true;
+    document.getElementById("fb-fallback").hidden = false;
+  }
   var fbToken = "";
   window.fbToken = function (t) { fbToken = t; };
   var fbLoadedAt = Date.now();
@@ -473,7 +509,7 @@
         context: document.getElementById("fb-ctx").value.trim(),
         email: document.getElementById("fb-mail").value.trim(),
         website: document.getElementById("fb-web").value,
-        token: fbToken, t: fbLoadedAt
+        token: fbToken, elapsed: Date.now() - fbLoadedAt
       })
     }).then(function (r) { return r.json(); }).then(function (d) {
       if (d.ok) { fbForm.reset(); st.className = "note ok"; st.textContent = "Enviado. Obrigado, leio tudo."; }

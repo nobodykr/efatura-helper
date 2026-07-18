@@ -41,6 +41,10 @@ O que construí com isso:
 
 <https://faturas.diogoandrade.com>
 
+Admito que não conheço outra ferramenta que faça isto. Pode muito bem existir e eu não ter dado
+com ela, e se souberem de alguma digam, que poupo-me a trabalho. Procurei e só encontrei software
+de faturação, que é outra coisa: isto não emite faturas nenhumas, só classifica as que já tens.
+
 Quem quiser espreitar o código, dizer que está mal, ou testar e reportar: é a parte mais útil.
 Sobretudo classificações erradas, porque cada correção fica no mapa partilhado e beneficia quem
 usar a seguir.

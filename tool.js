@@ -1,4 +1,4 @@
-/* e-Fatura Helper - runs 100% in the user's own browser, on their own e-Fatura session.
+/* Fatura Boa - runs 100% in the user's own browser, on their own e-Fatura session.
  * It never sees a password: it reuses the login already in the browser (same-origin cookies).
  *
  * Network calls (audit them yourself - there are exactly two kinds):
@@ -138,7 +138,7 @@
   function panel(html) {
     var d = document.createElement("div"); d.id = "efh-panel";
     d.setAttribute("role", "dialog");
-    d.setAttribute("aria-label", "e-Fatura Helper");
+    d.setAttribute("aria-label", "Fatura Boa");
     d.setAttribute("aria-modal", "false");
     d.style.cssText = "position:fixed;top:12px;right:12px;width:min(680px,95vw);max-height:90vh;overflow:auto;" +
       "background:#fff;border:1px solid #021c51;border-radius:8px;font-family:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 8px 40px rgba(0,0,0,.35);" +
@@ -155,7 +155,7 @@
     document.head.appendChild(fs);
   }
   panel('<div style="background:#021c51;color:#fff;padding:10px 14px;font-weight:600;border-radius:8px 8px 0 0">' +
-    'e-Fatura Helper <button type="button" aria-label="Fechar" style="float:right;cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
+    'Fatura Boa <button type="button" aria-label="Fechar" style="float:right;cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
     '<div style="background:#fdecec;border-bottom:2px solid #c8102e;padding:8px 12px;font-size:12px;line-height:1.45;color:#5a0000">'+'<b>Esta ferramenta nunca te pede a password.</b> Corre na sessao que ja abriste, so nesta pagina. '+'Se algum site te pedir as credenciais das Financas, e burla.</div>' +
     '<div id="efh-body" style="padding:14px">A ler as suas faturas...</div>');
 

@@ -1,4 +1,4 @@
-# e-Fatura Helper
+# Fatura Boa
 
 A small, open tool that helps you classify your **pending faturas** on Portugal's
 [e-Fatura](https://faturas.portaldasfinancas.gov.pt) so you stop leaving IRS deductions on the table.
@@ -39,7 +39,7 @@ On the e-Fatura page, it:
 
 ## Install
 
-Open [the page](https://efatura-helper.pages.dev) and drag the **e-Fatura Helper** button to your
+Open [the page](https://efatura-helper.pages.dev) and drag the **Fatura Boa** button to your
 bookmarks bar. Then open e-Fatura, log in, and click the bookmark.
 
 The bookmark loads [`tool.js`](tool.js) from this repo's site into the e-Fatura page. If you prefer
