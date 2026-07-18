@@ -154,6 +154,12 @@
       '#efh-panel .efh-num{font-family:\'IBM Plex Mono\',ui-monospace,monospace;font-variant-numeric:tabular-nums}';
     document.head.appendChild(fs);
   }
+  // Mobile browsers cannot run a bookmarklet inside a page, so this is desktop-only. Say it in
+  // the panel too rather than leaving a half-working screen.
+  if (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) {
+    alert("A Fatura Boa so funciona no computador. Os navegadores de telemovel nao deixam correr "
+        + "favoritos dentro da pagina do e-Fatura. Abre isto num computador.");
+  }
   panel('<div style="background:#021c51;color:#fff;padding:10px 14px;font-weight:600;border-radius:8px 8px 0 0">' +
     'Fatura Boa <button type="button" aria-label="Fechar" style="float:right;cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
     '<div style="background:#fdecec;border-bottom:2px solid #c8102e;padding:8px 12px;font-size:12px;line-height:1.45;color:#5a0000">'+'<b>Esta ferramenta nunca te pede a password.</b> Corre na sessao que ja abriste, so nesta pagina. '+'Se algum site te pedir as credenciais das Financas, e burla.</div>' +
