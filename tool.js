@@ -394,6 +394,7 @@
         renderBars();
         (function () {
           var o = optimise(), box = document.getElementById("efh-opt");
+          window.__efhOpt = o;
           if (!box) return;
           var bits = [];
           if (o.wasted > 1) {
@@ -463,15 +464,58 @@
       .catch(function (e) { document.getElementById("efh-body").innerHTML = "Erro a ler faturas: " + esc(e.message) + ". Confirma que tens sess\u00e3o iniciada."; });
   }
 
+  /* Opt-in, anonymous record of value created. Sends FOUR numbers: year, how much deduction was
+   * being wasted, how much the reallocation recovered, how many faturas were touched. No NIF, no
+   * email, no merchant, no date, no per-purchase amount. It exists so the project can say what it
+   * is actually worth to people with a measurement instead of a claim. Nothing is sent unless the
+   * button is pressed. */
+  function offerWin(applied) {
+    var o = window.__efhOpt || {};
+    var box = document.getElementById("efh-status");
+    if (!box) return;
+    var d = document.createElement("div");
+    d.style.cssText = "margin-top:8px;padding:7px;background:#eef7f0;border:1px solid #bfe0c8;border-radius:6px;font-size:12px";
+    d.innerHTML = 'Ajuda a mostrar que isto funciona: envia <b>s\u00f3 quatro n\u00fameros</b> ' +
+      '(ano, desperd\u00edcio detetado, ganho, n.\u00ba de faturas). Sem NIF, sem email, sem comerciantes. ' +
+      '<button type="button" id="efh-win" style="cursor:pointer">Enviar an\u00f3nimo</button> ' +
+      '<span id="efh-winmsg"></span>';
+    box.appendChild(d);
+    document.getElementById("efh-win").onclick = function () {
+      var msg = document.getElementById("efh-winmsg");
+      fetch(CAEMAP_URL.replace(/sectors\.json$/, "win"), {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ano: year, desperdicado: +(o.wasted || 0).toFixed(2),
+                               ganho: +((o.after - o.before) || 0).toFixed(2), aplicadas: applied })
+      }).then(function () { msg.textContent = " obrigado!"; })
+        .catch(function () { msg.textContent = " falhou (sem problema)"; });
+      document.getElementById("efh-win").disabled = true;
+    };
+  }
+
   function applySelected() {
     var pend = window.__efhPend || [], picks = [];
     document.querySelectorAll(".efh-ck").forEach(function (ck) {
       if (ck.checked) { var i = +ck.dataset.i; picks.push({ x: pend[i], sec: document.querySelector('.efh-sec[data-i="' + i + '"]').value }); }
     });
     var st = document.getElementById("efh-status"); document.getElementById("efh-apply").disabled = true;
-    var ok = 0, fail = 0, n = 0;
+    var ok = 0, fail = 0, n = 0, errs = [];
     (function next() {
-      if (n >= picks.length) { st.textContent = "Conclu\u00eddo: " + ok + " aplicadas, " + fail + " falhas. Atualize a p\u00e1gina para confirmar."; return; }
+      if (n >= picks.length) {
+        st.innerHTML = "<b>" + ok + " aplicadas</b>, " + fail + " falhas. Atualize a p\u00e1gina para confirmar.";
+        if (errs.length) {
+          var reported = errs.some(function (e) { return /atividade registada/i.test(e.reason); });
+          st.innerHTML += '<div style="margin-top:6px;padding:6px;background:#fdecec;border-left:3px solid #b00;' +
+            'color:#5a0000;max-height:120px;overflow:auto;font-size:11px">' +
+            errs.slice(0, 12).map(function (e) {
+              return "<div><b>" + esc(e.nome) + "</b> (" + esc(e.sec) + "): " + esc(e.reason) + "</div>";
+            }).join("") +
+            (reported ? '<div style="margin-top:5px">A AT recusa um setor que o comerciante n\u00e3o tenha registado. ' +
+              'Report\u00e1mos esses comerciantes para reverifica\u00e7\u00e3o - escolhe outro setor da lista.</div>' : "") +
+            "</div>";
+        }
+        if (ok > 0) { offerWin(ok); }
+        return;
+      }
       var p = picks[n++]; st.textContent = "A aplicar " + n + "/" + picks.length + "...";
       fetch("/detalheDocumentoAdquirente.action?idDocumento=" + p.x.idDocumento + "&dataEmissaoDocumento=" + p.x.dataEmissaoDocumento,
         { credentials: "include" }).then(function (r) { return r.text(); }).then(function (htmlText) {
@@ -482,8 +526,30 @@
         body.set("ambitoAquisicaoPend", p.sec);
         return fetch("/resolverPendenciaAdquirente.action", { method: "POST", credentials: "include",
           headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: body.toString() });
-      }).then(function (r) { return r.text(); }).then(function (t) { if (/sucesso/i.test(t)) ok++; else fail++; next(); })
-        .catch(function () { fail++; next(); });
+      }).then(function (r) { return r.text(); }).then(function (t) {
+        if (/sucesso/i.test(t)) { ok++; next(); return; }
+        fail++;
+        /* Show WHY it failed. This used to just count a failure, which told the user nothing and
+         * told us nothing either. The message that matters is:
+         *   "O emitente nao tem atividade registada (CAE/CIRS) pertencente ao setor indicado"
+         * AT validates the sector against the merchant's CAE server-side, so that error means the
+         * SHARED map is wrong for this merchant - wrong for everybody, not just this user. Report
+         * the NIF for re-verification. ONLY the NIF is sent, nothing else. */
+        var m = /atividade registada[^<]*/i.exec(t.replace(/<[^>]*>/g, " "));
+        var reason = m ? m[0].trim().slice(0, 90) : "recusada pela AT";
+        errs.push({ nome: name34(p.x), sec: p.sec, reason: reason });
+        if (/atividade registada/i.test(reason)) {
+          try {
+            fetch(CAEMAP_URL.replace(/sectors\.json$/, "refresh/") + p.x.nifEmitente, { method: "POST" })
+              .catch(function () {});
+          } catch (e) {}
+        }
+        next();
+      }).catch(function (e) {
+        fail++;
+        errs.push({ nome: name34(p.x), sec: p.sec, reason: (e && e.message) || "erro de rede" });
+        next();
+      });
     })();
   }
 })();
