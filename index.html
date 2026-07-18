@@ -327,6 +327,31 @@
 </section>
 
 <section>
+  <h2>O que acontece quando clicas <span class="note">(todos os pedidos de rede, por ordem)</span></h2>
+  <p class="note">Para quem quiser confirmar antes de correr: isto é a lista completa. Abre o
+    separador Rede do navegador e compara.</p>
+  <ol class="steps" style="padding-left:0;list-style:none">
+    <li class="step"><div class="n" aria-hidden="true">1</div><div>
+      <b>GET <code>cae-db.diogoandrade.com/sectors.json</code></b> - o mapa público de atividades,
+      cerca de 1,6 KB. <b>Não leva nada teu.</b> Repara no detalhe: a ferramenta descarrega o mapa
+      <b>inteiro</b> e faz a correspondência no teu navegador, em vez de perguntar "qual é o setor
+      deste NIF?". Por isso <b>o servidor nunca fica a saber onde compras</b>. Vê o teu IP, como
+      qualquer servidor vê, e mais nada.</div></li>
+    <li class="step"><div class="n" aria-hidden="true">2</div><div>
+      <b>GET <code>obterDocumentosAdquirente</code></b>, no próprio e-Fatura, com a sessão que já
+      tinhas aberta. É o mesmo pedido que a página faz sozinha. As faturas ficam no teu navegador:
+      não passam por nenhum servidor meu.</div></li>
+    <li class="step"><div class="n" aria-hidden="true">3</div><div>
+      <b>Mais nada.</b> A partir daqui só há pedidos se <b>clicares</b>: a partilha de agregado
+      (opcional, envia seis números) ou o botão "Enviar anónimo" (quatro números, sem NIF e sem
+      comerciantes). Se não clicares, não sai nada.</div></li>
+  </ol>
+  <p class="warn">Nesta versão <b>não existe nenhum pedido de escrita para a AT</b>. O código que
+    submeteria está no repositório, desligado, e há um teste automático que falha se alguma vez
+    passar a submeter.</p>
+</section>
+
+<section>
   <h2>Porque é seguro <span class="note">(e porque devias desconfiar de qualquer site que te peça a password das Finanças)</span></h2>
   <ul class="safe">
     <li>A ferramenta <b>corre dentro do teu navegador</b>, na página do e-Fatura onde <b>já estás autenticado</b>. Usa a sessão que já tens.</li>
