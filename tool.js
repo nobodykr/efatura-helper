@@ -125,6 +125,16 @@
     return used;
   }
   function esc(s) { return String(s == null ? "" : s).replace(/[<>&]/g, function (x) { return { "<": "&lt;", ">": "&gt;", "&": "&amp;" }[x]; }); }
+  /* e-Fatura returns merchant names ALREADY html-encoded ("Irm&atilde;dona Supermercados"), so
+   * escaping them again turned the & into &amp; and printed the entity literally on screen.
+   * Decode first, then escape for insertion - decoding via textarea.innerHTML never executes
+   * anything, and the value still goes through esc() before it reaches the DOM. */
+  function deent(s) {
+    var d = document.createElement("textarea");
+    d.innerHTML = String(s == null ? "" : s);
+    return d.value;
+  }
+  function name34(x) { return deent((x.nomeEmitente || "")).trim().slice(0, 34); }
   function panel(html) {
     var d = document.createElement("div"); d.id = "efh-panel";
     d.setAttribute("role", "dialog");
@@ -203,11 +213,11 @@
             ? '<span style="color:#999;text-decoration:line-through">' + old + '</span> <b style="color:#128a3a">' + s + "</b>"
             : '<span style="color:#999">' + s + "</span>";
           return '<tr><td style="text-align:center"><input type="checkbox" class="efh-ck" data-i="' + i + '" checked></td>' +
-            '<td>' + esc(x.dataEmissaoDocumento) + '</td><td>' + esc((x.nomeEmitente || "").trim().slice(0, 34)) + '</td>' +
+            '<td>' + esc(x.dataEmissaoDocumento) + '</td><td>' + esc(name34(x)) + '</td>' +
             '<td style="text-align:right">\u20ac' + eur(x.valorTotal) + '</td>' +
             '<td style="font-size:11px;white-space:nowrap">' + diff + "</td>" +
             '<td><select class="efh-sec" data-i="' + i + '" style="max-width:190px" aria-label="Setor para ' +
-            esc((x.nomeEmitente || "").trim().slice(0, 34)) + '">' +
+            esc(name34(x)) + '">' +
             opts.replace('value="' + s + '"', 'value="' + s + '" selected') + '</select></td></tr>';
         }).join("");
         window.__efhPend = pend;
