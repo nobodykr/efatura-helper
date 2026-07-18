@@ -353,34 +353,65 @@
           return add;
         }
 
+        /* Collapsed by default - six meters is a wall of numbers when usually only one matters.
+         * The summary carries the actionable part (what is over, what has room), and it opens
+         * automatically when a ceiling is exceeded, because that is the case worth seeing. */
         function renderBars() {
           var add = pendingAdds();
-          var html = ["C05", "C06", "C07", "C08", "C99"].map(function (s) {
+          var keys = ["C05", "C06", "C07", "C08", "C99"];
+          var html = keys.map(function (s) {
             return oneBar(s + " " + SECTORS[s], used[s] || 0, add[s] || 0, capFor(s, prof));
           }).join("") +
             oneBar("IVA em fatura (restaura\u00e7\u00e3o, gin\u00e1sios, oficinas...)",
                    used[POT] || 0, add[POT] || 0, POT_CAP);
+
+          var over = [], room = [];
+          keys.concat([POT]).forEach(function (k) {
+            var cap = k === POT ? POT_CAP : capFor(k, prof);
+            var tot = (used[k] || 0) + (add[k] || 0);
+            if (tot > cap + 0.5) over.push(k === POT ? "IVA" : k);
+            else if (cap - tot > 1) room.push(k === POT ? "IVA" : k);
+          });
+          var sum = over.length
+            ? '<b style="color:#b00">' + over.join(", ") + " excede o teto</b>" +
+              (room.length ? ' <span style="color:#6B6258">- ainda h\u00e1 espa\u00e7o em ' + room.join(", ") + "</span>" : "")
+            : '<b style="color:#1E5A3A">Nenhum teto excedido</b> <span style="color:#6B6258">- espa\u00e7o em ' +
+              room.join(", ") + "</span>";
+
           var box = document.getElementById("efh-bars");
-          if (box) box.innerHTML = html;
+          if (!box) return;
+          var wasOpen = box.querySelector("details");
+          wasOpen = wasOpen ? wasOpen.open : over.length > 0;
+          box.innerHTML =
+            '<details' + (wasOpen ? " open" : "") + ' style="border:1px solid #CFC3AA;border-radius:2px;background:#F3ECDD">' +
+            '<summary style="cursor:pointer;padding:7px 9px;font-size:12px;list-style:revert">' +
+            "Tetos do IRS - " + sum + "</summary>" +
+            '<div style="padding:2px 9px 9px">' + html + "</div></details>";
         }
 
         document.getElementById("efh-body").innerHTML =
-          '<div style="margin:-4px 0 10px;padding:7px 9px;background:#eef5ff;border:1px solid #cfe0f7;border-radius:6px;font-size:11px;color:#33475b;display:flex;align-items:center;gap:7px">' +
+          '<div style="margin:-4px 0 10px;padding:7px 9px;background:#EBE0CC;border:1px solid #CFC3AA;border-radius:2px;font-size:11px;color:#1A1714;display:flex;flex-wrap:wrap;align-items:center;gap:8px">' +
           '<a href="https://revolut.com/referral/?referral-code=nobodykr!JUL2-26-AR-L1&amp;geo-redirect" ' +
           'target="_blank" rel="noopener sponsored nofollow" ' +
           'style="display:inline-flex;align-items:center;gap:5px;color:#0075eb;font-weight:600;text-decoration:none">' +
           '<span style="background:#0075eb;border-radius:3px;padding:2px;display:inline-flex">' +
           '<svg aria-hidden="true" style="width:14px;height:14px;display:block" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 800 800" style="enable-background:new 0 0 800 800;" xml:space="preserve"> <style type="text/css"> .st0{fill:#FFFFFF;} </style> <rect class="st0"/> <g> <rect x="209.051" y="262.097"/> <path d="M628.623,285.554c0-87.043-70.882-157.86-158.011-157.86H209.051v87.603h249.125c39.43,0,72.093,30.978,72.814,69.051 c0.361,19.064-6.794,37.056-20.146,50.66c-13.357,13.61-31.204,21.109-50.251,21.109h-97.046c-3.446,0-6.25,2.8-6.25,6.245v77.859 c0,1.324,0.409,2.59,1.179,3.656l164.655,228.43h120.53L478.623,443.253C561.736,439.08,628.623,369.248,628.623,285.554z"/> </g> </svg>' +
           '</span>Abrir conta Revolut</a>' +
-          '<span style="color:#7a8aa0">Ferramenta gratuita. Se te ajudar, isto retribui '
+          '<a href="https://buymeacoffee.com/diogoandrade" target="_blank" rel="noopener sponsored nofollow" ' +
+          'style="display:inline-flex;align-items:center;gap:4px;color:#1A1714;background:#ffdd00;' +
+          'border-radius:2px;padding:2px 7px;font-weight:700;text-decoration:none">\u2615 Buy me a coffee</a>' +
+          '<span style="color:#6B6258">Gratuita. Se te ajudar, isto retribui '
           + '<span style="white-space:nowrap">(link de refer\u00eancia)</span>.</span>' +
           '</div>' +
           '<p style="margin:0 0 8px"><b>' + pend.length + ' faturas pendentes</b> em ' + year +
           '. Sugest\u00f5es do seu hist\u00f3rico + mapa CAE p\u00fablico, j\u00e1 a saltar setores cheios. <b>Reveja</b> - a classifica\u00e7\u00e3o \u00e9 uma declara\u00e7\u00e3o sua \u00e0 AT.</p>' +
-          '<div style="background:#f4f7fa;border:1px solid #dde5ee;border-radius:6px;padding:8px;margin-bottom:10px;font-size:12px">' +
-          '<label><input type="checkbox" id="efh-joint"' + (prof.joint ? " checked" : "") + '> Tributa\u00e7\u00e3o conjunta</label>  |  ' +
-          '<label><input type="checkbox" id="efh-mono"' + (prof.mono ? " checked" : "") +
-          '> Fam\u00edlia monoparental</label>' +
+          '<div style="background:#F3ECDD;border:1px solid #CFC3AA;border-radius:2px;padding:9px;margin-bottom:10px;font-size:12px">' +
+          '<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center">' +
+          '<label style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap">' +
+          '<input type="checkbox" id="efh-joint"' + (prof.joint ? " checked" : "") + '> Tributa\u00e7\u00e3o conjunta</label>' +
+          '<label style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap">' +
+          '<input type="checkbox" id="efh-mono"' + (prof.mono ? " checked" : "") +
+          '> Fam\u00edlia monoparental</label></div>' +
           '<div style="margin-top:6px;padding-top:6px;border-top:1px solid #dde5ee">' +
           '<label title="Opcional. Os tetos do IRS s\u00e3o do agregado, mas esta p\u00e1gina s\u00f3 v\u00ea esta conta.">' +
           'Partilhar tetos do agregado (opcional): <input type="email" id="efh-mail" placeholder="o-teu@email.pt" ' +

@@ -5,45 +5,117 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>e-Fatura Helper — classifica faturas, não percas deduções de IRS</title>
 <meta name="description" content="Ferramenta gratuita que corre no teu browser para classificar faturas pendentes no e-Fatura. Sem password, as faturas nao saem do teu browser, codigo visivel e auditavel.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#0b0d12;--panel:#141821;--line:#232a36;--ink:#eef2f8;--mut:#aab6c6;--acc:#2ea36b;--acc2:#4a90d9;--warn:#e5a83a}
+  :root{
+    --ink:#1A1714; --paper:#F3ECDD; --paper2:#EBE0CC; --mute:#6B6258;
+    --verm:#E0552B; --amber:#E8A33D; --cobalt:#2C5BB8; --forest:#1E5A3A;
+    --rule:#CFC3AA;
+  }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-  .wrap{max-width:860px;margin:0 auto;padding:0 20px}
-  header{padding:56px 0 28px;text-align:center}
-  h1{font-size:2.1rem;margin:.2em 0}
-  .sub{color:var(--mut);font-size:1.1rem;max-width:620px;margin:0 auto}
-  .badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:22px 0}
-  .badge{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:.85rem;color:var(--mut)}
-  .badge b{color:var(--acc)}
-  section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px;margin:18px 0}
-  h2{margin:.1em 0 .5em;font-size:1.25rem}
-  .steps{display:grid;gap:14px;grid-template-columns:1fr;counter-reset:s}
-  .step{display:flex;gap:14px;align-items:flex-start}
-  .step .n{flex:0 0 30px;height:30px;border-radius:50%;background:var(--acc2);color:#fff;display:grid;place-items:center;font-weight:700}
-  .safe li{margin:.4em 0}
-  .safe b{color:var(--acc)}
-  .bm{display:inline-block;background:var(--acc);color:#fff;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:10px;cursor:grab}
-  .note{color:var(--mut);font-size:.9rem}
-  table{width:100%;border-collapse:collapse;font-size:.92rem}
-  th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
-  th{color:var(--mut);font-weight:600}
-  code{background:#0a0c11;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:.85em}
-  a{color:var(--acc2)}
-  a:focus-visible,.bm:focus-visible{outline:3px solid var(--warn);outline-offset:3px}
-  .warn{border-left:3px solid var(--warn);padding-left:14px;color:#e7d3ad}
-  footer{color:var(--mut);font-size:.85rem;text-align:center;padding:30px 0 50px}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font:400 16px/1.55 'Hanken Grotesk',system-ui,sans-serif;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:0 22px}
+  code,.num{font-family:'Space Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+
+  /* header: the thesis, set as a receipt line */
+  header{padding:64px 0 26px}
+  .eyebrow{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.14em;
+           text-transform:uppercase;color:var(--verm)}
+  h1{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;
+     font-size:clamp(2.1rem,6vw,3.4rem);line-height:1.02;letter-spacing:-.02em;margin:.22em 0 .3em}
+  .sub{color:var(--mute);font-size:1.06rem;max-width:44ch}
+
+  /* the signature: a ceiling meter that runs PAST its cap into a dead zone */
+  .thesis{margin:30px 0 8px;padding:18px 20px;background:var(--paper2);
+          border:1px solid var(--rule);border-radius:2px}
+  .thesis .line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+                font-family:'Space Mono',monospace;font-size:.95rem}
+  .thesis .line b{font-weight:700}
+  .dots{flex:1;border-bottom:1px dotted var(--rule);transform:translateY(-4px)}
+  .meter{margin-top:12px;height:16px;display:flex;border:1px solid var(--ink);border-radius:1px;overflow:hidden}
+  .meter .used{background:var(--forest)}
+  .meter .void{flex:1;background:
+     repeating-linear-gradient(135deg,var(--verm) 0 5px,transparent 5px 10px);
+     opacity:.85}
+  .meter-key{display:flex;gap:18px;margin-top:8px;font-size:.76rem;color:var(--mute);
+             font-family:'Space Mono',monospace}
+  .meter-key i{font-style:normal;display:inline-block;width:11px;height:11px;
+               vertical-align:-1px;margin-right:5px;border:1px solid var(--ink)}
+  .k-used{background:var(--forest)} .k-void{background:repeating-linear-gradient(135deg,var(--verm) 0 4px,transparent 4px 8px)}
+
+  section{padding:34px 0;border-top:1px solid var(--rule)}
+  h2{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:700;
+     font-size:1.35rem;letter-spacing:-.01em;margin:0 0 .5em}
+  .note{color:var(--mute);font-size:.9rem}
+  p{margin:0 0 .9em}
+  a{color:var(--cobalt);text-underline-offset:3px}
+  a:focus-visible,.bm:focus-visible{outline:2px solid var(--verm);outline-offset:3px}
+
+  /* sector codes are real codes - use them as the structural marker, not invented numbering */
+  .steps{display:grid;gap:16px}
+  .step{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+  .step .n{font-family:'Space Mono',monospace;font-size:.78rem;color:var(--verm);
+           border:1px solid var(--verm);border-radius:2px;padding:2px 7px;line-height:1.5}
+  .safe{list-style:none;padding:0;margin:0}
+  .safe li{padding:9px 0 9px 20px;border-bottom:1px solid var(--rule);position:relative}
+  .safe li:last-child{border-bottom:0}
+  .safe li::before{content:"";position:absolute;left:0;top:17px;width:8px;height:2px;background:var(--verm)}
+  .safe b{font-weight:700}
+
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  caption{text-align:left;padding-bottom:8px}
+  th,td{border-bottom:1px solid var(--rule);padding:9px 8px 9px 0;text-align:left;vertical-align:top}
+  th{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.08em;
+     text-transform:uppercase;color:var(--mute);font-weight:400}
+  td:last-child{font-family:'Space Mono',monospace;white-space:nowrap;text-align:right}
+
+  .bm{display:inline-block;background:var(--verm);color:var(--paper);text-decoration:none;
+      font-weight:700;padding:13px 20px;border-radius:2px;cursor:grab;
+      font-family:'Bricolage Grotesque',system-ui,sans-serif}
+  .warn{border-left:3px solid var(--amber);padding:2px 0 2px 14px;color:#5A4600;background:transparent}
+  code{background:var(--paper2);border:1px solid var(--rule);border-radius:2px;padding:1px 5px;font-size:.85em}
+  footer{color:var(--mute);font-size:.85rem;padding:30px 0 56px;border-top:1px solid var(--rule)}
+  .badges{display:flex;flex-wrap:wrap;gap:7px;margin:20px 0 0}
+  .badge{font-family:'Space Mono',monospace;font-size:.72rem;color:var(--mute);
+         border:1px solid var(--rule);border-radius:2px;padding:4px 9px;background:var(--paper2)}
+  .badge b{color:var(--forest)}
+  @media (max-width:560px){ header{padding-top:40px} .thesis .line{font-size:.8rem} }
+  @media (prefers-reduced-motion:no-preference){
+    .thesis{animation:rise .5s cubic-bezier(.2,.7,.3,1) both}
+    @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  }
 </style>
 </head>
 <body>
 <header class="wrap">
-  <h1>e-Fatura Helper</h1>
-  <p class="sub">Classifica as tuas faturas pendentes no e-Fatura em segundos — e deixa de perder deduções de IRS que são tuas por direito.</p>
+  <div class="eyebrow">e-Fatura / IRS</div>
+  <h1>Encheste um teto de 250 €<br>e continuaste a gastar.</h1>
+  <p class="sub">As deduções do IRS têm limites por setor. Quando um enche, tudo o que
+     puseres lá a seguir vale <b>zero</b> — e o e-Fatura não to diz enquanto classificas.</p>
+
+  <!-- the thesis, drawn once: a real 2025 account, and the cliff -->
+  <div class="thesis">
+    <div class="line"><span>Despesas gerais familiares</span><span class="dots"></span><b>17.035,28 €</b></div>
+    <div class="line" style="color:var(--mute)"><span>dedução obtida</span><span class="dots"></span><b>250,00 €</b></div>
+    <div class="meter" role="img" aria-label="Teto cheio: 250 euros aproveitados, o resto perdido">
+      <div class="used" style="width:12%"></div><div class="void"></div>
+    </div>
+    <div class="meter-key">
+      <span><i class="k-used"></i>250 € aproveitados</span>
+      <span><i class="k-void"></i>o resto não conta</span>
+    </div>
+  </div>
+  <p class="note" style="margin-top:10px">Conta real, ano de 2025. Saúde tinha 784 € por usar.</p>
+
   <div class="badges">
-    <span class="badge"><span aria-hidden="true">🔒</span> Corre <b>no teu browser</b></span>
-    <span class="badge"><span aria-hidden="true">🙅</span> <b>Nunca</b> pede a tua password</span>
-    <span class="badge"><span aria-hidden="true">☁️</span> <b>As faturas não saem</b> do teu browser</span>
-    <span class="badge"><span aria-hidden="true">👐</span> <b>Código auditável</b> — vê o que faz</span>
+    <span class="badge">corre <b>no teu browser</b></span>
+    <span class="badge"><b>nunca</b> pede password</span>
+    <span class="badge">as faturas <b>não saem</b> daqui</span>
+    <span class="badge">código <b>auditável</b></span>
   </div>
 </header>
 
@@ -133,9 +205,9 @@
 <section>
   <h2>Como funciona</h2>
   <div class="steps">
-    <div class="step"><div class="n" aria-hidden="true">1</div><div>Faz <b>login normal</b> no <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a>, como sempre fazes.</div></div>
-    <div class="step"><div class="n" aria-hidden="true">2</div><div>Clica no marcador <b>e-Fatura Helper</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu histórico e na atividade oficial de cada comerciante</b>, já a saltar os setores cujo teto anual esteja cheio.</div></div>
-    <div class="step"><div class="n" aria-hidden="true">3</div><div><b>Revês</b> a tabela e corriges o que quiseres. Depois <b>copias o plano</b> (ou envias para o teu email) e aplicas no e-Fatura. <b>A ferramenta não submete nada.</b></div></div>
+    <div class="step"><div class="n" aria-hidden="true">01</div><div>Faz <b>login normal</b> no <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a>, como sempre fazes.</div></div>
+    <div class="step"><div class="n" aria-hidden="true">02</div><div>Clica no marcador <b>e-Fatura Helper</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu histórico e na atividade oficial de cada comerciante</b>, já a saltar os setores cujo teto anual esteja cheio.</div></div>
+    <div class="step"><div class="n" aria-hidden="true">03</div><div><b>Revês</b> a tabela e corriges o que quiseres. Depois <b>copias o plano</b> (ou envias para o teu email) e aplicas no e-Fatura. <b>A ferramenta não submete nada.</b></div></div>
   </div>
 </section>
 
