@@ -53,10 +53,10 @@ export async function onRequestPost({ request, env }) {
     method: "POST",
     headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
     body: JSON.stringify({
-      from: "e-Fatura Helper <faturas@send.diogoandrade.com>",
+      from: "Fatura Boa <faturas@send.diogoandrade.com>",
       to: [env.FEEDBACK_TO],
       reply_to: email || undefined,
-      subject: `Feedback e-Fatura Helper${context ? ": " + context.slice(0, 60) : ""}`,
+      subject: `Feedback Fatura Boa${context ? ": " + context.slice(0, 60) : ""}`,
       html: `<p><b>Mensagem</b></p><pre style="white-space:pre-wrap;font:14px ui-monospace,monospace">${esc(message)}</pre>`
           + `<p><b>Contexto:</b> ${context ? esc(context) : "(nenhum)"}</p>`
           + `<p><b>Responder a:</b> ${email ? esc(email) : "(nao deixou email)"}</p>`,
