@@ -1,6 +1,11 @@
 // Feedback form endpoint. No account, no captcha puzzle: Turnstile does the work invisibly.
 //
 // Four independent layers, because Turnstile alone is one bypass away from an open relay:
+// Delivery goes to faturaboa@diogoandrade.com, a per-service alias on the admin@ catch-all
+// (Mailu on the OVH VPS). Mailu is the authoritative inbox; Gmail is legacy. Using a distinct
+// alias per service is the established privacy pattern - it can be filtered or killed on its own
+// without touching anything else.
+//
 //   1. Turnstile token, verified server-side against Cloudflare (never trust the client's word).
 //   2. Honeypot field a human never sees and never fills.
 //   3. Minimum dwell time: a real person cannot read the form and submit in under 3 seconds.
