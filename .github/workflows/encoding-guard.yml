@@ -1,0 +1,14 @@
+name: encoding-guard
+on: [push, pull_request]
+jobs:
+  ascii-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: tool.js must be pure ASCII (encoding-proof on any host page)
+        run: |
+          if LC_ALL=C grep -nP '[^\x00-\x7F]' tool.js; then
+            echo "::error file=tool.js::Non-ASCII byte found. Escape it as \\uXXXX so the tool renders correctly whatever charset the e-Fatura page uses (Latin-1, UTF-8, Windows-1252...). Run: node escape-tool.js"
+            exit 1
+          fi
+          echo "tool.js is pure ASCII — safe on every encoding."
