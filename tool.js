@@ -227,6 +227,69 @@
          * so you can see where a ceiling lands before you click Aplicar. If the two together
          * would overshoot the cap, the overflow is drawn in red and flagged - that share of the
          * deduction is simply lost, and those faturas are better moved to another sector. */
+        /* OPTIMISER - the same pass the server-side script runs, ported to the browser.
+         * Looks at EVERY fatura of the year (registered and pending), takes the sectors each
+         * merchant legitimately allows, and allocates greedily by value so the invoices with most
+         * to gain get the scarce headroom first. Surfaces two things a per-row view cannot: how
+         * much deduction is being WASTED on a ceiling that is already over, and which
+         * already-REGISTERED faturas sit in a full sector while a legitimate alternative has room.
+         * Rates are not uniform (transportes/jornais 100% of the VAT, ginasios 30%, despesas
+         * gerais 35% of the total), so the emptiest bucket is not the best one. */
+        function dedu(x, sec) {
+          var c = CEIL[sec]; if (!c) return 0;
+          var v = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100;
+          return v * (sec === "C99" ? c99Rate(prof) : c.rate);
+        }
+        function optimise() {
+          var capOf = function (k) { return k === POT ? POT_CAP : capFor(k, prof); };
+          var keyOf = function (sec) { return CEIL[sec].pot || sec; };
+          var plan = [];
+          rows.forEach(function (x) {
+            if (x.estadoBeneficio !== "R" && x.estadoBeneficio !== "P") return;
+            var cur = x.actividadeEmitente;
+            var allowed = cascade(x.nifEmitente).filter(function (a) { return CEIL[a]; });
+            if (cur && CEIL[cur] && allowed.indexOf(cur) < 0) allowed = allowed.concat([cur]);
+            if (!allowed.length) return;
+            var best = 0;
+            allowed.forEach(function (a) { var d = dedu(x, a); if (d > best) best = d; });
+            plan.push({ gain: best - (cur && CEIL[cur] ? dedu(x, cur) : 0),
+                        x: x, cur: cur, allowed: allowed });
+          });
+          plan.sort(function (a, b) { return b.gain - a.gain; });
+
+          var curPots = {};
+          plan.forEach(function (p) {
+            if (!p.cur || !CEIL[p.cur]) return;
+            var k = keyOf(p.cur);
+            curPots[k] = (curPots[k] || 0) + dedu(p.x, p.cur);
+          });
+          var before = 0, wasted = 0;
+          Object.keys(curPots).forEach(function (k) {
+            before += Math.min(curPots[k], capOf(k));
+            wasted += Math.max(0, curPots[k] - capOf(k));
+          });
+
+          var pots = {}, moves = [];
+          plan.forEach(function (p) {
+            var bestSec = null, bestVal = -1;
+            p.allowed.slice().sort(function (a, b) { return dedu(p.x, b) - dedu(p.x, a); })
+              .forEach(function (a) {
+                var k = keyOf(a), room = capOf(k) - (pots[k] || 0);
+                if (room <= 0.01) return;
+                var val = Math.min(dedu(p.x, a), room);
+                if (val > bestVal) { bestSec = a; bestVal = val; }
+              });
+            if (!bestSec) return;
+            pots[keyOf(bestSec)] = (pots[keyOf(bestSec)] || 0) + bestVal;
+            if (bestSec !== p.cur && bestVal > 0.01) {
+              moves.push({ x: p.x, from: p.cur, to: bestSec, val: bestVal });
+            }
+          });
+          var after = 0;
+          Object.keys(pots).forEach(function (k) { after += Math.min(pots[k], capOf(k)); });
+          return { before: before, after: after, wasted: wasted, moves: moves };
+        }
+
         function oneBar(label, usedV, addV, cap) {
           var pu = cap ? (usedV / cap) * 100 : 0;
           var pa = cap ? (addV / cap) * 100 : 0;
