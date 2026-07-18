@@ -217,12 +217,40 @@
           var c = CEIL[sec]; if (!c) return Infinity;
           return capFor(sec, prof) - (used[c.pot || sec] || 0);
         };
-        var suggest = function (nif) {
-          var opts = cascade(nif);
+        /* OTIMIZADA - of the sectors this merchant is registered for, the one that actually puts
+         * the most euros of deduction on THIS invoice. Not the same as "first in the list": the
+         * CAE-DB returns the primary CAE first, so walking the list in order would nearly always
+         * hand back the primary and the two columns would be identical.
+         * Deduction differs per sector by rate AND by base (a share of the invoice total, or a
+         * share of its VAT), and is worth nothing beyond a full ceiling - so compute the real
+         * gain and take the best. This is the "pharmacy preferred, and when it is full fall to
+         * the next" rule, done by value rather than by position. */
+        var gain = function (sec, x) {
+          var c = CEIL[sec]; if (!c) return 0;
+          var base = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100;
+          return Math.max(0, Math.min(headroom(sec), c.rate * base));
+        };
+        var suggest = function (nif, x) {
+          var opts = cascade(nif), best = opts[0], bestG = -1;
           for (var i = 0; i < opts.length; i++) {
-            if (headroom(opts[i]) > 0.01) return opts[i];
+            var g = gain(opts[i], x);
+            if (g > bestG + 0.005) { bestG = g; best = opts[i]; }   // ties keep the earlier (primary)
           }
-          return opts[0];                       // everything capped - the ranking still stands
+          return bestG > 0.01 ? best : opts[0];   // everything capped - the ranking still stands
+        };
+        /* PROVAVEL - the sector the purchase most likely really belonged to, ignoring ceilings.
+         * This is NOT the same question as "which sector pays best". A hypermarket holds a
+         * pharmacy CAE, so the optimiser can legitimately offer Saude, but if you bought
+         * groceries there the truthful sector is despesas gerais. Order of evidence:
+         *   1. how YOU classified this merchant before - the strongest signal there is,
+         *   2. otherwise the sector of the merchant's PRIMARY CAE, which is its main activity.
+         * The CAE-DB returns the primary CAE's sector first, before the benefit ranking. */
+        var provavel = function (nif) {
+          var m = learned[nif];
+          if (m) return Object.keys(m).sort(function (a, b) { return m[b] - m[a]; })[0];
+          var c = caemap[nif];
+          if (c) return Object.prototype.toString.call(c) === "[object Array]" ? c[0] : c;
+          return "C99";
         };
         if (!pend.length) {
           document.getElementById("efh-body").innerHTML = "\u2705 N\u00e3o tem faturas pendentes de classifica\u00e7\u00e3o em " + year + ".";
@@ -237,19 +265,32 @@
         var changed = 0;
         var opts = Object.keys(SECTORS).map(function (k) { return '<option value="' + k + '">' + k + " - " + SECTORS[k] + "</option>"; }).join("");
         var trs = pend.map(function (x, i) {
-          var s = suggest(x.nifEmitente);
+          var s = suggest(x.nifEmitente, x);       // most deduction for THIS invoice
+          var pv = provavel(x.nifEmitente);         // what it most likely actually was
           var old = v1(x.nifEmitente);
           if (old !== s) changed++;
-          var diff = old !== s
-            ? '<span style="color:#999;text-decoration:line-through">' + old + '</span> <b style="color:#128a3a">' + s + "</b>"
-            : '<span style="color:#999">' + s + "</span>";
+          /* Two suggestions, side by side, because they answer different questions and the user
+           * is the one declaring. Pre-select PROVAVEL: defaulting to whatever pays most would
+           * nudge people into declaring groceries as Saude just because the shop holds a
+           * pharmacy CAE. Where the purchase genuinely was in the better sector the two agree
+           * anyway, so nothing is lost by being honest here. */
+          var cell = function (sec, i2, kind) {
+            return '<button type="button" class="efh-pick" data-i="' + i2 + '" data-sec="' + sec + '" ' +
+              'title="Usar ' + sec + ' - ' + esc(SECTORS[sec] || sec) + '" ' +
+              'style="cursor:pointer;font:inherit;font-size:11px;border:1px solid ' +
+              (kind === "pv" ? "#034ad8;color:#034ad8" : "#128a3a;color:#128a3a") +
+              ';background:#fff;border-radius:3px;padding:2px 6px;min-height:24px">' + sec + '</button>';
+          };
+          var same = (pv === s);
           return '<tr><td style="text-align:center"><input type="checkbox" class="efh-ck" data-i="' + i + '" checked></td>' +
             '<td>' + esc(x.dataEmissaoDocumento) + '</td><td>' + esc(name34(x)) + '</td>' +
             '<td style="text-align:right">\u20ac' + eur(x.valorTotal) + '</td>' +
-            '<td style="font-size:11px;white-space:nowrap">' + diff + "</td>" +
+            '<td style="font-size:11px;white-space:nowrap">' + cell(pv, i, "pv") + "</td>" +
+            '<td style="font-size:11px;white-space:nowrap">' +
+              (same ? '<span style="color:#999">igual</span>' : cell(s, i, "op")) + "</td>" +
             '<td><select class="efh-sec" data-i="' + i + '" style="max-width:190px" aria-label="Setor para ' +
             esc(name34(x)) + '">' +
-            opts.replace('value="' + s + '"', 'value="' + s + '" selected') + '</select></td></tr>';
+            opts.replace('value="' + pv + '"', 'value="' + pv + '" selected') + '</select></td></tr>';
         }).join("");
         window.__efhPend = pend;
         /* Progress bars, in two segments:
@@ -414,7 +455,7 @@
           + '<span style="white-space:nowrap">(link de refer\u00eancia)</span>.</span>' +
           '</div>' +
           '<p style="margin:0 0 8px"><b>' + pend.length + ' faturas pendentes</b> em ' + year +
-          '. Sugest\u00f5es do seu hist\u00f3rico + mapa CAE p\u00fablico, j\u00e1 a saltar setores cheios. <b>Reveja</b> - a classifica\u00e7\u00e3o \u00e9 uma declara\u00e7\u00e3o sua \u00e0 AT.</p>' +
+          '. Duas sugest\u00f5es por fatura: <b>Provavel</b> (a atividade principal do comerciante, ou o que j\u00e1 usou antes) e <b>Otimizada</b> (mais dedu\u00e7\u00e3o, com espa\u00e7o no teto). Vem selecionada a Provavel. S\u00f3 os setores em que o comerciante est\u00e1 registado aparecem, mas <b>ser aceite n\u00e3o \u00e9 o mesmo que estar certo</b>: a classifica\u00e7\u00e3o \u00e9 uma declara\u00e7\u00e3o sua \u00e0 AT.</p>' +
           '<div style="background:#f4f6f9;border:1px solid #d5dae1;border-radius:2px;padding:9px;margin-bottom:10px;font-size:12px">' +
           '<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center">' +
           '<label style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap">' +
@@ -440,7 +481,7 @@
           'usa a partilha abaixo. Se entregas <b>em separado</b>, os tetos s\u00e3o s\u00f3 teus e estes n\u00fameros ' +
           'j\u00e1 est\u00e3o certos.</div></div>' +
           '<div style="max-height:52vh;overflow:auto"><table style="width:100%;border-collapse:collapse">' +
-          '<thead><tr style="background:#f4f6f9"><th></th><th>Data</th><th>Emitente</th><th>Valor</th><th title="antes vs agora">Antes/Agora</th><th>Setor</th></tr></thead>' +
+          '<thead><tr style="background:#f4f6f9"><th></th><th>Data</th><th>Emitente</th><th>Valor</th><th title="O setor que a compra provavelmente foi: o teu historico, ou a atividade principal do comerciante">Provavel</th><th title="O setor que da mais deducao e ainda tem espaco no teto">Otimizada</th><th>Setor</th></tr></thead>' +
           '<tbody>' + trs + '</tbody></table></div>' +
           '<div style="margin-top:12px;display:flex;gap:8px;align-items:center">' +
           '<button id="efh-export" style="background:#034ad8;color:#fff;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer;font-weight:600">Copiar plano</button> ' +
@@ -451,6 +492,16 @@
          * sector is the user's declaration, not ours. So this builds the plan and hands it over,
          * and the user applies it themselves in e-Fatura. The submit path exists and is tested
          * (see test-apply.js) - it is deliberately not wired up. */
+        // clicking either suggestion applies it to that row and refreshes the ceiling bars
+        document.querySelectorAll(".efh-pick").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var sel = document.querySelector('.efh-sec[data-i="' + b.dataset.i + '"]');
+            if (!sel) return;
+            sel.value = b.dataset.sec;
+            sel.dispatchEvent(new Event("change", { bubbles: true }));
+          });
+        });
+
         function planText() {
           var lines = ["Plano de classificacao e-Fatura - " + year, ""];
           document.querySelectorAll(".efh-ck").forEach(function (ck) {
