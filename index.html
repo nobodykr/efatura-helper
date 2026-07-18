@@ -3,144 +3,232 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>e-Fatura Helper — classifica faturas, não percas deduções de IRS</title>
-<meta name="description" content="Ferramenta gratuita que corre no teu browser para classificar faturas pendentes no e-Fatura. Sem password, as faturas nao saem do teu browser, codigo visivel e auditavel.">
+<title>e-Fatura Helper: classificar faturas de IRS a partir de fontes oficiais</title>
+<meta name="description" content="Ferramenta gratuita que corre no teu navegador e sugere o setor de cada fatura pendente a partir da atividade oficial de cada comerciante. Nunca pede a password, as faturas nao saem do teu navegador, e o codigo esta a vista.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#1A1714; --paper:#F3ECDD; --paper2:#EBE0CC; --mute:#6B6258;
-    --verm:#E0552B; --amber:#E8A33D; --cobalt:#2C5BB8; --forest:#1E5A3A;
-    --rule:#CFC3AA;
+    /* institutional palette. Reads like a state service on purpose; the page says plainly it isn't one. */
+    --pri:#034ad8; --pri-dark:#021c51; --pri-mid:#1b4dab; --pri-light:#1CA3FC;
+    --ink:#2B363C; --ink2:#4a5a63; --mute:#6b7780;
+    --bg:#ffffff; --bg2:#f4f6f9; --bg3:#E1E4EA; --rule:#d5dae1;
+    --red:#c8102e; --green:#1E5A3A; --amber:#8a6100;
+    --focus:#f408fc;   /* gov.pt's magenta focus ring: never blends into any brand colour */
+    --r:6px;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--paper);color:var(--ink);
-       font:400 16px/1.55 'Hanken Grotesk',system-ui,sans-serif;
-       -webkit-font-smoothing:antialiased}
-  .wrap{max-width:760px;margin:0 auto;padding:0 22px}
-  code,.num{font-family:'Space Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:400 16px/1.6 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px;margin:0 auto;padding:0 24px}
+  code,.num,.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
 
-  /* header: the thesis, set as a receipt line */
-  header{padding:64px 0 26px}
-  .eyebrow{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.14em;
-           text-transform:uppercase;color:var(--verm)}
-  h1{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;
-     font-size:clamp(2.1rem,6vw,3.4rem);line-height:1.02;letter-spacing:-.02em;margin:.22em 0 .3em}
-  .sub{color:var(--mute);font-size:1.06rem;max-width:44ch}
+  /* every interactive thing gets the same unmissable focus ring and a 44px target */
+  a:focus-visible,button:focus-visible,summary:focus-visible,.bm:focus-visible{
+    outline:3px solid var(--focus);outline-offset:2px;border-radius:2px}
+  a{color:var(--pri);text-underline-offset:3px;text-decoration-thickness:1px}
+  a:hover{color:var(--pri-dark)}
 
-  /* the signature: a ceiling meter that runs PAST its cap into a dead zone */
-  .thesis{margin:30px 0 8px;padding:18px 20px;background:var(--paper2);
-          border:1px solid var(--rule);border-radius:2px}
+  /* the first thing on the page: the one rule that keeps people safe */
+  .alertbar{background:var(--pri-dark);color:#fff;padding:18px 0;border-bottom:4px solid var(--red)}
+  .alertbar .big{font-size:clamp(1.05rem,2.6vw,1.32rem);font-weight:600;line-height:1.35;
+                 margin:0 0 8px;max-width:70ch}
+  .alertbar .small{font-size:.88rem;line-height:1.55;color:#d7e0f5;margin:0 0 6px;max-width:78ch}
+  .alertbar .small:last-child{margin-bottom:0}
+  .alertbar b{color:#fff}
+  .alertbar code{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);
+                 color:#fff;padding:1px 6px}
+  .alertbar .tagline{margin-top:12px;padding-top:11px;
+                     border-top:1px solid rgba(255,255,255,.22)}
+  .alertbar .tag{margin-right:8px;vertical-align:1px}
+
+  /* legacy strip styles, kept for the masthead tag */
+  .tag{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.09em;
+              text-transform:uppercase;border:1px solid rgba(255,255,255,.45);
+              border-radius:2px;padding:2px 7px;white-space:nowrap}
+
+  /* masthead */
+  .mast{border-bottom:3px solid var(--pri);background:#fff}
+  .mast .wrap{display:flex;align-items:center;gap:14px;min-height:72px;flex-wrap:wrap}
+  .mark{width:38px;height:38px;flex:none;border-radius:var(--r);background:var(--pri);
+        color:#fff;display:grid;place-items:center;font-weight:700;font-size:1.15rem;
+        font-family:'IBM Plex Mono',monospace}
+  .mast .nm{font-weight:600;font-size:1.05rem;line-height:1.2}
+  .mast .nm span{display:block;font-weight:400;font-size:.8rem;color:var(--mute)}
+
+  header{padding:52px 0 40px;background:var(--bg2);border-bottom:1px solid var(--rule)}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.11em;
+           text-transform:uppercase;color:var(--pri);font-weight:600}
+  h1{font-weight:600;font-size:clamp(1.9rem,4.6vw,2.9rem);line-height:1.15;
+     letter-spacing:-.015em;margin:.3em 0 .35em;color:var(--pri-dark)}
+  .sub{color:var(--ink2);font-size:1.08rem;max-width:56ch;margin:0}
+
+  /* signature: a ceiling that keeps filling after it is full */
+  .thesis{margin:28px 0 10px;padding:20px 22px;background:#fff;
+          border:1px solid var(--rule);border-left:4px solid var(--pri);border-radius:var(--r)}
   .thesis .line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
-                font-family:'Space Mono',monospace;font-size:.95rem}
-  .thesis .line b{font-weight:700}
+                font-family:'IBM Plex Mono',monospace;font-size:.95rem}
+  .thesis .line b{font-weight:600}
   .dots{flex:1;border-bottom:1px dotted var(--rule);transform:translateY(-4px)}
-  .meter{margin-top:12px;height:16px;display:flex;border:1px solid var(--ink);border-radius:1px;overflow:hidden}
-  .meter .used{background:var(--forest)}
-  .meter .void{flex:1;background:
-     repeating-linear-gradient(135deg,var(--verm) 0 5px,transparent 5px 10px);
-     opacity:.85}
-  .meter-key{display:flex;gap:18px;margin-top:8px;font-size:.76rem;color:var(--mute);
-             font-family:'Space Mono',monospace}
+  .meter{margin-top:14px;height:18px;display:flex;border:1px solid var(--ink);
+         border-radius:2px;overflow:hidden;background:#fff}
+  .meter .used{background:var(--pri)}
+  .meter .void{flex:1;background:repeating-linear-gradient(135deg,var(--red) 0 5px,#fff 5px 10px)}
+  .meter-key{display:flex;gap:20px;margin-top:9px;font-size:.76rem;color:var(--ink2);flex-wrap:wrap;
+             font-family:'IBM Plex Mono',monospace}
   .meter-key i{font-style:normal;display:inline-block;width:11px;height:11px;
-               vertical-align:-1px;margin-right:5px;border:1px solid var(--ink)}
-  .k-used{background:var(--forest)} .k-void{background:repeating-linear-gradient(135deg,var(--verm) 0 4px,transparent 4px 8px)}
+               vertical-align:-1px;margin-right:6px;border:1px solid var(--ink)}
+  .k-used{background:var(--pri)}
+  .k-void{background:repeating-linear-gradient(135deg,var(--red) 0 4px,#fff 4px 8px)}
 
-  section{padding:34px 0;border-top:1px solid var(--rule)}
-  h2{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:700;
-     font-size:1.35rem;letter-spacing:-.01em;margin:0 0 .5em}
-  .note{color:var(--mute);font-size:.9rem}
-  p{margin:0 0 .9em}
-  a{color:var(--cobalt);text-underline-offset:3px}
-  a:focus-visible,.bm:focus-visible{outline:2px solid var(--verm);outline-offset:3px}
+  section{padding:38px 0;border-top:1px solid var(--rule)}
+  section:first-of-type{border-top:0}
+  h2{font-weight:600;font-size:1.4rem;letter-spacing:-.01em;margin:0 0 .55em;color:var(--pri-dark)}
+  .note{color:var(--mute);font-size:.9rem;font-weight:400}
+  p{margin:0 0 .95em}
 
-  /* sector codes are real codes - use them as the structural marker, not invented numbering */
-  .steps{display:grid;gap:16px}
-  .step{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
-  .step .n{font-family:'Space Mono',monospace;font-size:.78rem;color:var(--verm);
-           border:1px solid var(--verm);border-radius:2px;padding:2px 7px;line-height:1.5}
+  /* numbered steps: real sequence, so numbering carries meaning */
+  .steps{display:grid;gap:18px}
+  .step{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}
+  .step .n{font-family:'IBM Plex Mono',monospace;font-size:.8rem;font-weight:600;color:#fff;
+           background:var(--pri);border-radius:2px;padding:3px 8px;line-height:1.5}
   .safe{list-style:none;padding:0;margin:0}
-  .safe li{padding:9px 0 9px 20px;border-bottom:1px solid var(--rule);position:relative}
+  .safe li{padding:11px 0 11px 22px;border-bottom:1px solid var(--rule);position:relative}
   .safe li:last-child{border-bottom:0}
-  .safe li::before{content:"";position:absolute;left:0;top:17px;width:8px;height:2px;background:var(--verm)}
-  .safe b{font-weight:700}
+  .safe li::before{content:"";position:absolute;left:0;top:20px;width:10px;height:2px;background:var(--pri)}
 
   table{width:100%;border-collapse:collapse;font-size:.9rem}
   caption{text-align:left;padding-bottom:8px}
-  th,td{border-bottom:1px solid var(--rule);padding:9px 8px 9px 0;text-align:left;vertical-align:top}
-  th{font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.08em;
-     text-transform:uppercase;color:var(--mute);font-weight:400}
-  td:last-child{font-family:'Space Mono',monospace;white-space:nowrap;text-align:right}
+  th,td{border-bottom:1px solid var(--rule);padding:11px 10px 11px 0;text-align:left;vertical-align:top}
+  thead th,tr:first-child th{background:var(--bg2);font-family:'IBM Plex Mono',monospace;
+     font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);
+     font-weight:600;padding-left:10px}
+  td:last-child{font-family:'IBM Plex Mono',monospace;white-space:nowrap;text-align:right}
+  .tscroll{overflow-x:auto}
 
-  .bm{display:inline-block;background:var(--verm);color:var(--paper);text-decoration:none;
-      font-weight:700;padding:13px 20px;border-radius:2px;cursor:grab;
-      font-family:'Bricolage Grotesque',system-ui,sans-serif}
-  .warn{border-left:3px solid var(--amber);padding:2px 0 2px 14px;color:#5A4600;background:transparent}
-  code{background:var(--paper2);border:1px solid var(--rule);border-radius:2px;padding:1px 5px;font-size:.85em}
-  footer{color:var(--mute);font-size:.85rem;padding:30px 0 56px;border-top:1px solid var(--rule)}
-  .badges{display:flex;flex-wrap:wrap;gap:7px;margin:20px 0 0}
-  .badge{font-family:'Space Mono',monospace;font-size:.72rem;color:var(--mute);
-         border:1px solid var(--rule);border-radius:2px;padding:4px 9px;background:var(--paper2)}
-  .badge b{color:var(--forest)}
-  @media (max-width:560px){ header{padding-top:40px} .thesis .line{font-size:.8rem} }
+  .bm{display:inline-flex;align-items:center;min-height:44px;background:var(--pri);color:#fff;
+      text-decoration:none;font-weight:600;padding:11px 22px;border-radius:var(--r);cursor:grab}
+  .bm:hover{background:var(--pri-dark);color:#fff}
+
+  /* notices: coloured left rule, never colour alone */
+  .box{border:1px solid var(--rule);border-left:4px solid var(--pri);border-radius:var(--r);
+       padding:16px 18px;margin:0 0 20px;background:var(--bg2)}
+  .box.draft{border-left-color:var(--amber);background:#fdf8ec}
+  .box.give{border-left-color:var(--green);background:#f1f7f3}
+  .box h2{margin-top:0}
+  .warn{border-left:4px solid var(--amber);padding:8px 0 8px 14px;color:#5A4600;background:transparent}
+  code{background:var(--bg2);border:1px solid var(--rule);border-radius:2px;padding:1px 5px;font-size:.85em}
+
+  /* feedback form */
+  .form{margin:6px 0 18px;max-width:620px}
+  .field{margin:0 0 16px}
+  .field label{display:block;font-weight:600;font-size:.92rem;margin:0 0 6px}
+  .field input,.field textarea{width:100%;font:inherit;color:var(--ink);background:#fff;
+    border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px;min-height:44px}
+  .field textarea{min-height:110px;resize:vertical}
+  .field input:focus,.field textarea:focus{outline:3px solid var(--focus);outline-offset:1px;
+    border-color:var(--pri)}
+  .field .note{margin:6px 0 0}
+  .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+  #fb-status:empty{display:none}
+  #fb-status.err{color:var(--red);font-weight:600}
+  #fb-status.ok{color:var(--green);font-weight:600}
+  .cf-turnstile{margin:0 0 14px}
+  footer{color:var(--ink2);font-size:.87rem;padding:34px 0 60px;background:var(--bg2);
+         border-top:3px solid var(--pri)}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0}
+  .badge{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--ink2);
+         border:1px solid var(--rule);border-radius:2px;padding:5px 10px;background:#fff}
+  .badge b{color:var(--pri);font-weight:600}
+  @media (max-width:560px){ header{padding:34px 0 28px} .thesis .line{font-size:.8rem} }
   @media (prefers-reduced-motion:no-preference){
-    .thesis{animation:rise .5s cubic-bezier(.2,.7,.3,1) both}
+    .thesis{animation:rise .45s cubic-bezier(.2,.7,.3,1) both}
     @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   }
 </style>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
-<header class="wrap">
-  <div class="eyebrow">e-Fatura / IRS</div>
-  <h1>Encheste um teto de 250 €<br>e continuaste a gastar.</h1>
-  <p class="sub">As deduções do IRS têm limites por setor. Quando um enche, tudo o que
-     puseres lá a seguir vale <b>zero</b> — e o e-Fatura não to diz enquanto classificas.</p>
+<div class="alertbar">
+  <div class="wrap">
+    <p class="big">A tua password das Finanças só se escreve em páginas cujo endereço
+      <b>termina</b> em <code>.gov.pt</code>. Aqui, nunca.</p>
+    <p class="small">Esta ferramenta <b>não te pede a password</b> e <b>não consegue vê-la</b>.
+      Funciona como uma extensão do navegador: só corre quando <b>tu</b> clicas, só dentro da página
+      do e-Fatura onde <b>já fizeste login</b>, e não vê mais nada. Se alguma vez um site te pedir
+      as credenciais das Finanças, é burla. Fecha-o.</p>
+    <p class="small tagline"><span class="tag">Não oficial</span> Projeto pessoal e independente.
+      <b>Não</b> é um serviço do Estado nem da Autoridade Tributária.</p>
+  </div>
+</div>
+<div class="mast">
+  <div class="wrap">
+    <div class="mark" aria-hidden="true">eF</div>
+    <div class="nm">e-Fatura Helper<span>Classificação de faturas para deduções de IRS</span></div>
+  </div>
+</div>
 
-  <!-- the thesis, drawn once: a real 2025 account, and the cliff -->
+<header>
+ <div class="wrap">
+  <div class="eyebrow">e-Fatura / IRS</div>
+  <h1>Fontes oficiais,<br>em vez de palpites.</h1>
+  <p class="sub">Fartei-me de classificar faturas uma a uma sem saber se estava a acertar, e não me
+     apetece entregar isso a alguém e ficar na mesma. Esta ferramenta vai buscar a atividade real de
+     cada comerciante ao registo do Estado, mostra-te onde estão os teus tetos, e a decisão continua
+     a ser tua.</p>
+
   <div class="thesis">
     <div class="line"><span>Despesas gerais familiares</span><span class="dots"></span><b>17.035,28 €</b></div>
     <div class="line" style="color:var(--mute)"><span>dedução obtida</span><span class="dots"></span><b>250,00 €</b></div>
-    <div class="meter" role="img" aria-label="Teto cheio: 250 euros aproveitados, o resto perdido">
+    <div class="meter" role="img" aria-label="Teto cheio: 250 euros deram dedução, o resto não acrescenta dedução nenhuma">
       <div class="used" style="width:12%"></div><div class="void"></div>
     </div>
     <div class="meter-key">
-      <span><i class="k-used"></i>250 € aproveitados</span>
-      <span><i class="k-void"></i>o resto não conta</span>
+      <span><i class="k-used"></i>250 € de dedução</span>
+      <span><i class="k-void"></i>o resto não dá dedução</span>
     </div>
   </div>
-  <p class="note" style="margin-top:10px">Conta real, ano de 2025. Saúde tinha 784 € por usar.</p>
+  <p class="note" style="margin-top:10px">
+     Isto é a minha conta de 2025. O teto das despesas gerais estava cheio há muito, enquanto a
+     Saúde tinha 784 € por usar. Não é drama nenhum, é só informação que eu não tinha à frente
+     enquanto classificava.</p>
+  <p class="note">Uma fatura acima do teto continua a contar para a
+     <a href="https://faturadasorte.portaldasfinancas.gov.pt" target="_blank" rel="noopener">Fatura
+     da Sorte</a> e continua a ser um registo teu. O que deixa de crescer é só a dedução.</p>
 
   <div class="badges">
-    <span class="badge">corre <b>no teu browser</b></span>
+    <span class="badge">corre <b>no teu navegador</b></span>
     <span class="badge"><b>nunca</b> pede password</span>
     <span class="badge">as faturas <b>não saem</b> daqui</span>
     <span class="badge">código <b>auditável</b></span>
   </div>
+</div>
 </header>
 
 <div class="wrap">
 
-<div style="background:#fff4d6;border:1px solid #e8d9a8;border-left:4px solid #d98a00;border-radius:8px;padding:14px 16px;margin:0 0 18px">
-  <b style="color:#7a5a00">Versão de teste — ainda não submete nada.</b>
-  <p style="margin:6px 0 0;color:#5a4600">
+<div class="box draft">
+  <b>Versão de teste. Ainda não submete nada.</b>
+  <p style="margin:6px 0 0">
     Nesta fase a ferramenta <b>analisa e mostra-te o plano</b>: que setor faz sentido para cada fatura,
     quanto já gastaste de cada teto, e quanta dedução estás a perder. <b>A submissão fazes tu</b>, no
     e-Fatura, com o plano à frente. Copias ou envias para o teu email e aplicas.
   </p>
-  <p style="margin:6px 0 0;color:#5a4600">
+  <p style="margin:6px 0 0">
     É de propósito: classificar uma fatura é uma <b>declaração tua à AT</b>, e antes de deixar um
     programa fazer isso sozinho quero ver a coisa a funcionar em contas reais. Se experimentares e
-    algo estiver errado, <a id="ghissues2" href="#" target="_blank" rel="noopener">diz-me</a> — é a
+    algo estiver errado, <a id="ghissues2" href="#" target="_blank" rel="noopener">diz-me</a>. É a
     forma mais útil de ajudar.
   </p>
 </div>
 
-<section style="border-color:#2f6f4f">
+<section><div class="box give">
   <h2>Apoia esta ferramenta <span class="note">(sem custo nenhum para ti)</span></h2>
   <p>
     Isto é gratuito e vai continuar a ser: sem contas, sem subscrições, sem anúncios, e as tuas
-    faturas nunca saem do teu browser. Se te poupou tempo ou dinheiro e quiseres retribuir, abrir
+    faturas nunca saem do teu navegador. Se te poupou tempo ou dinheiro e quiseres retribuir, abrir
     uma conta Revolut pelo link abaixo dá-me uma pequena comissão.
   </p>
   <p>
@@ -200,7 +288,7 @@
     eles - o link é só um link. Não precisas de clicar para usar a ferramenta, que funciona
     exatamente igual de qualquer maneira.
   </p>
-</section>
+</div></section>
 
 <section>
   <h2>Como funciona</h2>
@@ -214,36 +302,36 @@
 <section>
   <h2>Porque é seguro <span class="note">(e porque devias desconfiar de qualquer site que te peça a password das Finanças)</span></h2>
   <ul class="safe">
-    <li>A ferramenta <b>corre dentro do teu browser</b>, na página do e-Fatura onde <b>já estás autenticado</b>. Usa a sessão que já tens.</li>
+    <li>A ferramenta <b>corre dentro do teu navegador</b>, na página do e-Fatura onde <b>já estás autenticado</b>. Usa a sessão que já tens.</li>
     <li><b>Nunca escreves a password</b> em nada nosso. Não há campo de password. Não a vemos, não a guardamos, não existe.</li>
-    <li><b>As tuas faturas nunca saem do teu browser.</b> Não as recebemos, não as guardamos, não passam por lado nenhum nosso. A ferramenta lê um único ficheiro público (o mapa de atividades) e não envia nada teu para o obter.</li>
-    <li><b>Partilha de agregado — opcional e desligada por omissão.</b> <b>Só faz sentido se entregarem o IRS em conjunto.</b> Quem entrega em separado tem tetos próprios (cada pessoa tem o seu limite de 250 € em despesas gerais, por exemplo) e <b>não deve ativar isto</b> — os números desta página já estão certos para ti. Se entregam em conjunto, a partilha junta os totais das duas contas: enviamos <b>apenas seis números</b> (quanto já usaste de cada teto), nunca faturas, comerciantes, datas ou valores. A chave é calculada <b>no teu browser</b> a partir do NIF + email — só o resultado é enviado, por isso o servidor nunca recebe nenhum dos dois. Se não ativares, nada é enviado.</li>
-    <li><b>Código 100% visível e auditável.</b> Podes ler exatamente o que faz — <a id="gh" href="#" target="_blank" rel="noopener">no GitHub</a> — ou pedir a alguém que perceba para confirmar.</li>
+    <li><b>As tuas faturas nunca saem do teu navegador.</b> Não as recebemos, não as guardamos, não passam por lado nenhum nosso. A ferramenta lê um único ficheiro público (o mapa de atividades) e não envia nada teu para o obter.</li>
+    <li><b>Partilha de agregado, opcional e desligada por omissão.</b> <b>Só faz sentido se entregarem o IRS em conjunto.</b> Quem entrega em separado tem tetos próprios (cada pessoa tem o seu limite de 250 € em despesas gerais, por exemplo) e <b>não deve ativar isto</b>: os números desta página já estão certos para ti. Se entregam em conjunto, a partilha junta os totais das duas contas: enviamos <b>apenas seis números</b> (quanto já usaste de cada teto), nunca faturas, comerciantes, datas ou valores. A chave é calculada <b>no teu navegador</b> a partir do NIF + email, e só o resultado é enviado, por isso o servidor nunca recebe nenhum dos dois. Se não ativares, nada é enviado.</li>
+    <li><b>Código 100% visível e auditável.</b> Podes ler exatamente o que faz, <a id="gh" href="#" target="_blank" rel="noopener">no GitHub</a>, ou pedir a alguém que perceba para confirmar.</li>
     <li><b>Nada é submetido, de todo.</b> Nesta versão a ferramenta só lê e analisa. Qualquer alteração à tua declaração é feita por ti, no e-Fatura.</li>
   </ul>
-  <p class="warn">⚠️ Nunca introduzas o teu NIF e password das Finanças num site que não seja <code>portaldasfinancas.gov.pt</code>. Esta ferramenta nunca to pede — é essa a diferença.</p>
+  <p class="warn"><b>Atenção:</b> nunca introduzas o teu NIF e password das Finanças numa página cujo endereço não termine em <code>.gov.pt</code>. Esta ferramenta nunca to pede, e é essa a diferença.</p>
 </section>
 
 <section>
   <h2>Instalar</h2>
   <p>Arrasta este botão para a tua barra de favoritos:</p>
-  <p><a class="bm" id="bookmarklet" href="#">📄 e-Fatura Helper</a></p>
-  <p class="note">Depois, abre o e-Fatura, faz login, e clica no favorito. (Se o teu browser não deixar arrastar, clica com o botão direito → Adicionar aos favoritos, e cola o endereço do botão.)</p>
+  <p><a class="bm" id="bookmarklet" href="#"> e-Fatura Helper</a></p>
+  <p class="note">Depois, abre o e-Fatura, faz login, e clica no favorito. (Se o teu navegador não deixar arrastar, clica com o botão direito -> Adicionar aos favoritos, e cola o endereço do botão.)</p>
 </section>
 
 <section>
   <h2>Guia rápido: o que conta em cada setor <span class="note">(ano de rendimentos 2026)</span></h2>
-  <table>
+  <div class="tscroll"><table>
     <caption class="note" style="text-align:left;padding-bottom:6px">Resumo dos setores de dedução e respetivos limites</caption>
     <tr><th scope="col">Setor</th><th scope="col">O que inclui</th><th scope="col">Benefício</th></tr>
     <tr><td>Saúde</td><td>Consultas, farmácia, dentista, óculos, fisio, psicologia/terapia. IVA 23% só conta com receita médica associada.</td><td>15%, máx €1.000</td></tr>
     <tr><td>Educação</td><td>Propinas, creche, colégio, explicações, manuais, formação certificada.</td><td>30%, máx €800</td></tr>
     <tr><td>Habitação</td><td>Rendas de habitação própria, ou juros de crédito à habitação (contratos até 2011).</td><td>15%, máx €900 <span class="note">(800 € em 2025, 1000 € a partir de 2027)</span></td></tr>
     <tr><td>Lares</td><td>Lares e apoio domiciliário (próprio ou ascendentes).</td><td>25%, máx €403,75</td></tr>
-    <tr><td>Restauração, cabeleireiro, ginásio, veterinário, oficina, transportes, jornais, livros…</td><td>Cada fatura no setor correto do <i>comerciante</i>. Ex: ginásio→Ginásios, restaurante→Restauração.</td><td>15% do IVA, pool partilhada máx €250</td></tr>
+    <tr><td>Restauração, cabeleireiro, ginásio, veterinário, oficina, transportes, jornais, livros…</td><td>Cada fatura no setor correto do <i>comerciante</i>. Ex: ginásio->Ginásios, restaurante->Restauração.</td><td>15% do IVA, pool partilhada máx €250</td></tr>
     <tr><td>Despesas Gerais Familiares</td><td>Tudo o resto com NIF (supermercado, roupa, combustível, telecom…).</td><td>35%, máx €250</td></tr>
-  </table>
-  <p class="warn">A classificação é uma <b>declaração tua à AT</b>. Classifica cada fatura no setor onde a compra <b>realmente</b> aconteceu — o menu deixa escolher qualquer setor, mas a responsabilidade é de quem declara.</p>
+  </table></div>
+  <p class="warn">A classificação é uma <b>declaração tua à AT</b>. Classifica cada fatura no setor onde a compra <b>realmente</b> aconteceu. O menu deixa escolher qualquer setor, mas a responsabilidade é de quem declara.</p>
 </section>
 
 <section>
@@ -284,9 +372,33 @@
     O mesmo para sugestões, dúvidas, ou se simplesmente não perceberes alguma coisa - se não se percebe,
     é problema meu, não teu.
   </p>
-  <p>
-    Abre um <a id="ghissues" href="#" target="_blank" rel="noopener">issue no GitHub</a> ou fala comigo
-    em <a href="https://diogoandrade.com" target="_blank" rel="noopener">diogoandrade.com</a>.
+  <form id="fb" class="form" novalidate>
+    <div class="field">
+      <label for="fb-msg">O que correu mal, ou o que sugeres</label>
+      <textarea id="fb-msg" name="message" rows="5" maxlength="4000" required
+        placeholder="Ex: o Continente foi classificado como Saude e nao devia."></textarea>
+    </div>
+    <div class="field">
+      <label for="fb-ctx">Comerciante ou setor, se aplicavel <span class="note">(opcional)</span></label>
+      <input id="fb-ctx" name="context" type="text" maxlength="300" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="fb-mail">O teu email, se quiseres resposta <span class="note">(opcional)</span></label>
+      <input id="fb-mail" name="email" type="email" maxlength="200" autocomplete="email">
+      <p class="note">Uso-o so para te responder. Nada mais, e nao fica guardado em lado nenhum.</p>
+    </div>
+    <div class="hp" aria-hidden="true">
+      <label for="fb-web">Nao preencher</label>
+      <input id="fb-web" name="website" type="text" tabindex="-1" autocomplete="off">
+    </div>
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAADpqwlW5l6hzdZbi" data-callback="fbToken"
+         data-theme="light" data-size="flexible"></div>
+    <p><button type="submit" class="bm" id="fb-send">Enviar</button></p>
+    <p id="fb-status" role="status" aria-live="polite" class="note"></p>
+  </form>
+  <p class="note">
+    Preferes o GitHub? Abre um <a id="ghissues" href="#" target="_blank" rel="noopener">issue</a>,
+    ou fala comigo em <a href="https://diogoandrade.com" target="_blank" rel="noopener">diogoandrade.com</a>.
   </p>
 </section>
 
@@ -328,8 +440,8 @@
 </div>
 
 <footer class="wrap">
-  <p>Ferramenta comunitária e independente. <b>Não</b> afiliada à Autoridade Tributária. Sem garantias — confirma sempre no e-Fatura.</p>
-  <p><a id="gh2" href="#" target="_blank" rel="noopener">Código no GitHub</a> · <a href="https://polyformproject.org/licenses/noncommercial/1.0.0" target="_blank" rel="noopener">PolyForm Noncommercial 1.0.0</a> - livre para uso pessoal, proibido monetizar.</p>
+  <p>Ferramenta comunitária e independente. <b>Não</b> afiliada à Autoridade Tributária. Sem garantias ,  confirma sempre no e-Fatura.</p>
+  <p><a id="gh2" href="#" target="_blank" rel="noopener">Código no GitHub</a>  |  <a href="https://polyformproject.org/licenses/noncommercial/1.0.0" target="_blank" rel="noopener">PolyForm Noncommercial 1.0.0</a> - livre para uso pessoal, proibido monetizar.</p>
   <p class="note">Feito por <a href="https://diogoandrade.com" target="_blank" rel="noopener">Diogo Andrade</a>.</p>
 </footer>
 
@@ -341,6 +453,39 @@
   document.getElementById("ghissues").href = GH + "/issues";
   document.getElementById("ghissues2").href = GH + "/issues";
   document.getElementById("gh2").href = GH;
+  // Feedback form. Turnstile fills the token; the server re-verifies it, so this is only plumbing.
+  var fbToken = "";
+  window.fbToken = function (t) { fbToken = t; };
+  var fbLoadedAt = Date.now();
+  var fbForm = document.getElementById("fb");
+  fbForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var st = document.getElementById("fb-status");
+    var btn = document.getElementById("fb-send");
+    var msg = document.getElementById("fb-msg").value.trim();
+    if (!msg) { st.className = "note err"; st.textContent = "Escreve a mensagem primeiro."; return; }
+    if (!fbToken) { st.className = "note err"; st.textContent = "Aguarda um segundo pela verificacao e tenta outra vez."; return; }
+    btn.disabled = true; st.className = "note"; st.textContent = "A enviar...";
+    fetch("/api/feedback", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        message: msg,
+        context: document.getElementById("fb-ctx").value.trim(),
+        email: document.getElementById("fb-mail").value.trim(),
+        website: document.getElementById("fb-web").value,
+        token: fbToken, t: fbLoadedAt
+      })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.ok) { fbForm.reset(); st.className = "note ok"; st.textContent = "Enviado. Obrigado, leio tudo."; }
+      else { st.className = "note err"; st.textContent = d.error || "Nao consegui enviar."; btn.disabled = false; }
+      if (window.turnstile) { turnstile.reset(); fbToken = ""; }
+    }).catch(function () {
+      st.className = "note err";
+      st.textContent = "Falhou o envio. Tenta o GitHub, ou outra vez daqui a pouco.";
+      btn.disabled = false;
+    });
+  });
+
   // Loader bookmarklet: injects the open-source tool.js from this site into the e-Fatura page.
   var loader = "javascript:(function(){if(!/faturas\\.portaldasfinancas\\.gov\\.pt$/.test(location.host)){alert('Abre o e-Fatura e faz login primeiro.');return;}var s=document.createElement('script');s.charset='utf-8';s.src='" + HOST + "/tool.js?v='+Date.now();document.body.appendChild(s);})();";
   document.getElementById("bookmarklet").setAttribute("href", loader);

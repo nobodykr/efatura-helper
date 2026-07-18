@@ -5,4 +5,4 @@ const src = fs.readFileSync("tool.js", "utf8");
 let n = 0;
 const out = [...src].map(c => c.charCodeAt(0) < 128 ? c : (n++, "\\u" + c.charCodeAt(0).toString(16).padStart(4, "0"))).join("");
 fs.writeFileSync("tool.js", out);
-console.log(`escaped ${n} non-ASCII chars — tool.js is pure ASCII`);
+console.log(`escaped ${n} non-ASCII chars ,  tool.js is pure ASCII`);

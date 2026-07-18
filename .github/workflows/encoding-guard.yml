@@ -11,7 +11,7 @@ jobs:
             echo "::error file=tool.js::Non-ASCII byte found. Escape it as \\uXXXX so the tool renders correctly whatever charset the e-Fatura page uses (Latin-1, UTF-8, Windows-1252...). Run: node escape-tool.js"
             exit 1
           fi
-          echo "tool.js is pure ASCII — safe on every encoding."
+          echo "tool.js is pure ASCII ,  safe on every encoding."
       - name: every called function must be defined
         run: |
           node --check tool.js

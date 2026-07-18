@@ -141,12 +141,22 @@
     d.setAttribute("aria-label", "e-Fatura Helper");
     d.setAttribute("aria-modal", "false");
     d.style.cssText = "position:fixed;top:12px;right:12px;width:min(680px,95vw);max-height:90vh;overflow:auto;" +
-      "background:#fff;border:1px solid #0b3d6b;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.35);" +
+      "background:#fff;border:1px solid #021c51;border-radius:8px;font-family:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 8px 40px rgba(0,0,0,.35);" +
       "z-index:2147483647;font:13px/1.4 system-ui,sans-serif;color:#111";
     d.innerHTML = html; document.body.appendChild(d); return d;
   }
-  panel('<div style="background:#0b3d6b;color:#fff;padding:10px 14px;font-weight:600;border-radius:10px 10px 0 0">' +
+  // gov-style focus ring: magenta so it can never blend into AT's own blues
+  if(!document.getElementById('efh-focus-style')){
+    var fs=document.createElement('style'); fs.id='efh-focus-style';
+    fs.textContent='#efh-panel a:focus-visible,#efh-panel button:focus-visible,'+
+      '#efh-panel select:focus-visible,#efh-panel input:focus-visible,#efh-panel summary:focus-visible'+
+      '{outline:3px solid #f408fc;outline-offset:2px;border-radius:2px}'+
+      '#efh-panel .efh-num{font-family:\'IBM Plex Mono\',ui-monospace,monospace;font-variant-numeric:tabular-nums}';
+    document.head.appendChild(fs);
+  }
+  panel('<div style="background:#021c51;color:#fff;padding:10px 14px;font-weight:600;border-radius:8px 8px 0 0">' +
     'e-Fatura Helper <button type="button" aria-label="Fechar" style="float:right;cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
+    '<div style="background:#fdecec;border-bottom:2px solid #c8102e;padding:8px 12px;font-size:12px;line-height:1.45;color:#5a0000">'+'<b>Esta ferramenta nunca te pede a password.</b> Corre na sessao que ja abriste, so nesta pagina. '+'Se algum site te pedir as credenciais das Financas, e burla.</div>' +
     '<div id="efh-body" style="padding:14px">A ler as suas faturas...</div>');
 
   // load the public CAE map first (fails soft -> own-history still works), then the faturas
@@ -330,7 +340,7 @@
             '<div role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' +
             Math.round(total) + '" aria-valuetext="' + Math.round(total) + '% de ' + esc(label) +
             (over ? ', excede o limite' : '') + '"' +
-            ' style="height:7px;background:#e3e9f0;border-radius:4px;overflow:hidden;display:flex">' +
+            ' style="height:7px;background:#E1E4EA;border-radius:4px;overflow:hidden;display:flex">' +
             '<div style="height:100%;width:' + wu.toFixed(1) + "%;background:" + col + '"></div>' +
             '<div style="height:100%;width:' + wa.toFixed(1) + "%;background:" + ghost +
             ';opacity:.75"></div></div></div>';
@@ -374,8 +384,8 @@
           });
           var sum = over.length
             ? '<b style="color:#b00">' + over.join(", ") + " excede o teto</b>" +
-              (room.length ? ' <span style="color:#6B6258">- ainda h\u00e1 espa\u00e7o em ' + room.join(", ") + "</span>" : "")
-            : '<b style="color:#1E5A3A">Nenhum teto excedido</b> <span style="color:#6B6258">- espa\u00e7o em ' +
+              (room.length ? ' <span style="color:#6b7780">- ainda h\u00e1 espa\u00e7o em ' + room.join(", ") + "</span>" : "")
+            : '<b style="color:#1E5A3A">Nenhum teto excedido</b> <span style="color:#6b7780">- espa\u00e7o em ' +
               room.join(", ") + "</span>";
 
           var box = document.getElementById("efh-bars");
@@ -383,14 +393,14 @@
           var wasOpen = box.querySelector("details");
           wasOpen = wasOpen ? wasOpen.open : over.length > 0;
           box.innerHTML =
-            '<details' + (wasOpen ? " open" : "") + ' style="border:1px solid #CFC3AA;border-radius:2px;background:#F3ECDD">' +
+            '<details' + (wasOpen ? " open" : "") + ' style="border:1px solid #d5dae1;border-radius:2px;background:#f4f6f9">' +
             '<summary style="cursor:pointer;padding:7px 9px;font-size:12px;list-style:revert">' +
             "Tetos do IRS - " + sum + "</summary>" +
             '<div style="padding:2px 9px 9px">' + html + "</div></details>";
         }
 
         document.getElementById("efh-body").innerHTML =
-          '<div style="margin:-4px 0 10px;padding:7px 9px;background:#EBE0CC;border:1px solid #CFC3AA;border-radius:2px;font-size:11px;color:#1A1714;display:flex;flex-wrap:wrap;align-items:center;gap:8px">' +
+          '<div style="margin:-4px 0 10px;padding:7px 9px;background:#E1E4EA;border:1px solid #d5dae1;border-radius:2px;font-size:11px;color:#2B363C;display:flex;flex-wrap:wrap;align-items:center;gap:8px">' +
           '<a href="https://revolut.com/referral/?referral-code=nobodykr!JUL2-26-AR-L1&amp;geo-redirect" ' +
           'target="_blank" rel="noopener sponsored nofollow" ' +
           'style="display:inline-flex;align-items:center;gap:5px;color:#0075eb;font-weight:600;text-decoration:none">' +
@@ -398,14 +408,14 @@
           '<svg aria-hidden="true" style="width:14px;height:14px;display:block" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 800 800" style="enable-background:new 0 0 800 800;" xml:space="preserve"> <style type="text/css"> .st0{fill:#FFFFFF;} </style> <rect class="st0"/> <g> <rect x="209.051" y="262.097"/> <path d="M628.623,285.554c0-87.043-70.882-157.86-158.011-157.86H209.051v87.603h249.125c39.43,0,72.093,30.978,72.814,69.051 c0.361,19.064-6.794,37.056-20.146,50.66c-13.357,13.61-31.204,21.109-50.251,21.109h-97.046c-3.446,0-6.25,2.8-6.25,6.245v77.859 c0,1.324,0.409,2.59,1.179,3.656l164.655,228.43h120.53L478.623,443.253C561.736,439.08,628.623,369.248,628.623,285.554z"/> </g> </svg>' +
           '</span>Abrir conta Revolut</a>' +
           '<a href="https://buymeacoffee.com/diogoandrade" target="_blank" rel="noopener sponsored nofollow" ' +
-          'style="display:inline-flex;align-items:center;gap:4px;color:#1A1714;background:#ffdd00;' +
+          'style="display:inline-flex;align-items:center;gap:4px;color:#2B363C;background:#ffdd00;' +
           'border-radius:2px;padding:2px 7px;font-weight:700;text-decoration:none">\u2615 Buy me a coffee</a>' +
-          '<span style="color:#6B6258">Gratuita. Se te ajudar, isto retribui '
+          '<span style="color:#6b7780">Gratuita. Se te ajudar, isto retribui '
           + '<span style="white-space:nowrap">(link de refer\u00eancia)</span>.</span>' +
           '</div>' +
           '<p style="margin:0 0 8px"><b>' + pend.length + ' faturas pendentes</b> em ' + year +
           '. Sugest\u00f5es do seu hist\u00f3rico + mapa CAE p\u00fablico, j\u00e1 a saltar setores cheios. <b>Reveja</b> - a classifica\u00e7\u00e3o \u00e9 uma declara\u00e7\u00e3o sua \u00e0 AT.</p>' +
-          '<div style="background:#F3ECDD;border:1px solid #CFC3AA;border-radius:2px;padding:9px;margin-bottom:10px;font-size:12px">' +
+          '<div style="background:#f4f6f9;border:1px solid #d5dae1;border-radius:2px;padding:9px;margin-bottom:10px;font-size:12px">' +
           '<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center">' +
           '<label style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap">' +
           '<input type="checkbox" id="efh-joint"' + (prof.joint ? " checked" : "") + '> Tributa\u00e7\u00e3o conjunta</label>' +
@@ -430,11 +440,11 @@
           'usa a partilha abaixo. Se entregas <b>em separado</b>, os tetos s\u00e3o s\u00f3 teus e estes n\u00fameros ' +
           'j\u00e1 est\u00e3o certos.</div></div>' +
           '<div style="max-height:52vh;overflow:auto"><table style="width:100%;border-collapse:collapse">' +
-          '<thead><tr style="background:#eef3f8"><th></th><th>Data</th><th>Emitente</th><th>Valor</th><th title="antes vs agora">Antes/Agora</th><th>Setor</th></tr></thead>' +
+          '<thead><tr style="background:#f4f6f9"><th></th><th>Data</th><th>Emitente</th><th>Valor</th><th title="antes vs agora">Antes/Agora</th><th>Setor</th></tr></thead>' +
           '<tbody>' + trs + '</tbody></table></div>' +
           '<div style="margin-top:12px;display:flex;gap:8px;align-items:center">' +
-          '<button id="efh-export" style="background:#0b3d6b;color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:600">Copiar plano</button> ' +
-          '<button id="efh-mail" style="background:#fff;color:#0b3d6b;border:1px solid #0b3d6b;border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:600">Enviar por email</button> ' +
+          '<button id="efh-export" style="background:#034ad8;color:#fff;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer;font-weight:600">Copiar plano</button> ' +
+          '<button id="efh-mail" style="background:#fff;color:#034ad8;border:1px solid #034ad8;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer;font-weight:600">Enviar por email</button> ' +
           '<span id="efh-status" role="status" aria-live="polite" style="color:#555"></span></div>';
         /* DRAFT MODE - the tool does NOT submit anything to the AT.
          * Writing to someone's fiscal record is not something to ship on first release: a wrong
@@ -497,7 +507,7 @@
           if (!bits.length) { box.innerHTML = '<div style="color:#128a3a;font-size:12px">\u2713 Nada por aproveitar - as tuas faturas j\u00e1 est\u00e3o nos melhores setores poss\u00edveis.</div>'; return; }
           box.innerHTML = '<div style="background:#fff8e6;border:1px solid #e8d9a8;border-radius:6px;padding:8px;font-size:12px">' +
             bits.join('<br>') +
-            (reg.length ? ' <a href="#" id="efh-optmore" style="color:#0b3d6b">ver quais</a>' : '') + '</div>';
+            (reg.length ? ' <a href="#" id="efh-optmore" style="color:#034ad8">ver quais</a>' : '') + '</div>';
           var more = document.getElementById("efh-optmore");
           if (more) more.onclick = function (ev) {
             ev.preventDefault();
