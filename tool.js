@@ -1,4 +1,4 @@
-/* e-Fatura Helper \u2014 runs 100% in the user's own browser, on their own e-Fatura session.
+/* e-Fatura Helper - runs 100% in the user's own browser, on their own e-Fatura session.
  * It never sees a password: it reuses the login already in the browser (same-origin cookies).
  *
  * Network calls (audit them yourself - there are exactly two kinds):
@@ -147,7 +147,7 @@
   }
   panel('<div style="background:#0b3d6b;color:#fff;padding:10px 14px;font-weight:600;border-radius:10px 10px 0 0">' +
     'e-Fatura Helper <button type="button" aria-label="Fechar" style="float:right;cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
-    '<div id="efh-body" style="padding:14px">A ler as suas faturas\u2026</div>');
+    '<div id="efh-body" style="padding:14px">A ler as suas faturas...</div>');
 
   // load the public CAE map first (fails soft -> own-history still works), then the faturas
   fetch(CAEMAP_URL).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
@@ -204,7 +204,7 @@
           return m ? Object.keys(m).sort(function (a, b) { return m[b] - m[a]; })[0] : "C99";
         };
         var changed = 0;
-        var opts = Object.keys(SECTORS).map(function (k) { return '<option value="' + k + '">' + k + " \u2014 " + SECTORS[k] + "</option>"; }).join("");
+        var opts = Object.keys(SECTORS).map(function (k) { return '<option value="' + k + '">' + k + " - " + SECTORS[k] + "</option>"; }).join("");
         var trs = pend.map(function (x, i) {
           var s = suggest(x.nifEmitente);
           var old = v1(x.nifEmitente);
@@ -302,7 +302,7 @@
           return '<div style="margin:5px 0" role="group" aria-label="' + esc(label) + '">' +
             '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">' +
             "<span>" + esc(label) + "</span>" +
-            '<span style="color:' + (over ? "#b00" : col) + '"><b>' + Math.round(total) + "%</b> \u00b7 \u20ac" +
+            '<span style="color:' + (over ? "#b00" : col) + '"><b>' + Math.round(total) + "%</b>  |  \u20ac" +
             (usedV + addV).toFixed(0) + " / \u20ac" + cap.toFixed(0) +
             (addV > 0.5 ? ' <span style="color:#128a3a">(+\u20ac' + addV.toFixed(0) + " a aplicar)</span>" : "") +
             (over ? ' <b>excede</b>' : "") + "</span></div>" +
@@ -337,7 +337,7 @@
           var html = ["C05", "C06", "C07", "C08", "C99"].map(function (s) {
             return oneBar(s + " " + SECTORS[s], used[s] || 0, add[s] || 0, capFor(s, prof));
           }).join("") +
-            oneBar("IVA em fatura (restaura\u00e7\u00e3o, gin\u00e1sios, oficinas\u2026)",
+            oneBar("IVA em fatura (restaura\u00e7\u00e3o, gin\u00e1sios, oficinas...)",
                    used[POT] || 0, add[POT] || 0, POT_CAP);
           var box = document.getElementById("efh-bars");
           if (box) box.innerHTML = html;
@@ -345,9 +345,9 @@
 
         document.getElementById("efh-body").innerHTML =
           '<p style="margin:0 0 8px"><b>' + pend.length + ' faturas pendentes</b> em ' + year +
-          '. Sugest\u00f5es do seu hist\u00f3rico + mapa CAE p\u00fablico, j\u00e1 a saltar setores cheios. <b>Reveja</b> \u2014 a classifica\u00e7\u00e3o \u00e9 uma declara\u00e7\u00e3o sua \u00e0 AT.</p>' +
+          '. Sugest\u00f5es do seu hist\u00f3rico + mapa CAE p\u00fablico, j\u00e1 a saltar setores cheios. <b>Reveja</b> - a classifica\u00e7\u00e3o \u00e9 uma declara\u00e7\u00e3o sua \u00e0 AT.</p>' +
           '<div style="background:#f4f7fa;border:1px solid #dde5ee;border-radius:6px;padding:8px;margin-bottom:10px;font-size:12px">' +
-          '<label><input type="checkbox" id="efh-joint"' + (prof.joint ? " checked" : "") + '> Tributa\u00e7\u00e3o conjunta</label> \u00b7 ' +
+          '<label><input type="checkbox" id="efh-joint"' + (prof.joint ? " checked" : "") + '> Tributa\u00e7\u00e3o conjunta</label>  |  ' +
           '<label><input type="checkbox" id="efh-mono"' + (prof.mono ? " checked" : "") +
           '> Fam\u00edlia monoparental</label>' +
           '<div style="margin-top:6px;padding-top:6px;border-top:1px solid #dde5ee">' +
@@ -358,8 +358,10 @@
           '<div id="efh-hh" style="margin-top:4px;color:#666"></div></div>' +
           '<div id="efh-bars" style="margin-top:8px"></div>' +
           '<div id="efh-opt" style="margin-top:8px"></div>' +
-          '<div style="margin-top:6px;color:#666">Tetos de 2026. S\u00f3 conseguimos ver as faturas <b>desta</b> conta \u2014 se entregam em conjunto, ' +
-          'os tetos s\u00e3o do agregado e o que falta ser\u00e1 menos do que aqui aparece.</div></div>' +
+          '<div style="margin-top:6px;padding:5px 7px;background:#fff4d6;border-left:3px solid #d98a00;color:#5a4600">' +
+          '<b>Aten\u00e7\u00e3o:</b> os tetos do IRS s\u00e3o do <b>agregado familiar</b>, mas isto s\u00f3 v\u00ea as faturas ' +
+          '<b>desta conta</b>. Se h\u00e1 outra pessoa no agregado, o que falta \u00e9 <b>menos</b> do que aqui aparece. ' +
+          'Usa a partilha de agregado abaixo para juntarem os totais.</div></div>' +
           '<div style="max-height:52vh;overflow:auto"><table style="width:100%;border-collapse:collapse">' +
           '<thead><tr style="background:#eef3f8"><th></th><th>Data</th><th>Emitente</th><th>Valor</th><th title="antes vs agora">Antes/Agora</th><th>Setor</th></tr></thead>' +
           '<tbody>' + trs + '</tbody></table></div>' +
@@ -374,14 +376,14 @@
           var bits = [];
           if (o.wasted > 1) {
             bits.push('<b style="color:#b00">\u20ac' + o.wasted.toFixed(0) + ' de dedu\u00e7\u00e3o desperdi\u00e7ada</b> ' +
-                      '(tetos j\u00e1 cheios \u2014 essas faturas n\u00e3o valem nada onde est\u00e3o)');
+                      '(tetos j\u00e1 cheios - essas faturas n\u00e3o valem nada onde est\u00e3o)');
           }
           var reg = o.moves.filter(function (m) { return m.x.estadoBeneficio === "R"; });
           if (o.after - o.before > 1) {
             bits.push('Realoca\u00e7\u00e3o \u00f3tima valeria <b>+\u20ac' + (o.after - o.before).toFixed(0) + '</b>' +
                       (reg.length ? ' (inclui <b>' + reg.length + '</b> j\u00e1 registadas que podes alterar no e-Fatura)' : ''));
           }
-          if (!bits.length) { box.innerHTML = '<div style="color:#128a3a;font-size:12px">\u2713 Nada por aproveitar \u2014 as tuas faturas j\u00e1 est\u00e3o nos melhores setores poss\u00edveis.</div>'; return; }
+          if (!bits.length) { box.innerHTML = '<div style="color:#128a3a;font-size:12px">\u2713 Nada por aproveitar - as tuas faturas j\u00e1 est\u00e3o nos melhores setores poss\u00edveis.</div>'; return; }
           box.innerHTML = '<div style="background:#fff8e6;border:1px solid #e8d9a8;border-radius:6px;padding:8px;font-size:12px">' +
             bits.join('<br>') +
             (reg.length ? ' <a href="#" id="efh-optmore" style="color:#0b3d6b">ver quais</a>' : '') + '</div>';
@@ -390,8 +392,8 @@
             ev.preventDefault();
             more.outerHTML = '<div style="margin-top:6px;max-height:130px;overflow:auto">' +
               reg.slice(0, 40).map(function (m) {
-                return '<div>' + esc(m.x.dataEmissaoDocumento) + ' \u00b7 ' + esc(name34(m.x)) +
-                       ' \u00b7 \u20ac' + eur(m.x.valorTotal) + ' \u2014 <b>' + m.from + ' \u2192 ' + m.to + '</b></div>';
+                return '<div>' + esc(m.x.dataEmissaoDocumento) + '  |  ' + esc(name34(m.x)) +
+                       '  |  \u20ac' + eur(m.x.valorTotal) + ' - <b>' + m.from + ' -> ' + m.to + '</b></div>';
               }).join("") + '</div>';
           };
         })();
@@ -407,12 +409,12 @@
         document.getElementById("efh-mono").onchange = reprofile;
 
         var hhBox = document.getElementById("efh-hh");
-        if (prof.room) { hhBox.innerHTML = 'Ligado. Chave: <code>' + esc(prof.room.slice(0, 16)) + '\u2026</code>'; }
+        if (prof.room) { hhBox.innerHTML = 'Ligado. Chave: <code>' + esc(prof.room.slice(0, 16)) + '...</code>'; }
         document.getElementById("efh-join").onclick = function () {
           var mail = document.getElementById("efh-mail").value.trim();
           var myNif = (rows[0] && rows[0].nifAdquirente) || prof.nif || "";
           if (!mail) { hhBox.textContent = "Escreve um email para gerar a chave."; return; }
-          hhBox.textContent = "A gerar chave\u2026";
+          hhBox.textContent = "A gerar chave...";
           deriveRoom(myNif, mail).then(function (room) {
             var body = { member: memberId() };
             ["C05", "C06", "C07", "C08", "C99"].forEach(function (k) { body[k] = +(used[k] || 0).toFixed(2); });
@@ -447,7 +449,7 @@
     var ok = 0, fail = 0, n = 0;
     (function next() {
       if (n >= picks.length) { st.textContent = "Conclu\u00eddo: " + ok + " aplicadas, " + fail + " falhas. Atualize a p\u00e1gina para confirmar."; return; }
-      var p = picks[n++]; st.textContent = "A aplicar " + n + "/" + picks.length + "\u2026";
+      var p = picks[n++]; st.textContent = "A aplicar " + n + "/" + picks.length + "...";
       fetch("/detalheDocumentoAdquirente.action?idDocumento=" + p.x.idDocumento + "&dataEmissaoDocumento=" + p.x.dataEmissaoDocumento,
         { credentials: "include" }).then(function (r) { return r.text(); }).then(function (htmlText) {
         var form = new DOMParser().parseFromString(htmlText, "text/html").querySelector("#resolverPendencia");
