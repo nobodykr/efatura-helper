@@ -12,3 +12,7 @@ jobs:
             exit 1
           fi
           echo "tool.js is pure ASCII — safe on every encoding."
+      - name: every called function must be defined
+        run: |
+          node --check tool.js
+          node check-functions.js tool.js
