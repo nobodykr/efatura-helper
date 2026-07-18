@@ -104,7 +104,7 @@
   document.getElementById("gh").href = GH;
   document.getElementById("gh2").href = GH;
   // Loader bookmarklet: injects the open-source tool.js from this site into the e-Fatura page.
-  var loader = "javascript:(function(){if(!/faturas\\.portaldasfinancas\\.gov\\.pt$/.test(location.host)){alert('Abre o e-Fatura e faz login primeiro.');return;}var s=document.createElement('script');s.src='" + HOST + "/tool.js?v='+Date.now();document.body.appendChild(s);})();";
+  var loader = "javascript:(function(){if(!/faturas\\.portaldasfinancas\\.gov\\.pt$/.test(location.host)){alert('Abre o e-Fatura e faz login primeiro.');return;}var s=document.createElement('script');s.charset='utf-8';s.src='" + HOST + "/tool.js?v='+Date.now();document.body.appendChild(s);})();";
   document.getElementById("bookmarklet").setAttribute("href", loader);
 </script>
 </body>
