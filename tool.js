@@ -56,22 +56,31 @@
   }
   function saveProfile(p) { try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch (e) {} }
 
+  /* Despesas gerais is the only sector whose RATE and CAP depend on the household:
+   *   normal        35% capped 250 EUR per taxpayer (so 500 filing jointly)
+   *   monoparental  45% capped 335 EUR
+   * Every other ceiling is per agregado familiar and does NOT scale with dependants - a couple
+   * with three children shares exactly the same 1000 EUR of saude as a couple with none. That is
+   * why asking for a dependant COUNT here would be theatre: it changes nothing we display. The
+   * count does matter for the deducao por dependente and for the 5% majoracao on the GLOBAL
+   * deduction limit, but neither of those is a sector ceiling, so neither is modelled here. */
+  function c99Rate(prof) { return prof.mono ? 0.45 : 0.35; }
+
   function capFor(sec, prof) {
     var c = CEIL[sec]; if (!c) return Infinity;
-    var cap = c.pot ? POT_CAP : c.cap;
-    if (c.perTaxpayer && prof.joint) cap = cap * 2;      // 250 each -> 500 filing jointly
-    return cap;
+    if (sec === "C99") return prof.mono ? 335 : (prof.joint ? 500 : 250);
+    return c.pot ? POT_CAP : c.cap;
   }
 
   /* How much of each ceiling the year's ALREADY-REGISTERED invoices have used up. */
-  function usedSoFar(rows) {
+  function usedSoFar(rows, prof) {
     var used = {};
     rows.forEach(function (x) {
       var sec = x.actividadeEmitente, c = CEIL[sec];
       if (x.estadoBeneficio !== "R" || !c) return;
       var baseVal = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100;
       var key = c.pot || sec;
-      used[key] = (used[key] || 0) + baseVal * c.rate;
+      used[key] = (used[key] || 0) + baseVal * (sec === "C99" ? c99Rate(prof) : c.rate);
     });
     return used;
   }
@@ -122,7 +131,7 @@
         // This is the "prefer the most beneficial, and if it is full go to the next" rule: a
         // pharmacy invoice goes to Saude, but once Saude is capped it falls to the next option.
         var prof = loadProfile();
-        var used = usedSoFar(rows);
+        var used = usedSoFar(rows, prof);
         var headroom = function (sec) {
           var c = CEIL[sec]; if (!c) return Infinity;
           return capFor(sec, prof) - (used[c.pot || sec] || 0);
@@ -205,7 +214,7 @@
             var x = pend[i];
             var baseVal = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100;
             var key = c.pot || selEl.value;
-            add[key] = (add[key] || 0) + baseVal * c.rate;
+            add[key] = (add[key] || 0) + baseVal * (selEl.value === "C99" ? c99Rate(prof) : c.rate);
           });
           return add;
         }
@@ -226,7 +235,8 @@
           '. Sugest\u00f5es do seu hist\u00f3rico + mapa CAE p\u00fablico, j\u00e1 a saltar setores cheios. <b>Reveja</b> \u2014 a classifica\u00e7\u00e3o \u00e9 uma declara\u00e7\u00e3o sua \u00e0 AT.</p>' +
           '<div style="background:#f4f7fa;border:1px solid #dde5ee;border-radius:6px;padding:8px;margin-bottom:10px;font-size:12px">' +
           '<label><input type="checkbox" id="efh-joint"' + (prof.joint ? " checked" : "") + '> Tributa\u00e7\u00e3o conjunta</label> \u00b7 ' +
-          '<label>Dependentes <input type="number" id="efh-dep" min="0" max="10" value="' + (prof.dep || 0) + '" style="width:44px"></label>' +
+          '<label><input type="checkbox" id="efh-mono"' + (prof.mono ? " checked" : "") +
+          '> Fam\u00edlia monoparental</label>' +
           '<div id="efh-bars" style="margin-top:8px"></div>' +
           '<div style="margin-top:6px;color:#666">Tetos de 2026. S\u00f3 conseguimos ver as faturas <b>desta</b> conta \u2014 se entregam em conjunto, ' +
           'os tetos s\u00e3o do agregado e o que falta ser\u00e1 menos do que aqui aparece.</div></div>' +
@@ -243,11 +253,11 @@
         // changing the household re-runs the whole suggestion pass (ceilings move, so do sectors)
         var reprofile = function () {
           saveProfile({ joint: document.getElementById("efh-joint").checked,
-                        dep: +document.getElementById("efh-dep").value || 0 });
+                        mono: document.getElementById("efh-mono").checked });
           run(caemap);
         };
         document.getElementById("efh-joint").onchange = reprofile;
-        document.getElementById("efh-dep").onchange = reprofile;
+        document.getElementById("efh-mono").onchange = reprofile;
       })
       .catch(function (e) { document.getElementById("efh-body").innerHTML = "Erro a ler faturas: " + esc(e.message) + ". Confirma que tens sess\u00e3o iniciada."; });
   }
