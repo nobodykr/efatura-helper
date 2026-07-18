@@ -49,6 +49,21 @@
 
 <div class="wrap">
 
+<div style="background:#fff4d6;border:1px solid #e8d9a8;border-left:4px solid #d98a00;border-radius:8px;padding:14px 16px;margin:0 0 18px">
+  <b style="color:#7a5a00">Versão de teste — ainda não submete nada.</b>
+  <p style="margin:6px 0 0;color:#5a4600">
+    Nesta fase a ferramenta <b>analisa e mostra-te o plano</b>: que setor faz sentido para cada fatura,
+    quanto já gastaste de cada teto, e quanta dedução estás a perder. <b>A submissão fazes tu</b>, no
+    e-Fatura, com o plano à frente. Copias ou envias para o teu email e aplicas.
+  </p>
+  <p style="margin:6px 0 0;color:#5a4600">
+    É de propósito: classificar uma fatura é uma <b>declaração tua à AT</b>, e antes de deixar um
+    programa fazer isso sozinho quero ver a coisa a funcionar em contas reais. Se experimentares e
+    algo estiver errado, <a id="ghissues2" href="#" target="_blank" rel="noopener">diz-me</a> — é a
+    forma mais útil de ajudar.
+  </p>
+</div>
+
 <section style="border-color:#2f6f4f">
   <h2>Apoia esta ferramenta <span class="note">(sem custo nenhum para ti)</span></h2>
   <p>
@@ -102,6 +117,11 @@
 </svg></span>
       <span>Abrir conta</span>
     </a>
+      <a class="bm" id="bmc" style="background:#ffdd00;color:#000;display:inline-flex;align-items:center;gap:8px;margin-left:8px"
+         href="https://buymeacoffee.com/diogoandrade" target="_blank" rel="noopener sponsored nofollow">
+        <span aria-hidden="true" style="font-size:1.1em">&#9749;</span>
+        <span>Buy me a coffee</span>
+      </a>
   </p>
   <p class="note">
     <b>Link de referência.</b> Não sou afiliado nem parceiro da Revolut, e não partilho nada teu com
@@ -115,7 +135,7 @@
   <div class="steps">
     <div class="step"><div class="n" aria-hidden="true">1</div><div>Faz <b>login normal</b> no <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a>, como sempre fazes.</div></div>
     <div class="step"><div class="n" aria-hidden="true">2</div><div>Clica no marcador <b>e-Fatura Helper</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu histórico e na atividade oficial de cada comerciante</b>, já a saltar os setores cujo teto anual esteja cheio.</div></div>
-    <div class="step"><div class="n" aria-hidden="true">3</div><div><b>Revês</b> a tabela, corriges o que quiseres, e aplicas só as que aprovas. Só tu decides.</div></div>
+    <div class="step"><div class="n" aria-hidden="true">3</div><div><b>Revês</b> a tabela e corriges o que quiseres. Depois <b>copias o plano</b> (ou envias para o teu email) e aplicas no e-Fatura. <b>A ferramenta não submete nada.</b></div></div>
   </div>
 </section>
 
@@ -127,7 +147,7 @@
     <li><b>As tuas faturas nunca saem do teu browser.</b> Não as recebemos, não as guardamos, não passam por lado nenhum nosso. A ferramenta lê um único ficheiro público (o mapa de atividades) e não envia nada teu para o obter.</li>
     <li><b>Partilha de agregado — opcional e desligada por omissão.</b> <b>Só faz sentido se entregarem o IRS em conjunto.</b> Quem entrega em separado tem tetos próprios (cada pessoa tem o seu limite de 250 € em despesas gerais, por exemplo) e <b>não deve ativar isto</b> — os números desta página já estão certos para ti. Se entregam em conjunto, a partilha junta os totais das duas contas: enviamos <b>apenas seis números</b> (quanto já usaste de cada teto), nunca faturas, comerciantes, datas ou valores. A chave é calculada <b>no teu browser</b> a partir do NIF + email — só o resultado é enviado, por isso o servidor nunca recebe nenhum dos dois. Se não ativares, nada é enviado.</li>
     <li><b>Código 100% visível e auditável.</b> Podes ler exatamente o que faz — <a id="gh" href="#" target="_blank" rel="noopener">no GitHub</a> — ou pedir a alguém que perceba para confirmar.</li>
-    <li><b>Tu aprovas cada uma.</b> Nada é submetido sem tu marcares e clicares em Aplicar. As sugestões são apenas isso — sugestões.</li>
+    <li><b>Nada é submetido, de todo.</b> Nesta versão a ferramenta só lê e analisa. Qualquer alteração à tua declaração é feita por ti, no e-Fatura.</li>
   </ul>
   <p class="warn">⚠️ Nunca introduzas o teu NIF e password das Finanças num site que não seja <code>portaldasfinancas.gov.pt</code>. Esta ferramenta nunca to pede — é essa a diferença.</p>
 </section>
@@ -247,6 +267,7 @@
   var HOST = location.origin;              // where tool.js is served (this site)
   document.getElementById("gh").href = GH;
   document.getElementById("ghissues").href = GH + "/issues";
+  document.getElementById("ghissues2").href = GH + "/issues";
   document.getElementById("gh2").href = GH;
   // Loader bookmarklet: injects the open-source tool.js from this site into the e-Fatura page.
   var loader = "javascript:(function(){if(!/faturas\\.portaldasfinancas\\.gov\\.pt$/.test(location.host)){alert('Abre o e-Fatura e faz login primeiro.');return;}var s=document.createElement('script');s.charset='utf-8';s.src='" + HOST + "/tool.js?v='+Date.now();document.body.appendChild(s);})();";

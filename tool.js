@@ -387,6 +387,10 @@
           'value="' + esc(prof.mail || "") + '" style="width:170px"></label> ' +
           '<button type="button" id="efh-join" style="cursor:pointer">Ligar</button>' +
           '<div id="efh-hh" style="margin-top:4px;color:#666"></div></div>' +
+          '<div style="margin:0 0 8px;padding:6px 8px;background:#fff4d6;border-left:3px solid #d98a00;' +
+          'font-size:11px;color:#5a4600"><b>Versao de teste.</b> Esta ferramenta <b>nao submete nada</b> ' +
+          '\u00e0 AT - s\u00f3 analisa e mostra o plano. Aplicas tu no e-Fatura. Estamos a recolher feedback ' +
+          'antes de permitir submiss\u00e3o autom\u00e1tica.</div>' +
           '<div id="efh-bars" style="margin-top:8px"></div>' +
           '<div id="efh-opt" style="margin-top:8px"></div>' +
           '<div style="margin-top:6px;padding:5px 7px;background:#fff4d6;border-left:3px solid #d98a00;color:#5a4600">' +
@@ -398,9 +402,51 @@
           '<thead><tr style="background:#eef3f8"><th></th><th>Data</th><th>Emitente</th><th>Valor</th><th title="antes vs agora">Antes/Agora</th><th>Setor</th></tr></thead>' +
           '<tbody>' + trs + '</tbody></table></div>' +
           '<div style="margin-top:12px;display:flex;gap:8px;align-items:center">' +
-          '<button id="efh-apply" style="background:#128a3a;color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:600">Aplicar selecionadas</button>' +
+          '<button id="efh-export" style="background:#0b3d6b;color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:600">Copiar plano</button> ' +
+          '<button id="efh-mail" style="background:#fff;color:#0b3d6b;border:1px solid #0b3d6b;border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:600">Enviar por email</button> ' +
           '<span id="efh-status" role="status" aria-live="polite" style="color:#555"></span></div>';
-        document.getElementById("efh-apply").onclick = applySelected;
+        /* DRAFT MODE - the tool does NOT submit anything to the AT.
+         * Writing to someone's fiscal record is not something to ship on first release: a wrong
+         * sector is the user's declaration, not ours. So this builds the plan and hands it over,
+         * and the user applies it themselves in e-Fatura. The submit path exists and is tested
+         * (see test-apply.js) - it is deliberately not wired up. */
+        function planText() {
+          var lines = ["Plano de classificacao e-Fatura - " + year, ""];
+          document.querySelectorAll(".efh-ck").forEach(function (ck) {
+            if (!ck.checked) return;
+            var i = +ck.dataset.i, x = pend[i];
+            var sec = document.querySelector('.efh-sec[data-i="' + i + '"]').value;
+            lines.push(x.dataEmissaoDocumento + "  " + name34(x) + "  EUR" + eur(x.valorTotal) +
+                       "  ->  " + sec + " (" + SECTORS[sec] + ")");
+          });
+          var o = window.__efhOpt || {};
+          lines.push("");
+          if (o.wasted > 1) lines.push("Deducao ja desperdicada (tetos cheios): EUR" + o.wasted.toFixed(2));
+          if (o.after - o.before > 1) lines.push("Ganho possivel com realocacao: EUR" + (o.after - o.before).toFixed(2));
+          lines.push("");
+          lines.push("Aplica em faturas.portaldasfinancas.gov.pt. Nada foi submetido por esta ferramenta.");
+          return lines.join("\n");
+        }
+        document.getElementById("efh-export").onclick = function () {
+          var t = planText();
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(t).then(function () {
+              document.getElementById("efh-status").textContent = "Plano copiado. Cola onde quiseres.";
+            });
+          } else {
+            var ta = document.createElement("textarea");
+            ta.value = t; document.body.appendChild(ta); ta.select();
+            document.execCommand("copy"); ta.remove();
+            document.getElementById("efh-status").textContent = "Plano copiado.";
+          }
+        };
+        document.getElementById("efh-mail").onclick = function () {
+          // mailto keeps this client-side: the plan goes straight to the user's own mail client,
+          // it never touches a server of ours.
+          var subj = "Plano e-Fatura " + year;
+          window.location.href = "mailto:?subject=" + encodeURIComponent(subj) +
+            "&body=" + encodeURIComponent(planText());
+        };
         restoreEdits(pend);               // re-apply edits made before a household change
         renderBars();
         (function () {
