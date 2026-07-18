@@ -22,7 +22,7 @@ On the e-Fatura page, it:
   they are never involved at any point.
 - **There is no server.** Your invoices and fiscal data never leave `portaldasfinancas.gov.pt`.
   Nothing is sent to us or to anyone. There is nothing to breach.
-- **It is fully open source.** [`tool.js`](tool.js) is the entire logic — ~150 readable lines. Read it,
+- **The source is fully public and auditable.** [`tool.js`](tool.js) is the entire logic — ~150 readable lines. Read it,
   or ask someone technical to. What you see is what runs.
 - **You approve every classification.** Nothing is submitted without you ticking it. Suggestions are
   only suggestions.
@@ -52,4 +52,9 @@ purchase actually happened. Always verify in e-Fatura afterwards.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+**PolyForm Noncommercial 1.0.0** - see [LICENSE](LICENSE).
+
+Free for personal, charitable, research, educational and government use. **Commercial use is not
+permitted** - you may not sell it, host it as a paid service, or use it for commercial advantage.
+Note this is deliberately *not* an OSI open-source licence: the source stays fully public and
+auditable (that is the security model), but monetising it is off the table.
