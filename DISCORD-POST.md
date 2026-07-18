@@ -1,15 +1,22 @@
 # dev.pt Discord post
 
-Audience is mostly devs, and every one of them files IRS. Lead with the technical problem, not
-the pitch. Post in whatever channel fits (projetos / mostra-o-teu-projeto / off-topic).
+Audience is mostly devs, and every one of them files IRS. Lead with the frequency argument:
+it lands harder than the ceilings maths because everyone in that server lives it once a year.
+The SICAE endpoint is the second hook. Never lead with the pitch. Post in whatever channel fits (projetos / mostra-o-teu-projeto / off-topic).
 
 ---
 
-Fiz uma coisa para mim e acabei por publicar, porque é um chato que toda a gente aqui tem.
+Uma coisa que me custou a admitir: eu não sou mau nisto do IRS por distração. Sou mau nisto
+porque faço uma vez por ano.
 
-Todos os anos: dezenas de faturas pendentes no e-Fatura, classificar uma a uma, num menu que não
-ajuda nada. E nunca soube se estava a acertar. Não me apetecia entregar isso a alguém e continuar
-sem perceber, por isso fui ver de onde vinha a informação.
+É a mesma razão por que ninguém aqui decora o comando de `tar`. Não é complexidade, é frequência.
+Quem trabalha em contabilidade faz isto todos os dias e para essas pessoas é rotina. Nós abrimos o
+e-Fatura em Fevereiro, olhamos para dezenas de faturas pendentes, classificamos uma a uma num menu
+que não ajuda, e no ano seguinte já nos esquecemos de tudo outra vez. As regras também mudaram
+entretanto. Ninguém fica bom numa coisa que faz de doze em doze meses.
+
+Não me apetecia entregar isso a alguém e continuar sem perceber, por isso fui ver de onde vinha
+a informação.
 
 A parte que me irritou: **a informação já existe toda**. Cada comerciante tem a atividade registada
 no SICAE, que é público e do Estado. Uma farmácia é saúde, um restaurante é restauração. Mesmo
@@ -51,3 +58,6 @@ usar a seguir.
 
 Aviso que devia ser óbvio mas digo à mesma: **a password das Finanças só se escreve em páginas que
 acabem em `.gov.pt`**. Isto nunca ta pede, e é por isso que corre do lado do cliente.
+
+No fundo é isto: a informação já lá estava e as regras também. O que faltava era não ter de as
+reaprender todos os anos.
