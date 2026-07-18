@@ -16,7 +16,7 @@
     return;
   }
   if (document.getElementById("efh-panel")) { document.getElementById("efh-panel").remove(); }
-  var CAEMAP_URL = "https://faturas.diogoandrade.com/cae-map.json";
+  var CAEMAP_URL = "https://cae-db.diogoandrade.com/map.json";
 
   var SECTORS = { C01: "Repara\u00e7\u00e3o autom\u00f3veis", C02: "Repara\u00e7\u00e3o motociclos", C03: "Alojamento / restaura\u00e7\u00e3o",
     C04: "Cabeleireiros / beleza", C05: "Sa\u00fade", C06: "Educa\u00e7\u00e3o", C07: "Im\u00f3veis / habita\u00e7\u00e3o", C08: "Lares",
