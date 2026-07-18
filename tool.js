@@ -157,13 +157,13 @@
   // Mobile browsers cannot run a bookmarklet inside a page, so this is desktop-only. Say it in
   // the panel too rather than leaving a half-working screen.
   if (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) {
-    alert("A Fatura Boa so funciona no computador. Os navegadores de telemovel nao deixam correr "
-        + "favoritos dentro da pagina do e-Fatura. Abre isto num computador.");
+    alert("A Fatura Boa s\u00f3 funciona no computador. Os navegadores de telem\u00f3vel n\u00e3o deixam correr "
+        + "favoritos dentro da p\u00e1gina do e-Fatura. Abre isto num computador.");
   }
   panel('<div style="background:#021c51;color:#fff;padding:10px 14px;font-weight:600;border-radius:8px 8px 0 0">' +
-    'Fatura Boa <button type="button" aria-label="Fechar" style="float:right;cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
-    '<div style="background:#fdecec;border-bottom:2px solid #c8102e;padding:8px 12px;font-size:12px;line-height:1.45;color:#5a0000">'+'<b>Esta ferramenta nunca te pede a password.</b> Corre na sessao que ja abriste, so nesta pagina. '+'Se algum site te pedir as credenciais das Financas, e burla.</div>' +
-    '<div id="efh-body" style="padding:14px">A ler as suas faturas...</div>');
+    '<a href="https://faturas.diogoandrade.com" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.45)" title="Abrir faturas.diogoandrade.com">Fatura Boa</a> <button type="button" aria-label="Fechar" style="float:right;cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
+    '<div style="background:#fdecec;border-bottom:2px solid #c8102e;padding:8px 12px;font-size:12px;line-height:1.45;color:#5a0000">'+'<b>Esta ferramenta nunca te pede a password.</b> Corre na sess\u00e3o que j\u00e1 abriste, s\u00f3 nesta p\u00e1gina. '+'Se algum site te pedir as credenciais das Finan\u00e7as, \u00e9 burla.</div>' +
+    '<div id="efh-body" style="padding:14px">A ler as tuas faturas...</div>');
 
   // load the public CAE map first (fails soft -> own-history still works), then the faturas
   fetch(CAEMAP_URL).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
@@ -259,7 +259,7 @@
           return "C99";
         };
         if (!pend.length) {
-          document.getElementById("efh-body").innerHTML = "\u2705 N\u00e3o tem faturas pendentes de classifica\u00e7\u00e3o em " + year + ".";
+          document.getElementById("efh-body").innerHTML = "\u2705 N\u00e3o tens faturas pendentes de classifica\u00e7\u00e3o em " + year + ".";
           return;
         }
         // v1 = the original logic: your own history only, otherwise "outros". Shown side by side so
@@ -447,21 +447,20 @@
         }
 
         document.getElementById("efh-body").innerHTML =
-          '<div style="margin:-4px 0 10px;padding:7px 9px;background:#E1E4EA;border:1px solid #d5dae1;border-radius:2px;font-size:11px;color:#2B363C;display:flex;flex-wrap:wrap;align-items:center;gap:8px">' +
+          '<div style="margin:-4px 0 10px;padding:7px 9px;background:#f4f6f9;border:1px solid #d5dae1;border-left:3px solid #034ad8;border-radius:4px;font-size:11px;color:#2B363C;display:flex;flex-wrap:wrap;align-items:center;gap:8px">' +
           '<a href="https://revolut.com/referral/?referral-code=nobodykr!JUL2-26-AR-L1&amp;geo-redirect" ' +
           'target="_blank" rel="noopener sponsored nofollow" ' +
-          'style="display:inline-flex;align-items:center;gap:5px;color:#0075eb;font-weight:600;text-decoration:none">' +
+          'style="display:inline-flex;align-items:center;gap:5px;color:#034ad8;font-weight:600;text-decoration:none">' +
           '<span style="background:#0075eb;border-radius:3px;padding:2px;display:inline-flex">' +
           '<svg aria-hidden="true" style="width:14px;height:14px;display:block" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 800 800" style="enable-background:new 0 0 800 800;" xml:space="preserve"> <style type="text/css"> .st0{fill:#FFFFFF;} </style> <rect class="st0"/> <g> <rect x="209.051" y="262.097"/> <path d="M628.623,285.554c0-87.043-70.882-157.86-158.011-157.86H209.051v87.603h249.125c39.43,0,72.093,30.978,72.814,69.051 c0.361,19.064-6.794,37.056-20.146,50.66c-13.357,13.61-31.204,21.109-50.251,21.109h-97.046c-3.446,0-6.25,2.8-6.25,6.245v77.859 c0,1.324,0.409,2.59,1.179,3.656l164.655,228.43h120.53L478.623,443.253C561.736,439.08,628.623,369.248,628.623,285.554z"/> </g> </svg>' +
           '</span>Abrir conta Revolut</a>' +
           '<a href="https://buymeacoffee.com/diogoandrade" target="_blank" rel="noopener sponsored nofollow" ' +
           'style="display:inline-flex;align-items:center;gap:4px;color:#2B363C;background:#ffdd00;' +
           'border-radius:2px;padding:2px 7px;font-weight:700;text-decoration:none">\u2615 Buy me a coffee</a>' +
-          '<span style="color:#6b7780">Gratuita. Se te ajudar, isto retribui '
-          + '<span style="white-space:nowrap">(link de refer\u00eancia)</span>.</span>' +
+          '<span style="color:#6b7780">Isto \u00e9 gratuito e continua a ser. Se te poupou trabalho e quiseres retribuir, abrir conta pelo link acima d\u00e1-me uma pequena comiss\u00e3o, e a ti n\u00e3o te custa nada.</span>' +
           '</div>' +
           '<p style="margin:0 0 8px"><b>' + pend.length + ' faturas pendentes</b> em ' + year +
-          '. Duas sugest\u00f5es por fatura: <b>Provavel</b> (a atividade principal do comerciante, ou o que j\u00e1 usou antes) e <b>Otimizada</b> (mais dedu\u00e7\u00e3o, com espa\u00e7o no teto). Vem selecionada a Provavel. S\u00f3 os setores em que o comerciante est\u00e1 registado aparecem, mas <b>ser aceite n\u00e3o \u00e9 o mesmo que estar certo</b>: a classifica\u00e7\u00e3o \u00e9 uma declara\u00e7\u00e3o sua \u00e0 AT.</p>' +
+          '. Duas sugest\u00f5es por fatura: <b>Prov\u00e1vel</b> (a atividade principal do comerciante, ou o que j\u00e1 usaste antes) e <b>Otimizada</b> (mais dedu\u00e7\u00e3o, com espa\u00e7o no teto). Vem selecionada a Prov\u00e1vel. S\u00f3 aparecem setores em que o comerciante est\u00e1 mesmo registado, mas <b>ser aceite n\u00e3o \u00e9 o mesmo que estar certo</b>: a classifica\u00e7\u00e3o \u00e9 uma declara\u00e7\u00e3o tua \u00e0 AT.</p>' +
           '<div style="background:#f4f6f9;border:1px solid #d5dae1;border-radius:2px;padding:9px;margin-bottom:10px;font-size:12px">' +
           '<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center">' +
           '<label style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap">' +
@@ -475,19 +474,19 @@
           'value="' + esc(prof.mail || "") + '" style="width:170px"></label> ' +
           '<button type="button" id="efh-join" style="cursor:pointer">Ligar</button>' +
           '<div id="efh-hh" style="margin-top:4px;color:#666"></div></div>' +
-          '<div style="margin:0 0 8px;padding:6px 8px;background:#fff4d6;border-left:3px solid #d98a00;' +
-          'font-size:11px;color:#5a4600"><b>Versao de teste.</b> Esta ferramenta <b>nao submete nada</b> ' +
+          '<div style="margin:0 0 8px;padding:6px 8px;background:#fdf8ec;border-left:3px solid #8a6100;' +
+          'font-size:11px;color:#5a4600"><b>Vers\u00e3o de teste.</b> Esta ferramenta <b>n\u00e3o submete nada</b> ' +
           '\u00e0 AT - s\u00f3 analisa e mostra o plano. Aplicas tu no e-Fatura. Estamos a recolher feedback ' +
           'antes de permitir submiss\u00e3o autom\u00e1tica.</div>' +
           '<div id="efh-bars" style="margin-top:8px"></div>' +
           '<div id="efh-opt" style="margin-top:8px"></div>' +
-          '<div style="margin-top:6px;padding:5px 7px;background:#fff4d6;border-left:3px solid #d98a00;color:#5a4600">' +
+          '<div style="margin-top:6px;padding:5px 7px;background:#fdf8ec;border-left:3px solid #8a6100;color:#5a4600">' +
           '<b>Aten\u00e7\u00e3o:</b> isto v\u00ea as faturas <b>desta conta</b>. Se entregas o IRS ' +
           '<b>em conjunto</b>, os tetos s\u00e3o do agregado e o que falta \u00e9 <b>menos</b> do que aqui aparece - ' +
           'usa a partilha abaixo. Se entregas <b>em separado</b>, os tetos s\u00e3o s\u00f3 teus e estes n\u00fameros ' +
           'j\u00e1 est\u00e3o certos.</div></div>' +
           '<div style="max-height:52vh;overflow:auto"><table style="width:100%;border-collapse:collapse">' +
-          '<thead><tr style="background:#f4f6f9"><th></th><th>Data</th><th>Emitente</th><th>Valor</th><th title="O setor que a compra provavelmente foi: o teu historico, ou a atividade principal do comerciante">Provavel</th><th title="O setor que da mais deducao e ainda tem espaco no teto">Otimizada</th><th>Setor</th></tr></thead>' +
+          '<thead><tr style="background:#f4f6f9"><th></th><th>Data</th><th>Emitente</th><th>Valor</th><th title="O setor que a compra provavelmente foi: o teu hist\u00f3rico, ou a atividade principal do comerciante">Prov\u00e1vel</th><th title="O setor que d\u00e1 mais dedu\u00e7\u00e3o e ainda tem espa\u00e7o no teto">Otimizada</th><th>Setor</th></tr></thead>' +
           '<tbody>' + trs + '</tbody></table></div>' +
           '<div style="margin-top:12px;display:flex;gap:8px;align-items:center">' +
           '<button id="efh-export" style="background:#034ad8;color:#fff;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer;font-weight:600">Copiar plano</button> ' +
