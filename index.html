@@ -6,7 +6,7 @@
 <title>e-Fatura Helper — classifica faturas, não percas deduções de IRS</title>
 <meta name="description" content="Ferramenta gratuita que corre no teu browser para classificar faturas pendentes no e-Fatura. Sem password, sem servidor, codigo visivel e auditavel.">
 <style>
-  :root{--bg:#0b0d12;--panel:#141821;--line:#232a36;--ink:#eef2f8;--mut:#9aa7b8;--acc:#2ea36b;--acc2:#4a90d9;--warn:#e5a83a}
+  :root{--bg:#0b0d12;--panel:#141821;--line:#232a36;--ink:#eef2f8;--mut:#aab6c6;--acc:#2ea36b;--acc2:#4a90d9;--warn:#e5a83a}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
   .wrap{max-width:860px;margin:0 auto;padding:0 20px}
@@ -30,6 +30,7 @@
   th{color:var(--mut);font-weight:600}
   code{background:#0a0c11;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:.85em}
   a{color:var(--acc2)}
+  a:focus-visible,.bm:focus-visible{outline:3px solid var(--warn);outline-offset:3px}
   .warn{border-left:3px solid var(--warn);padding-left:14px;color:#e7d3ad}
   footer{color:var(--mut);font-size:.85rem;text-align:center;padding:30px 0 50px}
 </style>
@@ -39,10 +40,10 @@
   <h1>e-Fatura Helper</h1>
   <p class="sub">Classifica as tuas faturas pendentes no e-Fatura em segundos — e deixa de perder deduções de IRS que são tuas por direito.</p>
   <div class="badges">
-    <span class="badge">🔒 Corre <b>no teu browser</b></span>
-    <span class="badge">🙅 <b>Nunca</b> pede a tua password</span>
-    <span class="badge">☁️ <b>Sem servidor</b> — os teus dados não saem da página</span>
-    <span class="badge">👐 <b>Código auditável</b> — vê o que faz</span>
+    <span class="badge"><span aria-hidden="true">🔒</span> Corre <b>no teu browser</b></span>
+    <span class="badge"><span aria-hidden="true">🙅</span> <b>Nunca</b> pede a tua password</span>
+    <span class="badge"><span aria-hidden="true">☁️</span> <b>Sem servidor</b> — os teus dados não saem da página</span>
+    <span class="badge"><span aria-hidden="true">👐</span> <b>Código auditável</b> — vê o que faz</span>
   </div>
 </header>
 
@@ -51,9 +52,9 @@
 <section>
   <h2>Como funciona</h2>
   <div class="steps">
-    <div class="step"><div class="n">1</div><div>Faz <b>login normal</b> no <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a>, como sempre fazes.</div></div>
-    <div class="step"><div class="n">2</div><div>Clica no marcador <b>e-Fatura Helper</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu histórico e na atividade oficial de cada comerciante</b>, já a saltar os setores cujo teto anual esteja cheio.</div></div>
-    <div class="step"><div class="n">3</div><div><b>Revês</b> a tabela, corriges o que quiseres, e aplicas só as que aprovas. Só tu decides.</div></div>
+    <div class="step"><div class="n" aria-hidden="true">1</div><div>Faz <b>login normal</b> no <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a>, como sempre fazes.</div></div>
+    <div class="step"><div class="n" aria-hidden="true">2</div><div>Clica no marcador <b>e-Fatura Helper</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu histórico e na atividade oficial de cada comerciante</b>, já a saltar os setores cujo teto anual esteja cheio.</div></div>
+    <div class="step"><div class="n" aria-hidden="true">3</div><div><b>Revês</b> a tabela, corriges o que quiseres, e aplicas só as que aprovas. Só tu decides.</div></div>
   </div>
 </section>
 
@@ -79,7 +80,8 @@
 <section>
   <h2>Guia rápido: o que conta em cada setor</h2>
   <table>
-    <tr><th>Setor</th><th>O que inclui</th><th>Benefício</th></tr>
+    <caption class="note" style="text-align:left;padding-bottom:6px">Resumo dos setores de dedução e respetivos limites</caption>
+    <tr><th scope="col">Setor</th><th scope="col">O que inclui</th><th scope="col">Benefício</th></tr>
     <tr><td>Saúde</td><td>Consultas, farmácia, dentista, óculos, fisio, psicologia/terapia. IVA 23% só conta com receita médica associada.</td><td>15%, máx €1.000</td></tr>
     <tr><td>Educação</td><td>Propinas, creche, colégio, explicações, manuais, formação certificada.</td><td>30%, máx €800</td></tr>
     <tr><td>Habitação</td><td>Rendas de habitação própria, ou juros de crédito à habitação (contratos até 2011).</td><td>15%, máx €900</td></tr>

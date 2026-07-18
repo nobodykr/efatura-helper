@@ -78,13 +78,16 @@
   function esc(s) { return String(s == null ? "" : s).replace(/[<>&]/g, function (x) { return { "<": "&lt;", ">": "&gt;", "&": "&amp;" }[x]; }); }
   function panel(html) {
     var d = document.createElement("div"); d.id = "efh-panel";
+    d.setAttribute("role", "dialog");
+    d.setAttribute("aria-label", "e-Fatura Helper");
+    d.setAttribute("aria-modal", "false");
     d.style.cssText = "position:fixed;top:12px;right:12px;width:min(680px,95vw);max-height:90vh;overflow:auto;" +
       "background:#fff;border:1px solid #0b3d6b;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.35);" +
       "z-index:2147483647;font:13px/1.4 system-ui,sans-serif;color:#111";
     d.innerHTML = html; document.body.appendChild(d); return d;
   }
   panel('<div style="background:#0b3d6b;color:#fff;padding:10px 14px;font-weight:600;border-radius:10px 10px 0 0">' +
-    'e-Fatura Helper <span style="float:right;cursor:pointer" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</span></div>' +
+    'e-Fatura Helper <button type="button" aria-label="Fechar" style="float:right;cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
     '<div id="efh-body" style="padding:14px">A ler as suas faturas\u2026</div>');
 
   // load the public CAE map first (fails soft -> own-history still works), then the faturas
@@ -154,7 +157,8 @@
             '<td>' + esc(x.dataEmissaoDocumento) + '</td><td>' + esc((x.nomeEmitente || "").trim().slice(0, 34)) + '</td>' +
             '<td style="text-align:right">\u20ac' + eur(x.valorTotal) + '</td>' +
             '<td style="font-size:11px;white-space:nowrap">' + diff + "</td>" +
-            '<td><select class="efh-sec" data-i="' + i + '" style="max-width:190px">' +
+            '<td><select class="efh-sec" data-i="' + i + '" style="max-width:190px" aria-label="Setor para ' +
+            esc((x.nomeEmitente || "").trim().slice(0, 34)) + '">' +
             opts.replace('value="' + s + '"', 'value="' + s + '" selected') + '</select></td></tr>';
         }).join("");
         window.__efhPend = pend;
@@ -173,14 +177,17 @@
           var ghost = over ? "#b00" : "#7fc79b";
           var wu = Math.min(100, pu);
           var wa = Math.min(100 - wu, pa);
-          return '<div style="margin:5px 0">' +
+          return '<div style="margin:5px 0" role="group" aria-label="' + esc(label) + '">' +
             '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">' +
             "<span>" + esc(label) + "</span>" +
             '<span style="color:' + (over ? "#b00" : col) + '"><b>' + Math.round(total) + "%</b> \u00b7 \u20ac" +
             (usedV + addV).toFixed(0) + " / \u20ac" + cap.toFixed(0) +
             (addV > 0.5 ? ' <span style="color:#128a3a">(+\u20ac' + addV.toFixed(0) + " a aplicar)</span>" : "") +
             (over ? ' <b>excede</b>' : "") + "</span></div>" +
-            '<div style="height:7px;background:#e3e9f0;border-radius:4px;overflow:hidden;display:flex">' +
+            '<div role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' +
+            Math.round(total) + '" aria-valuetext="' + Math.round(total) + '% de ' + esc(label) +
+            (over ? ', excede o limite' : '') + '"' +
+            ' style="height:7px;background:#e3e9f0;border-radius:4px;overflow:hidden;display:flex">' +
             '<div style="height:100%;width:' + wu.toFixed(1) + "%;background:" + col + '"></div>' +
             '<div style="height:100%;width:' + wa.toFixed(1) + "%;background:" + ghost +
             ';opacity:.75"></div></div></div>';
@@ -228,7 +235,7 @@
           '<tbody>' + trs + '</tbody></table></div>' +
           '<div style="margin-top:12px;display:flex;gap:8px;align-items:center">' +
           '<button id="efh-apply" style="background:#128a3a;color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:600">Aplicar selecionadas</button>' +
-          '<span id="efh-status" style="color:#555"></span></div>';
+          '<span id="efh-status" role="status" aria-live="polite" style="color:#555"></span></div>';
         document.getElementById("efh-apply").onclick = applySelected;
         renderBars();
         document.querySelectorAll(".efh-ck").forEach(function (el) { el.onchange = renderBars; });
