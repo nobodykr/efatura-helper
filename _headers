@@ -1,2 +1,6 @@
 /tool.js
   Content-Type: application/javascript; charset=utf-8
+/cae-map.json
+  Access-Control-Allow-Origin: *
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=3600
