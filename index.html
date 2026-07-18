@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>e-Fatura Helper — classifica faturas, não percas deduções de IRS</title>
+<meta name="description" content="Ferramenta aberta que corre no teu browser para classificar faturas pendentes no e-Fatura. Sem password, sem servidor, código aberto.">
+<style>
+  :root{--bg:#0b0d12;--panel:#141821;--line:#232a36;--ink:#eef2f8;--mut:#9aa7b8;--acc:#2ea36b;--acc2:#4a90d9;--warn:#e5a83a}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .wrap{max-width:860px;margin:0 auto;padding:0 20px}
+  header{padding:56px 0 28px;text-align:center}
+  h1{font-size:2.1rem;margin:.2em 0}
+  .sub{color:var(--mut);font-size:1.1rem;max-width:620px;margin:0 auto}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:22px 0}
+  .badge{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-size:.85rem;color:var(--mut)}
+  .badge b{color:var(--acc)}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px;margin:18px 0}
+  h2{margin:.1em 0 .5em;font-size:1.25rem}
+  .steps{display:grid;gap:14px;grid-template-columns:1fr;counter-reset:s}
+  .step{display:flex;gap:14px;align-items:flex-start}
+  .step .n{flex:0 0 30px;height:30px;border-radius:50%;background:var(--acc2);color:#fff;display:grid;place-items:center;font-weight:700}
+  .safe li{margin:.4em 0}
+  .safe b{color:var(--acc)}
+  .bm{display:inline-block;background:var(--acc);color:#fff;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:10px;cursor:grab}
+  .note{color:var(--mut);font-size:.9rem}
+  table{width:100%;border-collapse:collapse;font-size:.92rem}
+  th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+  th{color:var(--mut);font-weight:600}
+  code{background:#0a0c11;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:.85em}
+  a{color:var(--acc2)}
+  .warn{border-left:3px solid var(--warn);padding-left:14px;color:#e7d3ad}
+  footer{color:var(--mut);font-size:.85rem;text-align:center;padding:30px 0 50px}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <h1>e-Fatura Helper</h1>
+  <p class="sub">Classifica as tuas faturas pendentes no e-Fatura em segundos — e deixa de perder deduções de IRS que são tuas por direito.</p>
+  <div class="badges">
+    <span class="badge">🔒 Corre <b>no teu browser</b></span>
+    <span class="badge">🙅 <b>Nunca</b> pede a tua password</span>
+    <span class="badge">☁️ <b>Sem servidor</b> — os teus dados não saem da página</span>
+    <span class="badge">👐 <b>Código aberto</b> — vê o que faz</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2>Como funciona</h2>
+  <div class="steps">
+    <div class="step"><div class="n">1</div><div>Faz <b>login normal</b> no <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a>, como sempre fazes.</div></div>
+    <div class="step"><div class="n">2</div><div>Clica no marcador <b>e-Fatura Helper</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu próprio histórico já classificado</b>.</div></div>
+    <div class="step"><div class="n">3</div><div><b>Revês</b> a tabela, corriges o que quiseres, e aplicas só as que aprovas. Só tu decides.</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Porque é seguro <span class="note">(e porque devias desconfiar de qualquer site que te peça a password das Finanças)</span></h2>
+  <ul class="safe">
+    <li>A ferramenta <b>corre dentro do teu browser</b>, na página do e-Fatura onde <b>já estás autenticado</b>. Usa a sessão que já tens.</li>
+    <li><b>Nunca escreves a password</b> em nada nosso. Não há campo de password. Não a vemos, não a guardamos, não existe.</li>
+    <li><b>Não há servidor.</b> As tuas faturas e dados fiscais nunca saem da página das Finanças. Nós não recebemos nada.</li>
+    <li><b>Código 100% aberto.</b> Podes ler exatamente o que faz — <a id="gh" href="#" target="_blank" rel="noopener">no GitHub</a> — ou pedir a alguém que perceba para confirmar.</li>
+    <li><b>Tu aprovas cada uma.</b> Nada é submetido sem tu marcares e clicares em Aplicar. As sugestões são apenas isso — sugestões.</li>
+  </ul>
+  <p class="warn">⚠️ Nunca introduzas o teu NIF e password das Finanças num site que não seja <code>portaldasfinancas.gov.pt</code>. Esta ferramenta nunca to pede — é essa a diferença.</p>
+</section>
+
+<section>
+  <h2>Instalar</h2>
+  <p>Arrasta este botão para a tua barra de favoritos:</p>
+  <p><a class="bm" id="bookmarklet" href="#">📄 e-Fatura Helper</a></p>
+  <p class="note">Depois, abre o e-Fatura, faz login, e clica no favorito. (Se o teu browser não deixar arrastar, clica com o botão direito → Adicionar aos favoritos, e cola o endereço do botão.)</p>
+</section>
+
+<section>
+  <h2>Guia rápido: o que conta em cada setor</h2>
+  <table>
+    <tr><th>Setor</th><th>O que inclui</th><th>Benefício</th></tr>
+    <tr><td>Saúde</td><td>Consultas, farmácia, dentista, óculos, fisio, psicologia/terapia. IVA 23% só conta com receita médica associada.</td><td>15%, máx €1.000</td></tr>
+    <tr><td>Educação</td><td>Propinas, creche, colégio, explicações, manuais, formação certificada.</td><td>30%, máx €800</td></tr>
+    <tr><td>Habitação</td><td>Rendas de habitação própria, ou juros de crédito à habitação (contratos até 2011).</td><td>15%, máx €600</td></tr>
+    <tr><td>Lares</td><td>Lares e apoio domiciliário (próprio ou ascendentes).</td><td>25%, máx €403,75</td></tr>
+    <tr><td>Restauração, cabeleireiro, ginásio, veterinário, oficina, transportes, jornais, livros…</td><td>Cada fatura no setor correto do <i>comerciante</i>. Ex: ginásio→Ginásios, restaurante→Restauração.</td><td>15% do IVA, pool partilhada máx €250</td></tr>
+    <tr><td>Despesas Gerais Familiares</td><td>Tudo o resto com NIF (supermercado, roupa, combustível, telecom…).</td><td>35%, máx €250</td></tr>
+  </table>
+  <p class="warn">A classificação é uma <b>declaração tua à AT</b>. Classifica cada fatura no setor onde a compra <b>realmente</b> aconteceu — o menu deixa escolher qualquer setor, mas a responsabilidade é de quem declara.</p>
+</section>
+
+</div>
+
+<footer class="wrap">
+  <p>Ferramenta comunitária e independente. <b>Não</b> afiliada à Autoridade Tributária. Sem garantias — confirma sempre no e-Fatura.</p>
+  <p><a id="gh2" href="#" target="_blank" rel="noopener">Código no GitHub</a> · MIT License</p>
+</footer>
+
+<script>
+  // Set these two constants at deploy time.
+  var GH  = "https://github.com/nobodykr/efatura-helper";
+  var HOST = location.origin;              // where tool.js is served (this site)
+  document.getElementById("gh").href = GH;
+  document.getElementById("gh2").href = GH;
+  // Loader bookmarklet: injects the open-source tool.js from this site into the e-Fatura page.
+  var loader = "javascript:(function(){if(!/faturas\\.portaldasfinancas\\.gov\\.pt$/.test(location.host)){alert('Abre o e-Fatura e faz login primeiro.');return;}var s=document.createElement('script');s.src='" + HOST + "/tool.js?v='+Date.now();document.body.appendChild(s);})();";
+  document.getElementById("bookmarklet").setAttribute("href", loader);
+</script>
+</body>
+</html>
