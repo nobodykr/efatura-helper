@@ -158,22 +158,61 @@
             opts.replace('value="' + s + '"', 'value="' + s + '" selected') + '</select></td></tr>';
         }).join("");
         window.__efhPend = pend;
-        // Progress bars: how full each ceiling already is, from the invoices you HAVE registered.
-        function oneBar(label, usedV, cap) {
-          var pct = cap ? Math.min(100, (usedV / cap) * 100) : 0;
-          var col = pct >= 100 ? "#b00" : pct >= 80 ? "#d98a00" : "#128a3a";
+        /* Progress bars, in two segments:
+         *   solid  = what your ALREADY-REGISTERED invoices have used up
+         *   ghost  = what the invoices you have TICKED below would add on top
+         * so you can see where a ceiling lands before you click Aplicar. If the two together
+         * would overshoot the cap, the overflow is drawn in red and flagged - that share of the
+         * deduction is simply lost, and those faturas are better moved to another sector. */
+        function oneBar(label, usedV, addV, cap) {
+          var pu = cap ? (usedV / cap) * 100 : 0;
+          var pa = cap ? (addV / cap) * 100 : 0;
+          var total = pu + pa;
+          var over = total > 100.5;
+          var col = pu >= 100 ? "#b00" : pu >= 80 ? "#d98a00" : "#128a3a";
+          var ghost = over ? "#b00" : "#7fc79b";
+          var wu = Math.min(100, pu);
+          var wa = Math.min(100 - wu, pa);
           return '<div style="margin:5px 0">' +
             '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">' +
             "<span>" + esc(label) + "</span>" +
-            '<span style="color:' + col + '"><b>' + Math.round(pct) + "%</b> \u00b7 \u20ac" +
-            usedV.toFixed(0) + " / \u20ac" + cap.toFixed(0) + "</span></div>" +
-            '<div style="height:7px;background:#e3e9f0;border-radius:4px;overflow:hidden">' +
-            '<div style="height:100%;width:' + pct.toFixed(1) + "%;background:" + col + '"></div></div></div>';
+            '<span style="color:' + (over ? "#b00" : col) + '"><b>' + Math.round(total) + "%</b> \u00b7 \u20ac" +
+            (usedV + addV).toFixed(0) + " / \u20ac" + cap.toFixed(0) +
+            (addV > 0.5 ? ' <span style="color:#128a3a">(+\u20ac' + addV.toFixed(0) + " a aplicar)</span>" : "") +
+            (over ? ' <b>excede</b>' : "") + "</span></div>" +
+            '<div style="height:7px;background:#e3e9f0;border-radius:4px;overflow:hidden;display:flex">' +
+            '<div style="height:100%;width:' + wu.toFixed(1) + "%;background:" + col + '"></div>' +
+            '<div style="height:100%;width:' + wa.toFixed(1) + "%;background:" + ghost +
+            ';opacity:.75"></div></div></div>';
         }
-        var bars = ["C05", "C06", "C07", "C08", "C99"].map(function (s) {
-          return oneBar(s + " " + SECTORS[s], used[s] || 0, capFor(s, prof));
-        }).join("") +
-          oneBar("IVA em fatura (restaura\u00e7\u00e3o, gin\u00e1sios, oficinas\u2026)", used[POT] || 0, POT_CAP);
+
+        /* What the currently-ticked rows would add to each ceiling, at their chosen sectors. */
+        function pendingAdds() {
+          var add = {};
+          document.querySelectorAll(".efh-ck").forEach(function (ck) {
+            if (!ck.checked) return;
+            var i = +ck.dataset.i;
+            var selEl = document.querySelector('.efh-sec[data-i="' + i + '"]');
+            if (!selEl) return;
+            var c = CEIL[selEl.value]; if (!c) return;
+            var x = pend[i];
+            var baseVal = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100;
+            var key = c.pot || selEl.value;
+            add[key] = (add[key] || 0) + baseVal * c.rate;
+          });
+          return add;
+        }
+
+        function renderBars() {
+          var add = pendingAdds();
+          var html = ["C05", "C06", "C07", "C08", "C99"].map(function (s) {
+            return oneBar(s + " " + SECTORS[s], used[s] || 0, add[s] || 0, capFor(s, prof));
+          }).join("") +
+            oneBar("IVA em fatura (restaura\u00e7\u00e3o, gin\u00e1sios, oficinas\u2026)",
+                   used[POT] || 0, add[POT] || 0, POT_CAP);
+          var box = document.getElementById("efh-bars");
+          if (box) box.innerHTML = html;
+        }
 
         document.getElementById("efh-body").innerHTML =
           '<p style="margin:0 0 8px"><b>' + pend.length + ' faturas pendentes</b> em ' + year +
@@ -181,7 +220,7 @@
           '<div style="background:#f4f7fa;border:1px solid #dde5ee;border-radius:6px;padding:8px;margin-bottom:10px;font-size:12px">' +
           '<label><input type="checkbox" id="efh-joint"' + (prof.joint ? " checked" : "") + '> Tributa\u00e7\u00e3o conjunta</label> \u00b7 ' +
           '<label>Dependentes <input type="number" id="efh-dep" min="0" max="10" value="' + (prof.dep || 0) + '" style="width:44px"></label>' +
-          '<div style="margin-top:8px">' + bars + '</div>' +
+          '<div id="efh-bars" style="margin-top:8px"></div>' +
           '<div style="margin-top:6px;color:#666">Tetos de 2026. S\u00f3 conseguimos ver as faturas <b>desta</b> conta \u2014 se entregam em conjunto, ' +
           'os tetos s\u00e3o do agregado e o que falta ser\u00e1 menos do que aqui aparece.</div></div>' +
           '<div style="max-height:52vh;overflow:auto"><table style="width:100%;border-collapse:collapse">' +
@@ -191,6 +230,9 @@
           '<button id="efh-apply" style="background:#128a3a;color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font-weight:600">Aplicar selecionadas</button>' +
           '<span id="efh-status" style="color:#555"></span></div>';
         document.getElementById("efh-apply").onclick = applySelected;
+        renderBars();
+        document.querySelectorAll(".efh-ck").forEach(function (el) { el.onchange = renderBars; });
+        document.querySelectorAll(".efh-sec").forEach(function (el) { el.onchange = renderBars; });
         // changing the household re-runs the whole suggestion pass (ceilings move, so do sectors)
         var reprofile = function () {
           saveProfile({ joint: document.getElementById("efh-joint").checked,
