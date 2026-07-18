@@ -319,7 +319,7 @@
   <h2>Como classificar as faturas pendentes do e-Fatura</h2>
   <div class="steps">
     <div class="step"><div class="n" aria-hidden="true">01</div><div>Faz <b>login normal</b> no <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a>, como sempre fazes.</div></div>
-    <div class="step"><div class="n" aria-hidden="true">02</div><div>Clica no marcador <b>Fatura Boa</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu histórico e na atividade oficial de cada comerciante</b>, já a saltar os setores cujo teto anual esteja cheio.</div></div>
+    <div class="step"><div class="n" aria-hidden="true">02</div><div>Clica no favorito <b>Fatura Boa</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu histórico e na atividade oficial de cada comerciante</b>, já a saltar os setores cujo teto anual esteja cheio.</div></div>
     <div class="step"><div class="n" aria-hidden="true">03</div><div><b>Revês</b> a tabela e corriges o que quiseres. Depois <b>copias o plano</b> (ou envias para o teu email) e aplicas no e-Fatura. <b>A ferramenta não submete nada.</b></div></div>
   </div>
 </section>
@@ -341,7 +341,7 @@
   <h2>Instalar</h2>
   <p>Arrasta este botão para a tua barra de favoritos:</p>
   <p><a class="bm" id="bookmarklet" href="#"> Fatura Boa</a></p>
-  <p class="note">Depois, abre o e-Fatura, faz login, e clica no favorito. (Se o teu navegador não deixar arrastar, clica com o botão direito -> Adicionar aos favoritos, e cola o endereço do botão.)</p>
+  <p class="note">Depois, abre o e-Fatura, faz login, e clica no favorito. (Se o teu navegador não deixar arrastar, clica com o botão direito e escolhe Adicionar aos favoritos, e cola o endereço do botão.)</p>
 </section>
 
 <section>
@@ -416,7 +416,7 @@
       <label for="fb-web">Nao preencher</label>
       <input id="fb-web" name="website" type="text" tabindex="-1" autocomplete="off">
     </div>
-    <div class="cf-turnstile" data-sitekey="0x4AAAAAADpqwlW5l6hzdZbi" data-callback="fbToken"
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAAD4tEJIzRGNSghRB" data-callback="fbToken"
          data-theme="light" data-size="flexible"></div>
     <p><button type="submit" class="bm" id="fb-send">Enviar</button></p>
     <p id="fb-status" role="status" aria-live="polite" class="note"></p>
@@ -485,7 +485,7 @@
   // Flip to true once FORMS_TURNSTILE_SECRET, RESEND_API_KEY and FEEDBACK_TO are set on the
   // Pages project. Until then the form would render, accept input and always fail, so it stays
   // hidden and the GitHub route below it does the job.
-  var FEEDBACK_ENABLED = false;
+  var FEEDBACK_ENABLED = true;
   if (!FEEDBACK_ENABLED) {
     document.getElementById("fb").hidden = true;
     document.getElementById("fb-fallback").hidden = false;
