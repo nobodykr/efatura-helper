@@ -390,9 +390,10 @@
           '<div id="efh-bars" style="margin-top:8px"></div>' +
           '<div id="efh-opt" style="margin-top:8px"></div>' +
           '<div style="margin-top:6px;padding:5px 7px;background:#fff4d6;border-left:3px solid #d98a00;color:#5a4600">' +
-          '<b>Aten\u00e7\u00e3o:</b> os tetos do IRS s\u00e3o do <b>agregado familiar</b>, mas isto s\u00f3 v\u00ea as faturas ' +
-          '<b>desta conta</b>. Se h\u00e1 outra pessoa no agregado, o que falta \u00e9 <b>menos</b> do que aqui aparece. ' +
-          'Usa a partilha de agregado abaixo para juntarem os totais.</div></div>' +
+          '<b>Aten\u00e7\u00e3o:</b> isto v\u00ea as faturas <b>desta conta</b>. Se entregas o IRS ' +
+          '<b>em conjunto</b>, os tetos s\u00e3o do agregado e o que falta \u00e9 <b>menos</b> do que aqui aparece - ' +
+          'usa a partilha abaixo. Se entregas <b>em separado</b>, os tetos s\u00e3o s\u00f3 teus e estes n\u00fameros ' +
+          'j\u00e1 est\u00e3o certos.</div></div>' +
           '<div style="max-height:52vh;overflow:auto"><table style="width:100%;border-collapse:collapse">' +
           '<thead><tr style="background:#eef3f8"><th></th><th>Data</th><th>Emitente</th><th>Valor</th><th title="antes vs agora">Antes/Agora</th><th>Setor</th></tr></thead>' +
           '<tbody>' + trs + '</tbody></table></div>' +
