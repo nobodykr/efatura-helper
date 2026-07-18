@@ -51,6 +51,46 @@
   // origin, so the browser blocks us from reading it). So we ask once and keep it in localStorage
   // - it never leaves your browser, same as everything else here.
   var PKEY = "efh-profile";
+  var HH_URL = "https://cae-db.diogoandrade.com/household/";
+
+  /* Household sharing - OPT-IN, off unless you enter an email.
+   *
+   * Ceilings are per agregado familiar, but this page only ever sees ONE account's faturas. On real
+   * data one account showed 3.186 EUR of despesas gerais where the household had 10.389 EUR - so a
+   * solo view can report a ceiling as having room when it is 14x over.
+   *
+   * The room key is PBKDF2(NIF + email) computed HERE, in your browser. Only the derived value is
+   * ever sent: the server never receives your NIF or your email, so it cannot learn them even if it
+   * wanted to. Not hash(NIF) alone - a NIF is 9 digits, every possible hash of one can be
+   * precomputed in seconds. Adding the email defeats that, because its entropy is unbounded.
+   *
+   * What is sent: six numbers, the deduction used against each ceiling. No faturas, no merchants,
+   * no dates, no amounts. The member id is random per browser, derived from nothing real. */
+  function memberId() {
+    var k = "efh-member", v = null;
+    try { v = localStorage.getItem(k); } catch (e) {}
+    if (!v) {
+      var a = new Uint8Array(12); crypto.getRandomValues(a);
+      v = Array.prototype.map.call(a, function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+      try { localStorage.setItem(k, v); } catch (e) {}
+    }
+    return v;
+  }
+
+  function deriveRoom(nif, email) {
+    var enc = new TextEncoder();
+    var material = enc.encode(String(nif) + String(email || "").trim().toLowerCase());
+    return crypto.subtle.importKey("raw", material, "PBKDF2", false, ["deriveBits"])
+      .then(function (key) {
+        return crypto.subtle.deriveBits(
+          { name: "PBKDF2", salt: enc.encode("efatura-helper-agregado-v1"),
+            iterations: 200000, hash: "SHA-256" }, key, 256);
+      })
+      .then(function (bits) {
+        return Array.prototype.map.call(new Uint8Array(bits), function (b) {
+          return ("0" + b.toString(16)).slice(-2); }).join("");
+      });
+  }
   function loadProfile() {
     try { return JSON.parse(localStorage.getItem(PKEY)) || {}; } catch (e) { return {}; }
   }
@@ -237,6 +277,12 @@
           '<label><input type="checkbox" id="efh-joint"' + (prof.joint ? " checked" : "") + '> Tributa\u00e7\u00e3o conjunta</label> \u00b7 ' +
           '<label><input type="checkbox" id="efh-mono"' + (prof.mono ? " checked" : "") +
           '> Fam\u00edlia monoparental</label>' +
+          '<div style="margin-top:6px;padding-top:6px;border-top:1px solid #dde5ee">' +
+          '<label title="Opcional. Os tetos do IRS s\u00e3o do agregado, mas esta p\u00e1gina s\u00f3 v\u00ea esta conta.">' +
+          'Partilhar tetos do agregado (opcional): <input type="email" id="efh-mail" placeholder="o-teu@email.pt" ' +
+          'value="' + esc(prof.mail || "") + '" style="width:170px"></label> ' +
+          '<button type="button" id="efh-join" style="cursor:pointer">Ligar</button>' +
+          '<div id="efh-hh" style="margin-top:4px;color:#666"></div></div>' +
           '<div id="efh-bars" style="margin-top:8px"></div>' +
           '<div style="margin-top:6px;color:#666">Tetos de 2026. S\u00f3 conseguimos ver as faturas <b>desta</b> conta \u2014 se entregam em conjunto, ' +
           'os tetos s\u00e3o do agregado e o que falta ser\u00e1 menos do que aqui aparece.</div></div>' +
@@ -258,6 +304,35 @@
         };
         document.getElementById("efh-joint").onchange = reprofile;
         document.getElementById("efh-mono").onchange = reprofile;
+
+        var hhBox = document.getElementById("efh-hh");
+        if (prof.room) { hhBox.innerHTML = 'Ligado. Chave: <code>' + esc(prof.room.slice(0, 16)) + '\u2026</code>'; }
+        document.getElementById("efh-join").onclick = function () {
+          var mail = document.getElementById("efh-mail").value.trim();
+          var myNif = (rows[0] && rows[0].nifAdquirente) || prof.nif || "";
+          if (!mail) { hhBox.textContent = "Escreve um email para gerar a chave."; return; }
+          hhBox.textContent = "A gerar chave\u2026";
+          deriveRoom(myNif, mail).then(function (room) {
+            var body = { member: memberId() };
+            ["C05", "C06", "C07", "C08", "C99"].forEach(function (k) { body[k] = +(used[k] || 0).toFixed(2); });
+            body.POT = +(used[POT] || 0).toFixed(2);
+            return fetch(HH_URL + room, { method: "PUT", headers: { "Content-Type": "application/json" },
+                                          body: JSON.stringify(body) })
+              .then(function () { return fetch(HH_URL + room); })
+              .then(function (r) { return r.json(); })
+              .then(function (d) {
+                saveProfile({ joint: prof.joint, mono: prof.mono, mail: mail, room: room });
+                if (d && d.merged) {
+                  Object.keys(d.merged).forEach(function (k) {
+                    used[k === "POT" ? POT : k] = d.merged[k];
+                  });
+                  renderBars();
+                }
+                hhBox.innerHTML = '\u2713 ' + (d.members || 1) + ' membro(s). Partilha esta chave: ' +
+                  '<code style="user-select:all">' + esc(room) + '</code>';
+              });
+          }).catch(function (e) { hhBox.textContent = "Falhou: " + e.message; });
+        };
       })
       .catch(function (e) { document.getElementById("efh-body").innerHTML = "Erro a ler faturas: " + esc(e.message) + ". Confirma que tens sess\u00e3o iniciada."; });
   }

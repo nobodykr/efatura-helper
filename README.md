@@ -20,8 +20,15 @@ On the e-Fatura page, it:
   reuses that session. There is no login screen of ours.
 - **There is no password field.** The tool never receives, transmits, or stores your credentials —
   they are never involved at any point.
-- **There is no server.** Your invoices and fiscal data never leave `portaldasfinancas.gov.pt`.
-  Nothing is sent to us or to anyone. There is nothing to breach.
+- **Your invoices never leave your browser.** They are not sent to us, stored, or proxied. The tool
+  reads one public file (the shared merchant map) and sends nothing of yours to fetch it.
+- **Household sharing is opt-in and off by default.** IRS ceilings are per *agregado familiar*, but
+  this page can only ever see **one** account - on real data, one account showed 3.186 EUR of
+  despesas gerais where the household had 10.389 EUR, so a solo view can report a ceiling as having
+  room when it is 14x over. If you opt in, **six numbers** are shared (how much of each ceiling is
+  used) and nothing else - never invoices, merchants, dates or purchase amounts. The room key is
+  derived **in your browser** with PBKDF2 over your NIF + email, and only the derived value is sent,
+  so the server never receives either input. Opt out and nothing is transmitted at all.
 - **The source is fully public and auditable.** [`tool.js`](tool.js) is the entire logic — ~150 readable lines. Read it,
   or ask someone technical to. What you see is what runs.
 - **You approve every classification.** Nothing is submitted without you ticking it. Suggestions are

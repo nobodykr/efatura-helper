@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>e-Fatura Helper — classifica faturas, não percas deduções de IRS</title>
-<meta name="description" content="Ferramenta gratuita que corre no teu browser para classificar faturas pendentes no e-Fatura. Sem password, sem servidor, codigo visivel e auditavel.">
+<meta name="description" content="Ferramenta gratuita que corre no teu browser para classificar faturas pendentes no e-Fatura. Sem password, as faturas nao saem do teu browser, codigo visivel e auditavel.">
 <style>
   :root{--bg:#0b0d12;--panel:#141821;--line:#232a36;--ink:#eef2f8;--mut:#aab6c6;--acc:#2ea36b;--acc2:#4a90d9;--warn:#e5a83a}
   *{box-sizing:border-box}
@@ -42,7 +42,7 @@
   <div class="badges">
     <span class="badge"><span aria-hidden="true">🔒</span> Corre <b>no teu browser</b></span>
     <span class="badge"><span aria-hidden="true">🙅</span> <b>Nunca</b> pede a tua password</span>
-    <span class="badge"><span aria-hidden="true">☁️</span> <b>Sem servidor</b> — os teus dados não saem da página</span>
+    <span class="badge"><span aria-hidden="true">☁️</span> <b>As faturas não saem</b> do teu browser</span>
     <span class="badge"><span aria-hidden="true">👐</span> <b>Código auditável</b> — vê o que faz</span>
   </div>
 </header>
@@ -63,7 +63,8 @@
   <ul class="safe">
     <li>A ferramenta <b>corre dentro do teu browser</b>, na página do e-Fatura onde <b>já estás autenticado</b>. Usa a sessão que já tens.</li>
     <li><b>Nunca escreves a password</b> em nada nosso. Não há campo de password. Não a vemos, não a guardamos, não existe.</li>
-    <li><b>Não há servidor.</b> As tuas faturas e dados fiscais nunca saem da página das Finanças. Nós não recebemos nada.</li>
+    <li><b>As tuas faturas nunca saem do teu browser.</b> Não as recebemos, não as guardamos, não passam por lado nenhum nosso. A ferramenta lê um único ficheiro público (o mapa de atividades) e não envia nada teu para o obter.</li>
+    <li><b>Partilha de agregado — opcional e desligada por omissão.</b> Os tetos do IRS são do <i>agregado familiar</i>, mas esta página só consegue ver <b>uma</b> conta. Se quiseres juntar os totais com a outra pessoa do agregado, podes ativar a partilha: nesse caso enviamos <b>apenas seis números</b> (quanto já usaste de cada teto). Nunca faturas, comerciantes, datas ou valores de compras. A chave da &quot;sala&quot; é calculada <b>no teu browser</b> a partir do teu NIF + email — só o resultado é enviado, por isso o servidor nunca recebe o teu NIF nem o teu email. Se não ativares, nada é enviado.</li>
     <li><b>Código 100% visível e auditável.</b> Podes ler exatamente o que faz — <a id="gh" href="#" target="_blank" rel="noopener">no GitHub</a> — ou pedir a alguém que perceba para confirmar.</li>
     <li><b>Tu aprovas cada uma.</b> Nada é submetido sem tu marcares e clicares em Aplicar. As sugestões são apenas isso — sugestões.</li>
   </ul>
