@@ -146,6 +146,15 @@
   .warn{border-left:4px solid var(--amber);padding:8px 0 8px 14px;color:#5A4600;background:transparent}
   code{background:var(--bg2);border:1px solid var(--rule);border-radius:2px;padding:1px 5px;font-size:.85em}
 
+  /* install helpers */
+  #howto{border:1px solid var(--rule);border-radius:var(--r);background:var(--bg2);margin:6px 0 0}
+  #howto summary{cursor:pointer;padding:11px 14px;font-weight:600;font-size:.94rem;min-height:44px;
+                 display:flex;align-items:center}
+  #howto .howto-body{padding:0 14px 12px}
+  #howto p{margin:0 0 10px;font-size:.92rem}
+  #copymsg{margin-left:10px}
+  #copymsg.ok{color:var(--green);font-weight:600}
+
   /* feedback form */
   .form{margin:6px 0 18px;max-width:620px}
   .field{margin:0 0 16px}
@@ -371,9 +380,33 @@
     uma limitação que eu possa contornar: as alternativas seriam pedir-te a password, que nunca vou
     fazer, ou ser uma aplicação oficial da AT, que isto não é nem tem como ser. Se andas no
     telemóvel, guarda para quando estiveres ao computador.</p>
-  <p>Arrasta este botão para a tua barra de favoritos:</p>
+  <p><b>Opção 1, a mais rápida:</b> arrasta este botão para a tua barra de favoritos.</p>
   <p><a class="bm" id="bookmarklet" href="#"> Fatura Boa</a></p>
-  <p class="note">Depois, abre o e-Fatura, faz login, e clica no favorito. (Se o teu navegador não deixar arrastar, clica com o botão direito e escolhe Adicionar aos favoritos, e cola o endereço do botão.)</p>
+
+  <p><b>Opção 2, se arrastar não der:</b> copia o código e cola-o num favorito novo.</p>
+  <p>
+    <button type="button" class="bm" id="copybm" style="border:0">Copiar o código</button>
+    <span id="copymsg" class="note" role="status" aria-live="polite"></span>
+  </p>
+  <details id="howto">
+    <summary>Como colar num favorito novo, por navegador</summary>
+    <div class="howto-body">
+      <p><b>Chrome / Edge / Brave:</b> Ctrl+Shift+O abre o gestor de favoritos. Botão direito na
+        barra, <i>Adicionar página</i>, dá-lhe o nome <i>Fatura Boa</i> e cola o código no campo URL.</p>
+      <p><b>Firefox:</b> Ctrl+Shift+O, depois <i>Organizar</i>, <i>Adicionar marcador</i>, e cola o
+        código no campo <i>Endereço</i>.</p>
+      <p><b>Safari:</b> adiciona qualquer página aos favoritos, depois <i>Editar favoritos</i>,
+        muda o nome e cola o código no endereço.</p>
+      <p class="note">Em todos: o código começa por <code>javascript:</code>. Se ao colares essa
+        parte desaparecer, estás a colar na barra de endereço em vez de no favorito. O navegador
+        remove-a de propósito, e num favorito isso não acontece.</p>
+    </div>
+  </details>
+  <p class="note" style="margin-top:14px">Depois abre o e-Fatura, faz login, e clica no favorito.</p>
+  <p class="note"><b>Porque não há um botão que instale isto sozinho:</b> os navegadores deixaram
+    de permitir que uma página crie favoritos. A razão é exatamente a que devia deixar-te
+    descansado: se um site pudesse instalar um favorito <code>javascript:</code> sem tu veres,
+    era assim que se faria um ataque. Tem de passar pelas tuas mãos, e ainda bem.</p>
 </section>
 
 <section>
@@ -535,6 +568,29 @@
   document.getElementById("ghissues").href = GH + "/issues";
   document.getElementById("ghissues2").href = GH + "/issues";
   document.getElementById("gh2").href = GH;
+  // Copy the bookmarklet source. No browser lets a page create a bookmark - the APIs that used to
+  // (window.sidebar.addPanel, window.external.AddFavorite) were removed precisely because silently
+  // installing a javascript: bookmark is an attack. So the best we can do is remove the typing.
+  document.getElementById("copybm").addEventListener("click", function () {
+    var msg = document.getElementById("copymsg");
+    var code = document.getElementById("bookmarklet").getAttribute("href");
+    var done = function () {
+      msg.className = "note ok"; msg.textContent = "Copiado. Agora cola num favorito novo.";
+      document.getElementById("howto").open = true;
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(done, function () { fallback(code, msg, done); });
+    } else { fallback(code, msg, done); }
+  });
+  function fallback(code, msg, done) {
+    var ta = document.createElement("textarea");
+    ta.value = code; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); }
+    catch (e) { msg.className = "note err"; msg.textContent = "Nao consegui copiar. Clica com o botao direito no botao acima e copia o endereco."; }
+    document.body.removeChild(ta);
+  }
+
   // Feedback form. Turnstile fills the token; the server re-verifies it, so this is only plumbing.
   // Flip to true once FORMS_TURNSTILE_SECRET, RESEND_API_KEY and FEEDBACK_TO are set on the
   // Pages project. Until then the form would render, accept input and always fail, so it stays
