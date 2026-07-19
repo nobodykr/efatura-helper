@@ -112,7 +112,17 @@
   section:first-of-type{border-top:0}
   h2{font-weight:600;font-size:1.4rem;letter-spacing:-.01em;margin:0 0 .55em;color:var(--pri-dark)}
   .note{color:var(--mute);font-size:.9rem;font-weight:400}
-  p{margin:0 0 .95em}
+  /* Justified, but only with hyphenation on. Portuguese has long words, and justifying without
+     hyphens tears rivers of whitespace down a column. lang="pt" on <html> is what lets the
+     browser load the right dictionary. Short runs (notes, list items, badges) stay ragged:
+     justifying three words just spaces them out stupidly. */
+  p{margin:0 0 .95em;text-align:justify;hyphens:auto;-webkit-hyphens:auto;text-wrap:pretty}
+  p.note,.badge,.meter-key,caption,.step .n{text-align:left;hyphens:manual}
+  .sub{text-align:left;hyphens:manual}          /* display type: justification looks broken */
+  .safe li,.step div{text-align:justify;hyphens:auto;-webkit-hyphens:auto}
+  @media (max-width:640px){                      /* narrow columns river no matter what */
+    p,.safe li,.step div{text-align:left;hyphens:auto}
+  }
 
   /* numbered steps: real sequence, so numbering carries meaning */
   .steps{display:grid;gap:18px}
