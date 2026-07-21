@@ -1,0 +1,62 @@
+name: served-matches-repo
+
+# The README promises "What you see is what runs": the tool.js served from
+# faturas.diogoandrade.com is byte-identical to the one in this repo. That claim IS the
+# security model - people are asked to read the source and then run it against their tax
+# account, so if the served file can silently diverge, reading the source proves nothing.
+#
+# Nothing enforced it. The Cloudflare Pages project is NOT git-connected: every deploy is a
+# manual `wrangler pages deploy`. So a commit that is never deployed leaves GitHub looking
+# correct while users run something else, and nobody finds out.
+#
+# This job fetches the live file and compares its SHA-256 to the committed one.
+#
+# It runs on a SCHEDULE, not on push, deliberately: right after a commit the live file is
+# legitimately still the old one until you deploy. Failing on push would just cry wolf on
+# every commit. A daily check catches the case that actually matters - a fix that was
+# committed, and then never shipped.
+
+on:
+  schedule:
+    - cron: "17 7 * * *"      # daily, 07:17 UTC
+  workflow_dispatch:           # and on demand, e.g. right after a deploy
+
+jobs:
+  hash-match:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: served tool.js must match the committed one
+        run: |
+          set -euo pipefail
+          for HOST in https://faturas.diogoandrade.com https://efatura-helper.pages.dev; do
+            echo "--- $HOST"
+            # cache-bust: the bookmarklet itself loads tool.js?v=<timestamp>
+            curl -fsSL --max-time 30 "$HOST/tool.js?v=$(date +%s)" -o served.js
+            LIVE=$(sha256sum served.js | cut -d' ' -f1)
+            REPO=$(sha256sum tool.js  | cut -d' ' -f1)
+            echo "  live: $LIVE"
+            echo "  repo: $REPO"
+            if [ "$LIVE" != "$REPO" ]; then
+              echo "::error file=tool.js::$HOST is serving a DIFFERENT tool.js from this repo. The README's \"what you see is what runs\" claim is false right now. Either deploy the current commit (npx wrangler pages deploy . --project-name=efatura-helper) or revert whatever shipped."
+              echo "--- diff (served vs repo) ---"
+              diff <(cat served.js) tool.js | head -40 || true
+              exit 1
+            fi
+            echo "  match"
+          done
+
+      - name: index.html served must match too
+        run: |
+          set -euo pipefail
+          curl -fsSL --max-time 30 "https://faturas.diogoandrade.com/?v=$(date +%s)" -o served.html
+          LIVE=$(sha256sum served.html | cut -d' ' -f1)
+          REPO=$(sha256sum index.html  | cut -d' ' -f1)
+          if [ "$LIVE" != "$REPO" ]; then
+            echo "::warning file=index.html::Served index.html differs from the repo. This is less critical than tool.js (the landing page is not what runs against your account) but it means the published privacy claims are not the ones in git."
+            echo "  live: $LIVE"
+            echo "  repo: $REPO"
+          else
+            echo "index.html matches"
+          fi
