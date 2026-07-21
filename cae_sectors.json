@@ -1,0 +1,540 @@
+{
+  "map": {
+    "45200": "C01",
+    "45402": "C02",
+    "47610": "C13",
+    "47620": "C12",
+    "47730": "C05",
+    "47740": "C05",
+    "47741": "C05",
+    "47742": "C05",
+    "47782": "C99",
+    "49310": "C10",
+    "49391": "C10",
+    "49392": "C10",
+    "50102": "C10",
+    "50300": "C10",
+    "58130": "C12",
+    "58140": "C12",
+    "68200": "C07",
+    "75000": "C09",
+    "87301": "C08",
+    "87302": "C08",
+    "88101": "C08",
+    "88102": "C08",
+    "88910": "C06",
+    "91011": "C14",
+    "91012": "C14",
+    "91020": "C14",
+    "91030": "C14",
+    "93120": "C11",
+    "93130": "C11",
+    "95310": "C01",
+    "95320": "C02",
+    "96021": "C04",
+    "96022": "C04",
+    "4520": "C01",
+    "8810": "C08",
+    "9602": "C04",
+    "750": "C09",
+    "873": "C08",
+    "55": "C03",
+    "56": "C03",
+    "85": "C06",
+    "86": "C05",
+    "90": "C14",
+    "96210": "C04",
+    "96220": "C04",
+    "91110": "C14",
+    "91120": "C14",
+    "91210": "C14",
+    "47621": "C12",
+    "49311": "C10",
+    "49390": "C10"
+  },
+  "entries": [
+    {
+      "cae": "45200",
+      "sector": "C01",
+      "desc": "Manutenção e reparação de veículos automóveis",
+      "note": ""
+    },
+    {
+      "cae": "45402",
+      "sector": "C02",
+      "desc": "Manutenção e reparação de motociclos, de suas peças e acessórios",
+      "note": ""
+    },
+    {
+      "cae": "47610",
+      "sector": "C13",
+      "desc": "Comércio a retalho de livros, em estabelecimentos especializados",
+      "note": "Art. 78.º-F: Secção G classe 47610. Também citado no art. 78.º-D (educação) - ver ambíguos."
+    },
+    {
+      "cae": "47620",
+      "sector": "C12",
+      "desc": "Comércio a retalho de jornais, revistas e artigos de papelaria, em",
+      "note": "Retalho de jornais/revistas - NÃO nomeado na lei mas usado na prática e no mapa original. Ver ambíguos."
+    },
+    {
+      "cae": "47730",
+      "sector": "C05",
+      "desc": "Comércio a retalho de produtos farmacêuticos, em estabelecimentos",
+      "note": "BUG CORRIGIDO: farmácias. Nomeado no art. 78.º-C."
+    },
+    {
+      "cae": "47740",
+      "sector": "C05",
+      "desc": "Comércio a retalho de produtos médicos e ortopédicos, em estabelecimentos",
+      "note": "Nomeado no art. 78.º-C."
+    },
+    {
+      "cae": "47741",
+      "sector": "C05",
+      "desc": "Comércio a retalho de produtos médicos (exceto material ótico oftálmico) e ortopédicos",
+      "note": "CAE Rev.4: produtos médicos e ortopédicos."
+    },
+    {
+      "cae": "47742",
+      "sector": "C05",
+      "desc": "Comércio a retalho de material ótico oftálmico",
+      "note": "CAE Rev.4: material ótico oftálmico."
+    },
+    {
+      "cae": "47782",
+      "sector": "C05",
+      "desc": "Comércio a retalho de material óptico, fotográfico, cinematográfico e de",
+      "note": "Nomeado no art. 78.º-C (material óptico). ATENÇÃO: a subclasse Rev.3 inclui também fotográfico/cinematográfico."
+    },
+    {
+      "cae": "49310",
+      "sector": "C10",
+      "desc": "Transportes terrestres urbanos, suburbanos e locais de passageiros",
+      "note": "Enumerado no art. 78.º-F n.º 3 (passes de transporte público)."
+    },
+    {
+      "cae": "49391",
+      "sector": "C10",
+      "desc": "Transporte interurbano em autocarros",
+      "note": "Enumerado no art. 78.º-F n.º 3 (passes de transporte público)."
+    },
+    {
+      "cae": "49392",
+      "sector": "C10",
+      "desc": "Outros transportes terrestres de passageiros diversos, n.e",
+      "note": "Enumerado no art. 78.º-F n.º 3 (passes de transporte público)."
+    },
+    {
+      "cae": "50102",
+      "sector": "C10",
+      "desc": "Transportes costeiros e locais de passageiros",
+      "note": "Enumerado no art. 78.º-F n.º 3 (passes de transporte público)."
+    },
+    {
+      "cae": "50300",
+      "sector": "C10",
+      "desc": "Transportes de passageiros por vias navegáveis interiores",
+      "note": "Enumerado no art. 78.º-F n.º 3 (passes de transporte público)."
+    },
+    {
+      "cae": "58130",
+      "sector": "C12",
+      "desc": "Edição de jornais",
+      "note": "Art. 78.º-F n.º 7 (edição de jornais)."
+    },
+    {
+      "cae": "58140",
+      "sector": "C12",
+      "desc": "Edição de revistas e de outras publicações periódicas",
+      "note": "Art. 78.º-F n.º 7 (edição de revistas)."
+    },
+    {
+      "cae": "68200",
+      "sector": "C07",
+      "desc": "Arrendamento de bens imobiliários",
+      "note": "Única classe nomeada no art. 78.º-E (arrendamento)."
+    },
+    {
+      "cae": "75000",
+      "sector": "C09",
+      "desc": "Actividades veterinárias",
+      "note": ""
+    },
+    {
+      "cae": "87301",
+      "sector": "C08",
+      "desc": "Actividades de apoio social para pessoas idosas, com alojamento",
+      "note": ""
+    },
+    {
+      "cae": "87302",
+      "sector": "C08",
+      "desc": "Actividades de apoio social para pessoas com deficiência, com alojamento",
+      "note": ""
+    },
+    {
+      "cae": "88101",
+      "sector": "C08",
+      "desc": "Actividades de apoio social para pessoas idosas, sem alojamento",
+      "note": ""
+    },
+    {
+      "cae": "88102",
+      "sector": "C08",
+      "desc": "Actividades de apoio social para pessoas com deficiência, sem alojamento",
+      "note": ""
+    },
+    {
+      "cae": "88910",
+      "sector": "C06",
+      "desc": "Actividades de cuidados  para crianças, sem alojamento",
+      "note": "Cuidados para crianças sem alojamento - nomeado no art. 78.º-D (creches/amas)."
+    },
+    {
+      "cae": "91011",
+      "sector": "C14",
+      "desc": "Actividades das bibliotecas",
+      "note": "Bibliotecas - art. 78.º-F classe 9101."
+    },
+    {
+      "cae": "91012",
+      "sector": "C14",
+      "desc": "Actividades dos arquivos",
+      "note": "Arquivos - art. 78.º-F classe 9101."
+    },
+    {
+      "cae": "91020",
+      "sector": "C14",
+      "desc": "Actividades dos museus",
+      "note": "Museus - art. 78.º-F classe 9102."
+    },
+    {
+      "cae": "91030",
+      "sector": "C14",
+      "desc": "Actividades dos sítios e  monumentos históricos",
+      "note": "Sítios e monumentos históricos - art. 78.º-F classe 9103."
+    },
+    {
+      "cae": "93120",
+      "sector": "C11",
+      "desc": "Actividades dos clubes desportivos",
+      "note": "Art. 78.º-F n.º 8 (clubes desportivos)."
+    },
+    {
+      "cae": "93130",
+      "sector": "C11",
+      "desc": "Actividades de manutenção física",
+      "note": "Art. 78.º-F n.º 8 (ginásios)."
+    },
+    {
+      "cae": "95310",
+      "sector": "C01",
+      "desc": "Reparação e manutenção de veículos automóveis",
+      "note": "CAE Rev.4: substitui 45200."
+    },
+    {
+      "cae": "95320",
+      "sector": "C02",
+      "desc": "Reparação e manutenção de motociclos",
+      "note": "CAE Rev.4: substitui 45402."
+    },
+    {
+      "cae": "96021",
+      "sector": "C04",
+      "desc": "Salões de cabeleireiro",
+      "note": ""
+    },
+    {
+      "cae": "96022",
+      "sector": "C04",
+      "desc": "Institutos de beleza",
+      "note": ""
+    },
+    {
+      "cae": "4520",
+      "sector": "C01",
+      "desc": "Manutenção e reparação de veículos automóveis",
+      "note": "Classe 4520 (só contém 45200)."
+    },
+    {
+      "cae": "8810",
+      "sector": "C08",
+      "desc": "Apoio social sem alojamento para idosos e pessoas com deficiência",
+      "note": "Classe 8810 nomeada no art. 84.º."
+    },
+    {
+      "cae": "9602",
+      "sector": "C04",
+      "desc": "Salões de cabeleireiro e institutos de beleza",
+      "note": "Classe 9602 nomeada no art. 78.º-F."
+    },
+    {
+      "cae": "750",
+      "sector": "C09",
+      "desc": "Actividades veterinárias",
+      "note": "Grupo 750 (só contém 75000)."
+    },
+    {
+      "cae": "873",
+      "sector": "C08",
+      "desc": "Apoio social com alojamento (idosos e pessoas com deficiência)",
+      "note": "Classe 873 nomeada no art. 84.º."
+    },
+    {
+      "cae": "55",
+      "sector": "C03",
+      "desc": "Alojamento",
+      "note": "Secção I - Alojamento. Divisão inteira."
+    },
+    {
+      "cae": "56",
+      "sector": "C03",
+      "desc": "Restauração e similares",
+      "note": "Secção I - Restauração. Divisão inteira."
+    },
+    {
+      "cae": "85",
+      "sector": "C06",
+      "desc": "Educação",
+      "note": "Secção P - Educação (art. 78.º-D). Divisão inteira."
+    },
+    {
+      "cae": "86",
+      "sector": "C05",
+      "desc": "Actividades de saúde humana",
+      "note": "Secção Q, classe 86 (art. 78.º-C). Divisão inteira."
+    },
+    {
+      "cae": "90",
+      "sector": "C14",
+      "desc": "Actividades de teatro, de música, de dança e outras actividades artísticas e literárias",
+      "note": "Secção R classe 90 - divisão inteira (art. 78.º-F)."
+    },
+    {
+      "cae": "96210",
+      "sector": "C04",
+      "desc": "Salões de cabeleireiro",
+      "note": "CAE Rev.4: substitui 96021. SICAE serve Rev.4 e 96021 devolve ZERO empresas, pelo que o sector C04 era inalcançável. Verificado 2026-07-21: 96210 tem ~9.110 empresas."
+    },
+    {
+      "cae": "96220",
+      "sector": "C04",
+      "desc": "Institutos de beleza e bem-estar",
+      "note": "CAE Rev.4: substitui 96022. Ver 96210. ~8.590 empresas."
+    },
+    {
+      "cae": "91110",
+      "sector": "C14",
+      "desc": "Actividades das bibliotecas",
+      "note": "CAE Rev.4: substitui 91011 (art. 78.º-F classe 9101)."
+    },
+    {
+      "cae": "91120",
+      "sector": "C14",
+      "desc": "Actividades dos arquivos",
+      "note": "CAE Rev.4: substitui 91012 (art. 78.º-F classe 9101)."
+    },
+    {
+      "cae": "91210",
+      "sector": "C14",
+      "desc": "Actividades dos museus",
+      "note": "CAE Rev.4: substitui 91020 (art. 78.º-F classe 9102)."
+    },
+    {
+      "cae": "47621",
+      "sector": "C12",
+      "desc": "Comércio a retalho de jornais, revistas e artigos de papelaria",
+      "note": "CAE Rev.4: substitui 47620. Mantém a ambiguidade jurídica do 47620 - ver 'ambiguous'."
+    },
+    {
+      "cae": "49311",
+      "sector": "C10",
+      "desc": "Transportes terrestres urbanos e suburbanos de passageiros",
+      "note": "CAE Rev.4: substitui 49310 (art. 78.º-F n.º 3, passes)."
+    },
+    {
+      "cae": "49390",
+      "sector": "C10",
+      "desc": "Outros transportes terrestres de passageiros",
+      "note": "CAE Rev.4: cobre 49391/49392 (art. 78.º-F n.º 3, passes)."
+    }
+  ],
+  "ambiguous": [
+    {
+      "cae": "47610",
+      "desc": "Comércio a retalho de livros, em estabelecimentos especializados",
+      "options": [
+        "C13",
+        "C06"
+      ],
+      "note": "Nomeado DUAS vezes: art. 78.º-F (livros, 15% IVA) e art. 78.º-D (educação). Resolvido para C13 porque a taxonomia tem sector Livros dedicado. Se o objectivo for maximizar dedução de educação, C06."
+    },
+    {
+      "cae": "47620",
+      "desc": "Comércio a retalho de jornais, revistas e artigos de papelaria, em",
+      "options": [
+        "C12",
+        "C99"
+      ],
+      "note": "A lei (78.º-F n.º 7) nomeia apenas os EDITORES 58130/58140, não o retalho. Mas 47620 inclui também papelaria. Mantido em C12 (coerente com o mapa original e com a leitura de comerciante), mas juridicamente não está nomeado."
+    },
+    {
+      "cae": "47750",
+      "desc": "Comércio a retalho de produtos cosméticos e de higiene, em estabelecimentos",
+      "options": [
+        "C99",
+        "C04"
+      ],
+      "note": "Cosméticos e higiene. NÃO consta de nenhum artigo. C04 cobre o SERVIÇO (classe 9602), não a venda de produto. Resolvido para C99 - decisão deliberada."
+    },
+    {
+      "cae": "85510",
+      "desc": "Ensinos desportivo e recreativo",
+      "options": [
+        "C06",
+        "C11"
+      ],
+      "note": "Ensinos desportivo e recreativo. Está na Secção P (=> C06 educação) MAS é nomeado no art. 78.º-F n.º 8 junto com os ginásios (=> C11). Deixado a cair no prefixo 85 => C06. DECISÃO DO UTILIZADOR."
+    },
+    {
+      "cae": "49100",
+      "desc": "Transporte interurbano  de passageiros por caminho-de-ferro",
+      "options": [
+        "C10",
+        "C99"
+      ],
+      "note": "Transporte interurbano por caminho-de-ferro. NÃO consta da enumeração taxativa do art. 78.º-F n.º 3 (que lista 49310/49391/49392/50102/50300). Na prática passes da CP são dedutíveis. Não mapeado - CONFIRMAR."
+    },
+    {
+      "cae": "91041",
+      "desc": "Actividades dos jardins  zoológicos, botânicos e aquários",
+      "options": [
+        "C14",
+        "C99"
+      ],
+      "note": "Jardins zoológicos/botânicos e aquários. A lei nomeia 9101/9102/9103 mas NÃO 9104. Não mapeado."
+    },
+    {
+      "cae": "91042",
+      "desc": "Actividade dos parques e reservas naturais",
+      "options": [
+        "C14",
+        "C99"
+      ],
+      "note": "Parques e reservas naturais. Mesmo raciocínio que 91041. Não mapeado."
+    },
+    {
+      "cae": "92000",
+      "desc": "Lotarias e outros jogos de aposta",
+      "options": [
+        "C99",
+        "C14"
+      ],
+      "note": "Jogos de azar/lotarias. A divisão 92 está na Secção R mas NÃO é nomeada em nenhum artigo. Explicitamente NÃO mapeado para C14."
+    },
+    {
+      "cae": "93110",
+      "desc": "Gestão de instalações desportivas",
+      "options": [
+        "C11",
+        "C99"
+      ],
+      "note": "Gestão de instalações desportivas (piscinas, pavilhões). A lei só nomeia 93120/93130. Muitas piscinas municipais usam este CAE. Não mapeado - CONFIRMAR."
+    },
+    {
+      "cae": "96040",
+      "desc": "Actividades de bem-estar físico",
+      "options": [
+        "C99",
+        "C11",
+        "C04"
+      ],
+      "note": "Bem-estar físico (SPA, saunas, massagens). Não nomeado. Confunde-se com ginásio (C11) e com institutos de beleza (C04). Não mapeado."
+    },
+    {
+      "cae": "68100",
+      "desc": "Compra e venda de bens imobiliários",
+      "options": [
+        "C99",
+        "C07"
+      ],
+      "note": "Compra e venda de imóveis. O art. 78.º-E nomeia SÓ 68200 (arrendamento). O mapa original usava o prefixo 681 - isso era demasiado lato. Não mapeado."
+    },
+    {
+      "cae": "87200",
+      "desc": "Actividades dos estabelecimentos para pessoas com doença do foro mental e do abuso de drogas, com alojamento",
+      "options": [
+        "C08",
+        "C05"
+      ],
+      "note": "Estabelecimentos para doença do foro mental / abuso de drogas, com alojamento. O art. 84.º nomeia a classe 873, não 872. Não mapeado."
+    },
+    {
+      "cae": "88990",
+      "desc": "Outras actividades de apoio  social sem alojamento, n.e.",
+      "options": [
+        "C99",
+        "C08"
+      ],
+      "note": "Outras actividades de apoio social sem alojamento. O art. 84.º nomeia 8810; 8899 fica de fora. Não mapeado."
+    },
+    {
+      "cae": "45401",
+      "desc": "Comércio por grosso e a retalho de motociclos, de suas peças e acessórios",
+      "options": [
+        "C99",
+        "C02"
+      ],
+      "note": "Comércio (não reparação) de motociclos. O mapa original usava o prefixo 454, que apanhava indevidamente esta subclasse. CORRIGIDO: só 45402 é dedutível."
+    },
+    {
+      "cae": "93210",
+      "desc": "Actividades dos  parques de diversão e temáticos",
+      "options": [
+        "C99",
+        "C14"
+      ],
+      "note": "Parques de diversão e temáticos. Secção R mas não nomeado na lei. Não mapeado."
+    }
+  ],
+  "meta": {
+    "classificacao": "CAE Rev.3 (DL n.º 381/2007). Inclui 4 códigos-ponte CAE Rev.4.",
+    "base_legal": "Sectores derivados dos artigos 78.º-C (saúde), 78.º-D (educação), 78.º-E (imóveis), 78.º-F (exigência de fatura) e 84.º (lares) do CIRS.",
+    "default": "Tudo o que não consta => C99 (despesas gerais familiares).",
+    "proveniencia": {
+      "descricoes_pt": "Extraídas do PDF oficial INE CAE Rev.3 (793+ subclasses parseadas directamente do documento).",
+      "sectores": "Classes nomeadas literalmente nos artigos do CIRS.",
+      "gov_pt_aviso": "https://www2.gov.pt/.../PesquisaIntegradaCAE.aspx serve agora CAE Rev.4 (divisão 45 extinta; 95310/95320 substituem 45200/45402), pelo que NÃO pode fundamentar um mapa Rev.3.",
+      "canon_manual": "75000, 92000, 93120, 93130 e outros: o parser captou a nota explicativa; título curto oficial reposto manualmente."
+    }
+  },
+  "sources": [
+    "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78f.aspx",
+    "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78c.aspx",
+    "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78d.aspx",
+    "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78e.aspx",
+    "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs84.aspx",
+    "https://www.ine.pt/ine_novidades/semin/cae/CAE_REV_3.pdf",
+    "https://diariodarepublica.pt/dr/detalhe/decreto-lei/381-2007-629150",
+    "https://informador.pt/legislacao/lexit/codigos/direito-fiscal/codigo-do-irs/capitulo-iv-liquidacao/artigo-78-o-f-deducao-pela-exigencia-de-fatura/",
+    "https://www2.gov.pt/RegistoOnline/Services/PesquisaSICONF/PesquisaIntegradaCAE.aspx",
+    "https://diariodarepublica.pt/dr/detalhe/decreto-lei/9-2025-907097147"
+  ],
+  "corrections": [
+    {
+      "cae": "47782",
+      "from": "C05",
+      "to": "C99",
+      "why": "AT rejects C05 for merchants whose only health-ish code is 47782 ('O emitente nao tem atividade registada pertencente ao setor indicado'). The class bundles optico with fotografico/cinematografico.",
+      "evidence": "NIF 504225510 (Distromazoote), 2026-07-18"
+    },
+    {
+      "cae": "96021/96022/91011/91012/91020/47620/49310/49391",
+      "from": "(only Rev.3 codes mapped)",
+      "to": "Rev.4 equivalents added alongside",
+      "why": "SICAE migrated to CAE Rev.4 (DL 9/2025). Probing all 33 mapped 5-digit codes on 2026-07-21 found 15 return ZERO companies. C04 (cabeleireiros/beleza) and C14 (cultura) had NO live code at all, so those two deduction sectors could not be matched for any merchant. The Rev.3 codes are KEPT, not replaced - a merchant still registered under one must keep working.",
+      "evidence": "Rev.4 codes discovered empirically by searching SICAE by firma (CABELEIREIRO->96210, MUSEU->91210, BIBLIOTECA->91110, PAPELARIA->47621) then confirmed each returns populated result pages. Not taken from a PDF parse."
+    }
+  ]
+}

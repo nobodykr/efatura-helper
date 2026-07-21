@@ -47,6 +47,34 @@ jobs:
             echo "  match"
           done
 
+      - name: committed cae_sectors.json must match the live tax-rule table
+        run: |
+          set -euo pipefail
+          # DEDUCOES.md tells accountants they can review the rules in this repo. A stale copy of a
+          # tax-rule table is worse than no copy: it documents rules the tool is not applying.
+          #
+          # Compares the `map` object ONLY, not the whole document. /cae-map.json injects
+          # meta.ranking at serve time, so a whole-file hash would fail every run for no reason.
+          curl -fsSL --max-time 30 "https://cae-db.diogoandrade.com/cae-map.json?v=$(date +%s)" -o served-map.json
+          python3 - <<'EOF'
+          import json, sys
+          served = json.load(open("served-map.json"))["map"]
+          repo   = json.load(open("cae_sectors.json"))["map"]
+          if served == repo:
+              print(f"cae_sectors.json matches the live table ({len(repo)} CAE codes)")
+              sys.exit(0)
+          only_live = {k: served[k] for k in served.keys() - repo.keys()}
+          only_repo = {k: repo[k]   for k in repo.keys()   - served.keys()}
+          changed   = {k: (repo[k], served[k]) for k in served.keys() & repo.keys() if served[k] != repo[k]}
+          print("::error file=cae_sectors.json::The committed CAE -> sector table no longer matches "
+                "the one actually being applied at cae-db.diogoandrade.com. DEDUCOES.md invites "
+                "accountants to review this file, so it must not drift. Re-export it from /data.")
+          if only_live: print("  live has, repo missing :", only_live)
+          if only_repo: print("  repo has, live missing :", only_repo)
+          if changed:   print("  sector changed (repo -> live):", changed)
+          sys.exit(1)
+          EOF
+
       - name: index.html served must match too
         run: |
           set -euo pipefail

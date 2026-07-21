@@ -35,6 +35,15 @@ On the e-Fatura page, it:
   lines, comments included, and the comments are most of it. Read it, or ask someone technical to.
   What you see is what runs: the file served at `faturas.diogoandrade.com/tool.js` is byte-identical
   to the one in this repo.
+- **The rules it applies are public too.** The CAE -> deduction-sector table, the CIRS article behind
+  each mapping (78.º-C saúde, 78.º-D educação, 78.º-E imóveis, 78.º-F, 84.º lares), the ambiguous
+  cases with the decision taken on each, and the ranking used to order the cascade are served live at
+  [`cae-db.diogoandrade.com/cae-map.json`](https://cae-db.diogoandrade.com/cae-map.json). Served
+  rather than committed here on purpose: one canonical file, so it can never document rules the tool
+  is not actually applying.
+  The cae-db *source* is private. How merchant data is fetched from the state registry is an
+  implementation detail, and publishing the scraping mechanics mainly invites people to hammer SICAE.
+  What affects your tax is public; what fetches the data is not.
 - **You approve every classification.** Nothing is submitted without you ticking it. Suggestions are
   only suggestions.
 

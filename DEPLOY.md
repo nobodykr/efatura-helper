@@ -25,6 +25,17 @@ real invoice data exercises paths nothing else will.
 
 ## Related service
 
-The bookmarklet reads its merchant map from a **cae-db** instance
-(`https://github.com/nobodykr/cae-db`). Self-host your own with `docker compose up -d` and point
-`CAEMAP_URL` in `tool.js` at it, or use the public one.
+The bookmarklet reads its merchant map from a **cae-db** instance. Point `CAEMAP_URL` in
+`tool.js` at your own, or use the public one at `https://cae-db.diogoandrade.com`.
+
+The cae-db source is **private**, deliberately. The split is: *how your tax is calculated* is
+public and auditable (`tool.js` here, plus the CAE -> sector map it relies on); *how the merchant
+data is fetched* is not. The registry-scraping mechanics are an implementation detail and
+publishing them mostly just invites people to hammer SICAE.
+
+The map API stays open where it has to be: `/sectors.json`, `/map.json`, `/cae-map.json` and
+`/stats` answer to anyone. Serving the whole map is what lets the bookmarklet work without ever
+telling the server which merchants you shop at.
+
+`/nif/{nif}` and `/search` are token-gated (401 without `x-worker-token`), as are the
+map-mutating routes. Verified 2026-07-21 - do not describe them as open.
