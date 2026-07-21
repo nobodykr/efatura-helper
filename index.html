@@ -375,6 +375,12 @@
   <p class="warn">Nesta versão <b>não existe nenhum pedido de escrita para a AT</b>. O código que
     submeteria está no repositório, desligado, e há um teste automático que falha se alguma vez
     passar a submeter.</p>
+  <p class="note"><b>E esta página, em que estás agora?</b> A lista acima é o que a ferramenta faz
+    dentro do e-Fatura. <b>Esta</b> página, por si só, carrega duas coisas de fora: os tipos de letra
+    do <b>Google Fonts</b> e o <b>Cloudflare Turnstile</b> (a verificação anti-spam do formulário de
+    sugestões, mais abaixo). Ambos veem o teu IP e o teu navegador quando abres a página, como em
+    qualquer site que use estes serviços. Nenhum deles é carregado pela ferramenta, por isso nenhum
+    deles chega à página do e-Fatura onde ela corre.</p>
 </section>
 
 <section>
@@ -383,7 +389,7 @@
     <li>A ferramenta <b>corre dentro do teu navegador</b>, na página do e-Fatura onde <b>já estás autenticado</b>. Usa a sessão que já tens.</li>
     <li><b>Nunca escreves a password</b> em nada nosso. Não há campo de password. Não a vemos, não a guardamos, não existe.</li>
     <li><b>As tuas faturas nunca saem do teu navegador.</b> Os valores, as datas, o que compraste - nada disso é recebido, guardado ou enviado para lado nenhum nosso. A ferramenta lê um único ficheiro público (o mapa de atividades) e não envia nada teu para o obter. <b>Uma exceção, opcional e desligada por omissão:</b> se ligares a partilha para melhorar as sugestões, ao aplicares enviamos por fatura <b>apenas o NIF do comerciante e o setor escolhido</b> (para corrigir esse mapa quando erra), <b>nunca valores, datas nem o teu NIF</b>. Se não a ligares, não sai nada.</li>
-    <li><b>Partilha de agregado, opcional e desligada por omissão.</b> <b>Só faz sentido se entregarem o IRS em conjunto.</b> Quem entrega em separado tem tetos próprios (cada pessoa tem o seu limite de 250 € em despesas gerais, por exemplo) e <b>não deve ativar isto</b>: os números desta página já estão certos para ti. Se entregam em conjunto, a partilha junta os totais das duas contas: enviamos <b>apenas seis números</b> (quanto já usaste de cada teto), nunca faturas, comerciantes, datas ou valores. A chave é calculada <b>no teu navegador</b> a partir do NIF + email, e só o resultado é enviado, por isso o servidor nunca recebe nenhum dos dois. Se não ativares, nada é enviado.</li>
+    <li><b>Partilha de agregado, opcional e desligada por omissão.</b> <b>Só faz sentido se entregarem o IRS em conjunto.</b> Quem entrega em separado tem tetos próprios (cada pessoa tem o seu limite de 250 € em despesas gerais, por exemplo) e <b>não deve ativar isto</b>: os números desta página já estão certos para ti. Se entregam em conjunto, a partilha junta os totais das duas contas: enviamos <b>apenas seis números</b> (quanto já usaste de cada teto), nunca faturas, comerciantes, datas ou valores. A chave é <b>gerada ao acaso no teu navegador</b> (256 bits): não é calculada a partir do teu NIF nem do teu email, que aqui nem sequer são lidos. Deixa a caixa vazia para criar um agregado, ou cola uma chave para te juntares a um. <b>A chave é a senha</b>: quem a tiver consegue ler e alterar esses números, por isso partilha-a só com o teu agregado. Se não ativares, nada é enviado.</li>
     <li><b>Código 100% visível e auditável.</b> Podes ler exatamente o que faz, <a id="gh" href="#" target="_blank" rel="noopener">no GitHub</a>, ou pedir a alguém que perceba para confirmar.</li>
     <li><b>Nada é submetido, de todo.</b> Nesta versão a ferramenta só lê e analisa. Qualquer alteração à tua declaração é feita por ti, no e-Fatura.</li>
   </ul>
@@ -513,7 +519,7 @@
     <div class="field">
       <label for="fb-mail">O teu email, se quiseres resposta <span class="note">(opcional)</span></label>
       <input id="fb-mail" name="email" type="email" maxlength="200" autocomplete="email">
-      <p class="note">Uso-o so para te responder. Nada mais, e nao fica guardado em lado nenhum.</p>
+      <p class="note">Uso-o so para te responder. Nada mais. Nao fica guardado em nenhuma base de dados: vai dentro do email que me e enviado, e fica na minha caixa de correio ate eu o apagar.</p>
     </div>
     <div class="hp" aria-hidden="true">
       <label for="fb-web">Nao preencher</label>

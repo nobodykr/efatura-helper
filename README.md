@@ -26,11 +26,15 @@ On the e-Fatura page, it:
   this page can only ever see **one** account - on real data, one account showed 3.186 EUR of
   despesas gerais where the household had 10.389 EUR, so a solo view can report a ceiling as having
   room when it is 14x over. If you opt in, **six numbers** are shared (how much of each ceiling is
-  used) and nothing else - never invoices, merchants, dates or purchase amounts. The room key is
-  derived **in your browser** with PBKDF2 over your NIF + email, and only the derived value is sent,
-  so the server never receives either input. Opt out and nothing is transmitted at all.
-- **The source is fully public and auditable.** [`tool.js`](tool.js) is the entire logic - ~150 readable lines. Read it,
-  or ask someone technical to. What you see is what runs.
+  used) plus a random per-browser member id - never invoices, merchants, dates or purchase amounts,
+  and never your NIF or email, which are not read for this feature at all. The room key is **256
+  random bits generated in your browser**; leave the box empty to create a household, or paste a
+  key to join one. **The key is the secret** - anyone holding it can read and change that room, so
+  share it only with your household, like a password.
+- **The source is fully public and auditable.** [`tool.js`](tool.js) is the entire logic - 1053
+  lines, comments included, and the comments are most of it. Read it, or ask someone technical to.
+  What you see is what runs: the file served at `faturas.diogoandrade.com/tool.js` is byte-identical
+  to the one in this repo.
 - **You approve every classification.** Nothing is submitted without you ticking it. Suggestions are
   only suggestions.
 
@@ -47,9 +51,25 @@ zero remote loading, copy the contents of `tool.js` and run it in the browser co
 
 ## Audit it yourself
 
-- `tool.js` - the whole tool. Search it for `fetch(` - every network call goes to
-  `faturas.portaldasfinancas.gov.pt` (relative URLs, same-origin). There is **no** call to any other host.
-- `index.html` - the landing page. Static. No trackers.
+Search `tool.js` for `fetch(`. There are **nine**, and they go to exactly two hosts:
+
+| Where | What | When |
+|---|---|---|
+| `faturas.portaldasfinancas.gov.pt` (relative, same-origin, your session) | read your faturas; the write path for classifications | reading: after you accept the gate. Writing: **never in this version** - `DRAFT = true`, no submit button is rendered |
+| `cae-db.diogoandrade.com` | `GET /sectors.json` - the public merchant map | after you accept the gate. **Sends nothing of yours**; the whole map is downloaded and matched locally, so the server never learns which merchants are yours. It sees your IP, as any server does |
+| `cae-db.diogoandrade.com` | `POST /outcome` and `POST /refresh/{nif}` - a **merchant's** NIF plus the sector, to correct the shared map | only if you tick "improve suggestions" (**off by default**) |
+| `cae-db.diogoandrade.com` | `PUT`/`GET /household/{key}` - six numbers | only if you press **Ligar** |
+| `cae-db.diogoandrade.com` | `POST /win` - four numbers (year, waste, gain, count) | only if you press **Enviar anónimo** |
+
+Those are **three separate opt-ins**, not one switch: the share tickbox, joining a household, and
+the anonymous-win button are independent. Touch none of them and the only request that leaves your
+browser is the `sectors.json` download.
+
+`index.html` - the landing page. **It is not tracker-free:** it loads Google Fonts
+(`fonts.googleapis.com`, `fonts.gstatic.com`) and Cloudflare Turnstile
+(`challenges.cloudflare.com`, for the feedback form's spam check). Both see your IP and User-Agent
+when you open the page. Neither is loaded by `tool.js`, so neither is present on the e-Fatura page
+where the tool actually runs.
 
 ## Disclaimer
 

@@ -1,7 +1,26 @@
 # Household sharing - design
 
-Status: **designed, not built.** This documents the reasoning so it survives, and so the security
-argument can be checked by someone other than its author.
+Status: **BUILT AND LIVE** (client in `tool.js`, server in `cae-db/household.py`). This file said
+"designed, not built" long after it shipped, which meant its two open caveats below - no write
+authorisation, and unresolved retention - read as future problems when they were live ones. Kept
+because the reasoning is worth preserving and the security argument should be checkable by someone
+other than its author.
+
+**One decision below was reversed on 2026-07-21.** The room key is no longer `KDF(nif + email)`.
+It is now **256 bits from `crypto.getRandomValues`**. The derivation was wrong twice:
+
+1. It leaked. PBKDF2 slows a guess but adds no entropy, and the salt was a fixed public constant.
+   A NIF is 9 checksummed digits and an email is often public, so anyone who knew both could
+   recompute the key and read, overwrite or `DELETE` that household - the server has no auth on
+   those routes. Deriving from guessable inputs destroyed exactly the secrecy the out-of-band key
+   exchange (below) was designed to provide.
+2. It did not work. Each browser derived from its **own** `nifAdquirente`, so two people could
+   never reach the same room. Everyone got a private single-member room while the UI told them to
+   share a key nobody could enter - there was no paste-key field at all.
+
+Now: empty box creates a room, pasting a key joins one. The key **is** the secret. Nothing about
+you is read for this feature. Retention (400 days) and the missing write auth still stand as
+written below.
 
 ## The problem it solves
 
