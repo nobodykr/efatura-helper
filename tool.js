@@ -82,19 +82,19 @@
   var PKEY = "efh-profile";
   var HH_URL = "https://cae-db.diogoandrade.com/household/";
 
-  /* Household sharing - OPT-IN, off unless you enter an email.
+  /* Household sharing - OPT-IN, off unless you press Ligar.
    *
    * Ceilings are per agregado familiar, but this page only ever sees ONE account's faturas. On real
    * data one account showed 3.186 EUR of despesas gerais where the household had 10.389 EUR - so a
    * solo view can report a ceiling as having room when it is 14x over.
    *
-   * The room key is PBKDF2(NIF + email) computed HERE, in your browser. Only the derived value is
-   * ever sent: the server never receives your NIF or your email, so it cannot learn them even if it
-   * wanted to. Not hash(NIF) alone - a NIF is 9 digits, every possible hash of one can be
-   * precomputed in seconds. Adding the email defeats that, because its entropy is unbounded.
+   * The room key is 256 random bits (newRoom, below). It is NOT derived from your NIF, your email,
+   * or anything else about you - none of those are read for this feature at all. The key IS the
+   * secret: whoever holds it can read and write that room, so share it only with your household,
+   * the same way you would a password. Empty field creates a room; pasting a key joins one.
    *
-   * What is sent: six numbers, the deduction used against each ceiling. No faturas, no merchants,
-   * no dates, no amounts. The member id is random per browser, derived from nothing real. */
+   * What is sent: six numbers, the deduction used against each ceiling, plus a random per-browser
+   * member id. No faturas, no merchants, no dates, no amounts, no NIF, no email. */
   function memberId() {
     var k = "efh-member", v = null;
     try { v = localStorage.getItem(k); } catch (e) {}
@@ -106,20 +106,27 @@
     return v;
   }
 
-  function deriveRoom(nif, email) {
-    var enc = new TextEncoder();
-    var material = enc.encode(String(nif) + String(email || "").trim().toLowerCase());
-    return crypto.subtle.importKey("raw", material, "PBKDF2", false, ["deriveBits"])
-      .then(function (key) {
-        return crypto.subtle.deriveBits(
-          { name: "PBKDF2", salt: enc.encode("efatura-helper-agregado-v1"),
-            iterations: 200000, hash: "SHA-256" }, key, 256);
-      })
-      .then(function (bits) {
-        return Array.prototype.map.call(new Uint8Array(bits), function (b) {
-          return ("0" + b.toString(16)).slice(-2); }).join("");
-      });
+  /* Room key: 256 bits of CSPRNG, NOT derived from anything about you.
+   *
+   * It used to be PBKDF2(NIF + email) with a fixed, public salt. That was wrong twice over:
+   *   1. SECURITY. PBKDF2 slows a guess but adds no entropy. A NIF is 9 checksummed digits and an
+   *      email is often public, so anyone who knew both could recompute the key and then read,
+   *      overwrite or DELETE that household's numbers - the server has no auth on those routes.
+   *      Deriving from guessable inputs threw away exactly the secrecy that sharing the key out
+   *      of band was supposed to provide.
+   *   2. IT DID NOT WORK. Each browser derived from ITS OWN nifAdquirente, so two people could
+   *      never land on the same room. Everyone got a private single-member room, while the UI
+   *      told them to "share this key" - a key the other person had no way to use.
+   * Random fixes both: the key IS the secret, and a partner joins by pasting it.
+   * Trade-off: lose localStorage and the room is gone. Hence it is shown in full, to be saved -
+   * and it is the same key you already had to send your partner anyway. */
+  function newRoom() {
+    var b = new Uint8Array(32);
+    crypto.getRandomValues(b);
+    return Array.prototype.map.call(b, function (x) {
+      return ("0" + x.toString(16)).slice(-2); }).join("");
   }
+  var ROOM_RE = /^[0-9a-f]{32,128}$/i;   // must match household.py ROOM_RE
   function loadProfile() {
     try { return JSON.parse(localStorage.getItem(PKEY)) || {}; } catch (e) { return {}; }
   }
@@ -745,8 +752,9 @@
           '> Fam\u00edlia monoparental</label></div>' +
           '<div style="margin-top:6px;padding-top:6px;border-top:1px solid #dde5ee">' +
           '<label title="Opcional. Os tetos do IRS s\u00e3o do agregado, mas esta p\u00e1gina s\u00f3 v\u00ea esta conta.">' +
-          'Partilhar tetos do agregado (opcional): <input type="email" id="efh-mail" placeholder="o-teu@email.pt" ' +
-          'value="' + esc(prof.mail || "") + '" style="width:170px"></label> ' +
+          'Partilhar tetos do agregado (opcional): <input type="text" id="efh-room" ' +
+          'placeholder="cola a chave, ou deixa vazio" autocomplete="off" spellcheck="false" ' +
+          'value="" style="width:170px"></label> ' +
           '<button type="button" id="efh-join" style="cursor:pointer">Ligar</button>' +
           '<div id="efh-hh" style="margin-top:4px;color:#666"></div></div>' +
           '<div style="margin:0 0 8px;padding:6px 8px;background:#fdf8ec;border-left:3px solid #8a6100;' +
@@ -902,11 +910,16 @@
         var hhBox = document.getElementById("efh-hh");
         if (prof.room) { hhBox.innerHTML = 'Ligado. Chave: <code>' + esc(prof.room.slice(0, 16)) + '...</code>'; }
         document.getElementById("efh-join").onclick = function () {
-          var mail = document.getElementById("efh-mail").value.trim();
-          var myNif = (rows[0] && rows[0].nifAdquirente) || prof.nif || "";
-          if (!mail) { hhBox.textContent = "Escreve um email para gerar a chave."; return; }
-          hhBox.textContent = "A gerar chave...";
-          deriveRoom(myNif, mail).then(function (room) {
+          /* Paste a key to JOIN an existing household; leave it empty to CREATE one. Nothing about
+           * you goes into the key - see newRoom(). Your own NIF and email are never read here. */
+          var typed = document.getElementById("efh-room").value.trim().toLowerCase();
+          if (typed && !ROOM_RE.test(typed)) {
+            hhBox.textContent = "Chave invalida. Cola a chave inteira, ou deixa vazio para criar uma.";
+            return;
+          }
+          var room = typed || prof.room || newRoom();
+          hhBox.textContent = typed ? "A ligar..." : "A criar chave...";
+          Promise.resolve(room).then(function (room) {
             var body = { member: memberId() };
             ["C05", "C06", "C07", "C08", "C99"].forEach(function (k) { body[k] = +(used[k] || 0).toFixed(2); });
             body.POT = +(used[POT] || 0).toFixed(2);
@@ -915,7 +928,8 @@
               .then(function () { return fetch(HH_URL + room); })
               .then(function (r) { return r.json(); })
               .then(function (d) {
-                saveProfile({ joint: prof.joint, mono: prof.mono, mail: mail, room: room });
+                // no email is stored any more - the room key is the only household state we keep
+                saveProfile({ joint: prof.joint, mono: prof.mono, room: room });
                 if (d && d.merged) {
                   Object.keys(d.merged).forEach(function (k) {
                     used[k === "POT" ? POT : k] = d.merged[k];

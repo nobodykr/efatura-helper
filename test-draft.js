@@ -32,7 +32,10 @@ setTimeout(()=>{
   const d=window.document;
   console.log("  apply button present:", !!d.getElementById("efh-apply"), "(must be false)");
   console.log("  export button present:", !!d.getElementById("efh-export"));
-  console.log("  mail button present:  ", !!d.getElementById("efh-mail"));
+  // #efh-mailto is the "Enviar por email" button. This used to check #efh-mail, which was the
+  // household email input - a different element entirely, so it reported true for the wrong thing.
+  // That input no longer exists at all: the room key is random now, not derived from NIF+email.
+  console.log("  mail button present:  ", !!d.getElementById("efh-mailto"));
   console.log("  draft notice shown:   ", /nao submete nada|não submete nada/i.test(d.getElementById("efh-body").textContent));
   const btn=d.getElementById("efh-export");
   if(btn){ btn.onclick(); }
