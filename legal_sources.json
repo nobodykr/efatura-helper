@@ -1,0 +1,105 @@
+{
+  "_README": "Every legal source the deduction map rests on, in a form that can be RE-CHECKED, not just cited. Flat URL lists rot silently: an article is amended by the Orcamento do Estado, the ceiling changes, and the code keeps applying last year's rule while the citation still looks correct.",
+  "_how_changes_are_detected": "By fiscal-monitor/dre_check.py, which already watches the Diario da Republica RSS feeds (files.diariodarepublica.pt/rss/serie1-html.xml) and dedupes against dre_seen.json. It has a DEDUCTION_KEYWORDS list whose hits land in dre_digest.json under `affects_deductions`, meaning: go re-read cae_sectors.json and DEDUCOES.md against the amended text. A hand-rolled hash-the-HTML verifier was written for this and DELETED - the Portal das Financas article pages are only renderings of laws that DRE publishes first, so hashing them was redundant on top of fragile (those pages carry VIEWSTATE and rotating furniture that changes on every fetch, so it would have cried wolf daily and been ignored). Watch the source of truth, not a downstream rendering.",
+  "_known_gap": "DRE feed titles are only document numbers, not subjects, so an OE that amends art. 78.-F matches on 'Orcamento do Estado' and never on the article. Under-matching is the EXPECTED failure. That is why the annual OE is also a calendar item in `watch` below rather than trusting keyword matching alone. Closing this properly needs the DRE screenservices API (see fiscal-monitor/dredisco.mjs, which captures JSON APIs off those pages).",
+  "classificacao": "CAE Rev.4 (DL 9/2025) served by SICAE, with CAE Rev.3 (DL 381/2007) codes kept alongside for merchants not yet migrated.",
+  "regime": "IRS - Codigo do Imposto sobre o Rendimento das Pessoas Singulares (CIRS), deducoes a coleta.",
+  "jurisdicao": "Portugal continental e regioes autonomas. NAO cobre faturas de outros paises da UE (ver VIES).",
+  "last_full_review": "2026-07-21",
+  "sources": [
+    {
+      "id": "cirs-78b",
+      "governs": "C99 despesas gerais familiares - 35% ate 250 EUR",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78b.aspx",
+      "type": "artigo",
+      "critical": true,
+      "why_it_matters": "C99 is the fallback for EVERY unmapped merchant, so its rate and ceiling affect more invoices than any other single rule."
+    },
+    {
+      "id": "cirs-78c",
+      "governs": "C05 saude - 15% ate 1000 EUR",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78c.aspx",
+      "type": "artigo",
+      "critical": true,
+      "why_it_matters": "Names the CAE classes that qualify as saude. The 47782 rejection came from reading this too broadly."
+    },
+    {
+      "id": "cirs-78d",
+      "governs": "C06 educacao - 30% ate 800 EUR",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78d.aspx",
+      "type": "artigo",
+      "critical": true,
+      "why_it_matters": "Also names 47610 (livros), which is why that code is ambiguous between C13 and C06."
+    },
+    {
+      "id": "cirs-78e",
+      "governs": "C07 imoveis / rendas - 15% ate 502 EUR",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78e.aspx",
+      "type": "artigo",
+      "critical": true,
+      "why_it_matters": "Names ONLY 68200 (arrendamento). The original map used prefix 681, which wrongly swallowed 68100 (compra e venda)."
+    },
+    {
+      "id": "cirs-78f",
+      "governs": "C01 C02 C03 C04 C09 C10 C11 C12 C13 C14 - 15% do IVA, tecto CONJUNTO de 250 EUR",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78f.aspx",
+      "type": "artigo",
+      "critical": true,
+      "why_it_matters": "The single most important article here: it carries the taxative lists (n.3 transportes, n.7 jornais, n.8 desporto) AND the shared 250 EUR ceiling. If the enumerations change, several sectors change at once."
+    },
+    {
+      "id": "cirs-84",
+      "governs": "C08 lares - 25% ate 403 EUR",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs84.aspx",
+      "type": "artigo",
+      "critical": true,
+      "why_it_matters": "Names classes 873 and 8810. 87200 (foro mental, com alojamento) is deliberately NOT mapped because it is not named."
+    },
+    {
+      "id": "dl-381-2007",
+      "governs": "CAE Rev.3 - the classification the CIRS articles were written against",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/381-2007-629150",
+      "type": "diploma",
+      "critical": false,
+      "why_it_matters": "The law still speaks Rev.3 while SICAE now serves Rev.4. Every bridge code in the map exists because of that gap."
+    },
+    {
+      "id": "dl-9-2025",
+      "governs": "CAE Rev.4 - the classification SICAE actually serves today",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/9-2025-907097147",
+      "type": "diploma",
+      "critical": true,
+      "why_it_matters": "Caused the C04 and C14 outage: every code mapping to those sectors was Rev.3-only and returned zero companies. Re-read if more codes go dead."
+    },
+    {
+      "id": "ine-cae-rev3",
+      "governs": "Official CAE Rev.3 subclass list and descriptions",
+      "url": "https://www.ine.pt/ine_novidades/semin/cae/CAE_REV_3.pdf",
+      "type": "pdf",
+      "critical": false,
+      "why_it_matters": "Source of the Portuguese descriptions. NOT trusted as a code list: text extraction silently dropped 47111, a code SICAE definitely knows. Codes are discovered from SICAE instead."
+    },
+    {
+      "id": "sicae",
+      "governs": "Live CAE registry - which merchant has which activity",
+      "url": "http://www.sicae.pt/Consulta.aspx",
+      "type": "servico",
+      "critical": true,
+      "why_it_matters": "The data source itself. Watch for the Rev.3 to Rev.4 switch completing, and for an unknown NIF returning the literal string 'NIPC nao encontrado' rather than a 404."
+    }
+  ],
+  "watch": [
+    {
+      "what": "Orcamento do Estado, published every year in the Diario da Republica",
+      "why": "The OE routinely amends the rates and ceilings in arts. 78-B to 78-F and 84. Those numbers are hardcoded in DEDUCOES.md and in SECTOR_RANK's comments, and NOTHING updates them automatically.",
+      "where": "https://diariodarepublica.pt/dr/pesquisa?q=orcamento+do+estado",
+      "when": "Every December/January"
+    },
+    {
+      "what": "AT rejections in the wild",
+      "why": "The strongest signal available. AT runs its own validation and can refuse a mapping that reads correctly against the law. 47782 was corrected only because a real submission was rejected.",
+      "where": "corrections[] in cae_sectors.json",
+      "when": "Whenever a user reports one"
+    }
+  ]
+}
