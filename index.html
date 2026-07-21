@@ -350,6 +350,10 @@
   <p class="note">Para quem quiser confirmar antes de correr: isto é a lista completa. Abre o
     separador Rede do navegador e compara.</p>
   <ol class="steps" style="padding-left:0;list-style:none">
+    <li class="step"><div class="n" aria-hidden="true">0</div><div>
+      <b>Nada acontece até concordares.</b> Ao abrir, a ferramenta mostra primeiro um aviso e só lê
+      as tuas faturas depois de clicares. Antes disso <b>não há um único pedido de rede</b> - nem
+      sequer o mapa público. Há um teste automático que falha se isto deixar de ser verdade.</div></li>
     <li class="step"><div class="n" aria-hidden="true">1</div><div>
       <b>GET <code>cae-db.diogoandrade.com/sectors.json</code></b> - o mapa público de atividades,
       cerca de 1,6 KB. <b>Não leva nada teu.</b> Repara no detalhe: a ferramenta descarrega o mapa
@@ -361,9 +365,12 @@
       tinhas aberta. É o mesmo pedido que a página faz sozinha. As faturas ficam no teu navegador:
       não passam por nenhum servidor meu.</div></li>
     <li class="step"><div class="n" aria-hidden="true">3</div><div>
-      <b>Mais nada.</b> A partir daqui só há pedidos se <b>clicares</b>: a partilha de agregado
-      (opcional, envia seis números) ou o botão "Enviar anónimo" (quatro números, sem NIF e sem
-      comerciantes). Se não clicares, não sai nada.</div></li>
+      <b>Mais nada, a não ser que peças.</b> A partir daqui só há pedidos se <b>ativares</b> algo:
+      a partilha de agregado (opcional, envia seis números); a partilha para <b>melhorar as
+      sugestões</b> (opcional, desligada por omissão - se a ligares, ao aplicares envia por fatura
+      <b>só o NIF do comerciante e o setor</b>, para corrigir o mapa de atividades, <b>nunca valores,
+      datas nem o teu NIF</b>); ou o botão "Enviar anónimo" (quatro números). Se não ativares nada,
+      nada sai.</div></li>
   </ol>
   <p class="warn">Nesta versão <b>não existe nenhum pedido de escrita para a AT</b>. O código que
     submeteria está no repositório, desligado, e há um teste automático que falha se alguma vez
@@ -375,7 +382,7 @@
   <ul class="safe">
     <li>A ferramenta <b>corre dentro do teu navegador</b>, na página do e-Fatura onde <b>já estás autenticado</b>. Usa a sessão que já tens.</li>
     <li><b>Nunca escreves a password</b> em nada nosso. Não há campo de password. Não a vemos, não a guardamos, não existe.</li>
-    <li><b>As tuas faturas nunca saem do teu navegador.</b> Não as recebemos, não as guardamos, não passam por lado nenhum nosso. A ferramenta lê um único ficheiro público (o mapa de atividades) e não envia nada teu para o obter.</li>
+    <li><b>As tuas faturas nunca saem do teu navegador.</b> Os valores, as datas, o que compraste - nada disso é recebido, guardado ou enviado para lado nenhum nosso. A ferramenta lê um único ficheiro público (o mapa de atividades) e não envia nada teu para o obter. <b>Uma exceção, opcional e desligada por omissão:</b> se ligares a partilha para melhorar as sugestões, ao aplicares enviamos por fatura <b>apenas o NIF do comerciante e o setor escolhido</b> (para corrigir esse mapa quando erra), <b>nunca valores, datas nem o teu NIF</b>. Se não a ligares, não sai nada.</li>
     <li><b>Partilha de agregado, opcional e desligada por omissão.</b> <b>Só faz sentido se entregarem o IRS em conjunto.</b> Quem entrega em separado tem tetos próprios (cada pessoa tem o seu limite de 250 € em despesas gerais, por exemplo) e <b>não deve ativar isto</b>: os números desta página já estão certos para ti. Se entregam em conjunto, a partilha junta os totais das duas contas: enviamos <b>apenas seis números</b> (quanto já usaste de cada teto), nunca faturas, comerciantes, datas ou valores. A chave é calculada <b>no teu navegador</b> a partir do NIF + email, e só o resultado é enviado, por isso o servidor nunca recebe nenhum dos dois. Se não ativares, nada é enviado.</li>
     <li><b>Código 100% visível e auditável.</b> Podes ler exatamente o que faz, <a id="gh" href="#" target="_blank" rel="noopener">no GitHub</a>, ou pedir a alguém que perceba para confirmar.</li>
     <li><b>Nada é submetido, de todo.</b> Nesta versão a ferramenta só lê e analisa. Qualquer alteração à tua declaração é feita por ti, no e-Fatura.</li>

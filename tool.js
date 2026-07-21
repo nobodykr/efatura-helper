@@ -20,10 +20,35 @@
   if (document.getElementById("efh-panel")) { document.getElementById("efh-panel").remove(); }
   var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
 
+  /* DRAFT MODE. While true the panel never submits anything to the AT: no apply button is
+   * rendered and applySelected() is unreachable. The page at faturas.diogoandrade.com states
+   * this in several places ("Nada e submetido, de todo"), so FLIPPING THIS TO false IS NOT A
+   * CODE-ONLY CHANGE - those claims become false and must be rewritten first. See the plan file
+   * for the exact passages (index.html 202-205, 246-249, 257, 364-370, 377-381, meta 7 and 16,
+   * and planText() below). test-draft.js pins the true behaviour. */
+  var DRAFT = true;
+
+  /* Consent gate. Nothing is read from the e-Fatura account until the user agrees, and nothing
+   * leaves the browser unless they additionally tick the share box (default off). Both live in
+   * localStorage so the agreement is asked once, not every time. */
+  var CKEY = "efh-consent-v1";
+
+  /* The IRS deductions view - a DIFFERENT endpoint from obterDocumentosAdquirente, and the only
+   * one that reports what deduction each invoice actually generates (valorTotalBeneficioProv,
+   * valorTotalSetorBeneficio, valorTotalDespesasGerais). Read-only: once the AT has attributed a
+   * benefit (estadoBeneficio "RBATF") the consumer CANNOT reallocate it - there is no alter form
+   * anywhere in e-Fatura, only removerDocumentoAdquirente. So this drives the "where you stand"
+   * panel, and must never be presented as an amount the user can click to recover. */
+  var IRS_URL = "/json/obterDocumentosIRSAdquirente.action";
+
   var SECTORS = { C01: "Repara\u00e7\u00e3o autom\u00f3veis", C02: "Repara\u00e7\u00e3o motociclos", C03: "Alojamento / restaura\u00e7\u00e3o",
     C04: "Cabeleireiros / beleza", C05: "Sa\u00fade", C06: "Educa\u00e7\u00e3o", C07: "Im\u00f3veis / habita\u00e7\u00e3o", C08: "Lares",
     C09: "Veterin\u00e1rias", C10: "Transportes p\u00fablicos", C11: "Gin\u00e1sios", C12: "Jornais / revistas",
-    C13: "Livros", C14: "Art\u00edsticas", C99: "Outros" };
+    C13: "Livros", C14: "Art\u00edsticas", C15: "Museus / monumentos", C99: "Outros" };
+  /* The live #ambitoAquisicao list on e-Fatura is C01..C15 + C99. estadoDocumentoFilter has more
+   * states than the tool acts on: P Pendente, A Anulado pelo emitente, R Registado, B Beneficio
+   * atribuido, C Anulado apos comunicacao posterior, E Registado apos comunicacao posterior,
+   * N Beneficio NAO atribuido (merchant declined - not fixable by reclassifying), O Duplicado. */
   var year = new Date().getFullYear();
   var eur = function (c) { return (Number(c || 0) / 100).toFixed(2); };
 
@@ -43,7 +68,11 @@
     C03: { rate: 0.15, base: "iva", pot: POT }, C04: { rate: 0.15, base: "iva", pot: POT },
     C09: { rate: 0.15, base: "iva", pot: POT }, C10: { rate: 1.00, base: "iva", pot: POT },
     C11: { rate: 0.30, base: "iva", pot: POT }, C12: { rate: 1.00, base: "iva", pot: POT },
-    C13: { rate: 0.15, base: "iva", pot: POT }, C14: { rate: 0.15, base: "iva", pot: POT }
+    C13: { rate: 0.15, base: "iva", pot: POT }, C14: { rate: 0.15, base: "iva", pot: POT },
+    // C15 (museus e monumentos) shares the same art. 78.o-F pot. Rate unconfirmed - treated as the
+    // 15% family default until a source is checked; being in the pot, the exact rate only affects
+    // this sector's contribution to a shared 250 EUR ceiling, so the risk of the guess is small.
+    C15: { rate: 0.15, base: "iva", pot: POT, unconfirmed: true }
   };
   var POT_CAP = 250;
 
@@ -135,6 +164,113 @@
     return d.value;
   }
   function name34(x) { return deent((x.nomeEmitente || "")).trim().slice(0, 34); }
+  /* The Resumo tab. Two numbers, and BOTH are actionable:
+   *
+   *   - pending faturas        -> classify them (resolverPendenciaAdquirente).
+   *   - o.wasted on ATTRIBUTED  -> deduction sitting in a full ceiling. RECOVERABLE by re-
+   *     classifying the fatura: on its detalhe page, Alterar -> pick the sector -> Guardar, which
+   *     POSTs alterarDocumentoAdquirente.action. Verified live 20-07-2026 (Diogo does this by hand).
+   *
+   * An earlier version of this comment claimed the attributed amount could NOT be recovered. That
+   * was wrong - it came from a probe that only enumerated <form action> and never saw the JS-driven
+   * <a id="alterarDocumentoBtn">. The whole reason the wasted number is worth showing is that it CAN
+   * be fixed, until 25 February of the following year. Zero pending is normal once the queue is
+   * cleared, so that path still gets a real answer rather than an empty panel. */
+  function renderResumo(o, nPend, room, full, recoverable, movCount) {
+    /* room/full are computed by the CALLER, inside run(), because headroom() closes over that
+     * call's profile and ceiling state and does not exist out here. An earlier version called
+     * headroom() directly from this scope: check-functions.js passed (it only matches names, it
+     * knows nothing about scope) and the ReferenceError silently killed the whole optimiser IIFE,
+     * taking the ceilings accordion with it. Only test-accordion caught it. */
+    var box = document.getElementById("efh-resumo");
+    if (!box) return;
+    var gain = Math.max(0, (o.after || 0) - (o.before || 0));
+    room = room || []; full = full || [];
+    var h = "";
+    // ONE number, and it is DEDUCTION recovered - this is IRS, not "ganhos". Total = the extra
+    // deduction from classifying pending faturas + moving already-registered ones out of a full
+    // ceiling. "Recuperar dedu\u00e7\u00e3o" (not "ganhar") is the honest frame.
+    var total = gain + (recoverable > 1 ? recoverable : 0);
+    if (total > 0.5) {
+      var parts = [];
+      if (nPend > 0) parts.push(nPend + ' por classificar');
+      if (movCount > 0) parts.push(movCount + ' por corrigir');
+      h += '<div style="text-align:center;padding:8px 0 4px">' +
+           '<div style="color:#6b7780;font-size:12px">Podes recuperar em dedu\u00e7\u00e3o no IRS</div>' +
+           '<div class="efh-num" style="font-size:34px;font-weight:800;color:#1E5A3A;line-height:1.1">\u20ac' +
+           total.toFixed(2) + '</div>' +
+           '<div style="color:#6b7780;font-size:12px">' + parts.join(' \u00b7 ') + '</div></div>';
+    } else if (nPend > 0) {
+      h += '<div style="text-align:center;padding:8px 0 4px">' +
+           '<div style="font-size:18px;font-weight:700;color:#2B363C">' + nPend + ' fatura' + (nPend === 1 ? '' : 's') + ' por classificar</div>' +
+           '<div style="color:#6b7780;font-size:12px">Nesta conta n\u00e3o h\u00e1 dedu\u00e7\u00e3o extra a ganhar - mas classifica na mesma para ficar em ordem.</div></div>';
+    } else {
+      h += '<div style="text-align:center;padding:8px 0 4px">' +
+           '<div style="font-size:20px;font-weight:700;color:#1E5A3A">Est\u00e1 tudo otimizado</div>' +
+           '<div style="color:#6b7780;font-size:12px">As tuas faturas de ' + year + ' j\u00e1 rendem o m\u00e1ximo poss\u00edvel.</div></div>';
+    }
+    if (movCount > 0 && recoverable > 1) {
+      // Descriptive only - the euro is in the headline. These invoices sit in a FULL sector while
+      // the SAME merchant is also registered somewhere with room.
+      h += '<div style="margin-top:10px;background:#eef7f0;border:1px solid #bfe0c8;border-radius:6px;padding:9px;font-size:12px;line-height:1.5">' +
+           'Dessas, <b>' + movCount + ' fatura' + (movCount === 1 ? '' : 's') + '</b> ' +
+           (movCount === 1 ? 'est\u00e1 numa categoria cheia' : 'est\u00e3o em categorias cheias') +
+           ' mas o comerciante tamb\u00e9m est\u00e1 registado numa com espa\u00e7o' +
+           (room.length ? ' (' + room.join(", ") + ')' : '') + '.<br>' +
+           // In DRAFT the tool never submits - Detalhe only SHOWS which faturas; the change is done
+           // in e-Fatura. So no misleading "ou no e-Fatura" as if Detalhe were an apply path.
+           (DRAFT
+             ? 'V\u00ea quais em <b>Detalhe</b> (marcadas <b>corrigir</b>) e corrige-as no e-Fatura, na p\u00e1gina de cada fatura: <b>Alterar</b> \u2192 setor \u2192 <b>Guardar</b>'
+             : 'Corrige em <b>Detalhe</b> (bot\u00e3o Aplicar) ou no e-Fatura (<b>Alterar</b> \u2192 setor \u2192 <b>Guardar</b>)') +
+           ', at\u00e9 <b>25 de fevereiro de ' + (year + 1) + '</b>.</div>';
+    } else if (o.wasted > 1) {
+      // Over a ceiling but NOTHING to move - the honest, calm message. Exceeding Despesas Gerais is
+      // normal: those merchants are only registered for that sector, so there is nowhere to put the
+      // spend. Do NOT frame the overflow as recoverable - it is not.
+      h += '<div style="margin-top:10px;background:#f4f6f9;border:1px solid #d5dae1;border-radius:6px;padding:9px;font-size:12px;line-height:1.5;color:#4a5a63">' +
+           'Est\u00e1s <b>\u20ac' + o.wasted.toFixed(2) + '</b> acima do teto de Despesas Gerais (250\u20ac), mas isso \u00e9 ' +
+           '<b>normal</b> e n\u00e3o h\u00e1 nada a corrigir: essas compras s\u00e3o em comerciantes registados s\u00f3 ' +
+           'nessa categoria, por isso n\u00e3o h\u00e1 para onde as mover.</div>';
+    }
+    if (nPend > 0) {
+      h += '<div style="margin-top:10px;font-size:12px;color:#5a4600;background:#fdf8ec;border-left:3px solid #8a6100;padding:6px 8px">' +
+           'Ao classificares, est\u00e1s a <b>declarar \u00e0 AT</b> que a compra foi nesse setor. ' +
+           'Ser aceite n\u00e3o \u00e9 o mesmo que estar certo.</div>' +
+           '<p style="margin:8px 0 0;font-size:12px;color:#6b7780">Podes classificar at\u00e9 <b>25 de fevereiro de ' +
+           (year + 1) + '</b>. Abre <b>Detalhe</b> para escolher fatura a fatura.</p>';
+    }
+    box.innerHTML = h;
+  }
+
+  /* Learning loop. Fires only when the user ticked the share box in the consent gate, and sends
+   * three fields per fatura: the MERCHANT's nif, what we suggested, what they chose. Never an
+   * amount, never a date, never the user's own nif - see POST /outcome in cae-db/household.py.
+   *
+   * It fires on "Copiar plano" because in DRAFT mode that is the moment a decision is made; there
+   * is no apply. Fire-and-forget: a failure here must never affect the user, so everything is
+   * swallowed. Deduped per merchant+choice so one click cannot spam the endpoint. */
+  function shareOn() { var c = consent(); return !!(c && c.share); }
+
+  function sendOutcomes(pend) {
+    if (!shareOn() || !pend || !pend.length) return;
+    var url = CAEMAP_URL.replace(/sectors\.json$/, "outcome"), seen = {}, sent = 0;
+    pend.forEach(function (x, i) {
+      var ck = document.querySelector('.efh-ck[data-i="' + i + '"]');
+      var se = document.querySelector('.efh-sec[data-i="' + i + '"]');
+      if (!ck || !ck.checked || !se) return;
+      var nif = String(x.nifEmitente || "").trim();
+      var sug = String(x.__sug || "").toUpperCase(), cho = String(se.value || "").toUpperCase();
+      if (!/^[0-9]{8,9}$/.test(nif) || !/^C[0-9]{2}$/.test(sug) || !/^C[0-9]{2}$/.test(cho)) return;
+      var k = nif + sug + cho;
+      if (seen[k] || sent >= 200) return;
+      seen[k] = 1; sent++;
+      try {
+        fetch(url, { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nif: nif, suggested: sug, chosen: cho }) }).catch(function () {});
+      } catch (e) {}
+    });
+  }
+
   function panel(html) {
     var d = document.createElement("div"); d.id = "efh-panel";
     d.setAttribute("role", "dialog");
@@ -163,11 +299,52 @@
   panel('<div style="background:#021c51;color:#fff;padding:10px 14px;font-weight:600;border-radius:8px 8px 0 0">' +
     '<a href="https://faturas.diogoandrade.com" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.45)" title="Abrir faturas.diogoandrade.com">Fatura Boa</a> <button type="button" aria-label="Fechar" style="float:right;cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
     '<div style="background:#fdecec;border-bottom:2px solid #c8102e;padding:8px 12px;font-size:12px;line-height:1.45;color:#5a0000">'+'<b>Esta ferramenta nunca te pede a password.</b> Corre na sess\u00e3o que j\u00e1 abriste, s\u00f3 nesta p\u00e1gina. '+'Se algum site te pedir as credenciais das Finan\u00e7as, \u00e9 burla.</div>' +
-    '<div id="efh-body" style="padding:14px">A ler as tuas faturas...</div>');
+    '<div id="efh-body" style="padding:14px">A carregar...</div>');
 
-  // load the public CAE map first (fails soft -> own-history still works), then the faturas
-  fetch(CAEMAP_URL).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
-    .then(function (caemap) { run(caemap || {}); });
+  /* CONSENT GATE. The panel does not touch the account until the user says yes. Two separate
+   * things, and they are deliberately not bundled: agreeing to READ (local, required to do
+   * anything at all) and agreeing to SHARE (off by default, and only ever merchant NIF + sector).
+   * Asking after collecting would be the wrong order - by then it is already done. */
+  function consent() {
+    var c = null;
+    try { c = JSON.parse(localStorage.getItem(CKEY) || "null"); } catch (e) {}
+    return c;
+  }
+  function saveConsent(share) {
+    try { localStorage.setItem(CKEY, JSON.stringify({ ok: true, share: !!share, ts: Date.now() })); } catch (e) {}
+  }
+
+  function start() {
+    // load the public CAE map first (fails soft -> own-history still works), then the faturas
+    fetch(CAEMAP_URL).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
+      .then(function (caemap) { run(caemap || {}); });
+  }
+
+  function gate() {
+    document.getElementById("efh-body").innerHTML =
+      '<p style="margin:0 0 10px">Isto l\u00ea as tuas faturas de <b>' + year + '</b> directamente do e-Fatura, ' +
+      'na sess\u00e3o que j\u00e1 tens aberta, e faz as contas <b>no teu navegador</b>.</p>' +
+      '<ul style="margin:0 0 12px 18px;padding:0;line-height:1.5">' +
+      '<li>N\u00e3o te pede, nem v\u00ea, a tua password.</li>' +
+      '<li>As tuas faturas <b>n\u00e3o s\u00e3o enviadas para lado nenhum</b>.</li>' +
+      '<li>A classifica\u00e7\u00e3o \u00e9 uma <b>declara\u00e7\u00e3o tua \u00e0 AT</b> - ser aceite n\u00e3o \u00e9 o mesmo que estar certo.</li>' +
+      '</ul>' +
+      '<label style="display:block;background:#f4f6f9;border:1px solid #d5dae1;border-radius:6px;padding:9px;margin-bottom:12px;font-size:12px;line-height:1.45;cursor:pointer">' +
+      '<input type="checkbox" id="efh-share" style="margin-right:6px"> ' +
+      'Opcional: partilhar <b>o NIF do comerciante e o setor escolhido</b> para melhorar as sugest\u00f5es. ' +
+      'Sem valores, sem datas, sem o teu NIF. Podes deixar desligado.' +
+      '</label>' +
+      '<button type="button" id="efh-go" style="cursor:pointer;background:#034ad8;color:#fff;border:0;' +
+      'border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">Concordo, ver resultado</button>';
+    document.getElementById("efh-go").onclick = function () {
+      saveConsent(document.getElementById("efh-share").checked);
+      document.getElementById("efh-body").innerHTML = "A ler as tuas faturas...";
+      start();
+    };
+  }
+
+  if (consent()) { document.getElementById("efh-body").innerHTML = "A ler as tuas faturas..."; start(); }
+  else { gate(); }
 
   /* Changing the household re-runs the whole pass, which rebuilds the table - so anything already
    * edited (a corrected sector, an unticked row) would be silently thrown away. Snapshot the choices
@@ -258,8 +435,58 @@
           if (c) return Object.prototype.toString.call(c) === "[object Array]" ? c[0] : c;
           return "C99";
         };
-        if (!pend.length) {
-          document.getElementById("efh-body").innerHTML = "\u2705 N\u00e3o tens faturas pendentes de classifica\u00e7\u00e3o em " + year + ".";
+        /* R1: the actionable set is PENDING plus already-attributed invoices the optimiser can
+         * genuinely improve. `optimise()` and `dedu()` are hoisted function declarations inside
+         * this callback, so calling optimise() here (before its textual definition) is safe - all
+         * its inputs (cascade, dedu, capFor, prof, CEIL, rows) already exist.
+         *
+         * movR is the FOOTGUN-SAFE recoverable set BY CONSTRUCTION: optimise() only emits a move
+         * when a DIFFERENT sector the merchant is REGISTERED for (from cascade -> SICAE) has
+         * headroom. A C99-only merchant yields no move, so this can never suggest declaring
+         * groceries as Saude. Verified 20-07-2026 that the landing sector is actividadeEmitente
+         * (the IRS endpoint's valorTotalSetorBeneficio/DespesasGerais are always 0). */
+        var movR = [];
+        rows.forEach(function (x) {
+          if (x.estadoBeneficio !== "R") return;
+          var cur = x.actividadeEmitente;
+          if (!cur || !CEIL[cur]) return;
+          /* Use the PUBLIC caemap, NOT cascade(). cascade() consults `learned` (your own history)
+           * first, and an already-attributed row's own attribution IS that history - so cascade
+           * would pin every R row to its current sector and no correction could ever surface. The
+           * caemap lists the sectors the merchant is genuinely registered for, independent of how
+           * this invoice was classified. */
+          var reg = caemap[x.nifEmitente];
+          reg = reg ? (Object.prototype.toString.call(reg) === "[object Array]" ? reg : [reg]) : [];
+          var curGain = gain(cur, x);
+          var bestA = null, bestG = curGain + 0.01;   // must beat the current sector to be worth it
+          reg.forEach(function (a) {
+            if (a === cur || !CEIL[a]) return;
+            var g = gain(a, x);                        // gain() applies headroom, so a full sector scores 0
+            if (g > bestG) { bestG = g; bestA = a; }
+          });
+          if (bestA) movR.push({ x: x, to: bestA });
+        });
+        var movTo = {};
+        movR.forEach(function (m) { movTo[m.x.idDocumento] = m.to; });
+        /* The REAL recoverable amount - NOT o.wasted. Exceeding a ceiling (especially Despesas
+         * Gerais) is normal: most spending legitimately lands there and CANNOT move, because the
+         * merchant is only registered for that sector. What is recoverable is strictly the movable
+         * rows, and only up to the headroom actually available in their target sectors. Sum them
+         * greedily, tracking per-pot headroom so two rows cannot each "fill" the same 750 EUR of
+         * Saude. This is the honest value; o.wasted overstated it by ~20x on real data. */
+        var recPots = {}, recoverable = 0;
+        movR.slice().sort(function (a, b) { return dedu(b.x, b.to) - dedu(a.x, a.to); }).forEach(function (m) {
+          var c = CEIL[m.to], k = c.pot || m.to;
+          var roomLeft = headroom(m.to) - (recPots[k] || 0);
+          if (roomLeft <= 0.01) return;
+          var g = Math.min(dedu(m.x, m.to), roomLeft);
+          if (g <= 0.01) return;
+          recPots[k] = (recPots[k] || 0) + g;
+          recoverable += g;
+        });
+        var actionable = pend.concat(movR.map(function (m) { return m.x; }));
+        if (!actionable.length) {
+          document.getElementById("efh-body").innerHTML = "\u2705 Est\u00e1s em dia - nada por classificar nem por corrigir em " + year + ".";
           return;
         }
         // v1 = the original logic: your own history only, otherwise "outros". Shown side by side so
@@ -270,16 +497,35 @@
         };
         var changed = 0;
         var opts = Object.keys(SECTORS).map(function (k) { return '<option value="' + k + '">' + k + " - " + SECTORS[k] + "</option>"; }).join("");
-        var trs = pend.map(function (x, i) {
-          var s = suggest(x.nifEmitente, x);       // most deduction for THIS invoice
-          var pv = provavel(x.nifEmitente);         // what it most likely actually was
+        var trs = actionable.map(function (x, i) {
+          // Already-attributed rows are a CORRECTION: current sector = actividadeEmitente, target =
+          // the optimiser's move. Pending rows keep the suggest/provavel two-column semantics.
+          var isR = (x.estadoBeneficio === "R");
+          var s = isR ? movTo[x.idDocumento] : suggest(x.nifEmitente, x);   // most deduction / move target
+          var pv = isR ? (x.actividadeEmitente || "C99") : provavel(x.nifEmitente);   // current / likely
+          // stash the suggestion so sendOutcomes() can report suggested-vs-chosen without
+          // recomputing it (and without ever touching amounts or dates)
+          x.__sug = s;
           var old = v1(x.nifEmitente);
           if (old !== s) changed++;
           /* Two suggestions, side by side, because they answer different questions and the user
-           * is the one declaring. Pre-select PROVAVEL: defaulting to whatever pays most would
-           * nudge people into declaring groceries as Saude just because the shop holds a
-           * pharmacy CAE. Where the purchase genuinely was in the better sector the two agree
-           * anyway, so nothing is lost by being honest here. */
+           * is the one declaring.
+           *
+           * PRE-SELECTS OTIMIZADA (changed 20-07-2026). This reverses the original default, and
+           * the reason it was PROVAVEL is still valid and worth stating: defaulting to whatever
+           * pays most can nudge someone into declaring groceries as Saude just because the shop
+           * also holds a pharmacy CAE. What changed is that defaulting to PROVAVEL meant almost
+           * nobody ever saw the benefit - the panel opened on the safe answer and the user had to
+           * work out for themselves that a better one existed.
+           *
+           * What keeps this honest, and must not be removed:
+           *   - Otimizada only ever offers a sector the merchant is ACTUALLY REGISTERED for
+           *     (cascade() -> the public SICAE map). It cannot invent one.
+           *   - The Resumo tab carries the consequence line in plain sight, not in a tooltip:
+           *     classifying is a declaration to the AT, and being accepted is not being right.
+           *   - Both figures sit on the switcher, so choosing PROVAVEL is one click and the user
+           *     can see exactly what that choice costs.
+           * Where the purchase genuinely was in the better sector the two agree anyway. */
           var cell = function (sec, i2, kind) {
             return '<button type="button" class="efh-pick" data-i="' + i2 + '" data-sec="' + sec + '" ' +
               'title="Usar ' + sec + ' - ' + esc(SECTORS[sec] || sec) + '" ' +
@@ -288,17 +534,20 @@
               ';background:#fff;border-radius:3px;padding:2px 6px;min-height:24px">' + sec + '</button>';
           };
           var same = (pv === s);
+          var badge = isR ? ' <span style="font-size:9px;background:#eef7f0;color:#1E5A3A;border:1px solid #bfe0c8;border-radius:3px;padding:0 3px" title="Ja classificada - isto corrige o setor">corrigir</span>' : "";
           return '<tr><td style="text-align:center"><input type="checkbox" class="efh-ck" data-i="' + i + '" checked></td>' +
-            '<td>' + esc(x.dataEmissaoDocumento) + '</td><td>' + esc(name34(x)) + '</td>' +
+            '<td>' + esc(x.dataEmissaoDocumento) + '</td><td>' + esc(name34(x)) + badge + '</td>' +
             '<td style="text-align:right">\u20ac' + eur(x.valorTotal) + '</td>' +
             '<td style="font-size:11px;white-space:nowrap">' + cell(pv, i, "pv") + "</td>" +
             '<td style="font-size:11px;white-space:nowrap">' +
               (same ? '<span style="color:#999">igual</span>' : cell(s, i, "op")) + "</td>" +
             '<td><select class="efh-sec" data-i="' + i + '" style="max-width:190px" aria-label="Setor para ' +
             esc(name34(x)) + '">' +
-            opts.replace('value="' + pv + '"', 'value="' + pv + '" selected') + '</select></td></tr>';
+            opts.replace('value="' + s + '"', 'value="' + s + '" selected') + '</select></td></tr>';
         }).join("");
-        window.__efhPend = pend;
+        // Named __efhPend for history, but it is now the full ACTIONABLE set (pending + movable-R).
+        // applySelected() indexes into this by the row's data-i and routes each by estadoBeneficio.
+        window.__efhPend = actionable;
         /* Progress bars, in two segments:
          *   solid  = what your ALREADY-REGISTERED invoices have used up
          *   ghost  = what the invoices you have TICKED below would add on top
@@ -402,7 +651,7 @@
             var selEl = document.querySelector('.efh-sec[data-i="' + i + '"]');
             if (!selEl) return;
             var c = CEIL[selEl.value]; if (!c) return;
-            var x = pend[i];
+            var x = actionable[i];
             var baseVal = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100;
             var key = c.pot || selEl.value;
             add[key] = (add[key] || 0) + baseVal * (selEl.value === "C99" ? c99Rate(prof) : c.rate);
@@ -416,11 +665,20 @@
         function renderBars() {
           var add = pendingAdds();
           var keys = ["C05", "C06", "C07", "C08", "C99"];
+          // The ~11 activity sectors that share the single art. 78.o-F IVA pot. Built from CEIL so
+          // it stays complete if a sector (e.g. C15) is added - no hardcoded list to drift.
+          var potMembers = Object.keys(CEIL).filter(function (k) { return CEIL[k].pot === POT; })
+                             .map(function (k) { return SECTORS[k] || k; });
           var html = keys.map(function (s) {
             return oneBar(s + " " + SECTORS[s], used[s] || 0, add[s] || 0, capFor(s, prof));
           }).join("") +
-            oneBar("IVA em fatura (restaura\u00e7\u00e3o, gin\u00e1sios, oficinas...)",
-                   used[POT] || 0, add[POT] || 0, POT_CAP);
+            oneBar("IVA em fatura (" + potMembers.length + " atividades, teto \u00fanico)",
+                   used[POT] || 0, add[POT] || 0, POT_CAP) +
+            // Make it explicit WHY there are only 6 ceilings, not 16 - the IVA activities share one.
+            '<div style="margin-top:6px;font-size:10.5px;color:#6b7780;line-height:1.4">' +
+            'S\u00e3o estes <b>6 os tetos</b> de dedu\u00e7\u00e3o por faturas. As <b>' + potMembers.length +
+            ' atividades com IVA</b> (' + potMembers.join(", ") + ') <b>n\u00e3o t\u00eam teto pr\u00f3prio</b>: ' +
+            'partilham todas o mesmo teto de \u20ac' + POT_CAP + '.</div>';
 
           var over = [], room = [];
           keys.concat([POT]).forEach(function (k) {
@@ -446,8 +704,10 @@
             '<div style="padding:2px 9px 9px">' + html + "</div></details>";
         }
 
-        document.getElementById("efh-body").innerHTML =
-          '<div style="margin:-4px 0 10px;padding:7px 9px;background:#f4f6f9;border:1px solid #d5dae1;border-left:3px solid #034ad8;border-radius:4px;font-size:11px;color:#2B363C;display:flex;flex-wrap:wrap;align-items:center;gap:8px">' +
+        // Sponsor strip - moved OUT of the top. It now sits at the BOTTOM of the Resumo tab, so the
+        // user sees the actual result first and the "buy me a coffee / Revolut" ask comes after the
+        // value, not before it. Only on the simple view.
+        var sponsor = '<div style="margin:14px 0 2px;padding:7px 9px;background:#f4f6f9;border:1px solid #d5dae1;border-left:3px solid #034ad8;border-radius:4px;font-size:11px;color:#2B363C;display:flex;flex-wrap:wrap;align-items:center;gap:8px">' +
           '<a href="https://revolut.com/referral/?referral-code=nobodykr!JUL2-26-AR-L1&amp;geo-redirect" ' +
           'target="_blank" rel="noopener sponsored nofollow" ' +
           'style="display:inline-flex;align-items:center;gap:5px;color:#034ad8;font-weight:600;text-decoration:none">' +
@@ -458,9 +718,24 @@
           'style="display:inline-flex;align-items:center;gap:4px;color:#2B363C;background:#ffdd00;' +
           'border-radius:2px;padding:2px 7px;font-weight:700;text-decoration:none">\u2615 Buy me a coffee</a>' +
           '<span style="color:#6b7780">Isto \u00e9 gratuito e continua a ser. Se te poupou trabalho e quiseres retribuir, abrir conta pelo link acima d\u00e1-me uma pequena comiss\u00e3o, e a ti n\u00e3o te custa nada.</span>' +
+          '</div>';
+        document.getElementById("efh-body").innerHTML =
+          /* Two renderings of ONE dataset, one fetch. Resumo answers "what do I do"; Detalhe keeps
+           * everything that was here before. Tabs toggle display only - #efh-bars and #efh-opt must
+           * stay IN the DOM, because renderBars() and the optimiser write into them by id and would
+           * silently no-op against a detached node. */
+          '<div role="tablist" style="display:flex;gap:4px;margin:0 0 10px;border-bottom:2px solid #d5dae1">' +
+          '<button type="button" role="tab" id="efh-tab-r" aria-selected="true" style="cursor:pointer;border:0;' +
+          'background:none;font:inherit;font-weight:700;color:#034ad8;padding:6px 12px;border-bottom:3px solid #034ad8;margin-bottom:-2px">Resumo</button>' +
+          '<button type="button" role="tab" id="efh-tab-d" aria-selected="false" style="cursor:pointer;border:0;' +
+          'background:none;font:inherit;font-weight:600;color:#6b7780;padding:6px 12px;border-bottom:3px solid transparent;margin-bottom:-2px">Detalhe</button>' +
           '</div>' +
-          '<p style="margin:0 0 8px"><b>' + pend.length + ' faturas pendentes</b> em ' + year +
-          '. Duas sugest\u00f5es por fatura: <b>Prov\u00e1vel</b> (a atividade principal do comerciante, ou o que j\u00e1 usaste antes) e <b>Otimizada</b> (mais dedu\u00e7\u00e3o, com espa\u00e7o no teto). Vem selecionada a Prov\u00e1vel. S\u00f3 aparecem setores em que o comerciante est\u00e1 mesmo registado, mas <b>ser aceite n\u00e3o \u00e9 o mesmo que estar certo</b>: a classifica\u00e7\u00e3o \u00e9 uma declara\u00e7\u00e3o tua \u00e0 AT.</p>' +
+          '<div id="efh-pane-r"><div id="efh-resumo">A calcular...</div>' + sponsor + '</div>' +
+          '<div id="efh-pane-d" style="display:none">' +
+          '<p style="margin:0 0 8px"><b>' + pend.length + ' por classificar</b>' +
+          (movR.length ? ' + <b>' + movR.length + ' por corrigir</b> (j\u00e1 classificadas, mas rendem mais noutro setor)' : '') +
+          ' em ' + year +
+          '. Duas sugest\u00f5es por fatura: <b>Prov\u00e1vel</b> (a atividade principal do comerciante, ou o que j\u00e1 usaste antes) e <b>Otimizada</b> (mais dedu\u00e7\u00e3o, com espa\u00e7o no teto). Vem selecionada a <b>Otimizada</b>. S\u00f3 aparecem setores em que o comerciante est\u00e1 mesmo registado, mas <b>ser aceite n\u00e3o \u00e9 o mesmo que estar certo</b>: a classifica\u00e7\u00e3o \u00e9 uma declara\u00e7\u00e3o tua \u00e0 AT.</p>' +
           '<div style="background:#f4f6f9;border:1px solid #d5dae1;border-radius:2px;padding:9px;margin-bottom:10px;font-size:12px">' +
           '<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center">' +
           '<label style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap">' +
@@ -489,9 +764,34 @@
           '<thead><tr style="background:#f4f6f9"><th></th><th>Data</th><th>Emitente</th><th>Valor</th><th title="O setor que a compra provavelmente foi: o teu hist\u00f3rico, ou a atividade principal do comerciante">Prov\u00e1vel</th><th title="O setor que d\u00e1 mais dedu\u00e7\u00e3o e ainda tem espa\u00e7o no teto">Otimizada</th><th>Setor</th></tr></thead>' +
           '<tbody>' + trs + '</tbody></table></div>' +
           '<div style="margin-top:12px;display:flex;gap:8px;align-items:center">' +
+          // #efh-apply is rendered ONLY when DRAFT is off. While DRAFT is on the tool writes nothing,
+          // and the page copy at faturas.diogoandrade.com promises exactly that - so this button and
+          // those promises flip together, never one without the other.
+          (DRAFT ? '' :
+            '<button id="efh-apply" style="background:#1E5A3A;color:#fff;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer;font-weight:700">Aplicar no e-Fatura</button> ') +
           '<button id="efh-export" style="background:#034ad8;color:#fff;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer;font-weight:600">Copiar plano</button> ' +
-          '<button id="efh-mail" style="background:#fff;color:#034ad8;border:1px solid #034ad8;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer;font-weight:600">Enviar por email</button> ' +
-          '<span id="efh-status" role="status" aria-live="polite" style="color:#555"></span></div>';
+          '<button id="efh-mailto" style="background:#fff;color:#034ad8;border:1px solid #034ad8;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer;font-weight:600">Enviar por email</button> ' +
+          '<span id="efh-status" role="status" aria-live="polite" style="color:#555"></span></div>' +
+          '</div>';
+
+        (function () {
+          var tr = document.getElementById("efh-tab-r"), td = document.getElementById("efh-tab-d");
+          var pr = document.getElementById("efh-pane-r"), pd = document.getElementById("efh-pane-d");
+          function show(res) {
+            pr.style.display = res ? "" : "none";
+            pd.style.display = res ? "none" : "";
+            tr.setAttribute("aria-selected", res ? "true" : "false");
+            td.setAttribute("aria-selected", res ? "false" : "true");
+            tr.style.color = res ? "#034ad8" : "#6b7780";
+            td.style.color = res ? "#6b7780" : "#034ad8";
+            tr.style.borderBottomColor = res ? "#034ad8" : "transparent";
+            td.style.borderBottomColor = res ? "transparent" : "#034ad8";
+            tr.style.fontWeight = res ? "700" : "600";
+            td.style.fontWeight = res ? "600" : "700";
+          }
+          tr.onclick = function () { show(true); };
+          td.onclick = function () { show(false); };
+        })();
         /* DRAFT MODE - the tool does NOT submit anything to the AT.
          * Writing to someone's fiscal record is not something to ship on first release: a wrong
          * sector is the user's declaration, not ours. So this builds the plan and hands it over,
@@ -511,7 +811,7 @@
           var lines = ["Plano de classificacao e-Fatura - " + year, ""];
           document.querySelectorAll(".efh-ck").forEach(function (ck) {
             if (!ck.checked) return;
-            var i = +ck.dataset.i, x = pend[i];
+            var i = +ck.dataset.i, x = actionable[i];
             var sec = document.querySelector('.efh-sec[data-i="' + i + '"]').value;
             lines.push(x.dataEmissaoDocumento + "  " + name34(x) + "  EUR" + eur(x.valorTotal) +
                        "  ->  " + sec + " (" + SECTORS[sec] + ")");
@@ -525,6 +825,7 @@
           return lines.join("\n");
         }
         document.getElementById("efh-export").onclick = function () {
+          sendOutcomes(window.__efhPend);
           var t = planText();
           if (navigator.clipboard) {
             navigator.clipboard.writeText(t).then(function () {
@@ -537,31 +838,43 @@
             document.getElementById("efh-status").textContent = "Plano copiado.";
           }
         };
-        document.getElementById("efh-mail").onclick = function () {
+        document.getElementById("efh-mailto").onclick = function () {
           // mailto keeps this client-side: the plan goes straight to the user's own mail client,
           // it never touches a server of ours.
           var subj = "Plano e-Fatura " + year;
           window.location.href = "mailto:?subject=" + encodeURIComponent(subj) +
             "&body=" + encodeURIComponent(planText());
         };
-        restoreEdits(pend);               // re-apply edits made before a household change
+        // Wire the live-submit button only when it exists (DRAFT off). sendOutcomes() fires here
+        // too, because clicking Aplicar is a decision just like Copiar plano is.
+        var applyBtn = document.getElementById("efh-apply");
+        if (applyBtn) applyBtn.onclick = function () { sendOutcomes(window.__efhPend); applySelected(); };
+        restoreEdits(actionable);         // re-apply edits made before a household change
         renderBars();
         (function () {
           var o = optimise(), box = document.getElementById("efh-opt");
           window.__efhOpt = o;
+          var rRoom = [], rFull = [];
+          ["C05", "C06", "C07", "C08", "C99"].forEach(function (s2) {
+            (headroom(s2) > 1 ? rRoom : rFull).push(SECTORS[s2] || s2);
+          });
+          renderResumo(o, pend.length, rRoom, rFull, recoverable, movR.length);
           if (!box) return;
+          // Same honest framing as the Resumo: recoverable is the MOVABLE gain, not the raw
+          // overflow. `reg` must be movR - o.moves is always empty for R rows (cascade pins them
+          // to their own attribution), so the old "ver quais" never listed anything.
           var bits = [];
-          if (o.wasted > 1) {
-            bits.push('<b style="color:#b00">\u20ac' + o.wasted.toFixed(0) + ' de dedu\u00e7\u00e3o desperdi\u00e7ada</b> ' +
-                      '(tetos j\u00e1 cheios - essas faturas n\u00e3o valem nada onde est\u00e3o)');
-          }
-          var reg = o.moves.filter(function (m) { return m.x.estadoBeneficio === "R"; });
-          if (o.after - o.before > 1) {
-            bits.push('Realoca\u00e7\u00e3o \u00f3tima valeria <b>+\u20ac' + (o.after - o.before).toFixed(0) + '</b>' +
-                      (reg.length ? ' (inclui <b>' + reg.length + '</b> j\u00e1 registadas que podes alterar no e-Fatura)' : ''));
+          var reg = movR;
+          if (movR.length && recoverable > 1) {
+            bits.push('Podes recuperar <b style="color:#1E5A3A">\u20ac' + recoverable.toFixed(2) + '</b> ' +
+                      'movendo <b>' + movR.length + '</b> fatura' + (movR.length === 1 ? '' : 's') +
+                      ' j\u00e1 registada' + (movR.length === 1 ? '' : 's') + ' para um setor com espa\u00e7o');
+          } else if (o.wasted > 1) {
+            bits.push('<span style="color:#6b7780">\u20ac' + o.wasted.toFixed(0) + ' acima do teto de ' +
+                      'Despesas Gerais - <b>normal</b>, e sem outro setor registado n\u00e3o h\u00e1 nada a mover.</span>');
           }
           if (!bits.length) { box.innerHTML = '<div style="color:#128a3a;font-size:12px">\u2713 Nada por aproveitar - as tuas faturas j\u00e1 est\u00e3o nos melhores setores poss\u00edveis.</div>'; return; }
-          box.innerHTML = '<div style="background:#fff8e6;border:1px solid #e8d9a8;border-radius:6px;padding:8px;font-size:12px">' +
+          box.innerHTML = '<div style="background:' + (movR.length ? '#eef7f0;border:1px solid #bfe0c8' : '#f4f6f9;border:1px solid #d5dae1') + ';border-radius:6px;padding:8px;font-size:12px">' +
             bits.join('<br>') +
             (reg.length ? ' <a href="#" id="efh-optmore" style="color:#034ad8">ver quais</a>' : '') + '</div>';
           var more = document.getElementById("efh-optmore");
@@ -570,7 +883,7 @@
             more.outerHTML = '<div style="margin-top:6px;max-height:130px;overflow:auto">' +
               reg.slice(0, 40).map(function (m) {
                 return '<div>' + esc(m.x.dataEmissaoDocumento) + '  |  ' + esc(name34(m.x)) +
-                       '  |  \u20ac' + eur(m.x.valorTotal) + ' - <b>' + m.from + ' -> ' + m.to + '</b></div>';
+                       '  |  \u20ac' + eur(m.x.valorTotal) + ' - <b>' + (m.x.actividadeEmitente || "C99") + ' -> ' + m.to + '</b></div>';
               }).join("") + '</div>';
           };
         })();
@@ -578,7 +891,7 @@
         document.querySelectorAll(".efh-sec").forEach(function (el) { el.onchange = renderBars; });
         // changing the household re-runs the whole suggestion pass (ceilings move, so do sectors)
         var reprofile = function () {
-          snapshotEdits(pend);              // keep the user's corrections across the rebuild
+          snapshotEdits(actionable);        // keep the user's corrections across the rebuild
           saveProfile({ joint: document.getElementById("efh-joint").checked,
                         mono: document.getElementById("efh-mono").checked });
           run(caemap);
@@ -651,13 +964,14 @@
     document.querySelectorAll(".efh-ck").forEach(function (ck) {
       if (ck.checked) { var i = +ck.dataset.i; picks.push({ x: pend[i], sec: document.querySelector('.efh-sec[data-i="' + i + '"]').value }); }
     });
-    var st = document.getElementById("efh-status"); document.getElementById("efh-apply").disabled = true;
+    var st = document.getElementById("efh-status");
+    var applyBtn = document.getElementById("efh-apply"); if (applyBtn) applyBtn.disabled = true;
     var ok = 0, fail = 0, n = 0, errs = [];
     (function next() {
       if (n >= picks.length) {
         st.innerHTML = "<b>" + ok + " aplicadas</b>, " + fail + " falhas. Atualize a p\u00e1gina para confirmar.";
         if (errs.length) {
-          var reported = errs.some(function (e) { return /atividade registada/i.test(e.reason); });
+          var reported = shareOn() && errs.some(function (e) { return /atividade registada/i.test(e.reason); });
           st.innerHTML += '<div style="margin-top:6px;padding:6px;background:#fdecec;border-left:3px solid #b00;' +
             'color:#5a0000;max-height:120px;overflow:auto;font-size:11px">' +
             errs.slice(0, 12).map(function (e) {
@@ -671,14 +985,26 @@
         return;
       }
       var p = picks[n++]; st.textContent = "A aplicar " + n + "/" + picks.length + "...";
+      /* Two write paths, chosen by the invoice's state. A PENDING fatura is resolved; an
+       * already-ATTRIBUTED one is re-classified via Alterar. Both server-render their form (with
+       * every hidden field) into the same detalhe page, so the mechanism is identical - only the
+       * form, the action, and the sector field name differ. Confirmed against the raw HTML on
+       * 20-07-2026: the detalhe page carries resolverPendencia AND alterarDocumentoAdquirente forms
+       * with all hidden inputs, so DOMParser finds them without running any JS. */
+      var isPend = /^P$/i.test(p.x.estadoBeneficio || "");
+      var formSel = isPend ? '[action="resolverPendenciaAdquirente.action"]'
+                           : '[action="alterarDocumentoAdquirente.action"]';
+      var postUrl = isPend ? "/resolverPendenciaAdquirente.action" : "/alterarDocumentoAdquirente.action";
+      var secField = isPend ? "ambitoAquisicaoPend" : "ambitoAquisicao";
       fetch("/detalheDocumentoAdquirente.action?idDocumento=" + p.x.idDocumento + "&dataEmissaoDocumento=" + p.x.dataEmissaoDocumento,
         { credentials: "include" }).then(function (r) { return r.text(); }).then(function (htmlText) {
-        var form = new DOMParser().parseFromString(htmlText, "text/html").querySelector("#resolverPendencia");
+        var doc = new DOMParser().parseFromString(htmlText, "text/html");
+        var form = doc.querySelector("form" + formSel) || doc.querySelector("#resolverPendencia");
         if (!form) throw new Error("form em falta");
         var body = new URLSearchParams();
         form.querySelectorAll('input[type="hidden"]').forEach(function (inp) { body.set(inp.name, inp.value || ""); });
-        body.set("ambitoAquisicaoPend", p.sec);
-        return fetch("/resolverPendenciaAdquirente.action", { method: "POST", credentials: "include",
+        body.set(secField, p.sec);
+        return fetch(postUrl, { method: "POST", credentials: "include",
           headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: body.toString() });
       }).then(function (r) { return r.text(); }).then(function (t) {
         if (/sucesso/i.test(t)) { ok++; next(); return; }
@@ -692,7 +1018,11 @@
         var m = /atividade registada[^<]*/i.exec(t.replace(/<[^>]*>/g, " "));
         var reason = m ? m[0].trim().slice(0, 90) : "recusada pela AT";
         errs.push({ nome: name34(p.x), sec: p.sec, reason: reason });
-        if (/atividade registada/i.test(reason)) {
+        // Only report the merchant NIF for re-verification if the user opted into sharing. It is
+        // the SAME data the learning loop sends (a merchant NIF, nothing of yours), so it lives
+        // under the same consent - otherwise the transparency page's "se nao ativares nada, nada
+        // sai" would not hold. Server accepts this unauthenticated but rate-limited.
+        if (shareOn() && /atividade registada/i.test(reason)) {
           try {
             fetch(CAEMAP_URL.replace(/sectors\.json$/, "refresh/") + p.x.nifEmitente, { method: "POST" })
               .catch(function () {});

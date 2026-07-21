@@ -23,6 +23,9 @@ global.fetch=(u,o)=>{const s=String(u);
   if(/resolverPendencia/.test(s)){ posted.push(s); }
   if(s.includes("sectors.json")) return Promise.resolve({ok:true,json:()=>Promise.resolve({"9":["C99","C05"]})});
   return Promise.resolve({ok:true,json:()=>Promise.resolve({linhas:rows}),text:()=>Promise.resolve("")});};
+// The consent gate (tool.js) blocks all reads until accepted. Seed a prior acceptance so
+// these tests exercise the RETURNING-USER path; test-consent.js covers the gate itself.
+global.localStorage.setItem("efh-consent-v1", JSON.stringify({ok:true,share:false}));
 eval(fs.readFileSync(process.argv[2],"utf8"));
 setTimeout(()=>{
   const d=window.document;
@@ -33,7 +36,13 @@ setTimeout(()=>{
   console.log("  suggestions offered:", picks.join(" vs ")||"(none)");
   console.log("  they DIVERGE (not decorative):", new Set(picks).size>1);
   const sel=d.querySelector(".efh-sec");
-  console.log("  pre-selected:", sel&&sel.value, "| truthful default (C99 = primary CAE):", sel&&sel.value==="C99");
+  // Default is OTIMIZADA (changed 20-07-2026). It must equal the Otimizada button's sector,
+  // and that sector must be one the merchant is really registered for - the point of the
+  // change was to show the benefit, not to invent a sector.
+  const optBtn=[...d.querySelectorAll(".efh-pick")].find(b=>b.style.borderColor.includes("128a3a")||/128a3a/.test(b.getAttribute("style")||""));
+  const optSec=optBtn&&optBtn.dataset.sec;
+  console.log("  pre-selected:", sel&&sel.value, "| equals Otimizada:", !!optSec&&sel&&sel.value===optSec);
+  console.log("  merchant really registered for it:", !!optSec&&(["C05","C99"].includes(optSec)));
   const opt=[...d.querySelectorAll(".efh-pick")].find(b=>b.dataset.sec!=="C99");
   if(opt){ opt.click(); console.log("  after clicking Otimizada:", sel.value, "(expected C05)"); }
   else console.log("  *** no divergent suggestion to click ***");

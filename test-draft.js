@@ -24,6 +24,9 @@ global.fetch=(u,o)=>{const s=String(u);
   if(/resolverPendencia/.test(s)){ posted.push(s); }
   if(s.includes("sectors.json")) return Promise.resolve({ok:true,json:()=>Promise.resolve({"2":["C05","C99"],"3":["C03","C99"]})});
   return Promise.resolve({ok:true,json:()=>Promise.resolve({linhas:rows}),text:()=>Promise.resolve("")});};
+// The consent gate (tool.js) blocks all reads until accepted. Seed a prior acceptance so
+// these tests exercise the RETURNING-USER path; test-consent.js covers the gate itself.
+global.localStorage.setItem("efh-consent-v1", JSON.stringify({ok:true,share:false}));
 eval(fs.readFileSync(process.argv[2],"utf8"));
 setTimeout(()=>{
   const d=window.document;

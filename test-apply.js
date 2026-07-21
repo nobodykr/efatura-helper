@@ -41,6 +41,9 @@ global.fetch = (u, opt) => {
   }
   return Promise.resolve({ok:true,json:()=>Promise.resolve({}),text:()=>Promise.resolve("")});
 };
+// The consent gate (tool.js) blocks all reads until accepted. Seed a prior acceptance so
+// these tests exercise the RETURNING-USER path; test-consent.js covers the gate itself.
+global.localStorage.setItem("efh-consent-v1", JSON.stringify({ok:true,share:false}));
 eval(fs.readFileSync(process.argv[2] || "/mnt/data/apps/efatura-helper/tool.js","utf8"));
 
 setTimeout(()=>{

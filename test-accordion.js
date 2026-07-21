@@ -4,12 +4,15 @@ const rows=[{estadoBeneficio:"R",nifEmitente:"1",nomeEmitente:"Super",actividade
             {estadoBeneficio:"P",nifEmitente:"2",nomeEmitente:"Farm",valorTotal:10000,valorTotalIva:600,dataEmissaoDocumento:"2026-06-01",idDocumento:"p1"}];
 const dom=new JSDOM(`<!doctype html><body></body>`,{url:"https://faturas.portaldasfinancas.gov.pt/x"});
 const {window}=dom; global.window=window; global.document=window.document; global.location=window.location;
-global.localStorage={_d:{},getItem:()=>null,setItem(){}}; window.localStorage=global.localStorage;
+global.localStorage={_d:{},getItem(k){return this._d[k]??null},setItem(k,v){this._d[k]=String(v)}}; window.localStorage=global.localStorage;
 global.crypto={getRandomValues:a=>a,subtle:{}}; global.TextEncoder=require("util").TextEncoder;
 global.navigator={clipboard:{writeText:()=>Promise.resolve()}}; global.alert=()=>{};
 global.fetch=u=>String(u).includes("sectors.json")
  ? Promise.resolve({ok:true,json:()=>Promise.resolve({"1":["C99"],"2":["C05","C99"]})})
  : Promise.resolve({ok:true,json:()=>Promise.resolve({linhas:rows}),text:()=>Promise.resolve("")});
+// The consent gate (tool.js) blocks all reads until accepted. Seed a prior acceptance so
+// these tests exercise the RETURNING-USER path; test-consent.js covers the gate itself.
+global.localStorage.setItem("efh-consent-v1", JSON.stringify({ok:true,share:false}));
 eval(fs.readFileSync(process.argv[2],"utf8"));
 setTimeout(()=>{
   const d=window.document, det=d.querySelector("#efh-bars details");

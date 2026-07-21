@@ -1,7 +1,7 @@
 // The page publishes an exact list of the network requests the tool makes, so someone can audit
 // it before running it. A claim like that rots the moment anyone adds a fetch. This pins it:
-// clicking the bookmarklet must make EXACTLY ONE off-site request, a GET of the public CAE map,
-// and never a POST anywhere.
+// clicking the bookmarklet must make ZERO requests until the user accepts the consent gate, then
+// EXACTLY ONE off-site request, a GET of the public CAE map, and never a POST anywhere.
 //   node test-network.js tool.js
 const { chromium } = require("playwright-core");
 const { readFileSync } = require("fs");
@@ -25,6 +25,18 @@ const rows = [{ estadoBeneficio: "P", nifEmitente: "9", nomeEmitente: "Pingo Doc
   reqs.length = 0;                       // count only what the tool itself does
   await p.addScriptTag({ content: readFileSync(process.argv[2], "utf8") });
   await p.waitForSelector("#efh-panel", { timeout: 15000 });
+  await p.waitForTimeout(2500);
+
+  /* PHASE 1 - before consent. The gate must make the tool inert: not one request, not even the
+   * public CAE map, and above all no read of the user's faturas. This is the stronger half of
+   * the claim and it did not exist before the gate was added. */
+  const before = [...new Set(reqs)];
+  const okSilent = before.length === 0;
+  console.log("  BEFORE consent - requests:", before.length, before.join(", ") || "(none)");
+  console.log("  silent until the user agrees:", okSilent);
+
+  /* PHASE 2 - accept, then the published list applies exactly as before. */
+  await p.click("#efh-go", { timeout: 5000 });
   await p.waitForTimeout(4000);
   const uniq = [...new Set(reqs)];
   const offsite = uniq.filter(r => !r.includes("portaldasfinancas.gov.pt"));
@@ -39,7 +51,7 @@ const rows = [{ estadoBeneficio: "P", nifEmitente: "9", nomeEmitente: "Pingo Doc
   console.log("  it is the public CAE map:", okMap);
   console.log("  no POST anywhere:", okNoPost);
   await b.close();
-  if (!(okCount && okGet && okMap && okNoPost)) {
+  if (!(okSilent && okCount && okGet && okMap && okNoPost)) {
     console.log("  *** FAIL: the published request list is no longer true ***");
     process.exit(1);
   }
