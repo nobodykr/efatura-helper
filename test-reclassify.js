@@ -64,9 +64,12 @@ setTimeout(() => {
   const btn = d.getElementById("efh-apply");
   console.log("  apply button present with DRAFT off:", !!btn);
   if (!btn) { console.log("  *** FAIL"); process.exit(1); }
-  // R1 (surfacing attributed rows in the table) is not built yet, so the table shows only the
-  // pending row. To unit-test the WRITE ROUTING for both states, drive __efhPend directly with one
-  // pending and one attributed row and synthesise the two ticked controls applySelected reads.
+  // R1 (surfacing already-attributed rows for correction) IS built - see tool.js where
+  // window.__efhPend is set to the actionable list, and test-r1.js which covers it. This comment
+  // used to say it was "not built yet", which told a reader the tool lacked a feature it has.
+  // We still drive __efhPend directly here rather than through the UI, because this test is about
+  // WRITE ROUTING for both states in isolation: one pending + one attributed row, with the two
+  // ticked controls applySelected reads synthesised.
   window.__efhPend = [rows[1], rows[0]];   // [0]=pending p1, [1]=attributed r1
   d.querySelector("#efh-pane-d").insertAdjacentHTML("beforeend",
     '<input type="checkbox" class="efh-ck" data-i="0" checked>' +

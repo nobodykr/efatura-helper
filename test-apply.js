@@ -42,18 +42,32 @@ global.fetch = (u, opt) => {
   return Promise.resolve({ok:true,json:()=>Promise.resolve({}),text:()=>Promise.resolve("")});
 };
 // The consent gate (tool.js) blocks all reads until accepted. Seed a prior acceptance so
-// these tests exercise the RETURNING-USER path; test-consent.js covers the gate itself.
+// these tests exercise the RETURNING-USER path; test-network.js phase 1 covers the gate itself.
 global.localStorage.setItem("efh-consent-v1", JSON.stringify({ok:true,share:false}));
-eval(fs.readFileSync(process.argv[2] || "/mnt/data/apps/efatura-helper/tool.js","utf8"));
+// This test exercises the !DRAFT apply path, so it must flip the flag in memory - same trick as
+// test-reclassify.js. Without it, #efh-apply does not exist and line ~58 threw "Cannot read
+// properties of null": a public file that crashed on the repo's own shipped tool, and had
+// therefore been verifying nothing since DRAFT was turned on. The file on disk stays DRAFT=true;
+// test-draft.js guards that.
+{
+  const p = process.argv[2] || __dirname + "/tool.js";
+  const src = fs.readFileSync(p, "utf8");
+  if (!/var DRAFT = true;/.test(src)) { console.log("  *** FAIL: could not find DRAFT flag to flip"); process.exit(1); }
+  eval(src.replace("var DRAFT = true;", "var DRAFT = false;"));
+}
 
 setTimeout(()=>{
   const d=window.document;
   const cks=[...d.querySelectorAll(".efh-ck")], sels=[...d.querySelectorAll(".efh-sec")];
   console.log("pending rows:", cks.length);
   console.log("auto-suggested:", sels.map(s=>s.value).join(", "));
-  // user removes the supermarket row and moves the cafe to C99 by hand
+  // User removes the supermarket row, and moves the cafe to C03 by hand.
+  // The override MUST differ from the auto-suggestion or the assertion below proves nothing:
+  // the cafe (nif 3) is registered for C03 and C99, and the tool suggests C99 - so C03 is a
+  // genuine user override. This used to set "C99", the value the tool had already chosen, so
+  // "hand-edited sector honoured" passed without ever exercising an override.
   cks[2].checked=false; cks[2].onchange&&cks[2].onchange();
-  sels[1].value="C99"; sels[1].onchange&&sels[1].onchange();
+  sels[1].value="C03"; sels[1].onchange&&sels[1].onchange();
   console.log("after edits   :", sels.map((s,i)=>s.value+(cks[i].checked?"":"[unticked]")).join(", "));
   d.getElementById("efh-apply").click();
   setTimeout(()=>{
@@ -65,7 +79,7 @@ setTimeout(()=>{
     const sent=posted.map(b=>new URLSearchParams(b).get("docId"));
     console.log("\n   unticked row excluded?:", sent.includes("p3")?"*** NO - BUG ***":"YES");
     console.log("   hand-edited sector honoured?:",
-      new URLSearchParams(posted.find(b=>new URLSearchParams(b).get("docId")==="p2")).get("ambitoAquisicaoPend")==="C99"?"YES":"*** NO ***");
+      new URLSearchParams(posted.find(b=>new URLSearchParams(b).get("docId")==="p2")).get("ambitoAquisicaoPend")==="C03"?"YES":"*** NO ***");
     console.log("   status line:", d.getElementById("efh-status").textContent);
   }, 600);
 }, 400);

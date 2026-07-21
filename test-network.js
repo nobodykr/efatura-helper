@@ -5,7 +5,7 @@
 //   node test-network.js tool.js
 const { chromium } = require("playwright-core");
 const { readFileSync } = require("fs");
-const EXE = "/home/diogo/.cache/ms-playwright/chromium-1228/chrome-linux64/chrome";
+const EXE = process.env.CHROME_PATH || "/usr/bin/chromium"; // override with CHROME_PATH=... (was a hardcoded ~/.cache path, which leaked a username and only ran on one machine)
 const rows = [{ estadoBeneficio: "P", nifEmitente: "9", nomeEmitente: "Pingo Doce", valorTotal: 20000,
                 valorTotalIva: 1200, dataEmissaoDocumento: "2026-06-01", idDocumento: "p1" }];
 (async () => {
