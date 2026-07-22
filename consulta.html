@@ -291,9 +291,14 @@
                               + ' por ajuste directo</span>' : '')
         + '</div>';
       (cp.maiores||[]).forEach(function(m){
-        body += '<div class="cae"><span class="c mono">' + eur(m.valor_eur) + '</span> '
-              + '<span class="muted">' + esc(m.ano) + '</span> '
-              + '<span class="d">' + esc(m.adjudicante || "") + '</span>'
+        // Each row links to the full contract record. m.id is the BASE/IMPIC idcontrato; the
+        // detail page fetches everything published about it, so a figure here is always traceable
+        // to the document behind it.
+        var head = '<span class="c mono">' + eur(m.valor_eur) + '</span> '
+                 + '<span class="muted">' + esc(m.ano) + '</span> '
+                 + '<span class="d">' + esc(m.adjudicante || "") + '</span>';
+        body += '<div class="cae">'
+              + (m.id ? '<a href="/contrato?id=' + encodeURIComponent(m.id) + '">' + head + '</a>' : head)
               + (m.objecto ? '<div class="s" style="color:var(--mute)">' + esc(m.objecto) + '</div>' : '')
               + '</div>';
       });

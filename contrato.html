@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="/favicon.ico" sizes="48x48" type="image/x-icon">
+<link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png">
+<title>Contrato público | Fatura Boa</title>
+<meta name="description" content="Detalhe de um contrato público português: entidade adjudicante, adjudicatários, preços, datas, procedimento e concorrentes. Dados abertos do Portal BASE / IMPIC.">
+<!-- noindex on purpose. This is a per-record detail viewer reached from a NIF lookup, not a
+     landing page, and there are 2.2M contracts - indexing them would flood the crawl budget and
+     duplicate base.gov.pt, which already publishes every one. The tool pages are what should rank. -->
+<meta name="robots" content="noindex,follow">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+      crossorigin="anonymous" referrerpolicy="no-referrer">
+<style>
+  :root{
+    --pri:#034ad8; --pri-dark:#021c51; --pri-mid:#1b4dab; --pri-light:#1CA3FC;
+    --ink:#2B363C; --ink2:#4a5a63; --mute:#6b7780;
+    --bg:#ffffff; --bg2:#f4f6f9; --bg3:#E1E4EA; --rule:#d5dae1;
+    --red:#c8102e; --green:#1E5A3A; --amber:#8a6100;
+    --focus:#f408fc; --r:6px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:400 16px/1.6 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px;margin:0 auto;padding:0 24px}
+  code,.num,.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+  a{color:var(--pri);text-underline-offset:3px}
+  a:hover{color:var(--pri-dark)}
+  a:focus-visible,button:focus-visible,input:focus-visible{
+    outline:3px solid var(--focus);outline-offset:2px;border-radius:2px}
+
+  header{background:var(--pri-dark);color:#fff;padding:26px 0}
+  header h1{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;line-height:1.3}
+  header p{margin:0;color:#cfd9ef;font-size:.95rem;max-width:70ch}
+  header a{color:#9fc0ff}
+
+  main{padding:28px 0 60px}
+  .back{display:inline-block;margin:0 0 18px;font-size:.9rem}
+
+  .card{border:1px solid var(--rule);border-radius:var(--r);padding:20px 22px;margin:0 0 16px;background:#fff}
+  .card h2{margin:0 0 14px;font-size:1.05rem;line-height:1.35;
+           display:flex;align-items:center;gap:8px;color:var(--pri-dark)}
+  .card h2 i{color:var(--pri)}
+
+  /* headline numbers */
+  .figs{display:flex;flex-wrap:wrap;gap:22px;margin:0 0 4px}
+  .fig{min-width:120px}
+  .fig .n{font:600 1.5rem 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .fig .l{color:var(--mute);font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
+  .fig .n.up{color:var(--red)} .fig .n.down{color:var(--green)}
+
+  .row{display:flex;gap:12px;padding:9px 0;border-top:1px solid var(--bg3);font-size:.94rem}
+  .row:first-of-type{border-top:0}
+  .row .k{flex:0 0 150px;color:var(--mute);font-size:.86rem;padding-top:2px}
+  .row .v{flex:1;min-width:0}
+
+  .party{padding:8px 0;border-top:1px dotted var(--bg3)}
+  .party:first-child{border-top:0}
+  .party .nm{font-weight:600}
+  .party .nif{color:var(--mute);font-size:.85rem}
+  .party a{font-size:.82rem;margin-left:8px}
+
+  .pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:.78rem;font-weight:600;
+        border:1px solid;margin:0 6px 5px 0;white-space:nowrap}
+  .pill.solo{background:#fdeaed;border-color:var(--red);color:var(--red)}
+  .pill.info{background:var(--bg2);border-color:var(--rule);color:var(--ink2)}
+  .muted{color:var(--mute)}
+  .note{background:var(--bg2);border-left:3px solid var(--pri-light);padding:12px 14px;
+        border-radius:0 var(--r) var(--r) 0;font-size:.86rem;color:var(--ink2);margin:14px 0 0}
+  .err{background:#fdeaed;border-left:3px solid var(--red);padding:14px 16px;color:#7a0b1c;
+       border-radius:0 var(--r) var(--r) 0}
+  footer{border-top:1px solid var(--rule);padding:22px 0;color:var(--mute);font-size:.85rem}
+  @media (max-width:560px){ .row{flex-direction:column;gap:2px} .row .k{flex:none} }
+
+  .mast{border-bottom:3px solid var(--pri);background:#fff}
+  .mast .wrap{display:flex;align-items:center;gap:14px;min-height:72px;flex-wrap:wrap}
+  .mast .mark{width:44px;height:44px;flex:none;display:block;line-height:0;border-radius:var(--r)}
+  .mast .mark svg{width:100%;height:100%;display:block}
+  .mast .mark .plate,.mast .mark .cut{fill:var(--pri);transition:fill .15s ease}
+  .mast .mark:hover .plate,.mast .mark:hover .cut{fill:var(--pri-dark)}
+  .mast .mark:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+  .mast .nm{font-weight:600;font-size:1.05rem;line-height:1.2;color:var(--ink)}
+  .mast .nm span{display:block;font-weight:400;font-size:.8rem;color:var(--mute)}
+  .mast .mastnav{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;
+                 border:1.5px solid var(--pri);border-radius:var(--r);color:var(--pri);
+                 font-weight:600;font-size:.92rem;text-decoration:none;white-space:nowrap}
+  .mast .mastnav:first-of-type{margin-left:auto}
+  .mast .mastnav + .mastnav{margin-left:10px}
+  .mast .mastnav:hover{background:var(--pri);color:#fff}
+  @media (max-width:560px){
+    .mast .mastnav,.mast .mastnav:first-of-type,.mast .mastnav + .mastnav{
+      margin-left:0;width:100%;justify-content:center;margin-top:8px}
+  }
+</style>
+</head>
+<body>
+
+<div class="mast">
+  <div class="wrap">
+    <a class="mark" href="/" aria-label="Fatura Boa, início">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <rect class="plate" width="32" height="32" rx="7"/>
+        <path fill="#fff" d="M6.75 6.5 H13.375 C18.875 6.5 22.75 10.3125 22.75 16
+                             C22.75 21.6875 18.875 25.5 13.375 25.5 H6.75 Z
+                             M10 9.5 V22.5 H13.1875 C16.8125 22.5 19.5 20 19.5 16
+                             C19.5 12 16.8125 9.5 13.1875 9.5 H10 Z"/>
+        <path fill="#fff" d="M18.25 25.5 L23.875 6.5 H26.375 L20.75 25.5 Z"/>
+        <path fill="#fff" d="M25.25 6.5 H27.75 L22.125 25.5 H19.625 Z"/>
+        <rect class="cut" x="20.875" y="16.375" width="4.875" height="2.25" rx="0.5"/>
+        <path class="cut" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/>
+      </svg>
+    </a>
+    <div class="nm">Fatura Boa<span>Contratos públicos, dados abertos do Portal BASE / IMPIC</span></div>
+    <a class="mastnav" href="/deducoes">Deduções</a>
+    <a class="mastnav" href="/consulta">Consultar NIF</a>
+  </div>
+</div>
+
+<header>
+  <div class="wrap">
+    <h1 id="htitle">Contrato público</h1>
+    <p>Registo publicado no Portal BASE, gerido pelo IMPIC. Todos os valores aqui são factos do
+       registo oficial, não interpretações. Para o documento na fonte, use a ligação ao BASE.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <a class="back" href="/consulta"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Voltar à consulta de NIF</a>
+  <div id="out"><p class="muted">A carregar&hellip;</p></div>
+</main>
+
+<footer class="wrap">
+  <a href="/">Fatura Boa</a> &middot;
+  Dados: <a href="https://www.base.gov.pt/">Portal BASE</a> (IMPIC) &middot;
+  Registo público de contratação pública
+</footer>
+
+<script>
+(function(){
+  var API = "https://cae-db.diogoandrade.com";
+  var out = document.getElementById("out");
+
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function eur(n){ return (n==null?"—":(n).toLocaleString("pt-PT",{maximumFractionDigits:2})+" €"); }
+  function row(k,v){ return v==null||v===""?"":'<div class="row"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
+  function param(n){ return new URLSearchParams(location.search).get(n); }
+
+  var id = (param("id")||"").replace(/\D/g,"");
+  if(!id){
+    out.innerHTML = '<div class="err">Falta o identificador do contrato. '
+                  + 'Chegue aqui a partir de uma <a href="/consulta">consulta de NIF</a>.</div>';
+    return;
+  }
+
+  function render(d){
+    document.getElementById("htitle").textContent = d.objecto ? d.objecto : ("Contrato " + id);
+
+    // headline figures - the numbers a reader scans first
+    var figs = '<div class="figs">';
+    figs += '<div class="fig"><div class="n">'+eur(d.preco_contratual)+'</div><div class="l">Preço contratual</div></div>';
+    if(d.preco_base!=null)
+      figs += '<div class="fig"><div class="n">'+eur(d.preco_base)+'</div><div class="l">Preço base</div></div>';
+    if(d.desvio_base_pct!=null){
+      var cls = d.desvio_base_pct>0?"up":(d.desvio_base_pct<0?"down":"");
+      figs += '<div class="fig"><div class="n '+cls+'">'+(d.desvio_base_pct>0?"+":"")+d.desvio_base_pct+'%</div>'
+            + '<div class="l">vs. preço base</div></div>';
+    }
+    if(d.preco_efetivo!=null && d.preco_efetivo!==d.preco_contratual && d.preco_efetivo>0)
+      figs += '<div class="fig"><div class="n">'+eur(d.preco_efetivo)+'</div><div class="l">Preço efetivo</div></div>';
+    figs += '</div>';
+
+    var h = '<div class="card">' + figs;
+    // single-bidder flag: a fact, phrased as one. It is the reader's cue to look, not a verdict.
+    if(d.n_concorrentes===1 && d.tipo_procedimento && !/ajuste/i.test(d.tipo_procedimento))
+      h += '<div style="margin-top:10px"><span class="pill solo">'
+         + '<i class="fa-solid fa-user" aria-hidden="true"></i> Um único concorrente</span>'
+         + '<span class="muted" style="font-size:.85rem">num '+esc(d.tipo_procedimento)+'</span></div>';
+    h += '</div>';
+
+    // the record
+    h += '<div class="card"><h2><i class="fa-solid fa-file-contract"></i> O contrato</h2>';
+    h += row("Objeto", esc(d.objecto));
+    if(d.desc_contrato && d.desc_contrato!==d.objecto) h += row("Descrição", esc(d.desc_contrato));
+    h += row("Tipo de contrato", esc(d.tipo_contrato));
+    h += row("Procedimento", esc(d.tipo_procedimento));
+    h += row("CPV", d.cpv?'<span class="mono">'+esc(d.cpv)+'</span>':"");
+    h += row("Local de execução", esc(d.local));
+    h += row("Prazo", d.prazo?esc(d.prazo)+' dias':"");
+    h += row("Regime", esc(d.regime));
+    h += row("Fundamentação", esc(d.fundamentacao));
+    if(d.fundament_ajuste) h += row("Fundam. ajuste direto", esc(d.fundament_ajuste));
+    h += '</div>';
+
+    // dates
+    h += '<div class="card"><h2><i class="fa-regular fa-calendar"></i> Datas</h2>';
+    h += row("Publicação", esc(d.data_publicacao));
+    h += row("Celebração", esc(d.data_celebracao));
+    h += row("Fecho", esc(d.data_fecho));
+    h += '</div>';
+
+    // entity + suppliers
+    h += '<div class="card"><h2><i class="fa-solid fa-building-columns"></i> Entidade adjudicante</h2>';
+    h += '<div class="party"><div class="nm">'+esc(d.adjudicante||"—")+'</div>'
+       + (d.adjudicante_nif?'<span class="nif mono">NIF '+esc(d.adjudicante_nif)+'</span>'
+          +' <a href="/consulta?q='+encodeURIComponent(d.adjudicante_nif)+'">ver perfil</a>':'')
+       + '</div></div>';
+
+    var ad = d.adjudicatarias||[];
+    h += '<div class="card"><h2><i class="fa-solid fa-handshake"></i> Adjudicatário'
+       + (ad.length>1?'s <span class="pill info" style="margin-left:4px">consórcio de '+ad.length+'</span>':'')
+       + '</h2>';
+    h += ad.map(function(p){
+      return '<div class="party"><div class="nm">'+esc(p.nome||"(sem nome)")+'</div>'
+           + (p.nif?'<span class="nif mono">NIF '+esc(p.nif)+'</span>'
+              +' <a href="/consulta?q='+encodeURIComponent(p.nif)+'">ver perfil</a>':'')
+           + '</div>';
+    }).join("") || '<span class="muted">sem adjudicatário registado</span>';
+    h += '</div>';
+
+    // bidders
+    if(d.concorrentes && d.concorrentes.length){
+      h += '<div class="card"><h2><i class="fa-solid fa-users"></i> Concorrentes ('+d.concorrentes.length+')</h2>';
+      h += d.concorrentes.map(function(p){
+        return '<div class="party"><div class="nm">'+esc(p.nome||"(sem nome)")+'</div>'
+             + (p.nif?'<span class="nif mono">NIF '+esc(p.nif)+'</span>'
+                +' <a href="/consulta?q='+encodeURIComponent(p.nif)+'">ver perfil</a>':'')
+             + '</div>';
+      }).join("");
+      h += '</div>';
+    }
+
+    if(d.obs) h += '<div class="card"><h2><i class="fa-regular fa-note-sticky"></i> Observações</h2>'
+                 + '<div>'+esc(d.obs)+'</div></div>';
+
+    h += '<div class="note"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i> '
+       + 'Estes dados são o registo público, não uma acusação. Há explicações legítimas para tudo '
+       + 'o que aqui aparece. Documento oficial no '
+       + '<a href="'+esc(d.base_url)+'" rel="noopener">Portal BASE</a>. '
+       + 'Fonte: '+esc(d.fonte||"BASE / IMPIC")+'.</div>';
+
+    out.innerHTML = h;
+  }
+
+  fetch(API+"/contrato/"+encodeURIComponent(id))
+    .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, s:r.status, j:j}; }); })
+    .then(function(x){
+      if(x.ok){ render(x.j); return; }
+      if(x.s===404)
+        out.innerHTML = '<div class="err">Contrato <span class="mono">'+esc(id)+'</span> não '
+                      + 'encontrado nos dados abertos do BASE. Pode ser anterior a 2012 ou ter '
+                      + 'sido removido do registo.</div>';
+      else
+        out.innerHTML = '<div class="err">Não foi possível carregar este contrato neste momento. '
+                      + 'Tente novamente daqui a pouco.</div>';
+    })
+    .catch(function(){
+      out.innerHTML = '<div class="err">Erro de ligação ao consultar o contrato.</div>';
+    });
+})();
+</script>
+</body>
+</html>
