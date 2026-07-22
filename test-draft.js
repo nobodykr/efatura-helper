@@ -3,8 +3,8 @@
 //   npm i jsdom && node test-draft.js tool.js
 // Confirm DRAFT MODE really cannot submit: no POST may reach resolverPendenciaAdquirente.
 const { JSDOM } = require("jsdom"); const fs=require("fs");
-const rows=[{estadoBeneficio:"P",nifEmitente:"2",nomeEmitente:"Farm&aacute;cia",valorTotal:10000,valorTotalIva:600,dataEmissaoDocumento:"2026-06-01",idDocumento:"p1"},
-            {estadoBeneficio:"P",nifEmitente:"3",nomeEmitente:"Caf&eacute;",valorTotal:5000,valorTotalIva:300,dataEmissaoDocumento:"2026-06-02",idDocumento:"p2"}];
+const rows=[{estadoBeneficio:"P",nifEmitente:"500000002",nomeEmitente:"Farm&aacute;cia",valorTotal:10000,valorTotalIva:600,dataEmissaoDocumento:"2026-06-01",idDocumento:"p1"},
+            {estadoBeneficio:"P",nifEmitente:"500000003",nomeEmitente:"Caf&eacute;",valorTotal:5000,valorTotalIva:300,dataEmissaoDocumento:"2026-06-02",idDocumento:"p2"}];
 const posted=[];
 const dom=new JSDOM(`<!doctype html><body></body>`,{url:"https://faturas.portaldasfinancas.gov.pt/x"});
 const {window}=dom; global.window=window; global.document=window.document; global.location=window.location;
@@ -22,7 +22,7 @@ window.document.execCommand = () => {
 };
 global.fetch=(u,o)=>{const s=String(u);
   if(/resolverPendencia/.test(s)){ posted.push(s); }
-  if(s.includes("sectors.json")) return Promise.resolve({ok:true,json:()=>Promise.resolve({"2":["C05","C99"],"3":["C03","C99"]})});
+  var CAEMAP={"500000002":["C05","C99"],"500000003":["C03","C99"]}; if(s.includes("/bucket/")){var _b=s.split("/bucket/")[1].split("?")[0];var _o={};for(var _k in CAEMAP){if(_k.slice(-3)===_b)_o[_k]=CAEMAP[_k];}return Promise.resolve({ok:true,json:()=>Promise.resolve(_o)});} if(s.includes("sectors.json")) return Promise.resolve({ok:true,json:()=>Promise.resolve(CAEMAP)});
   return Promise.resolve({ok:true,json:()=>Promise.resolve({linhas:rows}),text:()=>Promise.resolve("")});};
 // The consent gate (tool.js) blocks all reads until accepted. Seed a prior acceptance so
 // these tests exercise the RETURNING-USER path; test-network.js phase 1 covers the gate itself.

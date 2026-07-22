@@ -8,17 +8,17 @@ const fs = require("fs");
 
 const rows = [
   // registered - already consuming ceilings
-  { estadoBeneficio:"R", nifEmitente:"1", nomeEmitente:"Superm&atilde;o", actividadeEmitente:"C99",
+  { estadoBeneficio:"R", nifEmitente:"500000001", nomeEmitente:"Superm&atilde;o", actividadeEmitente:"C99",
     valorTotal: 60000, valorTotalIva: 0, dataEmissaoDocumento:"2026-01-10", idDocumento:"r1" },
-  { estadoBeneficio:"R", nifEmitente:"2", nomeEmitente:"Farm&aacute;cia X", actividadeEmitente:"C05",
+  { estadoBeneficio:"R", nifEmitente:"500000002", nomeEmitente:"Farm&aacute;cia X", actividadeEmitente:"C05",
     valorTotal: 20000, valorTotalIva: 1200, dataEmissaoDocumento:"2026-02-10", idDocumento:"r2" },
   // pending - the ones the user ticks/edits
-  { estadoBeneficio:"P", nifEmitente:"2", nomeEmitente:"Farm&aacute;cia X",
+  { estadoBeneficio:"P", nifEmitente:"500000002", nomeEmitente:"Farm&aacute;cia X",
     valorTotal: 10000, valorTotalIva: 600, dataEmissaoDocumento:"2026-06-01", idDocumento:"p1" },
-  { estadoBeneficio:"P", nifEmitente:"3", nomeEmitente:"Caf&eacute; Central",
+  { estadoBeneficio:"P", nifEmitente:"500000003", nomeEmitente:"Caf&eacute; Central",
     valorTotal:  5000, valorTotalIva: 300, dataEmissaoDocumento:"2026-06-02", idDocumento:"p2" },
 ];
-const caemap = { "1":["C99"], "2":["C05","C99"], "3":["C03","C99"] };
+const caemap = { "500000001":["C99"], "500000002":["C05","C99"], "500000003":["C03","C99"] };
 
 const dom = new JSDOM(`<!doctype html><body></body>`, { url:"https://faturas.portaldasfinancas.gov.pt/x" });
 const { window } = dom;

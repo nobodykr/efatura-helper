@@ -8,15 +8,15 @@ const { JSDOM } = require("jsdom"); const fs = require("fs");
 // further C99 invoice earns nothing at C99 - and the optimiser moves it iff a registered
 // alternative has room.
 const rows = [
-  { estadoBeneficio: "R", nifEmitente: "1", nomeEmitente: "C99 grande", actividadeEmitente: "C99",
+  { estadoBeneficio: "R", nifEmitente: "500000001", nomeEmitente: "C99 grande", actividadeEmitente: "C99",
     valorTotal: 200000, valorTotalIva: 0, dataEmissaoDocumento: "2026-01-01", idDocumento: "a" },
-  { estadoBeneficio: "R", nifEmitente: "2", nomeEmitente: "Tem C05 tambem", actividadeEmitente: "C99",
+  { estadoBeneficio: "R", nifEmitente: "500000002", nomeEmitente: "Tem C05 tambem", actividadeEmitente: "C99",
     valorTotal: 100000, valorTotalIva: 0, dataEmissaoDocumento: "2026-01-02", idDocumento: "b" },
-  { estadoBeneficio: "R", nifEmitente: "3", nomeEmitente: "So C99", actividadeEmitente: "C99",
+  { estadoBeneficio: "R", nifEmitente: "500000003", nomeEmitente: "So C99", actividadeEmitente: "C99",
     valorTotal: 50000, valorTotalIva: 0, dataEmissaoDocumento: "2026-01-03", idDocumento: "c" },
 ];
 // merchant 2 is registered for C05 as well as C99; 1 and 3 are C99-only
-const caemap = { "1": ["C99"], "2": ["C05", "C99"], "3": ["C99"] };
+const caemap = { "500000001": ["C99"], "500000002": ["C05", "C99"], "500000003": ["C99"] };
 
 const dom = new JSDOM("<!doctype html><body></body>", { url: "https://faturas.portaldasfinancas.gov.pt/x" });
 const { window } = dom;
@@ -28,6 +28,14 @@ global.TextEncoder = require("util").TextEncoder;
 global.DOMParser = window.DOMParser; global.alert = () => {};
 global.fetch = (u) => {
   const s = String(u);
+  // The tool fetches /bucket/<last 3 digits of NIF>, not the whole map. Serve those slices from
+  // the same table, so this test exercises the real code path instead of a URL nothing requests.
+  if (s.includes("/bucket/")) {
+    const b = s.split("/bucket/")[1].split("?")[0];
+    const out = {};
+    for (const k in caemap) if (k.slice(-3) === b) out[k] = caemap[k];
+    return Promise.resolve({ ok: true, json: () => Promise.resolve(out) });
+  }
   if (s.includes("sectors.json")) return Promise.resolve({ ok: true, json: () => Promise.resolve(caemap) });
   if (s.includes("obterDocumentosAdquirente")) return Promise.resolve({ ok: true, json: () => Promise.resolve({ linhas: rows }) });
   return Promise.resolve({ ok: true, json: () => Promise.resolve({}), text: () => Promise.resolve("") });

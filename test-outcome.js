@@ -30,9 +30,16 @@ function run(share) {
   global.fetch = (u, o) => {
     const s = String(u);
     if (/\/outcome$/.test(s)) posted.push(JSON.parse((o || {}).body || "{}"));
+    const CAEMAP = { "500960046": ["C05", "C99"], "503540480": ["C03", "C99"] };
+    // The tool fetches /bucket/<last 3 digits of NIF>, never the whole map.
+    if (s.includes("/bucket/")) {
+      const b = s.split("/bucket/")[1].split("?")[0];
+      const out = {};
+      for (const k in CAEMAP) if (k.slice(-3) === b) out[k] = CAEMAP[k];
+      return Promise.resolve({ ok: true, json: () => Promise.resolve(out) });
+    }
     if (s.includes("sectors.json"))
-      return Promise.resolve({ ok: true, json: () => Promise.resolve(
-        { "500960046": ["C05", "C99"], "503540480": ["C03", "C99"] }) });
+      return Promise.resolve({ ok: true, json: () => Promise.resolve(CAEMAP) });
     return Promise.resolve({ ok: true, json: () => Promise.resolve({ linhas: rows }),
                              text: () => Promise.resolve("") });
   };

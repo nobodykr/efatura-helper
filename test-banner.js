@@ -3,7 +3,7 @@
 // "referral link present" while the logo was an empty blue square. Assert on the DOM instead.
 //   npm i jsdom && node test-banner.js tool.js
 const { JSDOM } = require("jsdom"); const fs=require("fs");
-const rows=[{estadoBeneficio:"P",nifEmitente:"2",nomeEmitente:"X",valorTotal:1000,valorTotalIva:100,
+const rows=[{estadoBeneficio:"P",nifEmitente:"500000002",nomeEmitente:"X",valorTotal:1000,valorTotalIva:100,
              dataEmissaoDocumento:"2026-06-01",idDocumento:"p1"}];
 const dom=new JSDOM(`<!doctype html><body></body>`,{url:"https://faturas.portaldasfinancas.gov.pt/x"});
 const {window}=dom; global.window=window; global.document=window.document; global.location=window.location;
@@ -12,7 +12,7 @@ window.localStorage=global.localStorage;
 global.crypto={getRandomValues:a=>a,subtle:{}}; global.TextEncoder=require("util").TextEncoder;
 global.alert=()=>{};
 global.fetch=(u)=>String(u).includes("sectors.json")
-  ? Promise.resolve({ok:true,json:()=>Promise.resolve({"2":["C05","C99"]})})
+  ? Promise.resolve({ok:true,json:()=>Promise.resolve({"500000002":["C05","C99"]})})
   : Promise.resolve({ok:true,json:()=>Promise.resolve({linhas:rows}),text:()=>Promise.resolve("")});
 // The consent gate (tool.js) blocks all reads until accepted. Seed a prior acceptance so
 // these tests exercise the RETURNING-USER path; test-network.js phase 1 covers the gate itself.

@@ -321,10 +321,45 @@
     try { localStorage.setItem(CKEY, JSON.stringify({ ok: true, share: !!share, ts: Date.now() })); } catch (e) {}
   }
 
+  /* Fetch ONLY the slices of the sector map this account actually needs.
+   *
+   * This used to download the whole map (303k merchants, 1.5 MB gzipped, ~3 s) on every single
+   * run, because at that point the tool did not yet know which merchants you had. Now the faturas
+   * are read first, so it can ask for just the buckets its own NIFs fall into: ~77 requests of
+   * ~7 KB, about 110 KB in total. Faster AND less of the map handed out.
+   *
+   * A bucket is the last 3 digits of the NIF, so the server sees only "this user has some
+   * merchant ending in 311" - one of roughly 300. It never learns which. That is the whole point:
+   * a per-NIF lookup would name your merchants outright, and downloading everything was the
+   * previous way of avoiding that.
+   *
+   * Fails soft, per bucket: a bucket that errors just yields {} and those merchants fall back to
+   * C99, exactly as an unknown merchant always has. Nothing breaks, you simply lose that hint.
+   */
+  function bucketOf(nif) { return String(nif || "").slice(-3); }
+
+  function fetchMap(nifs) {
+    var seen = {}, buckets = [];
+    nifs.forEach(function (n) {
+      var b = bucketOf(n);
+      if (/^\d{3}$/.test(b) && !seen[b]) { seen[b] = 1; buckets.push(b); }
+    });
+    if (!buckets.length) return Promise.resolve({});
+    var base = CAEMAP_URL.replace(/sectors\.json$/, "bucket/");
+    return Promise.all(buckets.map(function (b) {
+      return fetch(base + b).then(function (r) { return r.ok ? r.json() : {}; })
+                            .catch(function () { return {}; });
+    })).then(function (parts) {
+      var map = {};
+      parts.forEach(function (p) { for (var k in p) if (p.hasOwnProperty(k)) map[k] = p[k]; });
+      return map;
+    });
+  }
+
   function start() {
-    // load the public CAE map first (fails soft -> own-history still works), then the faturas
-    fetch(CAEMAP_URL).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
-      .then(function (caemap) { run(caemap || {}); });
+    // faturas FIRST, then only the map slices they need. Order matters: it cannot know which
+    // buckets to ask for until it knows your merchants.
+    run();
   }
 
   function gate() {
@@ -374,10 +409,17 @@
     });
   }
 
-  function run(caemap) {
+  function run() {
+    var caemap = {};
     fetch("/json/obterDocumentosAdquirente.action?dataInicioFilter=" + year + "-01-01&dataFimFilter=" + year + "-12-31",
       { credentials: "include", headers: { Accept: "application/json" } })
       .then(function (r) { return r.json(); })
+      .then(function (d) {
+        // Pull the map slices for THESE merchants before doing anything else. Everything below
+        // reads caemap synchronously, so it has to be populated first.
+        var all = ((d && d.linhas) || []).map(function (x) { return x.nifEmitente; });
+        return fetchMap(all).then(function (m) { caemap = m || {}; return d; });
+      })
       .then(function (d) {
         var rows = (d && d.linhas) || [];
         var pend = rows.filter(function (x) { return x.estadoBeneficio === "P"; });

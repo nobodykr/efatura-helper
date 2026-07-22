@@ -6,16 +6,16 @@
 const { JSDOM } = require("jsdom");
 const fs = require("fs");
 const rows = [
-  { estadoBeneficio:"R", nifEmitente:"1", nomeEmitente:"Superm&atilde;o", actividadeEmitente:"C99",
+  { estadoBeneficio:"R", nifEmitente:"500000001", nomeEmitente:"Superm&atilde;o", actividadeEmitente:"C99",
     valorTotal:60000, valorTotalIva:0, dataEmissaoDocumento:"2026-01-10", idDocumento:"r1" },
-  { estadoBeneficio:"P", nifEmitente:"2", nomeEmitente:"Farm&aacute;cia X",
+  { estadoBeneficio:"P", nifEmitente:"500000002", nomeEmitente:"Farm&aacute;cia X",
     valorTotal:10000, valorTotalIva:600, dataEmissaoDocumento:"2026-06-01", idDocumento:"p1" },
-  { estadoBeneficio:"P", nifEmitente:"3", nomeEmitente:"Caf&eacute;",
+  { estadoBeneficio:"P", nifEmitente:"500000003", nomeEmitente:"Caf&eacute;",
     valorTotal:5000, valorTotalIva:300, dataEmissaoDocumento:"2026-06-02", idDocumento:"p2" },
-  { estadoBeneficio:"P", nifEmitente:"1", nomeEmitente:"Superm&atilde;o",
+  { estadoBeneficio:"P", nifEmitente:"500000001", nomeEmitente:"Superm&atilde;o",
     valorTotal:4000, valorTotalIva:200, dataEmissaoDocumento:"2026-06-03", idDocumento:"p3" },
 ];
-const caemap = { "1":["C99"], "2":["C05","C99"], "3":["C03","C99"] };
+const caemap = { "500000001":["C99"], "500000002":["C05","C99"], "500000003":["C03","C99"] };
 const posted = [];
 const dom = new JSDOM(`<!doctype html><body></body>`, { url:"https://faturas.portaldasfinancas.gov.pt/x" });
 const { window } = dom;
@@ -27,7 +27,7 @@ global.DOMParser = window.DOMParser;
 global.alert=()=>{};
 global.fetch = (u, opt) => {
   const s = String(u);
-  if (s.includes("sectors.json")) return Promise.resolve({ok:true,json:()=>Promise.resolve(caemap)});
+  var CAEMAP=caemap; if(s.includes("/bucket/")){var _b=s.split("/bucket/")[1].split("?")[0];var _o={};for(var _k in CAEMAP){if(_k.slice(-3)===_b)_o[_k]=CAEMAP[_k];}return Promise.resolve({ok:true,json:()=>Promise.resolve(_o)});} if (s.includes("sectors.json")) return Promise.resolve({ok:true,json:()=>Promise.resolve(CAEMAP)});
   if (s.includes("obterDocumentosAdquirente")) return Promise.resolve({ok:true,json:()=>Promise.resolve({linhas:rows})});
   if (s.includes("detalheDocumentoAdquirente")) {
     const id = (s.match(/idDocumento=([^&]+)/)||[])[1];

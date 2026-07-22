@@ -21,7 +21,10 @@ On the e-Fatura page, it:
 - **There is no password field.** The tool never receives, transmits, or stores your credentials -
   they are never involved at any point.
 - **Your invoices never leave your browser.** They are not sent to us, stored, or proxied. The tool
-  reads one public file (the shared merchant map) and sends nothing of yours to fetch it.
+  reads slices of the public merchant map, keyed by the **last 3 digits** of each merchant's NIF, and
+  sends nothing of yours to fetch them. A slice holds ~300 companies, so the server learns you have
+  *some* merchant in that group and never which - which is the whole reason it does not simply ask
+  "what sector is this NIF?".
 - **Household sharing is opt-in and off by default.** IRS ceilings are per *agregado familiar*, but
   this page can only ever see **one** account - on real data, one account showed 3.186 EUR of
   despesas gerais where the household had 10.389 EUR, so a solo view can report a ceiling as having
@@ -65,14 +68,14 @@ Search `tool.js` for `fetch(`. There are **nine**, and they go to exactly two ho
 | Where | What | When |
 |---|---|---|
 | `faturas.portaldasfinancas.gov.pt` (relative, same-origin, your session) | read your faturas; the write path for classifications | reading: after you accept the gate. Writing: **never in this version** - `DRAFT = true`, no submit button is rendered |
-| `cae-db.diogoandrade.com` | `GET /sectors.json` - the public merchant map | after you accept the gate. **Sends nothing of yours**; the whole map is downloaded and matched locally, so the server never learns which merchants are yours. It sees your IP, as any server does |
+| `cae-db.diogoandrade.com` | `GET /bucket/<last 3 digits of NIF>` - one request per bucket your merchants fall into | after you accept the gate. **Sends nothing of yours**; a bucket holds ~300 companies, so the server learns you have *some* merchant in that group of 300 and never which one. Matching happens locally. It sees your IP, as any server does |
 | `cae-db.diogoandrade.com` | `POST /outcome` and `POST /refresh/{nif}` - a **merchant's** NIF plus the sector, to correct the shared map | only if you tick "improve suggestions" (**off by default**) |
 | `cae-db.diogoandrade.com` | `PUT`/`GET /household/{key}` - six numbers | only if you press **Ligar** |
 | `cae-db.diogoandrade.com` | `POST /win` - four numbers (year, waste, gain, count) | only if you press **Enviar anónimo** |
 
 Those are **three separate opt-ins**, not one switch: the share tickbox, joining a household, and
 the anonymous-win button are independent. Touch none of them and the only request that leaves your
-browser is the `sectors.json` download.
+browser is the set of `/bucket/<3 digits>` downloads.
 
 `index.html` - the landing page. **It is not tracker-free:** it loads Google Fonts
 (`fonts.googleapis.com`, `fonts.gstatic.com`) and Cloudflare Turnstile

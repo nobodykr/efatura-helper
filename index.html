@@ -373,11 +373,14 @@
       as tuas faturas depois de clicares. Antes disso <b>não há um único pedido de rede</b> - nem
       sequer o mapa público. Há um teste automático que falha se isto deixar de ser verdade.</div></li>
     <li class="step"><div class="n" aria-hidden="true">1</div><div>
-      <b>GET <code>cae-db.diogoandrade.com/sectors.json</code></b> - o mapa público de atividades,
-      cerca de 1,6 KB. <b>Não leva nada teu.</b> Repara no detalhe: a ferramenta descarrega o mapa
-      <b>inteiro</b> e faz a correspondência no teu navegador, em vez de perguntar "qual é o setor
-      deste NIF?". Por isso <b>o servidor nunca fica a saber onde compras</b>. Vê o teu IP, como
-      qualquer servidor vê, e mais nada.</div></li>
+      <b>GET <code>cae-db.diogoandrade.com/bucket/&lt;3 dígitos&gt;</code></b> - um pedido por cada
+      grupo em que os teus comerciantes caem (tipicamente algumas dezenas, ~7 KB cada).
+      <b>Não leva nada teu.</b> Repara no detalhe: um grupo são os <b>últimos 3 dígitos</b> do NIF e
+      traz cerca de 300 empresas de uma vez. O servidor fica a saber que tens <b>algum</b>
+      comerciante nesse grupo de 300, <b>nunca qual</b>. É por isso que a ferramenta não pergunta
+      "qual é o setor deste NIF?" - essa pergunta diria ao servidor exactamente onde compras.
+      Antes descarregava o mapa inteiro pela mesma razão; agora faz o mesmo com uma fracção dos
+      dados. Vê o teu IP, como qualquer servidor vê, e mais nada.</div></li>
     <li class="step"><div class="n" aria-hidden="true">2</div><div>
       <b>GET <code>obterDocumentosAdquirente</code></b>, no próprio e-Fatura, com a sessão que já
       tinhas aberta. É o mesmo pedido que a página faz sozinha. As faturas ficam no teu navegador:
@@ -406,7 +409,7 @@
   <ul class="safe">
     <li>A ferramenta <b>corre dentro do teu navegador</b>, na página do e-Fatura onde <b>já estás autenticado</b>. Usa a sessão que já tens.</li>
     <li><b>Nunca escreves a password</b> em nada nosso. Não há campo de password. Não a vemos, não a guardamos, não existe.</li>
-    <li><b>As tuas faturas nunca saem do teu navegador.</b> Os valores, as datas, o que compraste - nada disso é recebido, guardado ou enviado para lado nenhum nosso. A ferramenta lê um único ficheiro público (o mapa de atividades) e não envia nada teu para o obter. <b>Uma exceção, opcional e desligada por omissão:</b> se ligares a partilha para melhorar as sugestões, ao aplicares enviamos por fatura <b>apenas o NIF do comerciante e o setor escolhido</b> (para corrigir esse mapa quando erra), <b>nunca valores, datas nem o teu NIF</b>. Se não a ligares, não sai nada.</li>
+    <li><b>As tuas faturas nunca saem do teu navegador.</b> Os valores, as datas, o que compraste - nada disso é recebido, guardado ou enviado para lado nenhum nosso. A ferramenta lê apenas as fatias do mapa público onde os teus comerciantes caem, identificadas pelos últimos 3 dígitos do NIF, e não envia nada teu para as obter. <b>Uma exceção, opcional e desligada por omissão:</b> se ligares a partilha para melhorar as sugestões, ao aplicares enviamos por fatura <b>apenas o NIF do comerciante e o setor escolhido</b> (para corrigir esse mapa quando erra), <b>nunca valores, datas nem o teu NIF</b>. Se não a ligares, não sai nada.</li>
     <li><b>Partilha de agregado, opcional e desligada por omissão.</b> <b>Só faz sentido se entregarem o IRS em conjunto.</b> Quem entrega em separado tem tetos próprios (cada pessoa tem o seu limite de 250 € em despesas gerais, por exemplo) e <b>não deve ativar isto</b>: os números desta página já estão certos para ti. Se entregam em conjunto, a partilha junta os totais das duas contas: enviamos <b>apenas seis números</b> (quanto já usaste de cada teto), nunca faturas, comerciantes, datas ou valores. A chave é <b>gerada ao acaso no teu navegador</b> (256 bits): não é calculada a partir do teu NIF nem do teu email, que aqui nem sequer são lidos. Deixa a caixa vazia para criar um agregado, ou cola uma chave para te juntares a um. <b>A chave é a senha</b>: quem a tiver consegue ler e alterar esses números, por isso partilha-a só com o teu agregado. Se não ativares, nada é enviado.</li>
     <li><b>Código 100% visível e auditável.</b> Podes ler exatamente o que faz, <a id="gh" href="#" target="_blank" rel="noopener">no GitHub</a>, ou pedir a alguém que perceba para confirmar.</li>
     <li><b>Nada é submetido, de todo.</b> Nesta versão a ferramenta só lê e analisa. Qualquer alteração à tua declaração é feita por ti, no e-Fatura.</li>

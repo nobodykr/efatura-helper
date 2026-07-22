@@ -6,7 +6,7 @@
 const { chromium } = require("playwright-core");
 const { readFileSync } = require("fs");
 const EXE = process.env.CHROME_PATH || "/usr/bin/chromium"; // override with CHROME_PATH=... (was a hardcoded ~/.cache path, which leaked a username and only ran on one machine)
-const rows = [{ estadoBeneficio: "P", nifEmitente: "9", nomeEmitente: "Pingo Doce", valorTotal: 20000,
+const rows = [{ estadoBeneficio: "P", nifEmitente: "500000009", nomeEmitente: "Pingo Doce", valorTotal: 20000,
                 valorTotalIva: 1200, dataEmissaoDocumento: "2026-06-01", idDocumento: "p1" }];
 (async () => {
   const b = await chromium.launch({ executablePath: EXE, args: ["--no-sandbox"] });
@@ -42,13 +42,17 @@ const rows = [{ estadoBeneficio: "P", nifEmitente: "9", nomeEmitente: "Pingo Doc
   const offsite = uniq.filter(r => !r.includes("portaldasfinancas.gov.pt"));
   console.log("  total requests:", uniq.length);
   console.log("  off-site requests:", offsite.length, offsite.join(", ") || "(none)");
-  const okCount = offsite.length === 1;
+  // The tool no longer downloads the whole map. It fetches only the /bucket/<last 3 digits of
+  // NIF> slices its own merchants fall into, so there are now MANY off-site requests instead of
+  // one. What must still hold, and is what the page publishes, is that every one of them is a
+  // GET for a map slice and that nothing is POSTed off-site by default.
+  const okCount = offsite.length >= 1;
   const okGet = offsite.every(r => r.startsWith("GET "));
-  const okMap = offsite.every(r => r.includes("/sectors.json"));
+  const okMap = offsite.every(r => /\/bucket\/\d{3}\b/.test(r));
   const okNoPost = !uniq.some(r => r.startsWith("POST"));
-  console.log("  exactly one off-site request:", okCount);
-  console.log("  it is a GET:", okGet);
-  console.log("  it is the public CAE map:", okMap);
+  console.log("  off-site requests (map slices):", offsite.length);
+  console.log("  every one is a GET:", okGet);
+  console.log("  every one is /bucket/<3 digits>:", okMap);
   console.log("  no POST anywhere:", okNoPost);
   await b.close();
   if (!(okSilent && okCount && okGet && okMap && okNoPost)) {
