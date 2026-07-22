@@ -242,20 +242,28 @@
     var h = '<div class="card"><h2>'+esc(d.nome||"(sem nome)")+'</h2>'
           + '<p class="nifline mono">NIF '+esc(d.nif)+'</p>';
 
-    // sectors: first is the suggestion, the rest are the cascade as ceilings fill
-    var pills = (d.sectors||[]).map(function(s,i){
-      return '<span class="pill '+(i===0?"best":"alt")+'" title="'+esc((d.sector_notes||{})[s]||"")+'">'
-             + esc(s)+'</span>'; }).join("");
-    h += row('<i class="fa-solid fa-tags" aria-hidden="true"></i> Sectores', pills
-         + '<div class="s muted" style="font-size:.84rem;margin-top:4px">'
-         + esc((d.sector_notes||{})[(d.sectors||[])[0]]||"") + '</div>');
+    // A company with no active SICAE registration has no sectors and no CAEs - usually dissolved.
+    // Say that plainly instead of rendering two empty rows.
+    if (d.sem_registo_activo){
+      h += '<div class="note" style="margin:0 0 14px">'
+         + '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> '
+         + esc(d.nota || "Sem actividade registada no SICAE.") + '</div>';
+    } else {
+      // sectors: first is the suggestion, the rest are the cascade as ceilings fill
+      var pills = (d.sectors||[]).map(function(s,i){
+        return '<span class="pill '+(i===0?"best":"alt")+'" title="'+esc((d.sector_notes||{})[s]||"")+'">'
+               + esc(s)+'</span>'; }).join("");
+      h += row('<i class="fa-solid fa-tags" aria-hidden="true"></i> Sectores', pills
+           + '<div class="s muted" style="font-size:.84rem;margin-top:4px">'
+           + esc((d.sector_notes||{})[(d.sectors||[])[0]]||"") + '</div>');
 
-    var acts = (d.atividades&&d.atividades.length) ? d.atividades : (d.caes||[]).map(function(c){return {cae:c};});
-    h += row('<i class="fa-solid fa-briefcase" aria-hidden="true"></i> Actividades', acts.map(function(a){
-      return '<div class="cae"><span class="c mono">'+esc(a.cae)+'</span>'
-           + (a.desc ? ' <span class="d">'+esc(a.desc)+'</span>' : '')
-           + (a.sector ? ' <span class="s">&rarr; '+esc(a.sector)+'</span>' : '')
-           + '</div>'; }).join("") || '<span class="muted">sem CAE registado</span>');
+      var acts = (d.atividades&&d.atividades.length) ? d.atividades : (d.caes||[]).map(function(c){return {cae:c};});
+      h += row('<i class="fa-solid fa-briefcase" aria-hidden="true"></i> Actividades', acts.map(function(a){
+        return '<div class="cae"><span class="c mono">'+esc(a.cae)+'</span>'
+             + (a.desc ? ' <span class="d">'+esc(a.desc)+'</span>' : '')
+             + (a.sector ? ' <span class="s">&rarr; '+esc(a.sector)+'</span>' : '')
+             + '</div>'; }).join("") || '<span class="muted">sem CAE registado</span>');
+    }
 
     var v = d.vies;
     if (v && !v.unavailable){
@@ -267,6 +275,34 @@
     } else if (v) {
       h += row('<i class="fa-solid fa-location-dot" aria-hidden="true"></i> Morada',
                '<span class="muted">VIES indisponivel neste momento</span>');
+    }
+
+    // PUBLIC CONTRACTS. Published records from BASE/IMPIC - facts, not allegations. Figures and
+    // the awarding entity only; the page draws no conclusion and neither should the reader.
+    var cp = d.contratos_publicos;
+    if (cp && cp.total){
+      var eur = function(n){ return (n||0).toLocaleString("pt-PT",{maximumFractionDigits:0}) + " €"; };
+      var body = '<div style="margin-bottom:8px">'
+        + '<strong>' + cp.total.toLocaleString("pt-PT") + '</strong> contratos &middot; '
+        + '<strong>' + eur(cp.valor_eur) + '</strong>'
+        + (cp.entidades ? ' &middot; ' + cp.entidades + ' entidade' + (cp.entidades>1?'s':'') : '')
+        + (cp.primeiro_ano ? ' &middot; ' + cp.primeiro_ano + '–' + cp.ultimo_ano : '')
+        + (cp.ajuste_direto ? ' &middot; <span class="muted">' + cp.ajuste_direto.toLocaleString("pt-PT")
+                              + ' por ajuste directo</span>' : '')
+        + '</div>';
+      (cp.maiores||[]).forEach(function(m){
+        body += '<div class="cae"><span class="c mono">' + eur(m.valor_eur) + '</span> '
+              + '<span class="muted">' + esc(m.ano) + '</span> '
+              + '<span class="d">' + esc(m.adjudicante || "") + '</span>'
+              + (m.objecto ? '<div class="s" style="color:var(--mute)">' + esc(m.objecto) + '</div>' : '')
+              + '</div>';
+      });
+      body += '<div class="s muted" style="margin-top:8px;font-size:.82rem">Fonte: '
+            + esc(cp.fonte || "BASE / IMPIC") + '</div>';
+      h += row('<i class="fa-solid fa-building-columns" aria-hidden="true"></i> Contratos públicos', body);
+    } else if (cp) {
+      h += row('<i class="fa-solid fa-building-columns" aria-hidden="true"></i> Contratos públicos',
+               '<span class="muted">sem contratos públicos registados</span>');
     }
     return h + '</div>';
   }
