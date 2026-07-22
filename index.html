@@ -14,9 +14,16 @@
 <meta property="og:url" content="https://faturas.diogoandrade.com/">
 <meta property="og:title" content="Fatura Boa | Classificar faturas pendentes no e-Fatura">
 <meta property="og:description" content="Sugere o setor certo para cada fatura a partir da atividade oficial do comerciante, e mostra-te quanto ja gastaste de cada teto de deducao do IRS. Gratuita, corre no teu navegador, nunca pede a password.">
+<meta property="og:image" content="https://faturas.diogoandrade.com/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Fatura Boa - classificar faturas pendentes no e-Fatura">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Fatura Boa | Classificar faturas pendentes no e-Fatura">
 <meta name="twitter:description" content="Sugere o setor certo para cada fatura a partir da atividade oficial do comerciante, e mostra os tetos de deducao do IRS.">
+<!-- twitter:card has said summary_large_image since the beginning, but there was no image, so
+     every share on WhatsApp, LinkedIn and Slack rendered blank. Regenerate with: node make-og.mjs -->
+<meta name="twitter:image" content="https://faturas.diogoandrade.com/assets/og.png">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"SoftwareApplication",
  "name":"Fatura Boa",
@@ -29,6 +36,24 @@
  "offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},
  "isAccessibleForFree":true,
  "license":"https://polyformproject.org/licenses/noncommercial/1.0.0"}
+</script>
+<!-- FAQPage schema. Every answer below is a condensed version of a section that ACTUALLY EXISTS
+     on this page - that is the rule for this markup, and inventing answers here to farm rich
+     results is both against Google's guidelines and the kind of thing this project should not do.
+     If a section is rewritten, rewrite its answer too or delete the entry. -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","inLanguage":"pt-PT","mainEntity":[
+ {"@type":"Question","name":"O que sao as faturas pendentes no e-Fatura?",
+  "acceptedAnswer":{"@type":"Answer","text":"Sao faturas que a Autoridade Tributaria recebeu mas que ainda nao estao atribuidas a um setor de despesa. Enquanto ficarem pendentes nao contam para nenhuma deducao do IRS. Cada uma tem de ser classificada num setor: saude, educacao, restauracao, despesas gerais familiares, e assim por diante."}},
+ {"@type":"Question","name":"Que setor devo escolher para cada fatura?",
+  "acceptedAnswer":{"@type":"Answer","text":"Depende da atividade registada do comerciante. Um comerciante pode ter varios CAE - um hipermercado pode ter tambem CAE de farmacia - e por isso o e-Fatura aceita mais do que um setor. Ser aceite nao quer dizer que esteja certo: se comprou comida, a compra foi despesas gerais e nao saude. Quem declara e o contribuinte."}},
+ {"@type":"Question","name":"As despesas gerais familiares valem menos do que um setor especifico?",
+  "acceptedAnswer":{"@type":"Answer","text":"Nem sempre. As despesas gerais familiares dao 35% ate 250 euros, a taxa mais alta de todas. Um setor especifico so compensa quando o seu proprio teto ainda tem espaco. Uma fatura de restaurante de 20 euros vale mais em despesas gerais do que em restauracao, que da 15% do IVA."}},
+ {"@type":"Question","name":"E seguro? Pede a password das Financas?",
+  "acceptedAnswer":{"@type":"Answer","text":"Nunca pede credenciais. A ferramenta corre no navegador, na pagina do e-Fatura onde o utilizador ja fez login, e reutiliza essa sessao. Se algum site pedir a password das Financas, e burla e deve ser fechado. O codigo e publico e auditavel."}},
+ {"@type":"Question","name":"As minhas faturas sao enviadas para algum servidor?",
+  "acceptedAnswer":{"@type":"Answer","text":"Nao. As faturas sao lidas e classificadas dentro do navegador. A ferramenta descarrega apenas as fatias do mapa publico de comerciantes de que precisa, sem revelar quais os comerciantes, e nada e submetido sem confirmacao explicita."}}
+]}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -83,16 +108,26 @@
   .mast .nm{font-weight:600;font-size:1.05rem;line-height:1.2}
   .mast .nm span{display:block;font-weight:400;font-size:.8rem;color:var(--mute)}
   /* margin-left:auto pushes it to the right edge without needing a wrapper. 44px min target. */
-  .mast .mastnav{margin-left:auto;display:inline-flex;align-items:center;min-height:44px;
+  /* first nav item takes the auto margin so the group sits right; the rest just follow it */
+  .mast .mastnav:first-of-type{margin-left:auto}
+  .mast .mastnav + .mastnav{margin-left:10px}
+  .mast .mastnav{display:inline-flex;align-items:center;min-height:44px;
                  padding:0 16px;border:1.5px solid var(--pri);border-radius:var(--r);
                  color:var(--pri);font-weight:600;font-size:.92rem;text-decoration:none;
                  white-space:nowrap}
   .mast .mastnav:hover{background:var(--pri);color:#fff}
-  @media (max-width:560px){ .mast .mastnav{margin-left:0;width:100%;justify-content:center} }
+  /* on narrow screens both nav items stack full-width; :first-of-type must be overridden too,
+     or it keeps the auto margin and the pair sits lopsided */
+  @media (max-width:560px){
+    .mast .mastnav, .mast .mastnav:first-of-type, .mast .mastnav + .mastnav{
+      margin-left:0;width:100%;justify-content:center;margin-top:8px}
+  }
 
   header{padding:52px 0 40px;background:var(--bg2);border-bottom:1px solid var(--rule)}
   .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.11em;
            text-transform:uppercase;color:var(--pri);font-weight:600}
+  /* it now lives inside the h1, so it needs to behave like the standalone div it replaced */
+  h1 .eyebrow{display:block;line-height:1.4;margin-bottom:.5em}
   h1{font-weight:600;font-size:clamp(1.9rem,4.6vw,2.9rem);line-height:1.15;
      letter-spacing:-.015em;margin:.3em 0 .35em;color:var(--pri-dark)}
   .sub{color:var(--ink2);font-size:1.08rem;max-width:56ch;margin:0}
@@ -228,14 +263,18 @@
   <div class="wrap">
     <div class="mark" aria-hidden="true">FB</div>
     <div class="nm">Fatura Boa<span>Classificar faturas pendentes do e-Fatura, por setor, para o IRS</span></div>
+    <a class="mastnav" href="/deducoes">Deduções</a>
     <a class="mastnav" href="/consulta">Consultar NIF</a>
   </div>
 </div>
 
 <header>
  <div class="wrap">
-  <div class="eyebrow">e-Fatura / IRS</div>
-  <h1>Fontes oficiais,<br>em vez de palpites.</h1>
+  <!-- The keyword line lives INSIDE the <h1>. "Fontes oficiais, em vez de palpites" is the right
+       thing to say to a human and worthless to a search engine - nobody types that. The eyebrow
+       was already sitting here saying "e-Fatura / IRS"; making it a full phrase and moving it
+       into the heading buys the search intent without changing what the page looks like. -->
+  <h1><span class="eyebrow">Classificar faturas pendentes no e-Fatura</span>Fontes oficiais,<br>em vez de palpites.</h1>
   <p class="sub">Fartei-me de classificar faturas uma a uma sem saber se estava a acertar, e não me
      apetece entregar isso a alguém e ficar na mesma. Esta ferramenta vai buscar a atividade real de
      cada comerciante ao registo do Estado, mostra-te onde estão os teus tetos, e a decisão continua

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pagina nao encontrada | Fatura Boa</title>
+<!-- noindex on purpose: this page exists so that Cloudflare Pages returns a real 404 status.
+     Without a 404.html, Pages served index.html with HTTP 200 for EVERY unknown path, so
+     /admin, /wp-login.php and any typo all looked like valid pages to a crawler. That is an
+     unlimited surface of duplicate content, and it is also why robots.txt and sitemap.xml were
+     coming back as HTML. -->
+<meta name="robots" content="noindex,follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root{--pri:#034ad8;--pri-dark:#021c51;--ink:#2B363C;--ink2:#4a5a63;--mute:#6b7780;
+        --bg:#fff;--bg2:#f4f6f9;--rule:#d5dae1;--focus:#f408fc;--r:6px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:400 16px/1.6 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:640px;margin:0 auto;padding:0 24px}
+  header{background:var(--pri-dark);color:#fff;padding:26px 0}
+  header .nm{font-weight:600;font-size:1.05rem}
+  main{padding:56px 0 64px}
+  h1{font-size:1.6rem;letter-spacing:-.01em;color:var(--pri-dark);margin:0 0 .4em}
+  p{color:var(--ink2);max-width:60ch}
+  code{font-family:'IBM Plex Mono',ui-monospace,monospace;background:var(--bg2);
+       padding:2px 6px;border-radius:3px;font-size:.92em}
+  a{color:var(--pri);text-underline-offset:3px}
+  a:hover{color:var(--pri-dark)}
+  a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+  .btn{display:inline-flex;align-items:center;min-height:44px;background:var(--pri);color:#fff;
+       text-decoration:none;font-weight:600;padding:11px 22px;border-radius:var(--r);margin-top:18px}
+  .btn:hover{background:var(--pri-dark);color:#fff}
+  ul{color:var(--ink2);padding-left:20px}
+  li{margin:6px 0}
+</style>
+</head>
+<body>
+<header><div class="wrap"><span class="nm">Fatura Boa</span></div></header>
+<main class="wrap">
+  <h1>Esta pagina nao existe</h1>
+  <p>O endereco que abriu nao corresponde a nada neste site. Provavelmente e uma gralha no link,
+     ou uma pagina que ja nao existe.</p>
+  <ul>
+    <li><a href="/">Inicio</a> &mdash; classificar faturas pendentes no e-Fatura</li>
+    <li><a href="/consulta">Consultar NIF</a> &mdash; ver a atividade registada de um comerciante</li>
+    <li><a href="/deducoes">Deducoes do IRS</a> &mdash; setores, taxas e tetos</li>
+  </ul>
+  <p><a class="btn" href="/">Voltar ao inicio</a></p>
+</main>
+</body>
+</html>

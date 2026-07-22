@@ -5,6 +5,33 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Consulta de NIF | Fatura Boa</title>
 <meta name="description" content="Consulte um NIF portugues: nome oficial, CAE principal e secundarios, morada e em que sector de deducao do IRS as faturas desse comerciante podem entrar.">
+<link rel="canonical" href="https://faturas.diogoandrade.com/consulta">
+<meta name="robots" content="index,follow,max-snippet:-1">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_PT">
+<meta property="og:site_name" content="Fatura Boa">
+<meta property="og:url" content="https://faturas.diogoandrade.com/consulta">
+<meta property="og:title" content="Consulta de NIF | CAE e atividade de uma empresa">
+<meta property="og:description" content="Nome oficial, CAE principal e secundarios, morada e o setor de deducao do IRS de qualquer empresa portuguesa. Dados do SICAE e do VIES.">
+<meta property="og:image" content="https://faturas.diogoandrade.com/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Consulta de NIF | CAE e atividade de uma empresa">
+<meta name="twitter:description" content="Nome oficial, CAE principal e secundarios, morada e o setor de deducao do IRS de qualquer empresa portuguesa.">
+<meta name="twitter:image" content="https://faturas.diogoandrade.com/assets/og.png">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication",
+ "name":"Consulta de NIF",
+ "applicationCategory":"BusinessApplication",
+ "operatingSystem":"Qualquer navegador",
+ "url":"https://faturas.diogoandrade.com/consulta",
+ "inLanguage":"pt-PT",
+ "description":"Consulta o nome oficial, as atividades registadas (CAE principal e secundarios) e a morada de uma empresa portuguesa a partir do NIF, e indica em que setores de deducao do IRS as faturas desse comerciante podem entrar.",
+ "isPartOf":{"@type":"WebSite","name":"Fatura Boa","url":"https://faturas.diogoandrade.com/"},
+ "offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},
+ "isAccessibleForFree":true}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -97,6 +124,31 @@
   <p class="hint">Exemplos: <code>500960046</code> &middot; <code>farmacia</code></p>
 
   <div id="out"></div>
+
+  <!-- Static copy, deliberately. Everything above the fold here is rendered by JS, so without
+       this a crawler saw about 160 words and had nothing to rank. It also answers the question
+       people actually arrive with ("what is a CAE?") instead of assuming they know. -->
+  <section class="card" id="sobre">
+    <h2 style="margin:0 0 10px;font-size:1.1rem">O que e um CAE, e porque e que ha mais do que um</h2>
+    <p style="margin:0 0 12px;font-size:.95rem;color:var(--ink2)">
+      O <strong>CAE</strong> (Classificacao Portuguesa de Actividades Economicas) e o codigo com que
+      cada empresa esta registada no Estado. Diz o que a empresa faz: 47730 e farmacia, 56101 e
+      restaurante, 95310 e reparacao de automoveis.
+    </p>
+    <p style="margin:0 0 12px;font-size:.95rem;color:var(--ink2)">
+      Quase nenhuma empresa tem so um. Ha um <strong>CAE principal</strong> e pode haver varios
+      <strong>secundarios</strong>, e sao os secundarios que costumam surpreender: um hipermercado
+      com CAE de farmacia, uma papelaria com CAE de livraria. A maioria dos servicos de consulta de
+      NIF mostra apenas o principal, e e por isso que esta pagina mostra os dois.
+    </p>
+    <p style="margin:0;font-size:.95rem;color:var(--ink2)">
+      Isto importa no IRS: o setor em que uma fatura pode entrar depende das atividades registadas
+      do comerciante. Um comerciante com CAE de saude permite classificar a fatura em Saude &mdash;
+      <em>se a compra foi mesmo dessa natureza</em>. Ser aceite pelo e-Fatura nao quer dizer que
+      esteja certo, e quem declara e sempre o contribuinte. As regras aplicadas, com a base legal de
+      cada uma, estao em <a href="/deducoes">Deducoes do IRS</a>.
+    </p>
+  </section>
 
   <div class="note">
     <strong>O que esta consulta faz e nao faz.</strong>

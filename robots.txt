@@ -1,0 +1,15 @@
+# Fatura Boa - https://faturas.diogoandrade.com
+#
+# Everything here is meant to be found. There is nothing private on this origin: the tool runs
+# entirely in the visitor's browser and this site is static.
+#
+# Note this file did not exist until 2026-07-22. Cloudflare Pages was answering every unknown
+# path with index.html and a 200, so crawlers requesting robots.txt were handed a web page.
+
+User-agent: *
+Allow: /
+
+# The merchant data lives on a different origin (cae-db.diogoandrade.com) and is not linked into
+# any indexable page on purpose - see the "no per-company pages" decision. Nothing to exclude here.
+
+Sitemap: https://faturas.diogoandrade.com/sitemap.xml
