@@ -105,9 +105,12 @@
     publicos de empresas. Particulares nao aparecem: nenhuma das duas fontes os devolve.
     <br><br>
     <strong>Ao contrario do bookmarklet, esta pagina faz um pedido por consulta</strong>, por isso
-    o servidor ve o NIF que pesquisou. O bookmarklet descarrega o mapa inteiro precisamente para
-    que isso nunca aconteca com as suas faturas. Se preferir nao consultar aqui, o mapa completo
-    esta em <a href="https://cae-db.diogoandrade.com/sectors.json">sectors.json</a>.
+    o servidor ve o NIF que pesquisou. O bookmarklet nao funciona assim, precisamente para que isso
+    nunca aconteca com as suas faturas.
+    <br><br>
+    Cada consulta responde a partir do que ja foi recolhido; se o NIF ainda nao for conhecido, e
+    procurado no SICAE nesse momento. E uma consulta de cada vez, como se fosse ao registo
+    directamente.
     <br><br>
     O sector sugerido nao e aconselhamento fiscal e a AT tem a sua propria validacao. As regras
     aplicadas, com a base legal de cada uma, estao em
