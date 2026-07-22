@@ -70,10 +70,56 @@
   footer{border-top:1px solid var(--rule);padding:22px 0;color:var(--mute);font-size:.85rem}
   .updated{font-size:.82rem;color:var(--mute);margin-top:6px}
   @media (max-width:560px){ table{font-size:.86rem} th,td{padding:7px 6px} }
+  /* Shared masthead - identical on every page so the site has ONE header, not three.
+     Kept in each file rather than a stylesheet because this site is a handful of static pages
+     with no build step; if a fourth page appears, that trade stops being worth it. */
+  .mast{border-bottom:3px solid var(--pri);background:#fff}
+  .mast .wrap{display:flex;align-items:center;gap:14px;min-height:72px;flex-wrap:wrap}
+  .mast .mark{width:44px;height:44px;flex:none;display:block;line-height:0;border-radius:var(--r)}
+  .mast .mark svg{width:100%;height:100%;display:block}
+  .mast .mark .plate,.mast .mark .cut{fill:var(--pri);transition:fill .15s ease}
+  .mast .mark:hover .plate,.mast .mark:hover .cut{fill:var(--pri-dark)}
+  .mast .mark:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+  .mast .nm{font-weight:600;font-size:1.05rem;line-height:1.2;color:var(--ink)}
+  .mast .nm span{display:block;font-weight:400;font-size:.8rem;color:var(--mute)}
+  .mast .mastnav{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;
+                 border:1.5px solid var(--pri);border-radius:var(--r);color:var(--pri);
+                 font-weight:600;font-size:.92rem;text-decoration:none;white-space:nowrap}
+  .mast .mastnav:first-of-type{margin-left:auto}
+  .mast .mastnav + .mastnav{margin-left:10px}
+  .mast .mastnav:hover{background:var(--pri);color:#fff}
+  .mast .mastnav[aria-current="page"]{background:var(--pri);color:#fff}
+  @media (max-width:560px){
+    .mast .mastnav,.mast .mastnav:first-of-type,.mast .mastnav + .mastnav{
+      margin-left:0;width:100%;justify-content:center;margin-top:8px}
+  }
+
 </style>
 </head>
 <body>
 
+
+<div class="mast">
+  <div class="wrap">
+    <a class="mark" href="/" aria-label="Fatura Boa, início">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <rect class="plate" width="32" height="32" rx="7"/>
+        <path fill="#fff" d="M6.75 6.5 H13.375 C18.875 6.5 22.75 10.3125 22.75 16
+                             C22.75 21.6875 18.875 25.5 13.375 25.5 H6.75 Z
+                             M10 9.5 V22.5 H13.1875 C16.8125 22.5 19.5 20 19.5 16
+                             C19.5 12 16.8125 9.5 13.1875 9.5 H10 Z"/>
+        <path fill="#fff" d="M18.25 25.5 L23.875 6.5 H26.375 L20.75 25.5 Z"/>
+        <path fill="#fff" d="M25.25 6.5 H27.75 L22.125 25.5 H19.625 Z"/>
+        <rect class="cut" x="20.875" y="16.375" width="4.875" height="2.25" rx="0.5"/>
+        <!-- diagonal is LOAD-BEARING: without it the A's left stroke fuses into the D -->
+        <path class="cut" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/>
+      </svg>
+    </a>
+    <div class="nm">Fatura Boa<span>Classificar faturas pendentes do e-Fatura, por setor, para o IRS</span></div>
+    <a class="mastnav" href="/deducoes" aria-current="page">Deduções</a>
+    <a class="mastnav" href="/consulta">Consultar NIF</a>
+  </div>
+</div>
 <header>
   <div class="wrap">
     <h1>Deducoes do IRS por setor: taxas, tetos e base legal</h1>
