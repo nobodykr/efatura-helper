@@ -8,6 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<!-- FontAwesome, not emoji: emoji render differently on every OS and read as decoration rather
+     than interface. Icons here are ALWAYS paired with a text label, never load-bearing on their
+     own, so the page stays usable if the stylesheet fails. -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+      crossorigin="anonymous" referrerpolicy="no-referrer">
 <style>
   :root{
     --pri:#034ad8; --pri-dark:#021c51; --pri-mid:#1b4dab; --pri-light:#1CA3FC;
@@ -86,7 +92,7 @@
   <form class="form" id="f" autocomplete="off">
     <input id="q" name="q" inputmode="search" placeholder="NIF (9 digitos) ou nome da empresa"
            aria-label="NIF ou nome da empresa">
-    <button type="submit">Consultar</button>
+    <button type="submit"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Consultar</button>
   </form>
   <p class="hint">Exemplos: <code>500960046</code> &middot; <code>farmacia</code></p>
 
@@ -136,12 +142,12 @@
     var pills = (d.sectors||[]).map(function(s,i){
       return '<span class="pill '+(i===0?"best":"alt")+'" title="'+esc((d.sector_notes||{})[s]||"")+'">'
              + esc(s)+'</span>'; }).join("");
-    h += row("Sectores", pills
+    h += row('<i class="fa-solid fa-tags" aria-hidden="true"></i> Sectores', pills
          + '<div class="s muted" style="font-size:.84rem;margin-top:4px">'
          + esc((d.sector_notes||{})[(d.sectors||[])[0]]||"") + '</div>');
 
     var acts = (d.atividades&&d.atividades.length) ? d.atividades : (d.caes||[]).map(function(c){return {cae:c};});
-    h += row("Actividades", acts.map(function(a){
+    h += row('<i class="fa-solid fa-briefcase" aria-hidden="true"></i> Actividades', acts.map(function(a){
       return '<div class="cae"><span class="c mono">'+esc(a.cae)+'</span>'
            + (a.desc ? ' <span class="d">'+esc(a.desc)+'</span>' : '')
            + (a.sector ? ' <span class="s">&rarr; '+esc(a.sector)+'</span>' : '')
@@ -149,12 +155,14 @@
 
     var v = d.vies;
     if (v && !v.unavailable){
-      h += row("Morada", v.morada ? esc(v.morada) : '<span class="muted">nao disponivel no VIES</span>');
-      h += row("NIF de IVA", v.valid
-            ? '<span class="pill ok">valido</span>'
-            : '<span class="pill no">nao valido</span> <span class="muted">nao registado para IVA, normalmente inactivo</span>');
+      h += row('<i class="fa-solid fa-location-dot" aria-hidden="true"></i> Morada',
+               v.morada ? esc(v.morada) : '<span class="muted">nao disponivel no VIES</span>');
+      h += row('<i class="fa-solid fa-receipt" aria-hidden="true"></i> NIF de IVA', v.valid
+            ? '<span class="pill ok"><i class="fa-solid fa-check" aria-hidden="true"></i> valido</span>'
+            : '<span class="pill no"><i class="fa-solid fa-xmark" aria-hidden="true"></i> nao valido</span> <span class="muted">nao registado para IVA, normalmente inactivo</span>');
     } else if (v) {
-      h += row("Morada", '<span class="muted">VIES indisponivel neste momento</span>');
+      h += row('<i class="fa-solid fa-location-dot" aria-hidden="true"></i> Morada',
+               '<span class="muted">VIES indisponivel neste momento</span>');
     }
     return h + '</div>';
   }
