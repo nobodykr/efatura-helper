@@ -1,0 +1,28 @@
+<!-- Diogo's DA monogram, the same mark as diogoandrade.com/icon.svg. Kept byte-identical rather
+     than recoloured to Fatura Boa's blue: this is his identity across every property, and a
+     tab-strip icon that differs per site stops being recognisable. If the mark changes on the
+     personal site, copy it here again. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="DA monogram">
+  <rect width="32" height="32" rx="6" fill="#0B1020"/>
+
+  <!-- D: outer shape + inner cutout (opposite winding = hole via nonzero fill-rule) -->
+  <path fill="white" d="
+    M6.75 6.5 H13.375
+    C18.875 6.5 22.75 10.3125 22.75 16
+    C22.75 21.6875 18.875 25.5 13.375 25.5
+    H6.75 Z
+
+    M10 9.5 V22.5 H13.1875
+    C16.8125 22.5 19.5 20 19.5 16
+    C19.5 12 16.8125 9.5 13.1875 9.5
+    H10 Z
+  "/>
+
+  <!-- A -->
+  <path fill="white" d="M18.25 25.5 L23.875 6.5 H26.375 L20.75 25.5 Z"/>
+  <path fill="white" d="M25.25 6.5 H27.75 L22.125 25.5 H19.625 Z"/>
+  <rect x="20.875" y="16.375" width="4.875" height="2.25" rx="0.5" fill="#0B1020"/>
+
+  <!-- signature cut -->
+  <path fill="#0B1020" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/>
+</svg>
