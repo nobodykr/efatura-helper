@@ -108,9 +108,17 @@
   /* masthead */
   .mast{border-bottom:3px solid var(--pri);background:#fff}
   .mast .wrap{display:flex;align-items:center;gap:14px;min-height:72px;flex-wrap:wrap}
-  .mark{width:38px;height:38px;flex:none;border-radius:var(--r);background:var(--pri);
-        color:#fff;display:grid;place-items:center;font-weight:700;font-size:1.15rem;
-        font-family:'IBM Plex Mono',monospace}
+  /* 44px, not 38: the monogram carries more detail than the two letters it replaced, and the
+     D's bowl and the A's crossbar close up below about 40px. Also hits the 44px touch target. */
+  .mark{width:44px;height:44px;flex:none;display:block;line-height:0;border-radius:var(--r)}
+  .mark svg{width:100%;height:100%;display:block}
+  .mark .plate{fill:var(--pri)}
+  .mark .cut{fill:var(--pri)}          /* counter-shapes match the plate, so they read as holes */
+  /* deepens to the dark blue on hover - the only motion is a colour change, so it stays quiet
+     next to a page whose whole point is not looking like a growth-hacked product */
+  .mark .plate,.mark .cut{transition:fill .15s ease}
+  .mark:hover .plate,.mark:hover .cut{fill:var(--pri-dark)}
+  .mark:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
   .mast .nm{font-weight:600;font-size:1.05rem;line-height:1.2}
   .mast .nm span{display:block;font-weight:400;font-size:.8rem;color:var(--mute)}
   /* margin-left:auto pushes it to the right edge without needing a wrapper. 44px min target. */
@@ -267,7 +275,28 @@
 </div>
 <div class="mast">
   <div class="wrap">
-    <div class="mark" aria-hidden="true">FB</div>
+    <!-- Diogo's DA monogram, same geometry as the favicon and diogoandrade.com, but in the site's
+         blue instead of the personal navy. Inlined rather than an <img> so the fills can be CSS
+         variables - the mark follows the palette instead of being a second place to update it.
+         Counter-shapes (the D's bowl, the A's crossbar, the signature cut) are painted in the
+         SAME colour as the plate, so they read as holes at any size. -->
+    <a class="mark" href="/" aria-label="Fatura Boa, início">
+      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <rect class="plate" width="32" height="32" rx="7"/>
+        <path fill="#fff" d="M6.75 6.5 H13.375 C18.875 6.5 22.75 10.3125 22.75 16
+                             C22.75 21.6875 18.875 25.5 13.375 25.5 H6.75 Z
+                             M10 9.5 V22.5 H13.1875 C16.8125 22.5 19.5 20 19.5 16
+                             C19.5 12 16.8125 9.5 13.1875 9.5 H10 Z"/>
+        <path fill="#fff" d="M18.25 25.5 L23.875 6.5 H26.375 L20.75 25.5 Z"/>
+        <path fill="#fff" d="M25.25 6.5 H27.75 L22.125 25.5 H19.625 Z"/>
+        <rect class="cut" x="20.875" y="16.375" width="4.875" height="2.25" rx="0.5"/>
+        <!-- The diagonal is LOAD-BEARING, not decoration. The A's left stroke passes behind the
+             D and both are white, so without this they fuse into one shape. Removing it was
+             tried and made the mark less legible, not more. Reproduced exactly as on
+             diogoandrade.com; only the colours differ. -->
+        <path class="cut" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/>
+      </svg>
+    </a>
     <div class="nm">Fatura Boa<span>Classificar faturas pendentes do e-Fatura, por setor, para o IRS</span></div>
     <a class="mastnav" href="/deducoes">Deduções</a>
     <a class="mastnav" href="/consulta">Consultar NIF</a>
