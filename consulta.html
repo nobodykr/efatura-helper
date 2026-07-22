@@ -277,11 +277,24 @@
       .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); })
       .then(function(x){
         if(!x.ok){
-          out.innerHTML = '<div class="err">'
-            + (x.j && x.j.error === "no registered activity"
-                ? 'Este NIF nao consta do registo de actividades do SICAE. Particulares e entidades sem actividade aberta nao aparecem aqui.'
-                : 'Nao encontrado. Confirme o numero, ou pesquise pelo nome.')
-            + '</div>';
+          // Say WHICH nif and WHY. "Nao encontrado" alone left people re-typing a number that was
+          // correct all along - the usual cause is a real company that simply has no activity
+          // registered in SICAE, which is a different problem from a typo.
+          var e = (x.j || {}).error, n = '<span class="mono">' + esc(nif) + '</span>';
+          var msg;
+          if (e === "no registered activity") {
+            msg = '<strong>' + n + '</strong> existe mas nao tem actividade aberta no SICAE.'
+                + '<br>Aparecem aqui empresas e entidades com actividade registada. Particulares,'
+                + ' entidades ja cessadas e NIFs estrangeiros nao constam deste registo.';
+          } else if (e === "bad nif") {
+            msg = n + ' nao e um NIF valido. Um NIF portugues tem 9 digitos.';
+          } else if (e === "rate") {
+            msg = 'Demasiadas consultas seguidas. Espere um momento e tente de novo.';
+          } else {
+            msg = 'Nao foi encontrado nada para <strong>' + n + '</strong>.'
+                + '<br>Confirme o numero, ou pesquise pelo nome do comerciante.';
+          }
+          out.innerHTML = '<div class="err">' + msg + '</div>';
           return;
         }
         out.innerHTML = card(x.j);
