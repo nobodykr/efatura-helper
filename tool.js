@@ -272,8 +272,11 @@
       if (seen[k] || sent >= 200) return;
       seen[k] = 1; sent++;
       try {
+        // consent:true is REQUIRED by the server (403 without it). This block only runs when
+        // sharing is on, so asserting it here is honest - and it means a stale or modified client
+        // that never asked the user is rejected instead of silently contributing.
         fetch(url, { method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nif: nif, suggested: sug, chosen: cho }) }).catch(function () {});
+          body: JSON.stringify({ nif: nif, suggested: sug, chosen: cho, consent: true }) }).catch(function () {});
       } catch (e) {}
     });
   }
@@ -1007,8 +1010,11 @@
       var msg = document.getElementById("efh-winmsg");
       fetch(CAEMAP_URL.replace(/sectors\.json$/, "win"), {
         method: "POST", headers: { "Content-Type": "application/json" },
+        // consent:true required by the server. This send sits behind an explicit button, so the
+        // assertion is accurate; a payload without it means the client never asked anyone.
         body: JSON.stringify({ ano: year, desperdicado: +(o.wasted || 0).toFixed(2),
-                               ganho: +((o.after - o.before) || 0).toFixed(2), aplicadas: applied })
+                               ganho: +((o.after - o.before) || 0).toFixed(2), aplicadas: applied,
+                               consent: true })
       }).then(function () { msg.textContent = " obrigado!"; })
         .catch(function () { msg.textContent = " falhou (sem problema)"; });
       document.getElementById("efh-win").disabled = true;

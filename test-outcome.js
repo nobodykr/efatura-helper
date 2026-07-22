@@ -8,7 +8,12 @@ const rows = [
   { estadoBeneficio: "P", nifEmitente: "503540480", nomeEmitente: "Loja B", valorTotal: 5000,
     valorTotalIva: 300, dataEmissaoDocumento: "2026-06-02", idDocumento: "p2" }
 ];
-const ALLOWED = ["nif", "suggested", "chosen"];
+// "consent" is allowed alongside the three data fields: it is a boolean assertion the SERVER
+// requires (403 without it), and it carries no information about the user or their purchases.
+// The point of this list is that nothing describing a PERSON or a PURCHASE creeps in - amount,
+// date, invoice id, the user's own NIF. Widen it only for another field of that same kind, and
+// never to make a failing test pass.
+const ALLOWED = ["nif", "suggested", "chosen", "consent"];
 // anything that could identify the user or reconstruct their spending
 const FORBIDDEN = ["valor", "total", "iva", "data", "date", "amount", "idDocumento", "nifAdquirente",
                    "email", "nome", "merchant", "atcud", "doc"];
