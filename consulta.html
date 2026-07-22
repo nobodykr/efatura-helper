@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Consulta de NIF | Fatura Boa</title>
+<meta name="description" content="Consulte um NIF portugues: nome oficial, CAE principal e secundarios, morada e em que sector de deducao do IRS as faturas desse comerciante podem entrar.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pri:#034ad8; --pri-dark:#021c51; --pri-mid:#1b4dab; --pri-light:#1CA3FC;
+    --ink:#2B363C; --ink2:#4a5a63; --mute:#6b7780;
+    --bg:#ffffff; --bg2:#f4f6f9; --bg3:#E1E4EA; --rule:#d5dae1;
+    --red:#c8102e; --green:#1E5A3A; --amber:#8a6100;
+    --focus:#f408fc; --r:6px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:400 16px/1.6 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:940px;margin:0 auto;padding:0 24px}
+  code,.num,.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+  a{color:var(--pri);text-underline-offset:3px}
+  a:hover{color:var(--pri-dark)}
+  a:focus-visible,button:focus-visible,input:focus-visible{
+    outline:3px solid var(--focus);outline-offset:2px;border-radius:2px}
+
+  header{background:var(--pri-dark);color:#fff;padding:26px 0}
+  header h1{margin:0 0 6px;font-size:1.5rem;letter-spacing:-.01em}
+  header p{margin:0;color:#cfd9ef;font-size:.95rem;max-width:64ch}
+  header a{color:#9fc0ff}
+
+  main{padding:28px 0 60px}
+  .form{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 8px}
+  .form input{flex:1;min-width:240px;padding:13px 14px;font:400 1rem 'IBM Plex Mono',monospace;
+              border:1.5px solid var(--rule);border-radius:var(--r);color:var(--ink)}
+  .form button{padding:13px 22px;min-height:44px;background:var(--pri);color:#fff;border:0;
+               border-radius:var(--r);font:600 1rem 'IBM Plex Sans',sans-serif;cursor:pointer}
+  .form button:hover{background:var(--pri-dark)}
+  .hint{color:var(--mute);font-size:.86rem;margin:0 0 22px}
+
+  .card{border:1px solid var(--rule);border-radius:var(--r);padding:20px 22px;margin:0 0 16px;background:#fff}
+  .card h2{margin:0 0 2px;font-size:1.2rem;line-height:1.35}
+  .nifline{color:var(--mute);font-size:.9rem;margin:0 0 16px}
+  .row{display:flex;gap:12px;padding:9px 0;border-top:1px solid var(--bg3);font-size:.94rem}
+  .row:first-of-type{border-top:0}
+  .row .k{flex:0 0 128px;color:var(--mute);font-size:.86rem;padding-top:2px}
+  .row .v{flex:1;min-width:0}
+  .pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:.78rem;font-weight:600;
+        border:1px solid;margin:0 6px 5px 0;white-space:nowrap}
+  .pill.best{background:#eaf2ff;border-color:var(--pri);color:var(--pri-dark)}
+  .pill.alt{background:var(--bg2);border-color:var(--rule);color:var(--ink2)}
+  .pill.ok{background:#e9f5ee;border-color:var(--green);color:var(--green)}
+  .pill.no{background:#fdeaed;border-color:var(--red);color:var(--red)}
+  .cae{padding:7px 0;border-top:1px dotted var(--bg3);font-size:.92rem}
+  .cae:first-child{border-top:0}
+  .cae .c{font-weight:600}
+  .cae .d{color:var(--ink2)}
+  .cae .s{color:var(--mute);font-size:.85rem}
+  .muted{color:var(--mute)}
+  .note{background:var(--bg2);border-left:3px solid var(--pri-light);padding:12px 14px;
+        border-radius:0 var(--r) var(--r) 0;font-size:.89rem;color:var(--ink2);margin:16px 0 0}
+  .err{background:#fdeaed;border-left:3px solid var(--red);padding:12px 14px;color:#7a0b1c;
+       border-radius:0 var(--r) var(--r) 0}
+  .res{padding:12px 0;border-top:1px solid var(--bg3);cursor:pointer}
+  .res:hover{background:var(--bg2)}
+  .res .n{font-weight:600}
+  footer{border-top:1px solid var(--rule);padding:22px 0;color:var(--mute);font-size:.85rem}
+  @media (max-width:560px){ .row{flex-direction:column;gap:2px} .row .k{flex:none} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>Consulta de NIF</h1>
+    <p>Nome oficial, actividades registadas (CAE principal <strong>e secundarios</strong>) e em que
+       sector de deducao do IRS as faturas desse comerciante podem entrar.
+       Parte do <a href="/">Fatura Boa</a>.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <form class="form" id="f" autocomplete="off">
+    <input id="q" name="q" inputmode="search" placeholder="NIF (9 digitos) ou nome da empresa"
+           aria-label="NIF ou nome da empresa">
+    <button type="submit">Consultar</button>
+  </form>
+  <p class="hint">Exemplos: <code>500960046</code> &middot; <code>farmacia</code></p>
+
+  <div id="out"></div>
+
+  <div class="note">
+    <strong>O que esta consulta faz e nao faz.</strong>
+    Os dados vem do <strong>SICAE</strong> (registo do Estado: nome e CAE) e do
+    <strong>VIES</strong> da Comissao Europeia (morada e validade do NIF de IVA). Sao registos
+    publicos de empresas. Particulares nao aparecem: nenhuma das duas fontes os devolve.
+    <br><br>
+    <strong>Ao contrario do bookmarklet, esta pagina faz um pedido por consulta</strong>, por isso
+    o servidor ve o NIF que pesquisou. O bookmarklet descarrega o mapa inteiro precisamente para
+    que isso nunca aconteca com as suas faturas. Se preferir nao consultar aqui, o mapa completo
+    esta em <a href="https://cae-db.diogoandrade.com/sectors.json">sectors.json</a>.
+    <br><br>
+    O sector sugerido nao e aconselhamento fiscal e a AT tem a sua propria validacao. As regras
+    aplicadas, com a base legal de cada uma, estao em
+    <a href="https://github.com/nobodykr/efatura-helper/blob/main/DEDUCOES.md">DEDUCOES.md</a> e
+    <a href="https://cae-db.diogoandrade.com/cae-map.json">cae-map.json</a>.
+  </div>
+
+</main>
+
+<footer class="wrap">
+  <a href="/">Fatura Boa</a> &middot;
+  <a href="https://github.com/nobodykr/efatura-helper">Codigo</a> &middot;
+  Dados: SICAE (Estado) + VIES (Comissao Europeia)
+</footer>
+
+<script>
+(function(){
+  var API = "https://cae-db.diogoandrade.com";
+  var out = document.getElementById("out");
+  var q = document.getElementById("q");
+
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+  function row(k,v){ return '<div class="row"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
+
+  function card(d){
+    var h = '<div class="card"><h2>'+esc(d.nome||"(sem nome)")+'</h2>'
+          + '<p class="nifline mono">NIF '+esc(d.nif)+'</p>';
+
+    // sectors: first is the suggestion, the rest are the cascade as ceilings fill
+    var pills = (d.sectors||[]).map(function(s,i){
+      return '<span class="pill '+(i===0?"best":"alt")+'" title="'+esc((d.sector_notes||{})[s]||"")+'">'
+             + esc(s)+'</span>'; }).join("");
+    h += row("Sectores", pills
+         + '<div class="s muted" style="font-size:.84rem;margin-top:4px">'
+         + esc((d.sector_notes||{})[(d.sectors||[])[0]]||"") + '</div>');
+
+    var acts = (d.atividades&&d.atividades.length) ? d.atividades : (d.caes||[]).map(function(c){return {cae:c};});
+    h += row("Actividades", acts.map(function(a){
+      return '<div class="cae"><span class="c mono">'+esc(a.cae)+'</span>'
+           + (a.desc ? ' <span class="d">'+esc(a.desc)+'</span>' : '')
+           + (a.sector ? ' <span class="s">&rarr; '+esc(a.sector)+'</span>' : '')
+           + '</div>'; }).join("") || '<span class="muted">sem CAE registado</span>');
+
+    var v = d.vies;
+    if (v && !v.unavailable){
+      h += row("Morada", v.morada ? esc(v.morada) : '<span class="muted">nao disponivel no VIES</span>');
+      h += row("NIF de IVA", v.valid
+            ? '<span class="pill ok">valido</span>'
+            : '<span class="pill no">nao valido</span> <span class="muted">nao registado para IVA, normalmente inactivo</span>');
+    } else if (v) {
+      h += row("Morada", '<span class="muted">VIES indisponivel neste momento</span>');
+    }
+    return h + '</div>';
+  }
+
+  function lookup(nif){
+    out.innerHTML = '<p class="muted">A consultar '+esc(nif)+'&hellip;</p>';
+    fetch(API+"/nif/"+encodeURIComponent(nif)+"?vies=1")
+      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); })
+      .then(function(x){
+        if(!x.ok){
+          out.innerHTML = '<div class="err">'
+            + (x.j && x.j.error === "no registered activity"
+                ? 'Este NIF nao consta do registo de actividades do SICAE. Particulares e entidades sem actividade aberta nao aparecem aqui.'
+                : 'Nao encontrado. Confirme o numero, ou pesquise pelo nome.')
+            + '</div>';
+          return;
+        }
+        out.innerHTML = card(x.j);
+      })
+      .catch(function(){ out.innerHTML = '<div class="err">Falha de rede. Tente novamente.</div>'; });
+  }
+
+  function byName(term){
+    out.innerHTML = '<p class="muted">A pesquisar&hellip;</p>';
+    fetch(API+"/search?q="+encodeURIComponent(term)+"&limit=15")
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        var rs = j.results||[];
+        if(!rs.length){ out.innerHTML = '<div class="err">Sem resultados para &laquo;'+esc(term)+'&raquo;.</div>'; return; }
+        out.innerHTML = '<div class="card"><h2>'+rs.length+' resultado'+(rs.length>1?"s":"")+'</h2>'
+          + rs.map(function(r){
+              return '<div class="res" data-nif="'+esc(r.nif)+'">'
+                   + '<div class="n">'+esc(r.nome)+'</div>'
+                   + '<div class="muted mono" style="font-size:.85rem">'+esc(r.nif)
+                   + ' &middot; '+esc((r.sectors||[r.sector]).join(" "))+'</div></div>'; }).join("")
+          + '</div>';
+        Array.prototype.forEach.call(out.querySelectorAll(".res"), function(el){
+          el.onclick = function(){ var n = el.getAttribute("data-nif");
+            q.value = n; history.replaceState(null,"","?q="+n); lookup(n); };
+        });
+      })
+      .catch(function(){ out.innerHTML = '<div class="err">Falha de rede. Tente novamente.</div>'; });
+  }
+
+  function go(term){
+    term = (term||"").trim();
+    if(!term) return;
+    var digits = term.replace(/\D/g,"");
+    // 9 digits is a Portuguese NIF; anything else is treated as a name search
+    if(digits.length === 9 && /^\d[\d\s.-]*$/.test(term)) lookup(digits);
+    else if(term.length >= 3) byName(term);
+    else out.innerHTML = '<div class="err">Escreva pelo menos 3 letras, ou um NIF de 9 digitos.</div>';
+  }
+
+  document.getElementById("f").onsubmit = function(e){
+    e.preventDefault();
+    history.replaceState(null,"","?q="+encodeURIComponent(q.value.trim()));
+    go(q.value);
+  };
+
+  // deep link: /consulta.html?q=500960046
+  var pre = new URLSearchParams(location.search).get("q");
+  if(pre){ q.value = pre; go(pre); }
+})();
+</script>
+</body>
+</html>
