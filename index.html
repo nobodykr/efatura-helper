@@ -82,6 +82,13 @@
         font-family:'IBM Plex Mono',monospace}
   .mast .nm{font-weight:600;font-size:1.05rem;line-height:1.2}
   .mast .nm span{display:block;font-weight:400;font-size:.8rem;color:var(--mute)}
+  /* margin-left:auto pushes it to the right edge without needing a wrapper. 44px min target. */
+  .mast .mastnav{margin-left:auto;display:inline-flex;align-items:center;min-height:44px;
+                 padding:0 16px;border:1.5px solid var(--pri);border-radius:var(--r);
+                 color:var(--pri);font-weight:600;font-size:.92rem;text-decoration:none;
+                 white-space:nowrap}
+  .mast .mastnav:hover{background:var(--pri);color:#fff}
+  @media (max-width:560px){ .mast .mastnav{margin-left:0;width:100%;justify-content:center} }
 
   header{padding:52px 0 40px;background:var(--bg2);border-bottom:1px solid var(--rule)}
   .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.11em;
@@ -146,6 +153,10 @@
   .bm{display:inline-flex;align-items:center;min-height:44px;background:var(--pri);color:#fff;
       text-decoration:none;font-weight:600;padding:11px 22px;border-radius:var(--r);cursor:grab}
   .bm:hover{background:var(--pri-dark);color:#fff}
+  /* same look as .bm but a normal link: pointer cursor, nothing to drag */
+  .btn{display:inline-flex;align-items:center;min-height:44px;background:var(--pri);color:#fff;
+       text-decoration:none;font-weight:600;padding:11px 22px;border-radius:var(--r)}
+  .btn:hover{background:var(--pri-dark);color:#fff}
 
   /* notices: coloured left rule, never colour alone */
   .box{border:1px solid var(--rule);border-left:4px solid var(--pri);border-radius:var(--r);
@@ -153,6 +164,12 @@
   .box.draft{border-left-color:var(--amber);background:#fdf8ec}
   .box.give{border-left-color:var(--green);background:#f1f7f3}
   .box h2{margin-top:0}
+  /* Content in a bare .wrap between the header and the first <section> had NO top spacing:
+     .box is margin:0 0 20px, and unlike a <section> a bare wrap has no padding of its own, so
+     the draft notice was touching the header. Sections keep their own 38px padding; this only
+     targets a wrap that directly follows the header or a section. */
+  header + .wrap, section + .wrap{padding-top:34px}
+  .wrap > .box:first-child{margin-top:0}
   .warn{border-left:4px solid var(--amber);padding:8px 0 8px 14px;color:#5A4600;background:transparent}
   code{background:var(--bg2);border:1px solid var(--rule);border-radius:2px;padding:1px 5px;font-size:.85em}
 
@@ -211,6 +228,7 @@
   <div class="wrap">
     <div class="mark" aria-hidden="true">FB</div>
     <div class="nm">Fatura Boa<span>Classificar faturas pendentes do e-Fatura, por setor, para o IRS</span></div>
+    <a class="mastnav" href="/consulta">Consultar NIF</a>
   </div>
 </div>
 
@@ -452,6 +470,25 @@
     <b>Otimizada</b>, que é o setor que dá mais dedução e ainda tem espaço. Vem pré-selecionada a
     Provável. A Otimizada só é tua para usar se a compra <b>foi mesmo</b> dessa natureza. Quem
     declara és tu.</p>
+</section>
+
+<section>
+  <h2>Ver a atividade de um comerciante <span class="note">(sem instalar nada)</span></h2>
+  <p>Se só queres perceber <b>o que é</b> um NIF que te apareceu numa fatura, ou em que setores as
+     compras nesse comerciante podem entrar, há uma página à parte:
+     <a href="/consulta"><b>Consultar NIF</b></a>.</p>
+  <p>Procura por NIF ou por nome e mostra o nome oficial, a morada, e as atividades registadas no
+     SICAE &mdash; <b>a principal e as secundárias</b>. As secundárias são a parte que quase nenhum
+     site mostra, e são precisamente as que decidem em que setores as faturas desse comerciante
+     podem entrar. É também onde se percebe porque é que um hipermercado aparece com CAE de
+     farmácia.</p>
+  <p class="note">Funciona no telemóvel, ao contrário do bookmarklet. Não precisa de login em lado
+     nenhum e não toca na tua conta das Finanças &mdash; só lê registos públicos de empresas.
+     Ao contrário do bookmarklet, faz um pedido por consulta, por isso o servidor vê o NIF que
+     pesquisaste; a página diz isso lá.</p>
+  <!-- NOT .bm: that class is cursor:grab because it is the drag-to-bookmarks-bar bookmarklet.
+       Using it on an ordinary link invites people to drag a page they should just click. -->
+  <p><a class="btn" href="/consulta">Consultar um NIF</a></p>
 </section>
 
 <section>
