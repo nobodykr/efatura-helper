@@ -487,22 +487,27 @@
    * active but with no recibos in the period is flagged, not hidden. Recibos fail soft: contracts
    * alone already establish "is a landlord". Monetary values are shown per-contract as returned,
    * NOT summed - their scale (cents vs euros) must be confirmed live before we compute on them. */
+  // `estado` is an OBJECT ({codigo:"ACTIVO", label:"Ativo"}), not a string - verified against
+  // fiscal-monitor's rendas_raw.json. Reading it as a string (String(c.estado) -> "[object Object]")
+  // is how a real active contract was mis-counted. Read .codigo/.label, and use the endpoint the
+  // proven scraper uses: obterRecibos/LOCADOR, not /emitente.
+  function estadoStr(e) { return (e && (e.codigo || e.label)) ? String(e.codigo || e.label) : String(e || ""); }
   function readRendas() {
     var cU = "/arrendamento/api/obterContratos/locador";
-    var rU = "/arrendamento/api/obterRecibos/emitente";
-    return getJSON(cU).then(function (cj) {
+    var rU = "/arrendamento/api/obterRecibos/locador";
+    return getJSON(cU + "?_=" + Date.now()).then(function (cj) {
       var contratos = (cj && (cj.contratos || cj.listaContratos)) || (Array.isArray(cj) ? cj : []);
-      return getJSON(rU).then(function (rj) {
+      return getJSON(rU + "?_=" + Date.now()).then(function (rj) {
         return { contratos: contratos, recibos: (rj && rj.recibos) || (Array.isArray(rj) ? rj : []) };
       }).catch(function () { return { contratos: contratos, recibos: null }; });
     }).then(function (o) {
-      var ativos = o.contratos.filter(function (c) { return !/cessad|extint|anulad|denunciad/i.test(String(c.estado || "")); });
+      var ativos = o.contratos.filter(function (c) { return /activ|ativ/i.test(estadoStr(c.estado)); });
       var recCount = o.recibos ? o.recibos.length : null;
       var avisos = [];
       if (o.recibos && ativos.length && recCount === 0) avisos.push("contrato activo sem recibos no per\u00edodo \u2014 confirmar");
       return { data: { contratos: o.contratos.length, activos: ativos.length, recibos: recCount,
                        lista: ativos.slice(0, 8).map(function (c) {
-                         return { referencia: c.referencia || c.numero, estado: c.estado, valorRenda: c.valorRenda };
+                         return { referencia: c.referencia || c.numero, estado: estadoStr(c.estado), valorRenda: c.valorRenda };
                        }), avisos: avisos },
                source: cU + (o.recibos !== null ? " + " + rU : " (recibos indispon\u00edveis)") };
     });

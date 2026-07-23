@@ -28,8 +28,10 @@ function fetchOK(u) {
   const s = String(u);
   const json = (o) => Promise.resolve({ ok: true, headers: { get: () => "application/json" }, text: () => Promise.resolve(JSON.stringify(o)) });
   if (/obterDocumentosAdquirente/.test(s)) return json({ totalElementos: 3, linhas: [{ estadoBeneficio: "P", actividadeEmitente: "47" }, { estadoBeneficio: "P" }, { estadoBeneficio: "R" }] });
-  if (/obterContratos\/locador/.test(s)) return json({ contratos: [{ referencia: "C1", estado: "Activo", valorRenda: 65000 }] });
-  if (/obterRecibos\/emitente/.test(s)) return json({ recibos: [{ valor: 65000 }, { valor: 65000 }] });
+  // Real shape: obterContratos/locador returns a BARE ARRAY, estado is an OBJECT {codigo,label},
+  // recibos come from /locador (not /emitente). Query string carries a cache-buster.
+  if (/obterContratos\/locador/.test(s)) return json([{ referencia: "C1", estado: { codigo: "ACTIVO", label: "Ativo" }, valorRenda: 65000 }]);
+  if (/obterRecibos\/locador/.test(s)) return json([{ valor: 65000 }, { valor: 65000 }]);
   if (/sectors\.json|\/bucket\//.test(s)) return json({});
   return json({ linhas: [] });
 }
