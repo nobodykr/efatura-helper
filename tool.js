@@ -578,6 +578,12 @@
   function readEfatura() {
     var u = "/json/obterDocumentosAdquirente.action?dataInicioFilter=" + year + "-01-01&dataFimFilter=" + year + "-12-31";
     return getJSON(u).then(function (j) {
+      // A STALE e-Fatura session returns valid JSON {success:false, expiredSession:true} - NOT an
+      // HTML redirect - so getJSON lets it through and we'd read undefined `linhas` -> silently
+      // show 0 pending. Verified against the real server response 2026-07-23. Treat it as a login
+      // gate. (Same envelope likely on other .action endpoints; harden them if the shape shows up.)
+      if (j && (j.expiredSession === true || j.success === false))
+        throw new Error("sess\u00e3o do e-Fatura expirada - reabre a p\u00e1gina e faz login");
       var rows = (j && (j.linhas || j.documentos)) || [];
       if (!Array.isArray(rows)) rows = [];
       var pend = 0, byAct = {};
