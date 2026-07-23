@@ -150,8 +150,10 @@
     var data; try { data = JSON.parse(raw); } catch(e){ return null; }
     var known = PARTITIONS.some(function(p){ return p.id === q.p; });
     if (!known) return null;
+    // optional debug SHAPE (keys+types, values redacted) - for validating the readers, no PII
+    var shape = null; if (q.s){ var sr = b64d(q.s); if (sr){ try { shape = JSON.parse(sr); } catch(e){} } }
     var store = load();
-    store.partitions[q.p] = { status:"done", fetchedAt:new Date().toISOString(), data:data };
+    store.partitions[q.p] = { status:"done", fetchedAt:new Date().toISOString(), data:data, shape:shape };
     if (!store.consentedAt) store.consentedAt = new Date().toISOString();
     save(store);
     try { history.replaceState(null, "", location.pathname); } catch(e){ location.hash=""; }
@@ -325,9 +327,22 @@
       '<input type="checkbox" id="share" '+(shareOn()?'checked':'')+' style="margin-right:6px">'+
       'Contribuir com o meu perfil, de forma <b>anónima</b> (sem nome nem NIF), para melhorar a ferramenta. '+
       'Envia contagens, categorias e valores - nunca quem és. Podes desligar quando quiseres.</label>';
+    // Debug: copy the response STRUCTURES (keys+types, values redacted) to validate the readers.
+    // Only appears once at least one partition captured a shape. Safe to paste - carries no values.
+    var haveShapes = PARTITIONS.some(function(p){ return store.partitions[p.id] && store.partitions[p.id].shape; });
+    if (haveShapes)
+      h += '<div style="margin-top:8px"><a href="#" id="copyshape" class="muted" style="font-size:.8rem">Copiar estrutura das respostas (sem valores) - para validacao</a></div>';
     h += '<div style="margin-top:12px"><a href="#" id="reset" class="muted" style="font-size:.8rem">Apagar o meu perfil deste navegador</a></div></div>';
 
     document.getElementById("out").innerHTML = h;
+    var cs = document.getElementById("copyshape");
+    if (cs) cs.onclick = function(ev){
+      ev.preventDefault();
+      var out = {}; PARTITIONS.forEach(function(p){ var s = store.partitions[p.id]; if (s && s.shape) out[p.id] = s.shape; });
+      var txt = JSON.stringify(out, null, 2);
+      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(function(){ cs.textContent = "Estrutura copiada - cola no chat"; })
+        .catch(function(){ cs.textContent = "Copia manual:"; var ta=document.createElement("textarea"); ta.value=txt; ta.style.cssText="width:100%;height:120px;margin-top:6px"; cs.parentNode.appendChild(ta); ta.select(); });
+    };
     var rs = document.getElementById("reset");
     if (rs) rs.onclick = function(ev){ ev.preventDefault(); try{ localStorage.removeItem(PKEY); }catch(e){} render(); };
     var sh = document.getElementById("share");

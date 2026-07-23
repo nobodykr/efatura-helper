@@ -482,8 +482,10 @@
    * origin. (The separate, opt-in, redacted SERVER telemetry is a different thing entirely.) */
   var PROF_SITE = "https://faturas.diogoandrade.com/perfil";
   function b64(s) { return btoa(unescape(encodeURIComponent(s))); }
-  function handoffUrl(pid, data) {
-    return PROF_SITE + "#p=" + encodeURIComponent(pid) + "&d=" + encodeURIComponent(b64(JSON.stringify(data)));
+  function handoffUrl(pid, data, shape) {
+    var u = PROF_SITE + "#p=" + encodeURIComponent(pid) + "&d=" + encodeURIComponent(b64(JSON.stringify(data)));
+    if (shape && Object.keys(shape).length) u += "&s=" + encodeURIComponent(b64(JSON.stringify(shape)));
+    return u;
   }
   function profConsent() { try { return JSON.parse(localStorage.getItem(PROF_CONSENT) || "null"); } catch (e) { return null; } }
   function currentPartition() {
@@ -497,6 +499,25 @@
     return null;   // on the shared host but not on a page we read - prompt to open one
   }
 
+  /* DEBUG-SHAPE CAPTURE. To validate the blind-built readers against the REAL responses without
+   * ever seeing Diogo's data: record the STRUCTURE of each response (keys + types + array lengths),
+   * with every value redacted to its type. Diogo runs the bookmarklet on his own session and copies
+   * this structure to us; we pin the parsers from it. No values, no PII - just the skeleton. */
+  var _shapes = {};
+  function skeleton(v, d) {
+    d = d || 0; if (d > 5) return "...";
+    if (v == null) return null;
+    if (Array.isArray(v)) return v.length ? [skeleton(v[0], d + 1), "x" + v.length] : [];
+    if (typeof v === "object") { var o = {}; Object.keys(v).slice(0, 40).forEach(function (k) { o[k] = skeleton(v[k], d + 1); }); return o; }
+    if (typeof v === "string") return v.length > 40 ? "str(" + v.length + ")" : "str";
+    return typeof v;   // number / boolean
+  }
+  function recordShape(url, kind, val) {
+    var key = String(url).split("?")[0];
+    if (kind === "html") _shapes[key] = { html: true, len: (val || "").length, comprovativo: (String(val).match(/\/comprovativo\//g) || []).length };
+    else _shapes[key] = skeleton(val);
+  }
+
   /* RULE 3 (SPEC): a wrong session or missing permission on AT returns 200 + an HTML redirect,
    * never 401. So assert on CONTENT - did we get the JSON shape we asked for - never on r.ok. */
   function getJSON(url) {
@@ -504,7 +525,7 @@
       var ct = r.headers.get("content-type") || "";
       return r.text().then(function (t) {
         if (/text\/html/i.test(ct) || /^\s*</.test(t)) throw new Error("sess\u00e3o n\u00e3o iniciada nesta p\u00e1gina");
-        try { return JSON.parse(t); } catch (e) { throw new Error("resposta inesperada"); }
+        try { var j = JSON.parse(t); recordShape(url, "json", j); return j; } catch (e) { throw new Error("resposta inesperada"); }
       });
     });
   }
@@ -516,7 +537,8 @@
     return fetch(url, { credentials: "include" }).then(function (r) {
       return r.text().then(function (t) {
         if (/acesso\.gov\.pt|loginForm/i.test(t)) throw new Error("sess\u00e3o n\u00e3o iniciada nesta p\u00e1gina");
-        try { return { json: JSON.parse(t) }; } catch (e) { return { html: t }; }
+        try { var j = JSON.parse(t); recordShape(url, "json", j); return { json: j }; }
+        catch (e) { recordShape(url, "html", t); return { html: t }; }
       });
     });
   }
@@ -866,7 +888,7 @@
       document.getElementById("efh-body").innerHTML =
         '<div style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
         '.<br>A abrir o teu perfil...</div>';
-      setTimeout(function () { location.href = handoffUrl(cur.id, res.data); }, 700);
+      setTimeout(function () { location.href = handoffUrl(cur.id, res.data, _shapes); }, 700);
     }).catch(function (e) {
       var s = profLoad();
       var msg = (e && e.message) || "erro";
