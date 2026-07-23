@@ -429,7 +429,9 @@
   // SS, ...) append here and write its reader; nothing else changes.
   var PARTITIONS = [
     { id: "efatura", label: "e-Fatura", host: "faturas.portaldasfinancas.gov.pt",
-      open: "https://faturas.portaldasfinancas.gov.pt/consumidor/consumidorFaturas",
+      // .action entry that prompts login itself if there is no session (a login-less deep path
+      // 404s). Verified 2026-07-23: this returns 302 -> login -> the invoices page.
+      open: "https://faturas.portaldasfinancas.gov.pt/consultarDocumentosAdquirente.action",
       why: "As tuas faturas e o setor de dedu\u00e7\u00e3o de cada uma.", read: readEfatura },
     { id: "rendas", label: "Rendas (Im\u00f3veis)", host: "imoveis.portaldasfinancas.gov.pt",
       open: "https://imoveis.portaldasfinancas.gov.pt/arrendamento/consultarContratos/locador",
