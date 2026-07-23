@@ -46,7 +46,11 @@ function fetchOK(u) {
   if (/liquidacoesIRSDataTables/.test(s)) return json({ data: [{ ano: 2024 }, { ano: 2023 }, { ano: 2022 }] });
   if (/reembolsosDataTables/.test(s)) return json({ data: [{ ano: 2024 }] });
   if (/obtemDocumentosV2/.test(s)) return json({ documentos: [{ n: 1 }, { n: 2 }] });
-  if (/consultardeclaracoes/.test(s)) return Promise.resolve({ ok: true, headers: { get: () => "text/html" }, text: () => Promise.resolve("<html><table><tr><td>Declaracao de inicio de atividade</td></tr><tr><td>Declaracao de cessacao</td></tr></table>Regime normal periodicidade trimestral</html>") });
+  if (/consultardeclaracoes/.test(s)) return Promise.resolve({ ok: true, headers: { get: () => "text/html" }, text: () => Promise.resolve(
+    "<html><table>" +
+    "<tr><td>Declaracao de inicio de atividade</td><td><a href='/atividade/atividade/consultardeclaracoes/comprovativo/9996N00829690'>ver</a></td></tr>" +
+    "<tr><td>Declaracao de cessacao</td><td><a href='/atividade/atividade/consultardeclaracoes/comprovativo/9996N01523817'>ver</a></td></tr>" +
+    "</table>periodicidade trimestral</html>") });
   if (/login\/personalData/.test(s)) return json({ nome: "SECRET NAME", niss: "11111111111" });
   if (/situacao-contributiva/.test(s)) return json({ estado: "REGULARIZADA" });
   if (/payments\/current/.test(s)) return json({ data: [{ v: 1 }] });

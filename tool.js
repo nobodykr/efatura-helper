@@ -531,16 +531,23 @@
     return getMaybe("/atividade/atividade/consultardeclaracoes?_=" + Date.now()).then(function (res) {
       var txt = res.html || (res.json ? JSON.stringify(res.json) : "");
       var low = txt.toLowerCase();
-      // count declaration rows heuristically
-      var n = (low.match(/declara[c\u00e7][a\u00e3]o/g) || []).length;
+      // Count declarations by their comprovativo download links (one per declaration) - more
+      // reliable than word-matching. Fall back to the word count if the markup differs.
+      var n = (txt.match(/\/comprovativo\//g) || []).length || (low.match(/declara[c\u00e7][a\u00e3]o/g) || []).length;
       var temInicio = /in[i\u00ed]cio de atividade|declara[c\u00e7][a\u00e3]o de in[i\u00ed]cio/.test(low);
       var temCessacao = /cessa[c\u00e7][a\u00e3]o|cessou|cessad/.test(low);
       var cessada = temCessacao ? true : (temInicio ? false : null);
+      // The current IVA regime usually is NOT on this declarations page - it lives on the
+      // "Atividade Exercida" screen of the Situacao Fiscal Integrada. Only report a regime if this
+      // page happens to state it; otherwise leave null and say where to look. Never guess.
       var regime = /isen[c\u00e7][a\u00e3]o.*53|artigo 53|regime de isen/.test(low) ? "isento (art. 53.o)"
-                 : /regime normal.*mensal|periodicidade mensal|iva mensal/.test(low) ? "IVA mensal"
-                 : /regime normal.*trimestr|periodicidade trimestr|iva trimestr/.test(low) ? "IVA trimestral"
-                 : /regime normal/.test(low) ? "regime normal de IVA" : null;
-      var avisos = ["leitura heur\u00edstica da p\u00e1gina - confirmar atividade (aberta/cessada) e regime"];
+                 : /periodicidade mensal|iva mensal/.test(low) ? "IVA mensal"
+                 : /periodicidade trimestr|iva trimestr/.test(low) ? "IVA trimestral"
+                 : null;
+      // We do NOT open the comprovativo PDFs - a bookmarklet cannot parse a PDF, and open/cessada
+      // is already answerable from this list. Deep detail, if ever needed, is the server-side path.
+      var avisos = ["leitura heur\u00edstica - confirmar aberta/cessada"];
+      if (!regime) avisos.push("regime de IVA n\u00e3o consta aqui - ver 'Atividade Exercida' na Situa\u00e7\u00e3o Fiscal Integrada");
       return { data: { declaracoes: n, cessada: cessada, regimeIva: regime, avisos: avisos },
                source: "/atividade/atividade/consultardeclaracoes" };
     });
