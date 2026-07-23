@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="/favicon.ico" sizes="48x48" type="image/x-icon">
+<link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png">
+<title>O meu perfil fiscal | Fatura Boa</title>
+<meta name="description" content="Junta o teu perfil fiscal a partir dos documentos oficiais das Finanças. Tudo fica no teu navegador — nada é enviado.">
+<!-- noindex: this is a personal working page, not content to rank. -->
+<meta name="robots" content="noindex,nofollow">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+      crossorigin="anonymous" referrerpolicy="no-referrer">
+<style>
+  :root{
+    --pri:#034ad8; --pri-dark:#021c51; --pri-light:#1CA3FC;
+    --ink:#2B363C; --ink2:#4a5a63; --mute:#6b7780;
+    --bg:#ffffff; --bg2:#f4f6f9; --bg3:#E1E4EA; --rule:#d5dae1;
+    --red:#c8102e; --green:#1E5A3A; --amber:#8a6100; --focus:#f408fc; --r:6px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:820px;margin:0 auto;padding:0 24px}
+  code,.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+  a{color:var(--pri);text-underline-offset:3px} a:hover{color:var(--pri-dark)}
+  a:focus-visible,button:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:2px}
+  header{background:var(--pri-dark);color:#fff;padding:26px 0}
+  header h1{margin:0 0 6px;font-size:1.45rem}
+  header p{margin:0;color:#cfd9ef;font-size:.95rem;max-width:66ch}
+  main{padding:26px 0 60px}
+  .card{border:1px solid var(--rule);border-radius:var(--r);padding:18px 20px;margin:0 0 16px;background:#fff}
+  .step{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--bg3)}
+  .step:first-child{border-top:0}
+  .step .ic{font-size:20px;line-height:1.2;flex:none;width:26px;text-align:center}
+  .step .bd{flex:1;min-width:0}
+  .step .t{font-weight:600}
+  .step .w{color:var(--mute);font-size:.86rem}
+  .btn{display:inline-block;background:var(--pri);color:#fff;text-decoration:none;border:0;border-radius:var(--r);padding:8px 14px;font:600 .9rem 'IBM Plex Sans',sans-serif;cursor:pointer;margin-top:6px}
+  .btn:hover{background:var(--pri-dark);color:#fff}
+  .btn.ghost{background:var(--bg2);color:var(--pri);border:1px solid var(--rule)}
+  .pill{display:inline-block;background:#eaf2ff;border:1px solid var(--pri);color:var(--pri-dark);border-radius:99px;padding:2px 10px;margin:0 6px 6px 0;font-size:.8rem;font-weight:600}
+  .kv{font-size:.9rem;color:var(--ink2);margin:3px 0}
+  .muted{color:var(--mute)} .warn{color:var(--amber);font-size:.82rem}
+  .banner{background:#e9f5ee;border:1px solid var(--green);color:var(--green);border-radius:var(--r);padding:10px 14px;font-size:.88rem;margin:0 0 16px}
+  footer{border-top:1px solid var(--rule);padding:22px 0;color:var(--mute);font-size:.85rem}
+  .mast{border-bottom:3px solid var(--pri);background:#fff}
+  .mast .wrap{display:flex;align-items:center;gap:14px;min-height:68px;flex-wrap:wrap}
+  .mast .mark{width:40px;height:40px;flex:none} .mast .mark svg{width:100%;height:100%;display:block}
+  .mast .mark .plate,.mast .mark .cut{fill:var(--pri)}
+  .mast .nm{font-weight:600;font-size:1.02rem;color:var(--ink)}
+  .mast .nm span{display:block;font-weight:400;font-size:.78rem;color:var(--mute)}
+  .mast .mastnav{margin-left:auto;display:inline-flex;align-items:center;min-height:40px;padding:0 14px;border:1.5px solid var(--pri);border-radius:var(--r);color:var(--pri);font-weight:600;font-size:.9rem;text-decoration:none}
+  .mast .mastnav:hover{background:var(--pri);color:#fff}
+</style>
+</head>
+<body>
+<div class="mast"><div class="wrap">
+  <a class="mark" href="/" aria-label="Fatura Boa">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect class="plate" width="32" height="32" rx="7"/>
+      <path fill="#fff" d="M6.75 6.5 H13.375 C18.875 6.5 22.75 10.3125 22.75 16 C22.75 21.6875 18.875 25.5 13.375 25.5 H6.75 Z M10 9.5 V22.5 H13.1875 C16.8125 22.5 19.5 20 19.5 16 C19.5 12 16.8125 9.5 13.1875 9.5 H10 Z"/>
+      <path fill="#fff" d="M18.25 25.5 L23.875 6.5 H26.375 L20.75 25.5 Z"/><path fill="#fff" d="M25.25 6.5 H27.75 L22.125 25.5 H19.625 Z"/>
+      <rect class="cut" x="20.875" y="16.375" width="4.875" height="2.25" rx="0.5"/><path class="cut" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/></svg>
+  </a>
+  <div class="nm">Fatura Boa<span>O teu perfil fiscal, a partir das fontes oficiais</span></div>
+  <a class="mastnav" href="/consulta">Consultar NIF</a>
+</div></div>
+<header><div class="wrap">
+  <h1>O meu perfil fiscal</h1>
+  <p>Junta, página a página, o que as Finanças já sabem sobre ti. Cada página é lida no teu
+     navegador, na tua sessão. <b>Tudo isto fica só aqui — nada é enviado para nós.</b></p>
+</div></header>
+<main class="wrap">
+  <div id="banner"></div>
+  <div id="out"></div>
+</main>
+<footer class="wrap"><a href="/">Fatura Boa</a> &middot; Os teus dados ficam neste navegador &middot;
+  Fontes: Portal das Finanças (a tua sessão)</footer>
+
+<script>
+(function(){
+  var PKEY = "fb-profile-v1";
+  // Mirrors the PARTITIONS list in tool.js (kept in sync by hand - two files, two origins, no
+  // shared module). id + where to go to read each one.
+  var PARTITIONS = [
+    { id:"efatura", label:"e-Fatura", open:"https://faturas.portaldasfinancas.gov.pt/consumidor/consumidorFaturas",
+      why:"As tuas faturas e o setor de dedução de cada uma." },
+    { id:"rendas", label:"Rendas (Imóveis)", open:"https://imoveis.portaldasfinancas.gov.pt/arrendamento/consultarContratos/locador",
+      why:"Contratos de arrendamento e recibos de renda — rendimentos da categoria F." }
+  ];
+
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+  function load(){ try { return JSON.parse(localStorage.getItem(PKEY)) || {partitions:{}}; } catch(e){ return {partitions:{}}; } }
+  function save(p){ try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch(e){} }
+  function b64d(s){ try { return decodeURIComponent(escape(atob(s))); } catch(e){ return null; } }
+
+  // 1. If the bookmarklet handed us a partition via the fragment, merge it, then CLEAR the hash so
+  //    a refresh does not re-apply it. The fragment never reached any server - it is client-only.
+  function ingestHash(){
+    var m = location.hash.replace(/^#/, "");
+    if (!m) return null;
+    var q = {}; m.split("&").forEach(function(kv){ var i=kv.indexOf("="); if(i>0) q[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1)); });
+    if (!q.p || !q.d) return null;
+    var raw = b64d(q.d); if (!raw) return null;
+    var data; try { data = JSON.parse(raw); } catch(e){ return null; }
+    var known = PARTITIONS.some(function(p){ return p.id === q.p; });
+    if (!known) return null;
+    var store = load();
+    store.partitions[q.p] = { status:"done", fetchedAt:new Date().toISOString(), data:data };
+    if (!store.consentedAt) store.consentedAt = new Date().toISOString();
+    save(store);
+    try { history.replaceState(null, "", location.pathname); } catch(e){ location.hash=""; }
+    return q.p;
+  }
+
+  function assemble(store){
+    var P = store.partitions, prof = { categorias:[], detalhes:{} };
+    if (P.efatura && P.efatura.status==="done"){ prof.detalhes.efatura = P.efatura.data; prof.consumidor = true; }
+    if (P.rendas && P.rendas.status==="done"){
+      prof.detalhes.rendas = P.rendas.data;
+      if (P.rendas.data.activos > 0) prof.categorias.push({cat:"F", label:"Rendimentos prediais (senhorio)"});
+    }
+    return prof;
+  }
+
+  function overlay(prof){
+    var h = '';
+    if (prof.categorias.length){
+      h += '<div style="margin:0 0 8px">';
+      prof.categorias.forEach(function(c){ h += '<span class="pill">Cat. '+esc(c.cat)+' — '+esc(c.label)+'</span>'; });
+      h += '</div>';
+    }
+    var d = prof.detalhes;
+    if (d.efatura) h += '<div class="kv">e-Fatura '+esc(d.efatura.ano)+': <b>'+esc(d.efatura.porClassificar)+'</b> por classificar de '+esc(d.efatura.totalFaturas)+'.</div>';
+    if (d.rendas){
+      h += '<div class="kv">Arrendamento: <b>'+esc(d.rendas.activos)+'</b> contrato(s) activo(s) de '+esc(d.rendas.contratos)+
+           (d.rendas.recibos!=null?', '+esc(d.rendas.recibos)+' recibo(s)':'')+'.</div>';
+      (d.rendas.avisos||[]).forEach(function(a){ h += '<div class="warn">⚠ '+esc(a)+'</div>'; });
+    }
+    return h || '<div class="muted">Ainda sem dados. Segue os passos acima.</div>';
+  }
+
+  function render(justAdded){
+    var store = load();
+    var done = PARTITIONS.filter(function(p){ return store.partitions[p.id] && store.partitions[p.id].status==="done"; });
+
+    document.getElementById("banner").innerHTML = justAdded
+      ? '<div class="banner"><i class="fa-solid fa-check"></i> Guardei os dados de <b>'+esc((PARTITIONS.filter(function(p){return p.id===justAdded;})[0]||{}).label||justAdded)+'</b> no teu perfil, aqui neste navegador.</div>'
+      : '';
+
+    var h = '<div class="card"><div style="font-weight:700;font-size:1.05rem;margin-bottom:4px">Passos ('+done.length+'/'+PARTITIONS.length+')</div>';
+    PARTITIONS.forEach(function(p){
+      var ok = store.partitions[p.id] && store.partitions[p.id].status==="done";
+      h += '<div class="step"><div class="ic">'+(ok?'✅':'⬜')+'</div><div class="bd">'+
+        '<div class="t">'+esc(p.label)+'</div><div class="w">'+esc(p.why)+'</div>'+
+        (ok ? '<a class="btn ghost" href="'+p.open+'" target="_blank" rel="noopener">Reler (abrir página)</a>'
+            : '<a class="btn" href="'+p.open+'" target="_blank" rel="noopener">Abrir e ler esta página →</a> '+
+              '<div class="w" style="margin-top:4px">Na página, clica no favorito <b>Fatura Boa</b>, depois em <b>Guardar no meu perfil</b>.</div>')+
+        '</div></div>';
+    });
+    h += '</div>';
+
+    h += '<div class="card"><div style="font-weight:700;font-size:1.05rem;margin-bottom:8px">O teu perfil</div>'+overlay(assemble(store));
+    if (done.length===PARTITIONS.length) h += '<div class="banner" style="margin-top:12px">Perfil completo. Fica guardado só neste navegador.</div>';
+    h += '<div style="margin-top:12px"><a href="#" id="reset" class="muted" style="font-size:.8rem">Apagar o meu perfil deste navegador</a></div></div>';
+
+    document.getElementById("out").innerHTML = h;
+    var rs = document.getElementById("reset");
+    if (rs) rs.onclick = function(ev){ ev.preventDefault(); try{ localStorage.removeItem(PKEY); }catch(e){} render(); };
+  }
+
+  var added = ingestHash();
+  render(added);
+})();
+</script>
+</body>
+</html>

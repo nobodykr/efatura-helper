@@ -438,6 +438,18 @@
 
   function profLoad() { try { return JSON.parse(localStorage.getItem(PROF_KEY)) || { partitions: {} }; } catch (e) { return { partitions: {} }; } }
   function profSave(p) { try { localStorage.setItem(PROF_KEY, JSON.stringify(p)); } catch (e) {} }
+
+  /* CROSS-PARTITION HANDOFF (SPEC Option A). Each AT partition is a separate origin, so this
+   * page's localStorage cannot be read on the next partition. To assemble ONE profile we hand
+   * each partition's summary to our own /perfil page via a URL FRAGMENT. A fragment (#...) is
+   * NEVER sent in the HTTP request, so this is a browser-to-our-page handoff, not a server send -
+   * the data still never leaves the machine. /perfil accumulates across partitions in its single
+   * origin. (The separate, opt-in, redacted SERVER telemetry is a different thing entirely.) */
+  var PROF_SITE = "https://faturas.diogoandrade.com/perfil";
+  function b64(s) { return btoa(unescape(encodeURIComponent(s))); }
+  function handoffUrl(pid, data) {
+    return PROF_SITE + "#p=" + encodeURIComponent(pid) + "&d=" + encodeURIComponent(b64(JSON.stringify(data)));
+  }
   function profConsent() { try { return JSON.parse(localStorage.getItem(PROF_CONSENT) || "null"); } catch (e) { return null; } }
   function currentPartition() { for (var i = 0; i < PARTITIONS.length; i++) if (location.host === PARTITIONS[i].host) return PARTITIONS[i]; return null; }
 
@@ -575,6 +587,12 @@
         (isDone ? 'background:#eef;color:#034ad8;border:1px solid #cdd' : 'background:#034ad8;color:#fff;border:0') +
         ';border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">' +
         (isDone ? 'Reler ' : 'Ler ') + esc(cur.label) + '</button>';
+      // Once THIS partition is read, hand it to /perfil (via URL fragment - stays in the browser)
+      // so the profile assembles across origins. This is the only way to combine partitions.
+      if (isDone)
+        h += ' <a href="' + handoffUrl(cur.id, store.partitions[cur.id].data) + '" ' +
+          'style="display:inline-block;cursor:pointer;background:#128a3a;color:#fff;text-decoration:none;' +
+          'border-radius:6px;padding:9px 16px;font-weight:600">Guardar no meu perfil \u2192</a>';
     } else {
       h += '<div style="color:#666;font-size:12px">Esta p\u00e1gina n\u00e3o \u00e9 uma das que lemos. Abre uma da lista acima.</div>';
     }

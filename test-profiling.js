@@ -74,6 +74,19 @@ function wait() { return new Promise(r => setTimeout(r, 30)); }
   ok("rendas: 1 active contract", store.partitions.rendas.data.activos === 1);
   ok("Cat F in overlay", /Cat\. F/.test(w.document.getElementById("efh-body").textContent));
 
+  // 4b. handoff: once a partition is done, the overlay offers "Guardar no meu perfil" pointing at
+  //     /perfil with the data in the URL FRAGMENT (never sent to a server), so /perfil can merge it.
+  {
+    const links = [...w.document.querySelectorAll("a")].map(a => a.getAttribute("href") || "");
+    const hand = links.find(h => /faturas\.diogoandrade\.com\/perfil#p=rendas&d=/.test(h));
+    ok("handoff link to /perfil present (fragment)", !!hand);
+    if (hand) {
+      const d = JSON.parse(Buffer.from(decodeURIComponent(hand.split("&d=")[1]), "base64").toString("utf8"));
+      ok("handoff payload carries the partition summary", d.activos === 1 && d.contratos === 1);
+      ok("handoff payload has NO nif/name fields", !JSON.stringify(d).match(/nomeLocador|nomeLocatario|nif/i));
+    }
+  }
+
   // 5. rule 3: HTML 200 on the contracts endpoint => pending, not stored as done
   const fetchHtml = (u) => {
     const s = String(u);
