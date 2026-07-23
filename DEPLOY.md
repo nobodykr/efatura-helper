@@ -39,3 +39,6 @@ telling the server which merchants you shop at.
 
 `/nif/{nif}` and `/search` are token-gated (401 without `x-worker-token`), as are the
 map-mutating routes. Verified 2026-07-21 - do not describe them as open.
+
+## Provably-fair releases
+Before every deploy: bump `FB_VERSION` in tool.js if the code changed, then `node make-versions.mjs` (regenerates versions.json, the published hash). Deploy. Verify at /verificar. Tag the release: `git tag vYYYY.MM.DD && git push --tags` - the tag is the public timestamped commitment.

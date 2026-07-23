@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="/favicon.ico" sizes="48x48" type="image/x-icon">
+<link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
+<title>Verificar a ferramenta | Fatura Boa</title>
+<meta name="description" content="Confirma que o código do Fatura Boa que corre no teu navegador é exatamente o código publicado e auditável. Provably fair, para software.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://faturas.diogoandrade.com/verificar">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--pri:#034ad8;--pri-dark:#021c51;--ink:#2B363C;--ink2:#4a5a63;--mute:#6b7780;--bg:#fff;--bg2:#f4f6f9;--bg3:#E1E4EA;--rule:#d5dae1;--red:#c8102e;--green:#1E5A3A;--amber:#8a6100;--focus:#f408fc;--r:6px;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:820px;margin:0 auto;padding:0 24px}
+  code,.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;word-break:break-all}
+  a{color:var(--pri);text-underline-offset:3px} a:hover{color:var(--pri-dark)}
+  header{background:var(--pri-dark);color:#fff;padding:26px 0}
+  header h1{margin:0 0 6px;font-size:1.45rem} header p{margin:0;color:#cfd9ef;font-size:.95rem;max-width:70ch}
+  main{padding:26px 0 60px}
+  .card{border:1px solid var(--rule);border-radius:var(--r);padding:18px 20px;margin:0 0 16px;background:#fff}
+  .btn{display:inline-block;background:var(--pri);color:#fff;text-decoration:none;border:0;border-radius:var(--r);padding:10px 16px;font:600 .95rem 'IBM Plex Sans',sans-serif;cursor:pointer}
+  .btn:hover{background:var(--pri-dark);color:#fff}
+  .ok{background:#e9f5ee;border:1px solid var(--green);color:var(--green)}
+  .bad{background:#fdeaed;border:1px solid var(--red);color:#7a0b1c}
+  .box{border-radius:var(--r);padding:12px 14px;font-size:.9rem;margin-top:12px}
+  .kv{font-size:.85rem;color:var(--ink2);margin:4px 0}
+  .mast{border-bottom:3px solid var(--pri);background:#fff}
+  .mast .wrap{display:flex;align-items:center;gap:12px;min-height:64px}
+  .mast .nm{font-weight:600;color:var(--ink)} .mast a{margin-left:auto;color:var(--pri);font-weight:600;text-decoration:none}
+  ol{line-height:1.6} .step{font-weight:600}
+</style>
+</head>
+<body>
+<div class="mast"><div class="wrap"><div class="nm">Fatura Boa</div><a href="/">Início</a></div></div>
+<header><div class="wrap">
+  <h1>Verificar a ferramenta</h1>
+  <p>O Fatura Boa corre no teu próprio navegador, na tua sessão. Aqui podes confirmar que o código
+     que corre é exatamente o código publicado e auditável. Como um casino provably fair, mas para
+     software: não precisas de confiar, podes verificar.</p>
+</div></header>
+<main class="wrap">
+
+  <div class="card">
+    <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">1. Verificação automática</div>
+    <p class="kv">Isto vai buscar o ficheiro que serve a ferramenta (<code>/tool.js</code>), calcula
+       a sua impressão digital (SHA-384) no teu navegador, e compara com a que está publicada em
+       <code>/versions.json</code>. Se baterem certo, o que corre é o que foi publicado.</p>
+    <button class="btn" id="run">Verificar agora</button>
+    <div id="result"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">2. Instalação verificada (opcional, mais forte)</div>
+    <p class="kv">Este favorito fixa a impressão digital acima (Subresource Integrity). Se o código
+       alguma vez não corresponder, o navegador <b>recusa-se a corrê-lo</b>. Ou seja, ninguém pode
+       trocar o código sem que o favorito simplesmente deixe de funcionar. Arrasta para os favoritos.</p>
+    <p><a class="btn" id="sri" href="#">Fatura Boa (verificado)</a></p>
+    <p class="kv">Nota: um favorito fixado não se atualiza sozinho. Quando sair uma versão nova,
+       voltas aqui e arrastas de novo (e podes verificar outra vez). Isso é de propósito - a parte
+       que mexe nos teus dados só muda quando tu deixares.</p>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">3. Verificação manual (para quem quiser ir ao fundo)</div>
+    <ol>
+      <li><span class="step">Lê o código.</span> É aberto: <a href="https://github.com/nobodykr/efatura-helper" target="_blank" rel="noopener">github.com/nobodykr/efatura-helper</a>.</li>
+      <li><span class="step">Calcula a impressão do que é servido.</span> No terminal:
+        <div class="mono" style="background:var(--bg2);padding:8px 10px;border-radius:6px;margin:6px 0">curl -s https://faturas.diogoandrade.com/tool.js | openssl dgst -sha384 -binary | openssl base64 -A</div></li>
+      <li><span class="step">Compara.</span> O resultado deve ser igual ao <code>integrity</code> em
+        <a href="/versions.json" target="_blank">/versions.json</a> (sem o prefixo <code>sha384-</code>), e o código deve corresponder ao do GitHub.</li>
+    </ol>
+    <p class="kv">A confiança aqui não é "confia em mim". É: cada versão é publicada com a sua
+       impressão digital, e uma versão maliciosa ficaria visível para toda a gente. É assim que o
+       resto do mundo do software confia (Certificate Transparency, npm provenance).</p>
+  </div>
+
+</main>
+<footer class="wrap" style="border-top:1px solid var(--rule);padding:22px 0;color:var(--mute);font-size:.85rem">
+  <a href="/">Fatura Boa</a> &middot; O teu código, verificável
+</footer>
+
+<script>
+(function(){
+  var API_FILE = "/tool.js";
+  function b64(buf){ var s=""; var b=new Uint8Array(buf); for(var i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s); }
+
+  document.getElementById("run").onclick = function(){
+    var r = document.getElementById("result");
+    r.innerHTML = '<div class="box" style="background:#f4f6f9">A verificar...</div>';
+    Promise.all([
+      fetch(API_FILE, {cache:"no-store"}).then(function(x){ return x.arrayBuffer(); }),
+      fetch("/versions.json", {cache:"no-store"}).then(function(x){ return x.json(); })
+    ]).then(function(a){
+      return crypto.subtle.digest("SHA-384", a[0]).then(function(h){
+        var got = "sha384-" + b64(h);
+        var pub = (a[1].files && a[1].files["tool.js"] && a[1].files["tool.js"].integrity) || "";
+        var ver = a[1].current || "?";
+        var match = got === pub;
+        r.innerHTML = '<div class="box '+(match?"ok":"bad")+'">'+
+          (match ? '<b>Corresponde.</b> O código que corre é a versao publicada v'+ver+'.' :
+                   '<b>NÃO corresponde.</b> A impressao do ficheiro servido nao bate com a publicada. Nao uses ate perceberes porque.')+
+          '<div class="mono" style="margin-top:8px;font-size:.8rem">servido:  '+got+'<br>publicado: '+(pub||"(nao encontrado)")+'</div></div>';
+      });
+    }).catch(function(e){
+      r.innerHTML = '<div class="box bad">Erro na verificacao: '+(e&&e.message||e)+'</div>';
+    });
+  };
+
+  // Build the SRI-pinned bookmarklet from the published integrity, so it always pins the current one.
+  fetch("/versions.json", {cache:"no-store"}).then(function(x){ return x.json(); }).then(function(v){
+    var sri = (v.files && v.files["tool.js"] && v.files["tool.js"].integrity) || "";
+    var bm = "javascript:(function(){if(!/faturas\\.portaldasfinancas\\.gov\\.pt$/.test(location.host))"+
+      "{alert('Abre o e-Fatura e faz login primeiro.');return;}var s=document.createElement('script');"+
+      "s.charset='utf-8';s.crossOrigin='anonymous';s.integrity='"+sri+"';"+
+      "s.src='https://faturas.diogoandrade.com/tool.js';document.body.appendChild(s);})();";
+    document.getElementById("sri").setAttribute("href", bm);
+  });
+})();
+</script>
+</body>
+</html>

@@ -40,6 +40,9 @@
   }
   if (document.getElementById("efh-panel")) { document.getElementById("efh-panel").remove(); }
   var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
+  // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
+  // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
+  var FB_VERSION = "2026.07.23";
 
   /* DRAFT MODE. While true the panel never submits anything to the AT: no apply button is
    * rendered and applySelected() is unreachable. The page at faturas.diogoandrade.com states
@@ -328,7 +331,9 @@
         + "favoritos dentro da p\u00e1gina do e-Fatura. Abre isto num computador.");
   }
   panel('<div style="background:#021c51;color:#fff;padding:10px 14px;font-weight:600;border-radius:8px 8px 0 0">' +
-    '<a href="https://faturas.diogoandrade.com" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.45)" title="Abrir faturas.diogoandrade.com">Fatura Boa</a> <button type="button" aria-label="Fechar" style="float:right;cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
+    '<a href="https://faturas.diogoandrade.com" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.45)" title="Abrir faturas.diogoandrade.com">Fatura Boa</a> ' +
+    '<span style="font-weight:400;font-size:11px;opacity:.85">v' + FB_VERSION + ' \u00b7 <a href="https://faturas.diogoandrade.com/verificar" target="_blank" rel="noopener" style="color:#cfe0ff">verificar</a></span>' +
+    '<button type="button" aria-label="Fechar" style="float:right;cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
     '<div style="background:#fdecec;border-bottom:2px solid #c8102e;padding:8px 12px;font-size:12px;line-height:1.45;color:#5a0000">'+'<b>Esta ferramenta nunca te pede a password.</b> Corre na sess\u00e3o que j\u00e1 abriste, s\u00f3 nesta p\u00e1gina. '+'Se algum site te pedir as credenciais das Finan\u00e7as, \u00e9 burla.</div>' +
     '<div id="efh-body" style="padding:14px">A carregar...</div>');
 
