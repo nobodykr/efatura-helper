@@ -43,6 +43,8 @@ function fetchOK(u) {
   if (/geral\/coimas/.test(s)) return json({ montanteTotal: 0, nAtivasGeral: 0 });
   if (/agendaFiscal/.test(s)) return json([{ data: "2026-08-31", descricao: "Entrega da declaracao de IRS" }]);
   if (/matrizesinter\/api\/patrimonio/.test(s)) return json({ prediosUrbanos: [{ artigo: "1234", freguesia: "Benfica", valorPatrimonial: 120000 }], prediosRusticos: [] });
+  if (/liquidacoesIRSDataTables/.test(s)) return json({ data: [{ ano: 2024 }, { ano: 2023 }, { ano: 2022 }] });
+  if (/reembolsosDataTables/.test(s)) return json({ data: [{ ano: 2024 }] });
   if (/sectors\.json|\/bucket\//.test(s)) return json({});
   return json({ linhas: [] });
 }
@@ -93,14 +95,22 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
     }
   }
 
-  // 4c. situacao fiscal partition (sitfiscal): reads dividas/coimas/agenda, hands off
-  w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK);
+  // 4c. situacao fiscal partition (sitfiscal /geral): reads dividas/coimas/agenda, hands off
+  w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/geral/dashboard");
   eval(SRC); await wait();
   w.document.getElementById("fb-prof-go").click(); await wait();
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
-  ok("situacao auto-read + stored", store.partitions.situacao && store.partitions.situacao.status === "done");
+  ok("situacao picked on /geral (not irs)", store.partitions.situacao && store.partitions.situacao.status === "done" && !store.partitions.irs);
   ok("situacao: 0 dividas, 1 agenda item", store.partitions.situacao.data.dividas.n === 0 && store.partitions.situacao.data.agenda.n === 1);
   ok("situacao hands off to /perfil", /perfil#p=situacao&d=/.test(w.__nav || ""));
+
+  // 4c-2. IRS partition: SAME host as situacao (sitfiscal) but /inffin path -> picks irs
+  w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/inffin/entrada.html");
+  eval(SRC); await wait();
+  w.document.getElementById("fb-prof-go").click(); await wait();
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("irs picked on /inffin (not situacao)", store.partitions.irs && store.partitions.irs.status === "done" && !store.partitions.situacao);
+  ok("irs: 3 liquidacoes, 1 reembolso", store.partitions.irs.data.liquidacoes === 3 && store.partitions.irs.data.reembolsos === 1);
 
   // 4d. patrimonio: SAME host as rendas (imoveis) but a /matrizesinter path -> host+path matching
   //     must pick patrimonio, NOT rendas. Proves the disambiguation.

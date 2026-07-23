@@ -123,7 +123,9 @@
     { id:"situacao", label:"Situação fiscal (dívidas e prazos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/geral/dashboard",
       why:"Dívidas e coimas em aberto, e os próximos prazos da agenda fiscal." },
     { id:"patrimonio", label:"Património predial (IMI)", open:"https://imoveis.portaldasfinancas.gov.pt/matrizesinter/web/consultar-patrimonio-predial",
-      why:"Imóveis que possuis e o seu VPT - a base do IMI." }
+      why:"Imóveis que possuis e o seu VPT - a base do IMI." },
+    { id:"irs", label:"IRS (liquidações e reembolsos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/inffin/entrada.html",
+      why:"As liquidações de IRS de todos os anos e os reembolsos - o histórico fiscal." }
   ];
 
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
@@ -162,6 +164,7 @@
       prof.detalhes.patrimonio = P.patrimonio.data;
       if (P.patrimonio.data.imoveis > 0) prof.categorias.push({cat:"IMI", label:"Proprietário de imóveis"});
     }
+    if (P.irs && P.irs.status==="done") prof.detalhes.irs = P.irs.data;
     return prof;
   }
 
@@ -194,6 +197,11 @@
       (d.patrimonio.lista||[]).slice(0,3).forEach(function(im){
         h += '<div class="w" style="margin-left:8px">• '+esc(im.artigo||"artigo?")+(im.freguesia?", "+esc(im.freguesia):"")+(im.vpt!=null?" (VPT "+esc(im.vpt)+")":"")+'</div>';
       });
+    }
+    if (d.irs){
+      h += '<div class="kv">IRS: <b>'+esc(d.irs.liquidacoes)+'</b> liquidação(ões)'+
+           (d.irs.reembolsos!=null?', '+esc(d.irs.reembolsos)+' reembolso(s)':'')+'.</div>';
+      (d.irs.avisos||[]).forEach(function(a){ h += '<div class="warn">⚠ '+esc(a)+'</div>'; });
     }
     return h || '<div class="muted">Ainda sem dados. Segue os passos acima.</div>';
   }

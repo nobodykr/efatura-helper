@@ -437,8 +437,15 @@
       open: "https://imoveis.portaldasfinancas.gov.pt/arrendamento/consultarContratos/locador",
       why: "Contratos de arrendamento e recibos de renda - rendimentos da categoria F.", read: readRendas },
     { id: "situacao", label: "Situa\u00e7\u00e3o fiscal (d\u00edvidas e prazos)", host: "sitfiscal.portaldasfinancas.gov.pt",
+      pathHint: "/geral",
       open: "https://sitfiscal.portaldasfinancas.gov.pt/geral/dashboard",
       why: "D\u00edvidas e coimas em aberto, e os pr\u00f3ximos prazos da agenda fiscal.", read: readSituacao },
+    // Same host as situacao (sitfiscal) but the /inffin path and DIFC login partition, so its own
+    // step. This is the assessed-IRS history - the outcome of every year's declaration.
+    { id: "irs", label: "IRS (liquida\u00e7\u00f5es e reembolsos)", host: "sitfiscal.portaldasfinancas.gov.pt",
+      pathHint: "/inffin",
+      open: "https://sitfiscal.portaldasfinancas.gov.pt/inffin/entrada.html",
+      why: "As liquida\u00e7\u00f5es de IRS de todos os anos e os reembolsos - o hist\u00f3rico fiscal.", read: readIRS },
     // Same HOST as rendas (imoveis) but a DIFFERENT app path and login partition (SMPP vs SICI),
     // so it is its own step. `pathHint` disambiguates the two on the shared host - see
     // currentPartition().
@@ -565,6 +572,31 @@
     });
   }
 
+  /* IRS liquidacoes + reembolsos (inffin / DIFC): the assessed outcome of every year's IRS. These
+   * are DataTables .web endpoints; their COLUMN ORDER is not pinned in our recon, so we do NOT map
+   * columns to meanings (that is how a wrong number ships). We count rows from the DataTables
+   * envelope (data / aaData / bare array) and keep a raw sample to inspect. A zero count on an
+   * account that has filed IRS is flagged as suspect rather than shown as fact - these endpoints
+   * may want a POST with DataTables params, which live testing will confirm. */
+  function dtRows(j) {
+    var rows = (j && (j.data || j.aaData || j.aoData)) || (Array.isArray(j) ? j : []);
+    return Array.isArray(rows) ? rows : [];
+  }
+  function readIRS() {
+    var uL = "/inffin/liquidacoesIRSDataTables.web";
+    var uR = "/inffin/reembolsosDataTables.web";
+    return getJSON(uL + "?_=" + Date.now()).then(function (jl) {
+      return getJSON(uR + "?_=" + Date.now()).catch(function () { return null; }).then(function (jr) {
+        var liq = dtRows(jl), reemb = jr ? dtRows(jr) : null;
+        var avisos = [];
+        if (liq.length === 0) avisos.push("0 liquida\u00e7\u00f5es - se j\u00e1 entregaste IRS, este dado precisa de confirma\u00e7\u00e3o");
+        return { data: { liquidacoes: liq.length, reembolsos: reemb == null ? null : reemb.length,
+                         amostra: liq.slice(0, 5), avisos: avisos },
+                 source: uL + (reemb == null ? " (reembolsos indispon\u00edveis)" : " + " + uR) };
+      });
+    });
+  }
+
   /* Patrimonio predial (SMPP): the properties you own and their VPT - the base of IMI, and a
    * pointer to Cat G if one is later sold. The response shape is not pinned in our recon, so the
    * property list is read from the usual container keys and each property's fields from the usual
@@ -610,6 +642,9 @@
       var pt = P.patrimonio.data; prof.detalhes.patrimonio = pt; prof.recolhidoEm.patrimonio = P.patrimonio.fetchedAt;
       if (pt.imoveis > 0) prof.categorias.push({ cat: "IMI", label: "Propriet\u00e1rio de im\u00f3veis", base: "patrim\u00f3nio predial" });
     }
+    if (P.irs && P.irs.status === "done") {
+      prof.detalhes.irs = P.irs.data; prof.recolhidoEm.irs = P.irs.fetchedAt;
+    }
     return prof;
   }
 
@@ -652,6 +687,11 @@
              (im.freguesia ? ", " + esc(im.freguesia) : "") + (im.vpt != null ? " (VPT " + esc(im.vpt) + ")" : "") + '</div>';
       });
     }
+    if (d.irs) {
+      h += '<div style="font-size:12px;color:#333;margin:2px 0">IRS: <b>' + esc(d.irs.liquidacoes) + '</b> liquida\u00e7\u00e3o(\u00f5es)' +
+           (d.irs.reembolsos != null ? ', ' + esc(d.irs.reembolsos) + ' reembolso(s)' : '') + '.</div>';
+      (d.irs.avisos || []).forEach(function (a) { h += '<div style="font-size:11px;color:#8a6100">\u26a0 ' + esc(a) + '</div>'; });
+    }
     return h;
   }
 
@@ -691,7 +731,8 @@
       var n = res.data && (res.data.porClassificar != null ? res.data.porClassificar + " por classificar"
              : (res.data.activos != null ? res.data.activos + " contrato(s) activo(s)"
              : (res.data.dividas ? ((res.data.dividas.n || 0) + " d\u00edvida(s)")
-             : (res.data.imoveis != null ? res.data.imoveis + " im\u00f3vel(is)" : "lido"))));
+             : (res.data.imoveis != null ? res.data.imoveis + " im\u00f3vel(is)"
+             : (res.data.liquidacoes != null ? res.data.liquidacoes + " liquida\u00e7\u00e3o(\u00f5es)" : "lido")))));
       document.getElementById("efh-body").innerHTML =
         '<div style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
         '.<br>A abrir o teu perfil...</div>';
