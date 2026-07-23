@@ -146,7 +146,8 @@
     { id:"donativos", label:"Donativos / mecenato", base:"Estatuto dos Benefícios Fiscais", nota:"Donativos a entidades elegíveis dão dedução à coleta." },
     { id:"deficiencia", label:"Pessoa com deficiência no agregado", base:"art. 87.º CIRS", nota:"Deduções específicas e majorações." },
     { id:"alimentos", label:"Pensão de alimentos paga", base:"art. 83.º-A CIRS", nota:"As pensões de alimentos pagas dão dedução à coleta." },
-    { id:"juroshab", label:"Juros de crédito à habitação (contrato até 2011)", base:"regime transitório", nota:"Só contratos anteriores a 2012; confirma a elegibilidade." }
+    { id:"juroshab", label:"Juros de crédito à habitação (contrato até 2011)", base:"regime transitório", nota:"Só contratos anteriores a 2012; confirma a elegibilidade." },
+    { id:"trabdomestico", label:"Trabalho doméstico", base:"art. 78.º-H CIRS", nota:"Pagamentos a trabalhador doméstico inscrito na Segurança Social dão dedução à coleta (5%). Encontrado na auditoria à DRE 2026-07-23." }
   ];
   function loadExtra(){ try { return JSON.parse(localStorage.getItem(EXTRA_KEY)) || {}; } catch(e){ return {}; } }
   function saveExtra(e){ try { localStorage.setItem(EXTRA_KEY, JSON.stringify(e)); } catch(e2){} }

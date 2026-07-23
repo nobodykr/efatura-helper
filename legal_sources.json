@@ -10,56 +10,86 @@
     {
       "id": "cirs-78b",
       "governs": "C99 despesas gerais familiares - 35% ate 250 EUR",
-      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78b.aspx",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
       "type": "artigo",
       "critical": true,
       "why_it_matters": "C99 is the fallback for EVERY unmapped merchant, so its rate and ceiling affect more invoices than any other single rule.",
-      "expect": "78.º-B"
+      "expect": [
+        "78.º-B",
+        "35 %",
+        "250"
+      ],
+      "source_note": "DRE consolidada CIRS; portaldasfinancas pages are pointers"
     },
     {
       "id": "cirs-78c",
       "governs": "C05 saude - 15% ate 1000 EUR",
-      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78c.aspx",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
       "type": "artigo",
       "critical": true,
       "why_it_matters": "Names the CAE classes that qualify as saude. The 47782 rejection came from reading this too broadly.",
-      "expect": "78.º-C"
+      "expect": [
+        "78.º-C",
+        "15 %",
+        "1 000"
+      ],
+      "source_note": "DRE consolidada CIRS; portaldasfinancas pages are pointers"
     },
     {
       "id": "cirs-78d",
       "governs": "C06 educacao - 30% ate 800 EUR",
-      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78d.aspx",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
       "type": "artigo",
       "critical": true,
       "why_it_matters": "Also names 47610 (livros), which is why that code is ambiguous between C13 and C06.",
-      "expect": "78.º-D"
+      "expect": [
+        "78.º-D",
+        "30 %",
+        "800"
+      ],
+      "source_note": "DRE consolidada CIRS; portaldasfinancas pages are pointers"
     },
     {
       "id": "cirs-78e",
       "governs": "C07 imoveis / rendas - 15% ate 502 EUR",
-      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78e.aspx",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
       "type": "artigo",
       "critical": true,
       "why_it_matters": "Names ONLY 68200 (arrendamento). The original map used prefix 681, which wrongly swallowed 68100 (compra e venda).",
-      "expect": "78.º-E"
+      "expect": [
+        "78.º-E",
+        "15 %",
+        "502"
+      ],
+      "source_note": "DRE consolidada CIRS; portaldasfinancas pages are pointers"
     },
     {
       "id": "cirs-78f",
       "governs": "C01 C02 C03 C04 C09 C10 C11 C12 C13 C14 - 15% do IVA, tecto CONJUNTO de 250 EUR",
-      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78f.aspx",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
       "type": "artigo",
       "critical": true,
       "why_it_matters": "The single most important article here: it carries the taxative lists (n.3 transportes, n.7 jornais, n.8 desporto) AND the shared 250 EUR ceiling. If the enumerations change, several sectors change at once.",
-      "expect": "78.º-F"
+      "expect": [
+        "78.º-F",
+        "15 %",
+        "250"
+      ],
+      "source_note": "DRE consolidada CIRS; portaldasfinancas pages are pointers"
     },
     {
       "id": "cirs-84",
       "governs": "C08 lares - 25% ate 403 EUR",
-      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs84.aspx",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
       "type": "artigo",
       "critical": true,
       "why_it_matters": "Names classes 873 and 8810. 87200 (foro mental, com alojamento) is deliberately NOT mapped because it is not named.",
-      "expect": "84.º"
+      "expect": [
+        "84.º",
+        "25 %",
+        "403"
+      ],
+      "source_note": "DRE consolidada CIRS; portaldasfinancas pages are pointers"
     },
     {
       "id": "dl-381-2007",
