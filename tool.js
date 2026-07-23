@@ -578,11 +578,30 @@
     cur.read().then(function (res) {
       var s = profLoad();
       s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data, source: res.source };
-      profSave(s); profRender();
+      profSave(s);
+      // Read OK -> go STRAIGHT to /perfil with the data (URL fragment, no server). This removes the
+      // separate "Guardar" click that was being missed: click bookmarklet -> read -> land on
+      // /perfil with this step ticked. A brief confirmation first so the jump is not a surprise.
+      var n = res.data && (res.data.porClassificar != null ? res.data.porClassificar + " por classificar"
+             : (res.data.activos != null ? res.data.activos + " contrato(s) activo(s)" : "lido"));
+      document.getElementById("efh-body").innerHTML =
+        '<div style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
+        '.<br>A abrir o teu perfil\u2026</div>';
+      setTimeout(function () { location.href = handoffUrl(cur.id, res.data); }, 700);
     }).catch(function (e) {
       var s = profLoad();
-      s.partitions[cur.id] = { status: "pending", error: "N\u00e3o deu para ler: " + ((e && e.message) || "erro") + ". Confirma o login nesta p\u00e1gina.", fetchedAt: new Date().toISOString() };
-      profSave(s); profRender();
+      var msg = (e && e.message) || "erro";
+      s.partitions[cur.id] = { status: "pending", error: msg, fetchedAt: new Date().toISOString() };
+      profSave(s);
+      // Loud, on-screen failure - no console needed. Say exactly what went wrong and what to do.
+      document.getElementById("efh-body").innerHTML =
+        '<div style="background:#fdecec;border:1px solid #c8102e;border-radius:6px;padding:12px;font-size:13px;color:#5a0000">' +
+        '<b>N\u00e3o consegui ler ' + esc(cur.label) + '.</b><br>Motivo: ' + esc(msg) + '.<br><br>' +
+        'Confirma que est\u00e1s <b>autenticado nesta mesma p\u00e1gina</b> (' + esc(location.host) + ') e tenta de novo. ' +
+        'Se mudaste de conta, faz de novo o login aqui.</div>' +
+        '<div style="margin-top:10px"><button type="button" id="fb-retry" style="cursor:pointer;background:#034ad8;color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;font-weight:600">Tentar de novo</button></div>';
+      var rt = document.getElementById("fb-retry");
+      if (rt) rt.onclick = function () { _autoRead[cur.id] = 0; autoReadCurrent(cur); };
     });
   }
 

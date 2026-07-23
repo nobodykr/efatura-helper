@@ -13,7 +13,14 @@ function ok(name, cond) { console.log((cond ? "  PASS " : "  FAIL ") + name); if
 function mkEnv(host, flag, fetchImpl) {
   const dom = new JSDOM(`<!doctype html><body></body>`, { url: "https://" + host + "/x" });
   const { window } = dom;
-  global.window = window; global.document = window.document; global.location = window.location;
+  global.window = window; global.document = window.document;
+  // Replace `location` with a plain capturing stub: tool.js reads location.host and, on a
+  // successful read, sets location.href to the /perfil handoff URL. jsdom's real location would
+  // try to navigate; this records the target instead so we can assert on it.
+  window.__nav = null;
+  const loc = { host: host, hash: "", pathname: "/x", assign(v) { window.__nav = v; } };
+  Object.defineProperty(loc, "href", { get() { return "https://" + host + "/x"; }, set(v) { window.__nav = v; } });
+  global.location = loc;
   global.localStorage = { _d: {}, getItem(k) { return this._d[k] ?? null; }, setItem(k, v) { this._d[k] = String(v); }, removeItem(k) { delete this._d[k]; } };
   window.localStorage = global.localStorage;
   global.alert = () => {}; global.navigator = window.navigator; global.DOMParser = window.DOMParser;
@@ -36,7 +43,7 @@ function fetchOK(u) {
   return json({ linhas: [] });
 }
 
-function wait() { return new Promise(r => setTimeout(r, 30)); }
+function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
 
 (async () => {
   // 1. no flag -> classifier path, no profiling consent key touched
@@ -51,37 +58,30 @@ function wait() { return new Promise(r => setTimeout(r, 30)); }
   ok("flag: consent gate shown", !!w.document.getElementById("fb-prof-go"));
   ok("flag: nothing stored before accept", global.localStorage.getItem("fb-profile-v1") == null);
 
-  // 3. accept -> read e-Fatura -> stored
+  // 3. accept -> AUTO-reads e-Fatura -> stored -> auto-navigates to the /perfil handoff
   w.document.getElementById("fb-prof-go").click(); await wait();
-  ok("after accept: read button shown", !!w.document.getElementById("fb-read"));
-  w.document.getElementById("fb-read").click(); await wait();
   let store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
-  ok("e-Fatura stored as done", store.partitions && store.partitions.efatura && store.partitions.efatura.status === "done");
+  ok("e-Fatura auto-read + stored as done", store.partitions && store.partitions.efatura && store.partitions.efatura.status === "done");
   ok("e-Fatura counts parsed (2 pending of 3)", store.partitions.efatura.data.porClassificar === 2 && store.partitions.efatura.data.totalFaturas === 3);
-  ok("overlay rendered", /Resumo do perfil/.test(w.document.getElementById("efh-body").textContent));
+  ok("auto-navigates to /perfil handoff (efatura)", /faturas\.diogoandrade\.com\/perfil#p=efatura&d=/.test(w.__nav || ""));
 
   // 4. On Imoveis (a DIFFERENT origin) the browser gives fresh localStorage - modelled by mkEnv's
-  //    new _d each call, which is exactly the same-origin policy. So: consent asked again, and the
-  //    rendas read populates THIS origin's store only. Cross-origin assembly is a known limit; see
-  //    the constraint note in tool.js.
+  //    new _d each call, which is exactly the same-origin policy. So: consent asked again, then the
+  //    rendas read populates THIS origin's store and hands off. Cross-origin assembly is a known
+  //    limit that the /perfil fragment handoff exists to bridge.
   w = mkEnv("imoveis.portaldasfinancas.gov.pt", true, fetchOK);
   eval(SRC); await wait();
   ok("cross-origin: consent asked again on Imoveis (separate localStorage)", !!w.document.getElementById("fb-prof-go"));
   w.document.getElementById("fb-prof-go").click(); await wait();
-  const rb = w.document.getElementById("fb-read");
-  ok("on Imoveis: read button present", !!rb);
-  rb.click(); await wait();
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
-  ok("rendas stored as done", store.partitions.rendas && store.partitions.rendas.status === "done");
+  ok("rendas auto-read + stored as done", store.partitions.rendas && store.partitions.rendas.status === "done");
   ok("rendas: 1 active contract", store.partitions.rendas.data.activos === 1);
-  ok("Cat F in overlay", /Cat\. F/.test(w.document.getElementById("efh-body").textContent));
 
-  // 4b. handoff: once a partition is done, the overlay offers "Guardar no meu perfil" pointing at
-  //     /perfil with the data in the URL FRAGMENT (never sent to a server), so /perfil can merge it.
+  // 4b. handoff: the auto-navigation URL points at /perfil with the data in the URL FRAGMENT
+  //     (never sent to a server), so /perfil can merge it. Payload carries no nif/name.
   {
-    const links = [...w.document.querySelectorAll("a")].map(a => a.getAttribute("href") || "");
-    const hand = links.find(h => /faturas\.diogoandrade\.com\/perfil#p=rendas&d=/.test(h));
-    ok("handoff link to /perfil present (fragment)", !!hand);
+    const hand = w.__nav || "";
+    ok("auto-navigates to /perfil handoff (rendas, fragment)", /faturas\.diogoandrade\.com\/perfil#p=rendas&d=/.test(hand));
     if (hand) {
       const d = JSON.parse(Buffer.from(decodeURIComponent(hand.split("&d=")[1]), "base64").toString("utf8"));
       ok("handoff payload carries the partition summary", d.activos === 1 && d.contratos === 1);
@@ -98,10 +98,11 @@ function wait() { return new Promise(r => setTimeout(r, 30)); }
   w = mkEnv("imoveis.portaldasfinancas.gov.pt", true, fetchHtml);
   global.localStorage.removeItem("fb-profile-v1");
   global.localStorage.setItem("fb-profile-consent-v1", JSON.stringify({ ok: true }));
-  eval(SRC); await wait();
-  w.document.getElementById("fb-read").click(); await wait();
+  eval(SRC); await wait();   // consent already set -> auto-reads, which fails on the HTML body
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("rule 3: HTML-200 treated as not-logged-in (rendas pending)", !store.partitions.rendas || store.partitions.rendas.status === "pending");
+  ok("rule 3: failure is loud on-screen (no console needed)", /Não consegui ler/.test(w.document.getElementById("efh-body").textContent));
+  ok("rule 3: no navigation on failure", !w.__nav);
 
   console.log(failures ? ("\n  " + failures + " FAILED") : "\n  all passed");
   process.exit(failures ? 1 : 0);
