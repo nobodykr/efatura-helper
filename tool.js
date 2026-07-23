@@ -665,18 +665,23 @@
    * account that has filed IRS is flagged as suspect rather than shown as fact - these endpoints
    * may want a POST with DataTables params, which live testing will confirm. */
   function dtRows(j) {
-    var rows = (j && (j.data || j.aaData || j.aoData)) || (Array.isArray(j) ? j : []);
+    var rows = (j && (j.aaData || j.data || j.aoData)) || (Array.isArray(j) ? j : []);
     return Array.isArray(rows) ? rows : [];
   }
+  // Real DataTables shape confirmed 2026-07-23: {iTotalRecords, iTotalDisplayRecords, aaData}. The
+  // authoritative count is iTotalRecords, NOT aaData.length (aaData is one page). When they differ,
+  // the endpoint is paginating and needs display params - the suspect-0/short flag catches it.
+  function dtCount(j, rows) { return (j && j.iTotalRecords != null) ? j.iTotalRecords : rows.length; }
   function readIRS() {
     var uL = "/inffin/liquidacoesIRSDataTables.web";
     var uR = "/inffin/reembolsosDataTables.web";
     return getJSON(uL + "?_=" + Date.now()).then(function (jl) {
       return getJSON(uR + "?_=" + Date.now()).catch(function () { return null; }).then(function (jr) {
         var liq = dtRows(jl), reemb = jr ? dtRows(jr) : null;
+        var liqN = dtCount(jl, liq);
         var avisos = [];
-        if (liq.length === 0) avisos.push("0 liquida\u00e7\u00f5es - se j\u00e1 entregaste IRS, este dado precisa de confirma\u00e7\u00e3o");
-        return { data: { liquidacoes: liq.length, reembolsos: reemb == null ? null : reemb.length,
+        if (liqN === 0) avisos.push("0 liquida\u00e7\u00f5es - se j\u00e1 entregaste IRS, pode precisar de par\u00e2metros de pagina\u00e7\u00e3o; confirmar");
+        return { data: { liquidacoes: liqN, reembolsos: reemb == null ? null : dtCount(jr, reemb),
                          amostra: liq.slice(0, 5), avisos: avisos },
                  source: uL + (reemb == null ? " (reembolsos indispon\u00edveis)" : " + " + uR) };
       });
@@ -714,11 +719,16 @@
   function readRecibos() {
     var u = "/recibos/api/obtemDocumentosV2";
     return getJSON(u + "?_=" + Date.now()).then(function (j) {
-      var rows = (j && (j.documentos || j.data || j.linhas || j.lista)) || (Array.isArray(j) ? j : []);
+      // Real shape confirmed 2026-07-23: {success, listaDocumentos, totalDocs, ...}. The list is
+      // `listaDocumentos` and the count is `totalDocs` (both were wrong before). success:false means
+      // the query returned nothing (a period filter is likely required) - flag, do not assert 0.
+      var rows = (j && (j.listaDocumentos || j.documentos || j.data || j.lista)) || (Array.isArray(j) ? j : []);
       if (!Array.isArray(rows)) rows = [];
+      var count = (j && j.totalDocs != null) ? j.totalDocs : rows.length;
       var avisos = [];
-      if (rows.length === 0) avisos.push("0 recibos - pode precisar de indicar um per\u00edodo; confirmar");
-      return { data: { recibosVerdes: rows.length, avisos: avisos }, source: u };
+      if (j && j.success === false) avisos.push("resposta sem dados - pode precisar de indicar um per\u00edodo (ou atividade cessada); confirmar");
+      else if (count === 0) avisos.push("0 recibos - confirmar");
+      return { data: { recibosVerdes: count, avisos: avisos }, source: u };
     });
   }
 
@@ -736,7 +746,9 @@
                 [].concat(j.prediosUrbanos || [], j.prediosRusticos || []);
         if (!Array.isArray(lista)) lista = [];
       }
-      function vpt(o) { return o.valorPatrimonial != null ? o.valorPatrimonial : (o.vpt != null ? o.vpt : (o.valorPatrimonialActual != null ? o.valorPatrimonialActual : (o.VPT != null ? o.VPT : null))); }
+      // Real field is `valor` (int), confirmed against the server 2026-07-23; valorPatrimonial does
+      // NOT exist. `valorInicial` is the original matrix value, kept as a fallback.
+      function vpt(o) { return o.valor != null ? o.valor : (o.valorPatrimonial != null ? o.valorPatrimonial : (o.vpt != null ? o.vpt : (o.valorInicial != null ? o.valorInicial : null))); }
       return { data: {
         imoveis: lista.length,
         lista: lista.slice(0, 8).map(function (o) {

@@ -42,10 +42,10 @@ function fetchOK(u) {
   if (/geral\/dividas/.test(s)) return json({ montanteTotal: 0, nAtivasGeral: 0, dataInfoObtida: "2026-07-23" });
   if (/geral\/coimas/.test(s)) return json({ montanteTotal: 0, nAtivasGeral: 0 });
   if (/agendaFiscal/.test(s)) return json([{ data: "2026-08-31", descricao: "Entrega da declaracao de IRS" }]);
-  if (/matrizesinter\/api\/patrimonio/.test(s)) return json({ prediosUrbanos: [{ artigo: "1234", freguesia: "Benfica", valorPatrimonial: 120000 }], prediosRusticos: [] });
-  if (/liquidacoesIRSDataTables/.test(s)) return json({ data: [{ ano: 2024 }, { ano: 2023 }, { ano: 2022 }] });
-  if (/reembolsosDataTables/.test(s)) return json({ data: [{ ano: 2024 }] });
-  if (/obtemDocumentosV2/.test(s)) return json({ documentos: [{ n: 1 }, { n: 2 }] });
+  if (/matrizesinter\/api\/patrimonio/.test(s)) return json([{ artigo: "1234", nomeFreguesia: "Benfica", tipo: "U", valor: 120000, valorInicial: 90000, estado: {codigo:"ATIVO"} }]);
+  if (/liquidacoesIRSDataTables/.test(s)) return json({ iTotalRecords: 3, iTotalDisplayRecords: 3, aaData: [{ ano: 2024 }, { ano: 2023 }, { ano: 2022 }] });
+  if (/reembolsosDataTables/.test(s)) return json({ iTotalRecords: 1, aaData: [{ ano: 2024 }] });
+  if (/obtemDocumentosV2/.test(s)) return json({ success: true, listaDocumentos: [{ n: 1 }, { n: 2 }], totalDocs: 2 });
   if (/consultardeclaracoes/.test(s)) return Promise.resolve({ ok: true, headers: { get: () => "text/html" }, text: () => Promise.resolve(
     "<html><table>" +
     "<tr><td>Declaracao de inicio de atividade</td><td><a href='/atividade/atividade/consultardeclaracoes/comprovativo/9996N00829690'>ver</a></td></tr>" +
