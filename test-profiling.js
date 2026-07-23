@@ -46,6 +46,9 @@ function fetchOK(u) {
   if (/liquidacoesIRSDataTables/.test(s)) return json({ data: [{ ano: 2024 }, { ano: 2023 }, { ano: 2022 }] });
   if (/reembolsosDataTables/.test(s)) return json({ data: [{ ano: 2024 }] });
   if (/obtemDocumentosV2/.test(s)) return json({ documentos: [{ n: 1 }, { n: 2 }] });
+  if (/login\/personalData/.test(s)) return json({ nome: "SECRET NAME", niss: "11111111111" });
+  if (/situacao-contributiva/.test(s)) return json({ estado: "REGULARIZADA" });
+  if (/payments\/current/.test(s)) return json({ data: [{ v: 1 }] });
   if (/sectors\.json|\/bucket\//.test(s)) return json({});
   return json({ linhas: [] });
 }
@@ -124,6 +127,18 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
     const d = JSON.parse(Buffer.from(decodeURIComponent((w.__nav || "").split("&d=")[1] || ""), "base64").toString("utf8") || "{}");
     ok("recibos hands off with Cat B derivable", store.partitions.recibos.data.recibosVerdes === 2);
   }
+
+  // 4c-4. Seguranca Social (seg-social.pt - DIFFERENT domain). NISS is used to build the URL but
+  //       must NEVER be stored (PII). estado + payment count only.
+  w = mkEnv("www.seg-social.pt", true, fetchOK, "/ptss/pssd/home");
+  eval(SRC); await wait();
+  ok("SS: profiling activates on seg-social.pt (host guard widened)", !!w.document.getElementById("fb-prof-go"));
+  w.document.getElementById("fb-prof-go").click(); await wait();
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("SS auto-read + stored", store.partitions.ss && store.partitions.ss.status === "done");
+  ok("SS estado REGULARIZADA, 1 pagamento", store.partitions.ss.data.estado === "REGULARIZADA" && store.partitions.ss.data.pagamentosCorrentes === 1);
+  ok("SS: NISS and name NOT stored", !/11111111111|SECRET NAME|niss/i.test(JSON.stringify(store.partitions.ss)));
+  ok("SS handoff carries NO NISS/name", !/11111111111|SECRET NAME|niss/i.test(w.__nav || ""));
 
   // 4d. patrimonio: SAME host as rendas (imoveis) but a /matrizesinter path -> host+path matching
   //     must pick patrimonio, NOT rendas. Proves the disambiguation.

@@ -83,7 +83,7 @@
     <div style="font-weight:700;margin-bottom:6px">1. Instala o favorito (uma vez)</div>
     <p class="w" style="margin:0 0 10px">Arrasta este botao para a tua barra de favoritos. Depois,
        em <b>qualquer pagina das Financas</b>, clica nele - ele le a pagina e traz-te de volta aqui.</p>
-    <a class="btn" style="font-size:1rem;padding:10px 18px" href="javascript:(function(){if(!/portaldasfinancas\.gov\.pt$/.test(location.host)){alert('Abre uma pagina do Portal das Financas e faz login.');return;}window.__FB_PROFILE=1;var s=document.createElement('script');s.charset='utf-8';s.src='https://faturas.diogoandrade.com/tool.js?v='+Date.now();document.body.appendChild(s);})();">Fatura Boa - Perfil</a>
+    <a class="btn" style="font-size:1rem;padding:10px 18px" href="javascript:(function(){if(!/(portaldasfinancas\.gov\.pt|seg-social\.pt)$/.test(location.host)){alert('Abre uma pagina das Financas ou da Seguranca Social e faz login.');return;}window.__FB_PROFILE=1;var s=document.createElement('script');s.charset='utf-8';s.src='https://faturas.diogoandrade.com/tool.js?v='+Date.now();document.body.appendChild(s);})();">Fatura Boa - Perfil</a>
     <p class="w" style="margin:10px 0 0">Nao e o mesmo favorito da pagina inicial (esse so funciona no e-Fatura). Este funciona em todas as paginas do Portal.</p>
   </div>
   <div class="card" style="padding-top:12px"><div style="font-weight:700;margin-bottom:2px">2. Junta o teu perfil</div></div>
@@ -127,7 +127,9 @@
     { id:"irs", label:"IRS (liquidações e reembolsos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/inffin/entrada.html",
       why:"As liquidações de IRS de todos os anos e os reembolsos - o histórico fiscal." },
     { id:"recibos", label:"Recibos verdes (atividade)", open:"https://irs.portaldasfinancas.gov.pt/recibos/portal",
-      why:"Recibos verdes emitidos - rendimentos da categoria B (trabalho independente)." }
+      why:"Recibos verdes emitidos - rendimentos da categoria B (trabalho independente)." },
+    { id:"ss", label:"Segurança Social", open:"https://www.seg-social.pt/ptss/pssd/home",
+      why:"Situação contributiva e pagamentos - emprego, contribuições e prestações." }
   ];
 
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
@@ -171,6 +173,7 @@
       prof.detalhes.recibos = P.recibos.data;
       if (P.recibos.data.recibosVerdes > 0) prof.categorias.push({cat:"B", label:"Trabalho independente (recibos verdes)"});
     }
+    if (P.ss && P.ss.status==="done") prof.detalhes.ss = P.ss.data;
     return prof;
   }
 
@@ -212,6 +215,11 @@
     if (d.recibos){
       h += '<div class="kv">Recibos verdes: <b>'+esc(d.recibos.recibosVerdes)+'</b> emitido(s).</div>';
       (d.recibos.avisos||[]).forEach(function(a){ h += '<div class="warn">⚠ '+esc(a)+'</div>'; });
+    }
+    if (d.ss){
+      h += '<div class="kv">Segurança Social: inscrito'+
+           (d.ss.estado?', situação <b>'+esc(d.ss.estado)+'</b>':'')+
+           (d.ss.pagamentosCorrentes!=null?'. '+esc(d.ss.pagamentosCorrentes)+' pagamento(s) corrente(s)':'')+'.</div>';
     }
     return h || '<div class="muted">Ainda sem dados. Segue os passos acima.</div>';
   }

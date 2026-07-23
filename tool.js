@@ -25,11 +25,13 @@
    * is submitted - there is nothing on our side to protect. It exists to keep an unfinished
    * feature off the public tool while we test, and comes out in one line when it ships. */
   var PROFILING = !!(window.__FB_PROFILE);
-  var ON_PDF = /(^|\.)portaldasfinancas\.gov\.pt$/.test(location.host);
+  // Profiling reads Portal das Financas AND Seguranca Social (seg-social.pt) - both official
+  // state portals where the user is already logged in.
+  var ON_GOV = /(^|\.)(portaldasfinancas\.gov\.pt|seg-social\.pt)$/.test(location.host);
 
   if (PROFILING) {
-    if (!ON_PDF) {
-      alert("Abre uma p\u00e1gina do Portal das Finan\u00e7as (e-Fatura, Im\u00f3veis, etc.) e faz login primeiro.");
+    if (!ON_GOV) {
+      alert("Abre uma p\u00e1gina das Finan\u00e7as ou da Seguran\u00e7a Social e faz login primeiro.");
       return;
     }
   } else if (!/faturas\.portaldasfinancas\.gov\.pt$/.test(location.host)) {
@@ -449,6 +451,10 @@
     { id: "recibos", label: "Recibos verdes (atividade)", host: "irs.portaldasfinancas.gov.pt",
       open: "https://irs.portaldasfinancas.gov.pt/recibos/portal",
       why: "Recibos verdes emitidos - rendimentos da categoria B (trabalho independente).", read: readRecibos },
+    // Seguranca Social - a DIFFERENT domain. Same-origin REST at www.seg-social.pt/ptss/rest.
+    { id: "ss", label: "Seguran\u00e7a Social", host: "www.seg-social.pt",
+      open: "https://www.seg-social.pt/ptss/pssd/home",
+      why: "Situa\u00e7\u00e3o contributiva e pagamentos - emprego, contribui\u00e7\u00f5es e presta\u00e7\u00f5es.", read: readSS },
     // Same HOST as rendas (imoveis) but a DIFFERENT app path and login partition (SMPP vs SICI),
     // so it is its own step. `pathHint` disambiguates the two on the shared host - see
     // currentPartition().
@@ -600,6 +606,30 @@
     });
   }
 
+  /* Seguranca Social Direta (www.seg-social.pt). personalData carries name + NISS; the NISS goes
+   * in the situacao-contributiva path. CRITICAL: the NISS and name are PII - they are used ONLY to
+   * build the URL and are NEVER stored in the summary. We keep the contributory status and a count
+   * of current payments (whether you receive or contribute), no identifiers. personalData is the
+   * session gate. */
+  function readSS() {
+    return getJSON("/ptss/rest/public/pssd/login/personalData?_=" + Date.now()).then(function (pd) {
+      var niss = pd && (pd.niss || pd.NISS || pd.numeroIdentificacaoSegurancaSocial || pd.identificador || pd.niss);
+      var jobs = [ getJSON("/ptss/rest/public/pssd/payments/current?_=" + Date.now()).catch(function () { return null; }) ];
+      jobs.push(niss ? getJSON("/ptss/rest/v360/posicao-atual/" + encodeURIComponent(niss) + "/situacao-contributiva?_=" + Date.now()).catch(function () { return null; })
+                     : Promise.resolve(null));
+      return Promise.all(jobs).then(function (r) {
+        var pay = r[0], sit = r[1];
+        var pags = pay ? (pay.data || pay.pagamentos || pay.lista || (Array.isArray(pay) ? pay : [])) : null;
+        if (pags && !Array.isArray(pags)) pags = [];
+        return { data: {
+          inscrito: true,
+          estado: (sit && (sit.estado || sit.situacao)) || null,     // e.g. REGULARIZADA
+          pagamentosCorrentes: pags ? pags.length : null
+        }, source: "/ptss/rest/public/pssd/login/personalData + situacao-contributiva + payments/current" };
+      });
+    });
+  }
+
   /* Recibos verdes (SIRE, irs host): documents issued as an independent worker - the Cat B signal.
    * obtemDocumentosV2 may expect a period; a bare read can come back empty, so a 0 count is FLAGGED
    * as needing confirmation rather than asserted (green-is-not-healthy). Shape unconfirmed in recon:
@@ -667,6 +697,9 @@
       prof.detalhes.recibos = P.recibos.data; prof.recolhidoEm.recibos = P.recibos.fetchedAt;
       if (P.recibos.data.recibosVerdes > 0) prof.categorias.push({ cat: "B", label: "Trabalho independente (recibos verdes)", base: "recibos verdes emitidos" });
     }
+    if (P.ss && P.ss.status === "done") {
+      prof.detalhes.ss = P.ss.data; prof.recolhidoEm.ss = P.ss.fetchedAt;
+    }
     return prof;
   }
 
@@ -718,6 +751,11 @@
       h += '<div style="font-size:12px;color:#333;margin:2px 0">Recibos verdes: <b>' + esc(d.recibos.recibosVerdes) + '</b> emitido(s).</div>';
       (d.recibos.avisos || []).forEach(function (a) { h += '<div style="font-size:11px;color:#8a6100">\u26a0 ' + esc(a) + '</div>'; });
     }
+    if (d.ss) {
+      h += '<div style="font-size:12px;color:#333;margin:2px 0">Seguran\u00e7a Social: inscrito' +
+           (d.ss.estado ? ', situa\u00e7\u00e3o <b>' + esc(d.ss.estado) + '</b>' : '') +
+           (d.ss.pagamentosCorrentes != null ? '. ' + esc(d.ss.pagamentosCorrentes) + ' pagamento(s) corrente(s)' : '') + '.</div>';
+    }
     return h;
   }
 
@@ -759,7 +797,8 @@
              : (res.data.dividas ? ((res.data.dividas.n || 0) + " d\u00edvida(s)")
              : (res.data.imoveis != null ? res.data.imoveis + " im\u00f3vel(is)"
              : (res.data.liquidacoes != null ? res.data.liquidacoes + " liquida\u00e7\u00e3o(\u00f5es)"
-             : (res.data.recibosVerdes != null ? res.data.recibosVerdes + " recibo(s) verde(s)" : "lido"))))));
+             : (res.data.recibosVerdes != null ? res.data.recibosVerdes + " recibo(s) verde(s)"
+             : (res.data.inscrito ? "inscrito na Seg. Social" : "lido")))))));
       document.getElementById("efh-body").innerHTML =
         '<div style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
         '.<br>A abrir o teu perfil...</div>';
