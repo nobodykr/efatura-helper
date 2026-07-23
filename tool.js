@@ -29,7 +29,7 @@
 
   if (PROFILING) {
     if (!ON_PDF) {
-      alert("Abre uma página do Portal das Finanças (e-Fatura, Imóveis, etc.) e faz login primeiro.");
+      alert("Abre uma p\u00e1gina do Portal das Finan\u00e7as (e-Fatura, Im\u00f3veis, etc.) e faz login primeiro.");
       return;
     }
   } else if (!/faturas\.portaldasfinancas\.gov\.pt$/.test(location.host)) {
@@ -430,10 +430,10 @@
   var PARTITIONS = [
     { id: "efatura", label: "e-Fatura", host: "faturas.portaldasfinancas.gov.pt",
       open: "https://faturas.portaldasfinancas.gov.pt/consumidor/consumidorFaturas",
-      why: "As tuas faturas e o setor de dedução de cada uma.", read: readEfatura },
-    { id: "rendas", label: "Rendas (Imóveis)", host: "imoveis.portaldasfinancas.gov.pt",
+      why: "As tuas faturas e o setor de dedu\u00e7\u00e3o de cada uma.", read: readEfatura },
+    { id: "rendas", label: "Rendas (Im\u00f3veis)", host: "imoveis.portaldasfinancas.gov.pt",
       open: "https://imoveis.portaldasfinancas.gov.pt/arrendamento/consultarContratos/locador",
-      why: "Contratos de arrendamento e recibos de renda — rendimentos da categoria F.", read: readRendas }
+      why: "Contratos de arrendamento e recibos de renda \u2014 rendimentos da categoria F.", read: readRendas }
   ];
 
   function profLoad() { try { return JSON.parse(localStorage.getItem(PROF_KEY)) || { partitions: {} }; } catch (e) { return { partitions: {} }; } }
@@ -447,7 +447,7 @@
     return fetch(url, { credentials: "include", headers: { "Accept": "application/json" } }).then(function (r) {
       var ct = r.headers.get("content-type") || "";
       return r.text().then(function (t) {
-        if (/text\/html/i.test(ct) || /^\s*</.test(t)) throw new Error("sessão não iniciada nesta página");
+        if (/text\/html/i.test(ct) || /^\s*</.test(t)) throw new Error("sess\u00e3o n\u00e3o iniciada nesta p\u00e1gina");
         try { return JSON.parse(t); } catch (e) { throw new Error("resposta inesperada"); }
       });
     });
@@ -485,12 +485,12 @@
       var ativos = o.contratos.filter(function (c) { return !/cessad|extint|anulad|denunciad/i.test(String(c.estado || "")); });
       var recCount = o.recibos ? o.recibos.length : null;
       var avisos = [];
-      if (o.recibos && ativos.length && recCount === 0) avisos.push("contrato activo sem recibos no período — confirmar");
+      if (o.recibos && ativos.length && recCount === 0) avisos.push("contrato activo sem recibos no per\u00edodo \u2014 confirmar");
       return { data: { contratos: o.contratos.length, activos: ativos.length, recibos: recCount,
                        lista: ativos.slice(0, 8).map(function (c) {
                          return { referencia: c.referencia || c.numero, estado: c.estado, valorRenda: c.valorRenda };
                        }), avisos: avisos },
-               source: cU + (o.recibos !== null ? " + " + rU : " (recibos indisponíveis)") };
+               source: cU + (o.recibos !== null ? " + " + rU : " (recibos indispon\u00edveis)") };
     });
   }
 
@@ -513,7 +513,7 @@
     if (prof.categorias.length) {
       h += '<div style="margin:0 0 8px">';
       prof.categorias.forEach(function (c) {
-        h += '<span style="display:inline-block;background:#eaf2ff;border:1px solid #034ad8;color:#021c51;border-radius:99px;padding:2px 9px;margin:0 6px 5px 0;font-size:12px">Cat. ' + esc(c.cat) + ' — ' + esc(c.label) + '</span>';
+        h += '<span style="display:inline-block;background:#eaf2ff;border:1px solid #034ad8;color:#021c51;border-radius:99px;padding:2px 9px;margin:0 6px 5px 0;font-size:12px">Cat. ' + esc(c.cat) + ' \u2014 ' + esc(c.label) + '</span>';
       });
       h += '</div>';
     } else {
@@ -525,26 +525,26 @@
     if (d.rendas) {
       h += '<div style="font-size:12px;color:#333;margin:2px 0">Arrendamento: <b>' + esc(d.rendas.activos) + '</b> contrato(s) activo(s) de ' + esc(d.rendas.contratos) +
            (d.rendas.recibos != null ? ', ' + esc(d.rendas.recibos) + ' recibo(s)' : '') + '.</div>';
-      (d.rendas.avisos || []).forEach(function (a) { h += '<div style="font-size:11px;color:#8a6100">⚠ ' + esc(a) + '</div>'; });
+      (d.rendas.avisos || []).forEach(function (a) { h += '<div style="font-size:11px;color:#8a6100">\u26a0 ' + esc(a) + '</div>'; });
     }
     return h;
   }
 
-  function profConsentGate(cb) {
+  function profConsentGate() {
     document.getElementById("efh-body").innerHTML =
-      '<p style="margin:0 0 10px">Isto constrói o <b>teu perfil fiscal</b> a partir dos documentos ' +
-      'oficiais das Finanças, na sessão que já tens aberta. Lês uma página de cada vez.</p>' +
+      '<p style="margin:0 0 10px">Isto constr\u00f3i o <b>teu perfil fiscal</b> a partir dos documentos ' +
+      'oficiais das Finan\u00e7as, na sess\u00e3o que j\u00e1 tens aberta. L\u00eas uma p\u00e1gina de cada vez.</p>' +
       '<ul style="margin:0 0 12px 18px;padding:0;line-height:1.5">' +
-      '<li>Não te pede, nem vê, a password.</li>' +
-      '<li>Os dados <b>ficam só neste navegador</b> — nada é enviado.</li>' +
-      '<li>Só leitura: nada é submetido às Finanças.</li>' +
+      '<li>N\u00e3o te pede, nem v\u00ea, a password.</li>' +
+      '<li>Os dados <b>ficam s\u00f3 neste navegador</b> \u2014 nada \u00e9 enviado.</li>' +
+      '<li>S\u00f3 leitura: nada \u00e9 submetido \u00e0s Finan\u00e7as.</li>' +
       '</ul>' +
       '<button type="button" id="fb-prof-go" style="cursor:pointer;background:#034ad8;color:#fff;border:0;' +
       'border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">Concordo, criar perfil</button>';
     document.getElementById("fb-prof-go").onclick = function () {
       try { localStorage.setItem(PROF_CONSENT, JSON.stringify({ ok: true, ts: Date.now() })); } catch (e) {}
       var p = profLoad(); if (!p.consentedAt) { p.consentedAt = new Date().toISOString(); profSave(p); }
-      cb();
+      profRender();
     };
   }
 
@@ -558,11 +558,11 @@
     PARTITIONS.forEach(function (p) {
       var st = store.partitions[p.id], ok = st && st.status === "done", here = cur && cur.id === p.id;
       h += '<div style="display:flex;gap:8px;align-items:baseline;padding:6px 0;border-top:1px solid #eef">' +
-        '<span style="font-size:14px">' + (ok ? '✅' : '⬜') + '</span>' +
+        '<span style="font-size:14px">' + (ok ? '\u2705' : '\u2b1c') + '</span>' +
         '<div style="flex:1"><div style="font-weight:600">' + esc(p.label) +
-          (here ? ' <span style="color:#034ad8;font-size:11px">(estás aqui)</span>' : '') + '</div>' +
+          (here ? ' <span style="color:#034ad8;font-size:11px">(est\u00e1s aqui)</span>' : '') + '</div>' +
           '<div style="color:#666;font-size:12px">' + esc(p.why) + '</div>' +
-          (ok || here ? '' : '<a href="' + p.open + '" style="font-size:12px;color:#034ad8">Abrir esta página →</a> ' +
+          (ok || here ? '' : '<a href="' + p.open + '" style="font-size:12px;color:#034ad8">Abrir esta p\u00e1gina \u2192</a> ' +
             '<span style="color:#888;font-size:11px">(depois clica outra vez no favorito)</span>') +
           (st && st.status === "pending" && st.error ? '<div style="color:#c8102e;font-size:11px">' + esc(st.error) + '</div>' : '') +
         '</div></div>';
@@ -576,7 +576,7 @@
         ';border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">' +
         (isDone ? 'Reler ' : 'Ler ') + esc(cur.label) + '</button>';
     } else {
-      h += '<div style="color:#666;font-size:12px">Esta página não é uma das que lemos. Abre uma da lista acima.</div>';
+      h += '<div style="color:#666;font-size:12px">Esta p\u00e1gina n\u00e3o \u00e9 uma das que lemos. Abre uma da lista acima.</div>';
     }
 
     if (done.length)
@@ -596,7 +596,7 @@
         profSave(s); profRender();
       }).catch(function (e) {
         var s = profLoad();
-        s.partitions[cur.id] = { status: "pending", error: "Não deu para ler: " + ((e && e.message) || "erro") + ". Confirma o login nesta página.", fetchedAt: new Date().toISOString() };
+        s.partitions[cur.id] = { status: "pending", error: "N\u00e3o deu para ler: " + ((e && e.message) || "erro") + ". Confirma o login nesta p\u00e1gina.", fetchedAt: new Date().toISOString() };
         profSave(s); profRender();
       });
     };
@@ -604,7 +604,7 @@
     if (rs) rs.onclick = function (ev) { ev.preventDefault(); try { localStorage.removeItem(PROF_KEY); } catch (e) {} profRender(); };
   }
 
-  function runProfiling() { if (profConsent()) profRender(); else profConsentGate(profRender); }
+  function runProfiling() { if (profConsent()) profRender(); else profConsentGate(); }
   /* ======================  end PROFILING  ====================== */
 
   if (PROFILING) { runProfiling(); }
