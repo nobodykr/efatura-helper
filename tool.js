@@ -435,7 +435,7 @@
       why: "As tuas faturas e o setor de dedu\u00e7\u00e3o de cada uma.", read: readEfatura },
     { id: "rendas", label: "Rendas (Im\u00f3veis)", host: "imoveis.portaldasfinancas.gov.pt",
       open: "https://imoveis.portaldasfinancas.gov.pt/arrendamento/consultarContratos/locador",
-      why: "Contratos de arrendamento e recibos de renda \u2014 rendimentos da categoria F.", read: readRendas }
+      why: "Contratos de arrendamento e recibos de renda - rendimentos da categoria F.", read: readRendas }
   ];
 
   function profLoad() { try { return JSON.parse(localStorage.getItem(PROF_KEY)) || { partitions: {} }; } catch (e) { return { partitions: {} }; } }
@@ -504,7 +504,7 @@
       var ativos = o.contratos.filter(function (c) { return /activ|ativ/i.test(estadoStr(c.estado)); });
       var recCount = o.recibos ? o.recibos.length : null;
       var avisos = [];
-      if (o.recibos && ativos.length && recCount === 0) avisos.push("contrato activo sem recibos no per\u00edodo \u2014 confirmar");
+      if (o.recibos && ativos.length && recCount === 0) avisos.push("contrato activo sem recibos no per\u00edodo - confirmar");
       return { data: { contratos: o.contratos.length, activos: ativos.length, recibos: recCount,
                        lista: ativos.slice(0, 8).map(function (c) {
                          return { referencia: c.referencia || c.numero, estado: estadoStr(c.estado), valorRenda: c.valorRenda };
@@ -532,7 +532,7 @@
     if (prof.categorias.length) {
       h += '<div style="margin:0 0 8px">';
       prof.categorias.forEach(function (c) {
-        h += '<span style="display:inline-block;background:#eaf2ff;border:1px solid #034ad8;color:#021c51;border-radius:99px;padding:2px 9px;margin:0 6px 5px 0;font-size:12px">Cat. ' + esc(c.cat) + ' \u2014 ' + esc(c.label) + '</span>';
+        h += '<span style="display:inline-block;background:#eaf2ff;border:1px solid #034ad8;color:#021c51;border-radius:99px;padding:2px 9px;margin:0 6px 5px 0;font-size:12px">Cat. ' + esc(c.cat) + ' - ' + esc(c.label) + '</span>';
       });
       h += '</div>';
     } else {
@@ -555,7 +555,7 @@
       'oficiais das Finan\u00e7as, na sess\u00e3o que j\u00e1 tens aberta. L\u00eas uma p\u00e1gina de cada vez.</p>' +
       '<ul style="margin:0 0 12px 18px;padding:0;line-height:1.5">' +
       '<li>N\u00e3o te pede, nem v\u00ea, a password.</li>' +
-      '<li>Os dados <b>ficam s\u00f3 neste navegador</b> \u2014 nada \u00e9 enviado.</li>' +
+      '<li>Os dados <b>ficam s\u00f3 neste navegador</b> - nada \u00e9 enviado.</li>' +
       '<li>S\u00f3 leitura: nada \u00e9 submetido \u00e0s Finan\u00e7as.</li>' +
       '</ul>' +
       '<button type="button" id="fb-prof-go" style="cursor:pointer;background:#034ad8;color:#fff;border:0;' +
@@ -574,7 +574,7 @@
   function autoReadCurrent(cur) {
     if (_autoRead[cur.id]) return profRender();
     _autoRead[cur.id] = 1;
-    document.getElementById("efh-body").innerHTML = "A ler " + esc(cur.label) + "\u2026";
+    document.getElementById("efh-body").innerHTML = "A ler " + esc(cur.label) + "...";
     cur.read().then(function (res) {
       var s = profLoad();
       s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data, source: res.source };
@@ -586,7 +586,7 @@
              : (res.data.activos != null ? res.data.activos + " contrato(s) activo(s)" : "lido"));
       document.getElementById("efh-body").innerHTML =
         '<div style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
-        '.<br>A abrir o teu perfil\u2026</div>';
+        '.<br>A abrir o teu perfil...</div>';
       setTimeout(function () { location.href = handoffUrl(cur.id, res.data); }, 700);
     }).catch(function (e) {
       var s = profLoad();

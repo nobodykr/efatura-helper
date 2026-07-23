@@ -7,7 +7,7 @@
 <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png">
 <title>O meu perfil fiscal | Fatura Boa</title>
-<meta name="description" content="Junta o teu perfil fiscal a partir dos documentos oficiais das Finanças. Tudo fica no teu navegador — nada é enviado.">
+<meta name="description" content="Junta o teu perfil fiscal a partir dos documentos oficiais das Finanças. Tudo fica no teu navegador - nada é enviado.">
 <!-- noindex: this is a personal working page, not content to rank. -->
 <meta name="robots" content="noindex,nofollow">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -72,7 +72,7 @@
 <header><div class="wrap">
   <h1>O meu perfil fiscal</h1>
   <p>Junta, página a página, o que as Finanças já sabem sobre ti. Cada página é lida no teu
-     navegador, na tua sessão. <b>Fica tudo só neste navegador</b> — só é enviado alguma coisa se
+     navegador, na tua sessão. <b>Fica tudo só neste navegador</b> - só é enviado alguma coisa se
      escolheres contribuir (em baixo), e mesmo aí sem o teu nome nem NIF.</p>
 </div></header>
 <main class="wrap">
@@ -108,7 +108,7 @@
     { id:"efatura", label:"e-Fatura", open:"https://faturas.portaldasfinancas.gov.pt/consultarDocumentosAdquirente.action",
       why:"As tuas faturas e o setor de dedução de cada uma." },
     { id:"rendas", label:"Rendas (Imóveis)", open:"https://imoveis.portaldasfinancas.gov.pt/arrendamento/consultarContratos/locador",
-      why:"Contratos de arrendamento e recibos de renda — rendimentos da categoria F." }
+      why:"Contratos de arrendamento e recibos de renda - rendimentos da categoria F." }
   ];
 
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
@@ -149,7 +149,7 @@
     var h = '';
     if (prof.categorias.length){
       h += '<div style="margin:0 0 8px">';
-      prof.categorias.forEach(function(c){ h += '<span class="pill">Cat. '+esc(c.cat)+' — '+esc(c.label)+'</span>'; });
+      prof.categorias.forEach(function(c){ h += '<span class="pill">Cat. '+esc(c.cat)+' - '+esc(c.label)+'</span>'; });
       h += '</div>';
     }
     var d = prof.detalhes;
@@ -175,9 +175,10 @@
       var ok = store.partitions[p.id] && store.partitions[p.id].status==="done";
       h += '<div class="step"><div class="ic">'+(ok?'✅':'⬜')+'</div><div class="bd">'+
         '<div class="t">'+esc(p.label)+'</div><div class="w">'+esc(p.why)+'</div>'+
-        (ok ? '<a class="btn ghost" href="'+p.open+'" target="_blank" rel="noopener">Reler (abrir página)</a>'
-            : '<a class="btn" href="'+p.open+'" target="_blank" rel="noopener">Abrir e ler esta página →</a> '+
-              '<div class="w" style="margin-top:4px">Na página, clica no favorito <b>Fatura Boa</b>, depois em <b>Guardar no meu perfil</b>.</div>')+
+        (ok ? '<a class="btn ghost" href="'+p.open+'">Reler (abrir página)</a>'
+            : '<a class="btn" href="'+p.open+'">Abrir e ler esta página</a> '+
+              '<div class="w" style="margin-top:4px">Na página, clica no favorito <b>Fatura Boa</b>. '+
+              'Ele lê a página e volta aqui sozinho - este passo fica verde.</div>')+
         '</div></div>';
     });
     h += '</div>';
@@ -188,7 +189,7 @@
     h += '<label style="display:block;background:var(--bg2);border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px;margin-top:14px;font-size:.85rem;cursor:pointer">'+
       '<input type="checkbox" id="share" '+(shareOn()?'checked':'')+' style="margin-right:6px">'+
       'Contribuir com o meu perfil, de forma <b>anónima</b> (sem nome nem NIF), para melhorar a ferramenta. '+
-      'Envia contagens, categorias e valores — nunca quem és. Podes desligar quando quiseres.</label>';
+      'Envia contagens, categorias e valores - nunca quem és. Podes desligar quando quiseres.</label>';
     h += '<div style="margin-top:12px"><a href="#" id="reset" class="muted" style="font-size:.8rem">Apagar o meu perfil deste navegador</a></div></div>';
 
     document.getElementById("out").innerHTML = h;
@@ -200,6 +201,14 @@
       if (sh.checked) sendShare(load());          // send current profile the moment they opt in
     };
   }
+
+  // Re-render when another tab writes the profile (the bookmarklet may land in a different tab)
+  // and whenever this tab regains focus - so the steps never sit stale at 0/2 while the data is
+  // actually saved. This is the fix for "the tickboxes never activate": they were saved in
+  // localStorage but an already-open /perfil tab was not repainting.
+  window.addEventListener("storage", function(e){ if (e.key === PKEY) render(); });
+  document.addEventListener("visibilitychange", function(){ if (!document.hidden) render(); });
+  window.addEventListener("focus", function(){ render(); });
 
   var added = ingestHash();
   render(added);
