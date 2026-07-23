@@ -449,7 +449,7 @@
       open: "https://sitfiscal.portaldasfinancas.gov.pt/inffin/entrada.html",
       why: "As liquida\u00e7\u00f5es de IRS de todos os anos e os reembolsos - o hist\u00f3rico fiscal.", read: readIRS },
     { id: "recibos", label: "Recibos verdes (atividade)", host: "irs.portaldasfinancas.gov.pt",
-      open: "https://irs.portaldasfinancas.gov.pt/recibos/portal",
+      open: "https://irs.portaldasfinancas.gov.pt/recibos/portal/consultar",
       why: "Recibos verdes emitidos - rendimentos da categoria B (trabalho independente).", read: readRecibos },
     // Seguranca Social - a DIFFERENT domain. Same-origin REST at www.seg-social.pt/ptss/rest.
     { id: "ss", label: "Seguran\u00e7a Social", host: "www.seg-social.pt",
