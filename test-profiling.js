@@ -45,6 +45,7 @@ function fetchOK(u) {
   if (/matrizesinter\/api\/patrimonio/.test(s)) return json({ prediosUrbanos: [{ artigo: "1234", freguesia: "Benfica", valorPatrimonial: 120000 }], prediosRusticos: [] });
   if (/liquidacoesIRSDataTables/.test(s)) return json({ data: [{ ano: 2024 }, { ano: 2023 }, { ano: 2022 }] });
   if (/reembolsosDataTables/.test(s)) return json({ data: [{ ano: 2024 }] });
+  if (/obtemDocumentosV2/.test(s)) return json({ documentos: [{ n: 1 }, { n: 2 }] });
   if (/sectors\.json|\/bucket\//.test(s)) return json({});
   return json({ linhas: [] });
 }
@@ -111,6 +112,18 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("irs picked on /inffin (not situacao)", store.partitions.irs && store.partitions.irs.status === "done" && !store.partitions.situacao);
   ok("irs: 3 liquidacoes, 1 reembolso", store.partitions.irs.data.liquidacoes === 3 && store.partitions.irs.data.reembolsos === 1);
+
+  // 4c-3. recibos verdes (SIRE, irs host): Cat B signal
+  w = mkEnv("irs.portaldasfinancas.gov.pt", true, fetchOK, "/recibos/portal");
+  eval(SRC); await wait();
+  w.document.getElementById("fb-prof-go").click(); await wait();
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("recibos auto-read + stored", store.partitions.recibos && store.partitions.recibos.status === "done");
+  ok("recibos: 2 recibos verdes", store.partitions.recibos.data.recibosVerdes === 2);
+  {
+    const d = JSON.parse(Buffer.from(decodeURIComponent((w.__nav || "").split("&d=")[1] || ""), "base64").toString("utf8") || "{}");
+    ok("recibos hands off with Cat B derivable", store.partitions.recibos.data.recibosVerdes === 2);
+  }
 
   // 4d. patrimonio: SAME host as rendas (imoveis) but a /matrizesinter path -> host+path matching
   //     must pick patrimonio, NOT rendas. Proves the disambiguation.

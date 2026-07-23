@@ -125,7 +125,9 @@
     { id:"patrimonio", label:"Património predial (IMI)", open:"https://imoveis.portaldasfinancas.gov.pt/matrizesinter/web/consultar-patrimonio-predial",
       why:"Imóveis que possuis e o seu VPT - a base do IMI." },
     { id:"irs", label:"IRS (liquidações e reembolsos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/inffin/entrada.html",
-      why:"As liquidações de IRS de todos os anos e os reembolsos - o histórico fiscal." }
+      why:"As liquidações de IRS de todos os anos e os reembolsos - o histórico fiscal." },
+    { id:"recibos", label:"Recibos verdes (atividade)", open:"https://irs.portaldasfinancas.gov.pt/recibos/portal",
+      why:"Recibos verdes emitidos - rendimentos da categoria B (trabalho independente)." }
   ];
 
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
@@ -165,6 +167,10 @@
       if (P.patrimonio.data.imoveis > 0) prof.categorias.push({cat:"IMI", label:"Proprietário de imóveis"});
     }
     if (P.irs && P.irs.status==="done") prof.detalhes.irs = P.irs.data;
+    if (P.recibos && P.recibos.status==="done"){
+      prof.detalhes.recibos = P.recibos.data;
+      if (P.recibos.data.recibosVerdes > 0) prof.categorias.push({cat:"B", label:"Trabalho independente (recibos verdes)"});
+    }
     return prof;
   }
 
@@ -202,6 +208,10 @@
       h += '<div class="kv">IRS: <b>'+esc(d.irs.liquidacoes)+'</b> liquidação(ões)'+
            (d.irs.reembolsos!=null?', '+esc(d.irs.reembolsos)+' reembolso(s)':'')+'.</div>';
       (d.irs.avisos||[]).forEach(function(a){ h += '<div class="warn">⚠ '+esc(a)+'</div>'; });
+    }
+    if (d.recibos){
+      h += '<div class="kv">Recibos verdes: <b>'+esc(d.recibos.recibosVerdes)+'</b> emitido(s).</div>';
+      (d.recibos.avisos||[]).forEach(function(a){ h += '<div class="warn">⚠ '+esc(a)+'</div>'; });
     }
     return h || '<div class="muted">Ainda sem dados. Segue os passos acima.</div>';
   }

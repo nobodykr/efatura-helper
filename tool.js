@@ -446,6 +446,9 @@
       pathHint: "/inffin",
       open: "https://sitfiscal.portaldasfinancas.gov.pt/inffin/entrada.html",
       why: "As liquida\u00e7\u00f5es de IRS de todos os anos e os reembolsos - o hist\u00f3rico fiscal.", read: readIRS },
+    { id: "recibos", label: "Recibos verdes (atividade)", host: "irs.portaldasfinancas.gov.pt",
+      open: "https://irs.portaldasfinancas.gov.pt/recibos/portal",
+      why: "Recibos verdes emitidos - rendimentos da categoria B (trabalho independente).", read: readRecibos },
     // Same HOST as rendas (imoveis) but a DIFFERENT app path and login partition (SMPP vs SICI),
     // so it is its own step. `pathHint` disambiguates the two on the shared host - see
     // currentPartition().
@@ -597,6 +600,21 @@
     });
   }
 
+  /* Recibos verdes (SIRE, irs host): documents issued as an independent worker - the Cat B signal.
+   * obtemDocumentosV2 may expect a period; a bare read can come back empty, so a 0 count is FLAGGED
+   * as needing confirmation rather than asserted (green-is-not-healthy). Shape unconfirmed in recon:
+   * rows read from the usual container keys, counted only, not column-interpreted. */
+  function readRecibos() {
+    var u = "/recibos/api/obtemDocumentosV2";
+    return getJSON(u + "?_=" + Date.now()).then(function (j) {
+      var rows = (j && (j.documentos || j.data || j.linhas || j.lista)) || (Array.isArray(j) ? j : []);
+      if (!Array.isArray(rows)) rows = [];
+      var avisos = [];
+      if (rows.length === 0) avisos.push("0 recibos - pode precisar de indicar um per\u00edodo; confirmar");
+      return { data: { recibosVerdes: rows.length, avisos: avisos }, source: u };
+    });
+  }
+
   /* Patrimonio predial (SMPP): the properties you own and their VPT - the base of IMI, and a
    * pointer to Cat G if one is later sold. The response shape is not pinned in our recon, so the
    * property list is read from the usual container keys and each property's fields from the usual
@@ -645,6 +663,10 @@
     if (P.irs && P.irs.status === "done") {
       prof.detalhes.irs = P.irs.data; prof.recolhidoEm.irs = P.irs.fetchedAt;
     }
+    if (P.recibos && P.recibos.status === "done") {
+      prof.detalhes.recibos = P.recibos.data; prof.recolhidoEm.recibos = P.recibos.fetchedAt;
+      if (P.recibos.data.recibosVerdes > 0) prof.categorias.push({ cat: "B", label: "Trabalho independente (recibos verdes)", base: "recibos verdes emitidos" });
+    }
     return prof;
   }
 
@@ -692,6 +714,10 @@
            (d.irs.reembolsos != null ? ', ' + esc(d.irs.reembolsos) + ' reembolso(s)' : '') + '.</div>';
       (d.irs.avisos || []).forEach(function (a) { h += '<div style="font-size:11px;color:#8a6100">\u26a0 ' + esc(a) + '</div>'; });
     }
+    if (d.recibos) {
+      h += '<div style="font-size:12px;color:#333;margin:2px 0">Recibos verdes: <b>' + esc(d.recibos.recibosVerdes) + '</b> emitido(s).</div>';
+      (d.recibos.avisos || []).forEach(function (a) { h += '<div style="font-size:11px;color:#8a6100">\u26a0 ' + esc(a) + '</div>'; });
+    }
     return h;
   }
 
@@ -732,7 +758,8 @@
              : (res.data.activos != null ? res.data.activos + " contrato(s) activo(s)"
              : (res.data.dividas ? ((res.data.dividas.n || 0) + " d\u00edvida(s)")
              : (res.data.imoveis != null ? res.data.imoveis + " im\u00f3vel(is)"
-             : (res.data.liquidacoes != null ? res.data.liquidacoes + " liquida\u00e7\u00e3o(\u00f5es)" : "lido")))));
+             : (res.data.liquidacoes != null ? res.data.liquidacoes + " liquida\u00e7\u00e3o(\u00f5es)"
+             : (res.data.recibosVerdes != null ? res.data.recibosVerdes + " recibo(s) verde(s)" : "lido"))))));
       document.getElementById("efh-body").innerHTML =
         '<div style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
         '.<br>A abrir o teu perfil...</div>';
