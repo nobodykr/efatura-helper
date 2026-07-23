@@ -442,6 +442,11 @@
       pathHint: "/geral",
       open: "https://sitfiscal.portaldasfinancas.gov.pt/geral/dashboard",
       why: "D\u00edvidas e coimas em aberto, e os pr\u00f3ximos prazos da agenda fiscal.", read: readSituacao },
+    // Cadastro / atividade (dainter). Authoritative Cat B + IVA-regime source; also open-vs-cessada.
+    { id: "atividade", label: "Atividade (cadastro e IVA)", host: "sitfiscal.portaldasfinancas.gov.pt",
+      pathHint: "/atividade",
+      open: "https://sitfiscal.portaldasfinancas.gov.pt/atividade/atividade/consultardeclaracoes",
+      why: "Declara\u00e7\u00f5es de atividade e regime de IVA - se \u00e9s/foste trabalhador independente.", read: readAtividade },
     // Same host as situacao (sitfiscal) but the /inffin path and DIFC login partition, so its own
     // step. This is the assessed-IRS history - the outcome of every year's declaration.
     { id: "irs", label: "IRS (liquida\u00e7\u00f5es e reembolsos)", host: "sitfiscal.portaldasfinancas.gov.pt",
@@ -501,6 +506,43 @@
         if (/text\/html/i.test(ct) || /^\s*</.test(t)) throw new Error("sess\u00e3o n\u00e3o iniciada nesta p\u00e1gina");
         try { return JSON.parse(t); } catch (e) { throw new Error("resposta inesperada"); }
       });
+    });
+  }
+
+  /* HTML-tolerant read for the cadastro/atividade pages (OutSystems, server-rendered - often not
+   * clean JSON). Returns {json} OR {html}. Still a session gate: a login redirect returns the
+   * acesso.gov.pt page, which has neither our JSON nor the expected page markers. */
+  function getMaybe(url) {
+    return fetch(url, { credentials: "include" }).then(function (r) {
+      return r.text().then(function (t) {
+        if (/acesso\.gov\.pt|loginForm/i.test(t)) throw new Error("sess\u00e3o n\u00e3o iniciada nesta p\u00e1gina");
+        try { return { json: JSON.parse(t) }; } catch (e) { return { html: t }; }
+      });
+    });
+  }
+
+  /* Atividade (cadastro, dainter): the declaracoes de inicio/alteracao/cessacao. This is the
+   * AUTHORITATIVE Cat B source and, crucially, tells open vs CLOSED - a count > 0 does NOT mean
+   * "currently independent" (a cessacao declaration closes it). Response is likely HTML, so parsing
+   * is heuristic and everything is FLAGGED for confirmation; we never assert Cat B on a guess.
+   * Also scans for the IVA enquadramento (regime normal / isencao art. 53 / trimestral / mensal),
+   * which is the regime signal that was previously unmapped. */
+  function readAtividade() {
+    return getMaybe("/atividade/atividade/consultardeclaracoes?_=" + Date.now()).then(function (res) {
+      var txt = res.html || (res.json ? JSON.stringify(res.json) : "");
+      var low = txt.toLowerCase();
+      // count declaration rows heuristically
+      var n = (low.match(/declara[c\u00e7][a\u00e3]o/g) || []).length;
+      var temInicio = /in[i\u00ed]cio de atividade|declara[c\u00e7][a\u00e3]o de in[i\u00ed]cio/.test(low);
+      var temCessacao = /cessa[c\u00e7][a\u00e3]o|cessou|cessad/.test(low);
+      var cessada = temCessacao ? true : (temInicio ? false : null);
+      var regime = /isen[c\u00e7][a\u00e3]o.*53|artigo 53|regime de isen/.test(low) ? "isento (art. 53.o)"
+                 : /regime normal.*mensal|periodicidade mensal|iva mensal/.test(low) ? "IVA mensal"
+                 : /regime normal.*trimestr|periodicidade trimestr|iva trimestr/.test(low) ? "IVA trimestral"
+                 : /regime normal/.test(low) ? "regime normal de IVA" : null;
+      var avisos = ["leitura heur\u00edstica da p\u00e1gina - confirmar atividade (aberta/cessada) e regime"];
+      return { data: { declaracoes: n, cessada: cessada, regimeIva: regime, avisos: avisos },
+               source: "/atividade/atividade/consultardeclaracoes" };
     });
   }
 
@@ -700,6 +742,12 @@
     if (P.ss && P.ss.status === "done") {
       prof.detalhes.ss = P.ss.data; prof.recolhidoEm.ss = P.ss.fetchedAt;
     }
+    if (P.atividade && P.atividade.status === "done") {
+      var at = P.atividade.data; prof.detalhes.atividade = at; prof.recolhidoEm.atividade = P.atividade.fetchedAt;
+      // Only assert Cat B when atividade is confirmed OPEN. cessada or unknown -> do NOT add it.
+      if (at.declaracoes > 0 && at.cessada === false)
+        prof.categorias.push({ cat: "B", label: "Trabalho independente (atividade aberta)", base: "cadastro de atividade" });
+    }
     return prof;
   }
 
@@ -751,6 +799,14 @@
       h += '<div style="font-size:12px;color:#333;margin:2px 0">Recibos verdes: <b>' + esc(d.recibos.recibosVerdes) + '</b> emitido(s).</div>';
       (d.recibos.avisos || []).forEach(function (a) { h += '<div style="font-size:11px;color:#8a6100">\u26a0 ' + esc(a) + '</div>'; });
     }
+    if (d.atividade) {
+      var at = d.atividade;
+      var estado = at.cessada === true ? "cessada" : (at.cessada === false ? "aberta" : "por confirmar");
+      h += '<div style="font-size:12px;color:#333;margin:2px 0">Atividade: <b>' + esc(estado) + '</b>' +
+           (at.declaracoes ? ' (' + esc(at.declaracoes) + ' declara\u00e7\u00e3o/\u00f5es)' : '') +
+           (at.regimeIva ? ', IVA: <b>' + esc(at.regimeIva) + '</b>' : '') + '.</div>';
+      (at.avisos || []).forEach(function (a) { h += '<div style="font-size:11px;color:#8a6100">\u26a0 ' + esc(a) + '</div>'; });
+    }
     if (d.ss) {
       h += '<div style="font-size:12px;color:#333;margin:2px 0">Seguran\u00e7a Social: inscrito' +
            (d.ss.estado ? ', situa\u00e7\u00e3o <b>' + esc(d.ss.estado) + '</b>' : '') +
@@ -798,7 +854,8 @@
              : (res.data.imoveis != null ? res.data.imoveis + " im\u00f3vel(is)"
              : (res.data.liquidacoes != null ? res.data.liquidacoes + " liquida\u00e7\u00e3o(\u00f5es)"
              : (res.data.recibosVerdes != null ? res.data.recibosVerdes + " recibo(s) verde(s)"
-             : (res.data.inscrito ? "inscrito na Seg. Social" : "lido")))))));
+             : (res.data.inscrito ? "inscrito na Seg. Social"
+             : (res.data.declaracoes != null ? ("atividade " + (res.data.cessada === true ? "cessada" : res.data.cessada === false ? "aberta" : "?")) : "lido"))))))));
       document.getElementById("efh-body").innerHTML =
         '<div style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
         '.<br>A abrir o teu perfil...</div>';

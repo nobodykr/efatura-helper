@@ -122,6 +122,8 @@
       why:"Contratos de arrendamento e recibos de renda - rendimentos da categoria F." },
     { id:"situacao", label:"Situação fiscal (dívidas e prazos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/geral/dashboard",
       why:"Dívidas e coimas em aberto, e os próximos prazos da agenda fiscal." },
+    { id:"atividade", label:"Atividade (cadastro e IVA)", open:"https://sitfiscal.portaldasfinancas.gov.pt/atividade/atividade/consultardeclaracoes",
+      why:"Declarações de atividade e regime de IVA - se és/foste trabalhador independente." },
     { id:"patrimonio", label:"Património predial (IMI)", open:"https://imoveis.portaldasfinancas.gov.pt/matrizesinter/web/consultar-patrimonio-predial",
       why:"Imóveis que possuis e o seu VPT - a base do IMI." },
     { id:"irs", label:"IRS (liquidações e reembolsos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/inffin/entrada.html",
@@ -174,6 +176,11 @@
       if (P.recibos.data.recibosVerdes > 0) prof.categorias.push({cat:"B", label:"Trabalho independente (recibos verdes)"});
     }
     if (P.ss && P.ss.status==="done") prof.detalhes.ss = P.ss.data;
+    if (P.atividade && P.atividade.status==="done"){
+      prof.detalhes.atividade = P.atividade.data;
+      if (P.atividade.data.declaracoes > 0 && P.atividade.data.cessada === false)
+        prof.categorias.push({cat:"B", label:"Trabalho independente (atividade aberta)"});
+    }
     return prof;
   }
 
@@ -216,6 +223,13 @@
       h += '<div class="kv">Recibos verdes: <b>'+esc(d.recibos.recibosVerdes)+'</b> emitido(s).</div>';
       (d.recibos.avisos||[]).forEach(function(a){ h += '<div class="warn">⚠ '+esc(a)+'</div>'; });
     }
+    if (d.atividade){
+      var at=d.atividade, est= at.cessada===true?"cessada":(at.cessada===false?"aberta":"por confirmar");
+      h += '<div class="kv">Atividade: <b>'+esc(est)+'</b>'+
+           (at.declaracoes?' ('+esc(at.declaracoes)+' declaração/ões)':'')+
+           (at.regimeIva?', IVA: <b>'+esc(at.regimeIva)+'</b>':'')+'.</div>';
+      (at.avisos||[]).forEach(function(a){ h += '<div class="warn">⚠ '+esc(a)+'</div>'; });
+    }
     if (d.ss){
       h += '<div class="kv">Segurança Social: inscrito'+
            (d.ss.estado?', situação <b>'+esc(d.ss.estado)+'</b>':'')+
@@ -245,8 +259,15 @@
     if (d.efatura) add("Validar faturas pendentes no e-Fatura",
       (d.efatura.porClassificar||0)+" por classificar - contam para as deduções à coleta. Prazo habitual: 25 de fevereiro.", ["fatura","despesa"]);
     if (cats.B){
-      add("IRS - Anexo B", "Tens recibos verdes emitidos (categoria B).", ["irs"]);
-      add("IVA (periódico)", "Atividade aberta: salvo isenção do art. 53.º CIVA, há entrega de IVA (trimestral ou mensal).", ["iva"]);
+      add("IRS - Anexo B", "Tens atividade aberta / recibos verdes (categoria B).", ["irs"]);
+      // Use the real IVA regime from the atividade cadastro when we have it, instead of the generic line.
+      var reg = d.atividade && d.atividade.regimeIva;
+      if (reg && /isento/i.test(reg))
+        add("IVA - isento (art. 53.º)", "Cadastro indica isenção do art. 53.º CIVA: sem entrega periódica de IVA (confirmar).", ["iva"]);
+      else if (reg)
+        add("IVA - " + reg, "Cadastro indica " + reg + ": entrega periódica de IVA.", ["iva"]);
+      else
+        add("IVA (periódico)", "Atividade aberta: salvo isenção do art. 53.º CIVA, há entrega de IVA (trimestral ou mensal).", ["iva"]);
       add("Segurança Social - trimestral", "Trabalhador independente: declaração trimestral e contribuições.", ["seguran","contribu","trimestr"]);
     }
     if (cats.F){

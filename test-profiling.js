@@ -46,6 +46,7 @@ function fetchOK(u) {
   if (/liquidacoesIRSDataTables/.test(s)) return json({ data: [{ ano: 2024 }, { ano: 2023 }, { ano: 2022 }] });
   if (/reembolsosDataTables/.test(s)) return json({ data: [{ ano: 2024 }] });
   if (/obtemDocumentosV2/.test(s)) return json({ documentos: [{ n: 1 }, { n: 2 }] });
+  if (/consultardeclaracoes/.test(s)) return Promise.resolve({ ok: true, headers: { get: () => "text/html" }, text: () => Promise.resolve("<html><table><tr><td>Declaracao de inicio de atividade</td></tr><tr><td>Declaracao de cessacao</td></tr></table>Regime normal periodicidade trimestral</html>") });
   if (/login\/personalData/.test(s)) return json({ nome: "SECRET NAME", niss: "11111111111" });
   if (/situacao-contributiva/.test(s)) return json({ estado: "REGULARIZADA" });
   if (/payments\/current/.test(s)) return json({ data: [{ v: 1 }] });
@@ -139,6 +140,16 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   ok("SS estado REGULARIZADA, 1 pagamento", store.partitions.ss.data.estado === "REGULARIZADA" && store.partitions.ss.data.pagamentosCorrentes === 1);
   ok("SS: NISS and name NOT stored", !/11111111111|SECRET NAME|niss/i.test(JSON.stringify(store.partitions.ss)));
   ok("SS handoff carries NO NISS/name", !/11111111111|SECRET NAME|niss/i.test(w.__nav || ""));
+
+  // 4c-5. atividade (cadastro): the mock has BOTH inicio + cessacao -> CLOSED, so NO Cat B, and it
+  //       reads the IVA regime. Proves we do not assert Cat B on a cessada atividade.
+  w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/atividade/atividade/consultardeclaracoes");
+  eval(SRC); await wait();
+  w.document.getElementById("fb-prof-go").click(); await wait();
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("atividade read + stored", store.partitions.atividade && store.partitions.atividade.status === "done");
+  ok("atividade detected CESSADA (inicio+cessacao)", store.partitions.atividade.data.cessada === true);
+  ok("atividade IVA regime parsed (trimestral)", /trimestr/i.test(store.partitions.atividade.data.regimeIva || ""));
 
   // 4d. patrimonio: SAME host as rendas (imoveis) but a /matrizesinter path -> host+path matching
   //     must pick patrimonio, NOT rendas. Proves the disambiguation.
