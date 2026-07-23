@@ -224,6 +224,44 @@
     return h || '<div class="muted">Ainda sem dados. Segue os passos acima.</div>';
   }
 
+  // STATUS -> OBLIGATIONS. Turns the detected profile into what the person likely has to do, each
+  // item tied to the fact that triggered it and, where possible, to the real next deadline from the
+  // agenda fiscal. These are INDICATORS derived from detected data, not legal advice or a filed
+  // return - the card says so. Nothing here invents a value; deadlines come only from the agenda.
+  function agendaMatch(prof, kws){
+    var ag = (prof.detalhes.situacao && prof.detalhes.situacao.agenda && prof.detalhes.situacao.agenda.proximos) || [];
+    for (var i=0;i<ag.length;i++){
+      var t = String(ag[i].desc||"").toLowerCase();
+      if (kws.some(function(k){ return t.indexOf(k)>=0; })) return ag[i];
+    }
+    return null;
+  }
+  function deriveObligations(prof){
+    var cats = {}; prof.categorias.forEach(function(c){ cats[c.cat]=1; });
+    var d = prof.detalhes, ob = [];
+    function add(titulo, porque, kw){ ob.push({ titulo:titulo, porque:porque, prazo: kw?agendaMatch(prof,kw):null }); }
+
+    add("Entregar a declaração de IRS", "Rendimentos sujeitos a IRS. Prazo habitual: abril a junho.", ["irs","modelo 3","declara"]);
+    if (d.efatura) add("Validar faturas pendentes no e-Fatura",
+      (d.efatura.porClassificar||0)+" por classificar - contam para as deduções à coleta. Prazo habitual: 25 de fevereiro.", ["fatura","despesa"]);
+    if (cats.B){
+      add("IRS - Anexo B", "Tens recibos verdes emitidos (categoria B).", ["irs"]);
+      add("IVA (periódico)", "Atividade aberta: salvo isenção do art. 53.º CIVA, há entrega de IVA (trimestral ou mensal).", ["iva"]);
+      add("Segurança Social - trimestral", "Trabalhador independente: declaração trimestral e contribuições.", ["seguran","contribu","trimestr"]);
+    }
+    if (cats.F){
+      add("IRS - Anexo F", "Tens contratos de arrendamento ativos (categoria F).", ["irs"]);
+      add("Emitir recibos de renda eletrónicos", "Cada renda recebida deve ter recibo eletrónico no Portal das Finanças.", ["renda","recibo"]);
+    }
+    if (cats.IMI) add("IMI", ((d.patrimonio&&d.patrimonio.imoveis)||0)+" imóvel(is) - IMI pago normalmente em maio (ou em prestações).", ["imi"]);
+    if (d.situacao && d.situacao.dividas && d.situacao.dividas.n>0)
+      add("Regularizar dívidas", d.situacao.dividas.n+" dívida(s) em aberto nas Finanças.", ["dívida","divida","pagamento"]);
+    // regularized ONLY if it says "regularizada" AND not negated ("nao/por/pendente regularizar")
+    if (d.ss && d.ss.estado && !(/regularizada/i.test(d.ss.estado) && !/(n[aã]o|por|pendente)/i.test(d.ss.estado)))
+      add("Regularizar Segurança Social", "A situação contributiva não consta como REGULARIZADA.", ["seguran","contribu"]);
+    return ob;
+  }
+
   function render(justAdded){
     var store = load();
     var done = PARTITIONS.filter(function(p){ return store.partitions[p.id] && store.partitions[p.id].status==="done"; });
@@ -245,8 +283,22 @@
     });
     h += '</div>';
 
-    h += '<div class="card"><div style="font-weight:700;font-size:1.05rem;margin-bottom:8px">O teu perfil</div>'+overlay(assemble(store));
+    var prof = assemble(store);
+    h += '<div class="card"><div style="font-weight:700;font-size:1.05rem;margin-bottom:8px">O teu perfil</div>'+overlay(prof);
     if (done.length===PARTITIONS.length) h += '<div class="banner" style="margin-top:12px">Perfil completo. Fica guardado só neste navegador.</div>';
+
+    // Obligations derived from the detected profile
+    if (done.length){
+      var obs = deriveObligations(prof);
+      h += '<div class="card"><div style="font-weight:700;font-size:1.05rem;margin-bottom:8px">O que tens de tratar</div>';
+      obs.forEach(function(o){
+        h += '<div class="step" style="align-items:baseline"><div class="ic" style="width:18px">•</div><div class="bd">'+
+          '<div class="t">'+esc(o.titulo)+(o.prazo&&o.prazo.data?' <span class="pill" style="background:#fff4e0;border-color:var(--amber);color:var(--amber)">'+esc(o.prazo.data)+'</span>':'')+'</div>'+
+          '<div class="w">'+esc(o.porque)+(o.prazo&&o.prazo.desc?' - agenda: '+esc(o.prazo.desc):'')+'</div>'+
+        '</div></div>';
+      });
+      h += '<div class="w" style="margin-top:10px;color:var(--amber)">Estes itens são <b>indicadores</b> a partir do que foi detetado, não aconselhamento fiscal nem uma entrega feita. Confirma sempre o teu caso.</div></div>';
+    }
     // opt-in contribution
     h += '<label style="display:block;background:var(--bg2);border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px;margin-top:14px;font-size:.85rem;cursor:pointer">'+
       '<input type="checkbox" id="share" '+(shareOn()?'checked':'')+' style="margin-right:6px">'+
