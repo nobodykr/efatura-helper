@@ -134,6 +134,23 @@
       why:"Situação contributiva e pagamentos - emprego, contribuições e prestações." }
   ];
 
+  // Self-declared deductions/situations the AT endpoints do NOT expose to the bookmarklet. The
+  // AUTHORITATIVE source for most of these is the Modelo 3 pre-fill / liquidacao (AT holds it,
+  // reported by banks/insurers/charities), but that is a PDF (Hermes-readable) or an unmapped
+  // declaration endpoint. Until wired, the user declares them here. Each carries its legal article;
+  // we do NOT hardcode amounts/limits we cannot verify - the note says "confirma".
+  var EXTRA_KEY = "fb-profile-extra";
+  var EXTRAS = [
+    { id:"ppr", label:"PPR / Plano Poupança-Reforma", base:"art. 21.º EBF", nota:"Entregas em PPR dão dedução à coleta (limite varia com a idade)." },
+    { id:"creche", label:"Creche / pré-escolar (0-3 anos)", base:"art. 78.º-D CIRS", nota:"Despesas de creche têm regras próprias, além do e-Fatura educação." },
+    { id:"donativos", label:"Donativos / mecenato", base:"Estatuto dos Benefícios Fiscais", nota:"Donativos a entidades elegíveis dão dedução à coleta." },
+    { id:"deficiencia", label:"Pessoa com deficiência no agregado", base:"art. 87.º CIRS", nota:"Deduções específicas e majorações." },
+    { id:"alimentos", label:"Pensão de alimentos paga", base:"art. 83.º-A CIRS", nota:"As pensões de alimentos pagas dão dedução à coleta." },
+    { id:"juroshab", label:"Juros de crédito à habitação (contrato até 2011)", base:"regime transitório", nota:"Só contratos anteriores a 2012; confirma a elegibilidade." }
+  ];
+  function loadExtra(){ try { return JSON.parse(localStorage.getItem(EXTRA_KEY)) || {}; } catch(e){ return {}; } }
+  function saveExtra(e){ try { localStorage.setItem(EXTRA_KEY, JSON.stringify(e)); } catch(e2){} }
+
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
   function load(){ try { return JSON.parse(localStorage.getItem(PKEY)) || {partitions:{}}; } catch(e){ return {partitions:{}}; } }
   function save(p){ try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch(e){} }
@@ -279,6 +296,9 @@
     if (cats.IMI) add("IMI", ((d.patrimonio&&d.patrimonio.imoveis)||0)+" imóvel(is) - IMI pago normalmente em maio (ou em prestações).", ["imi"]);
     if (d.situacao && d.situacao.dividas && d.situacao.dividas.n>0)
       add("Regularizar dívidas", d.situacao.dividas.n+" dívida(s) em aberto nas Finanças.", ["dívida","divida","pagamento"]);
+    // self-declared deductions feed the IRS to-do
+    var extra = loadExtra();
+    EXTRAS.forEach(function(x){ if (extra[x.id]) add("Deduzir no IRS: "+x.label, x.nota+" Confirma o valor/limite ("+x.base+").", ["irs"]); });
     // regularized ONLY if it says "regularizada" AND not negated ("nao/por/pendente regularizar")
     if (d.ss && d.ss.estado && !(/regularizada/i.test(d.ss.estado) && !/(n[aã]o|por|pendente)/i.test(d.ss.estado)))
       add("Regularizar Segurança Social", "A situação contributiva não consta como REGULARIZADA.", ["seguran","contribu"]);
@@ -327,6 +347,18 @@
       '<input type="checkbox" id="share" '+(shareOn()?'checked':'')+' style="margin-right:6px">'+
       'Contribuir com o meu perfil, de forma <b>anónima</b> (sem nome nem NIF), para melhorar a ferramenta. '+
       'Envia contagens, categorias e valores - nunca quem és. Podes desligar quando quiseres.</label>';
+    // Self-declared extras (things the endpoints do not expose)
+    var extra = loadExtra();
+    h += '<div class="card"><div style="font-weight:700;font-size:1.05rem;margin-bottom:4px">Outras situações (declaras tu)</div>'+
+      '<div class="w" style="margin-bottom:8px">Deduções que as Finanças não mostram aqui à ferramenta (constam da tua declaração de IRS). Marca as que se aplicam.</div>';
+    EXTRAS.forEach(function(x){
+      h += '<label style="display:block;padding:6px 0;border-top:1px solid var(--bg3);font-size:.9rem;cursor:pointer">'+
+        '<input type="checkbox" class="fbx" data-id="'+x.id+'" '+(extra[x.id]?'checked':'')+' style="margin-right:6px">'+
+        '<b>'+esc(x.label)+'</b> <span class="w">('+esc(x.base)+')</span>'+
+        '<div class="w" style="margin-left:22px">'+esc(x.nota)+'</div></label>';
+    });
+    h += '</div>';
+
     // Debug: copy the response STRUCTURES (keys+types, values redacted) to validate the readers.
     // Only appears once at least one partition captured a shape. Safe to paste - carries no values.
     var haveShapes = PARTITIONS.some(function(p){ return store.partitions[p.id] && store.partitions[p.id].shape; });
@@ -343,6 +375,9 @@
       (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(function(){ cs.textContent = "Estrutura copiada - cola no chat"; })
         .catch(function(){ cs.textContent = "Copia manual:"; var ta=document.createElement("textarea"); ta.value=txt; ta.style.cssText="width:100%;height:120px;margin-top:6px"; cs.parentNode.appendChild(ta); ta.select(); });
     };
+    Array.prototype.forEach.call(document.querySelectorAll(".fbx"), function(cb){
+      cb.onchange = function(){ var e = loadExtra(); e[cb.getAttribute("data-id")] = cb.checked; saveExtra(e); render(); };
+    });
     var rs = document.getElementById("reset");
     if (rs) rs.onclick = function(ev){ ev.preventDefault(); try{ localStorage.removeItem(PKEY); }catch(e){} render(); };
     var sh = document.getElementById("share");

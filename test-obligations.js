@@ -16,6 +16,11 @@ function grab(name) {
   for (; k < src.length; k++) { if (src[k] === "{") depth++; else if (src[k] === "}") { depth--; if (!depth) { k++; break; } } }
   return src.slice(i, k);
 }
+// deriveObligations references the self-declared EXTRAS + loadExtra (localStorage-backed). Provide
+// them: a real EXTRAS list (grabbed from source) and a settable loadExtra stub.
+global.EXTRAS = eval(src.slice(src.indexOf("var EXTRAS ="), src.indexOf("];", src.indexOf("var EXTRAS =")) + 2).replace("var ", ""));
+let _extra = {};
+global.loadExtra = () => _extra;
 eval(grab("agendaMatch"));
 eval(grab("deriveObligations"));
 
@@ -54,6 +59,15 @@ ok("bare profile: only IRS + e-Fatura", titles(bare).length === 2 && titles(bare
 // SS regularizada -> no regularize item
 const reg = deriveObligations({ categorias: [], detalhes: { ss: { estado: "REGULARIZADA" } } });
 ok("SS regularizada -> no regularize obligation", !titles(reg).some(t => /Regularizar Segurança/.test(t)));
+
+// self-declared extras feed the IRS obligations (PPR ticked -> a PPR deduction to-do appears)
+_extra = { ppr: true, donativos: true };
+const withExtra = deriveObligations({ categorias: [], detalhes: {} });
+ok("declared PPR -> deduction obligation", titles(withExtra).some(t => /PPR/.test(t)));
+ok("declared donativos -> deduction obligation", titles(withExtra).some(t => /[Dd]onativos/.test(t)));
+_extra = {};
+const noExtra = deriveObligations({ categorias: [], detalhes: {} });
+ok("no extras -> no extra deduction obligations", !titles(noExtra).some(t => /Deduzir no IRS/.test(t)));
 
 console.log(failures ? ("\n  " + failures + " FAILED") : "\n  all passed");
 process.exit(failures ? 1 : 0);
