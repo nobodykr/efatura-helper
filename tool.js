@@ -13,7 +13,26 @@
  * Aplicar. Your household settings stay in localStorage and never leave the browser.
  */
 (function () {
-  if (!/faturas\.portaldasfinancas\.gov\.pt$/.test(location.host)) {
+  /* PROFILING MODE (opt-in, token-gated - see SPEC-profiling.md). Diogo's bookmarklet variant
+   * sets window.__FB_PROFILE before loading this file; the PUBLIC bookmarklet never does, so
+   * public users only ever get the e-Fatura classifier below. When the flag is set the tool runs
+   * the multi-partition profiling flow instead, and is allowed to run on the OTHER Portal das
+   * Financas partitions (Imoveis/rendas, etc.) - a bookmarklet can only read the partition it is
+   * clicked on, so each is visited in turn.
+   *
+   * This flag is a FEATURE FLAG, not a security boundary: the code is public and the flag is
+   * copyable. That is fine because every byte of profile data stays in this browser and nothing
+   * is submitted - there is nothing on our side to protect. It exists to keep an unfinished
+   * feature off the public tool while we test, and comes out in one line when it ships. */
+  var PROFILING = !!(window.__FB_PROFILE);
+  var ON_PDF = /(^|\.)portaldasfinancas\.gov\.pt$/.test(location.host);
+
+  if (PROFILING) {
+    if (!ON_PDF) {
+      alert("Abre uma página do Portal das Finanças (e-Fatura, Imóveis, etc.) e faz login primeiro.");
+      return;
+    }
+  } else if (!/faturas\.portaldasfinancas\.gov\.pt$/.test(location.host)) {
     alert("Abre primeiro o e-Fatura (faturas.portaldasfinancas.gov.pt) e faz login. Depois usa esta ferramenta.");
     return;
   }
@@ -388,7 +407,208 @@
     };
   }
 
-  if (consent()) { document.getElementById("efh-body").innerHTML = "A ler as tuas faturas..."; start(); }
+  /* =========================  PROFILING (SPEC-profiling.md)  =========================
+   * Self-contained. Reuses only `panel` (already rendered), `esc`, and `year` from above; it
+   * never touches the classifier's state. Data goes to its OWN localStorage keys and stays in the
+   * browser. Kept as one block so the boundary with the classifier is obvious - a step toward the
+   * engine/UI separation the review flagged. */
+  var PROF_KEY = "fb-profile-v1";          // versioned so a schema change can't misread old data
+  var PROF_CONSENT = "fb-profile-consent-v1";
+
+  /* KNOWN CONSTRAINT (found during v0 build). AT's partitions are DIFFERENT ORIGINS -
+   * faturas / imoveis / sitfiscal.portaldasfinancas.gov.pt - so localStorage written on one is
+   * invisible to the others (same-origin policy). This overlay therefore reads and shows the
+   * profile PER ORIGIN; it cannot by itself assemble one profile across partitions. True
+   * cross-partition assembly needs a decision (SPEC open item): either a collector page on our
+   * origin that each partition read pushes to via URL fragment (nothing to a server, survives
+   * storage partitioning), or a Domain=.portaldasfinancas.gov.pt cookie (shared across subdomains
+   * but sent to AT). Until that lands, v0 is a correct per-partition reader, not a combiner. */
+
+  // Each partition lives on its OWN host. `read` returns a Promise -> {data, source}, or rejects
+  // with an Error whose message is shown to the user. To add a partition (patrimonio, dividas,
+  // SS, ...) append here and write its reader; nothing else changes.
+  var PARTITIONS = [
+    { id: "efatura", label: "e-Fatura", host: "faturas.portaldasfinancas.gov.pt",
+      open: "https://faturas.portaldasfinancas.gov.pt/consumidor/consumidorFaturas",
+      why: "As tuas faturas e o setor de dedução de cada uma.", read: readEfatura },
+    { id: "rendas", label: "Rendas (Imóveis)", host: "imoveis.portaldasfinancas.gov.pt",
+      open: "https://imoveis.portaldasfinancas.gov.pt/arrendamento/consultarContratos/locador",
+      why: "Contratos de arrendamento e recibos de renda — rendimentos da categoria F.", read: readRendas }
+  ];
+
+  function profLoad() { try { return JSON.parse(localStorage.getItem(PROF_KEY)) || { partitions: {} }; } catch (e) { return { partitions: {} }; } }
+  function profSave(p) { try { localStorage.setItem(PROF_KEY, JSON.stringify(p)); } catch (e) {} }
+  function profConsent() { try { return JSON.parse(localStorage.getItem(PROF_CONSENT) || "null"); } catch (e) { return null; } }
+  function currentPartition() { for (var i = 0; i < PARTITIONS.length; i++) if (location.host === PARTITIONS[i].host) return PARTITIONS[i]; return null; }
+
+  /* RULE 3 (SPEC): a wrong session or missing permission on AT returns 200 + an HTML redirect,
+   * never 401. So assert on CONTENT - did we get the JSON shape we asked for - never on r.ok. */
+  function getJSON(url) {
+    return fetch(url, { credentials: "include", headers: { "Accept": "application/json" } }).then(function (r) {
+      var ct = r.headers.get("content-type") || "";
+      return r.text().then(function (t) {
+        if (/text\/html/i.test(ct) || /^\s*</.test(t)) throw new Error("sessão não iniciada nesta página");
+        try { return JSON.parse(t); } catch (e) { throw new Error("resposta inesperada"); }
+      });
+    });
+  }
+
+  function readEfatura() {
+    var u = "/json/obterDocumentosAdquirente.action?dataInicioFilter=" + year + "-01-01&dataFimFilter=" + year + "-12-31";
+    return getJSON(u).then(function (j) {
+      var rows = (j && (j.linhas || j.documentos)) || [];
+      if (!Array.isArray(rows)) rows = [];
+      var pend = 0, byAct = {};
+      rows.forEach(function (x) {
+        if (x.estadoBeneficio === "P") pend++;
+        var a = x.actividadeEmitente; if (a) byAct[a] = (byAct[a] || 0) + 1;
+      });
+      return { data: { ano: year, totalFaturas: (j && j.totalElementos != null ? j.totalElementos : rows.length),
+                       porClassificar: pend, atividades: byAct }, source: u };
+    });
+  }
+
+  /* RULE 1 (documents over widgets): these /api/obter* endpoints are the document data, not a
+   * lagged dashboard widget. RULE 2 (two sources): recibos corroborate the contracts - a contract
+   * active but with no recibos in the period is flagged, not hidden. Recibos fail soft: contracts
+   * alone already establish "is a landlord". Monetary values are shown per-contract as returned,
+   * NOT summed - their scale (cents vs euros) must be confirmed live before we compute on them. */
+  function readRendas() {
+    var cU = "/arrendamento/api/obterContratos/locador";
+    var rU = "/arrendamento/api/obterRecibos/emitente";
+    return getJSON(cU).then(function (cj) {
+      var contratos = (cj && (cj.contratos || cj.listaContratos)) || (Array.isArray(cj) ? cj : []);
+      return getJSON(rU).then(function (rj) {
+        return { contratos: contratos, recibos: (rj && rj.recibos) || (Array.isArray(rj) ? rj : []) };
+      }).catch(function () { return { contratos: contratos, recibos: null }; });
+    }).then(function (o) {
+      var ativos = o.contratos.filter(function (c) { return !/cessad|extint|anulad|denunciad/i.test(String(c.estado || "")); });
+      var recCount = o.recibos ? o.recibos.length : null;
+      var avisos = [];
+      if (o.recibos && ativos.length && recCount === 0) avisos.push("contrato activo sem recibos no período — confirmar");
+      return { data: { contratos: o.contratos.length, activos: ativos.length, recibos: recCount,
+                       lista: ativos.slice(0, 8).map(function (c) {
+                         return { referencia: c.referencia || c.numero, estado: c.estado, valorRenda: c.valorRenda };
+                       }), avisos: avisos },
+               source: cU + (o.recibos !== null ? " + " + rU : " (recibos indisponíveis)") };
+    });
+  }
+
+  /* Assemble the cross-partition profile. Separate from rendering ON PURPOSE: the future /perfil
+   * page (SPEC v1) consumes this SAME object, so nothing here may emit HTML. */
+  function assembleProfile(store) {
+    var P = store.partitions, prof = { categorias: [], detalhes: {}, recolhidoEm: {} };
+    if (P.efatura && P.efatura.status === "done") {
+      prof.detalhes.efatura = P.efatura.data; prof.recolhidoEm.efatura = P.efatura.fetchedAt; prof.consumidor = true;
+    }
+    if (P.rendas && P.rendas.status === "done") {
+      var r = P.rendas.data; prof.detalhes.rendas = r; prof.recolhidoEm.rendas = P.rendas.fetchedAt;
+      if (r.activos > 0) prof.categorias.push({ cat: "F", label: "Rendimentos prediais (senhorio)", base: "contratos de arrendamento activos" });
+    }
+    return prof;
+  }
+
+  function profOverlay(prof) {
+    var h = '<div style="font-size:14px;font-weight:700;margin:0 0 6px">Resumo do perfil</div>';
+    if (prof.categorias.length) {
+      h += '<div style="margin:0 0 8px">';
+      prof.categorias.forEach(function (c) {
+        h += '<span style="display:inline-block;background:#eaf2ff;border:1px solid #034ad8;color:#021c51;border-radius:99px;padding:2px 9px;margin:0 6px 5px 0;font-size:12px">Cat. ' + esc(c.cat) + ' — ' + esc(c.label) + '</span>';
+      });
+      h += '</div>';
+    } else {
+      h += '<div style="color:#666;font-size:12px;margin-bottom:8px">Ainda sem categoria detectada.</div>';
+    }
+    var d = prof.detalhes;
+    if (d.efatura)
+      h += '<div style="font-size:12px;color:#333;margin:2px 0">e-Fatura ' + esc(d.efatura.ano) + ': <b>' + esc(d.efatura.porClassificar) + '</b> por classificar de ' + esc(d.efatura.totalFaturas) + '.</div>';
+    if (d.rendas) {
+      h += '<div style="font-size:12px;color:#333;margin:2px 0">Arrendamento: <b>' + esc(d.rendas.activos) + '</b> contrato(s) activo(s) de ' + esc(d.rendas.contratos) +
+           (d.rendas.recibos != null ? ', ' + esc(d.rendas.recibos) + ' recibo(s)' : '') + '.</div>';
+      (d.rendas.avisos || []).forEach(function (a) { h += '<div style="font-size:11px;color:#8a6100">⚠ ' + esc(a) + '</div>'; });
+    }
+    return h;
+  }
+
+  function profConsentGate(cb) {
+    document.getElementById("efh-body").innerHTML =
+      '<p style="margin:0 0 10px">Isto constrói o <b>teu perfil fiscal</b> a partir dos documentos ' +
+      'oficiais das Finanças, na sessão que já tens aberta. Lês uma página de cada vez.</p>' +
+      '<ul style="margin:0 0 12px 18px;padding:0;line-height:1.5">' +
+      '<li>Não te pede, nem vê, a password.</li>' +
+      '<li>Os dados <b>ficam só neste navegador</b> — nada é enviado.</li>' +
+      '<li>Só leitura: nada é submetido às Finanças.</li>' +
+      '</ul>' +
+      '<button type="button" id="fb-prof-go" style="cursor:pointer;background:#034ad8;color:#fff;border:0;' +
+      'border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">Concordo, criar perfil</button>';
+    document.getElementById("fb-prof-go").onclick = function () {
+      try { localStorage.setItem(PROF_CONSENT, JSON.stringify({ ok: true, ts: Date.now() })); } catch (e) {}
+      var p = profLoad(); if (!p.consentedAt) { p.consentedAt = new Date().toISOString(); profSave(p); }
+      cb();
+    };
+  }
+
+  function profRender() {
+    var store = profLoad(), cur = currentPartition();
+    var done = PARTITIONS.filter(function (p) { return store.partitions[p.id] && store.partitions[p.id].status === "done"; });
+
+    var h = '<div style="font-size:15px;font-weight:700;margin:0 0 8px">O teu perfil fiscal ' +
+            '<span style="font-weight:400;color:#555">(' + done.length + '/' + PARTITIONS.length + ')</span></div>' +
+            '<div style="margin:0 0 12px">';
+    PARTITIONS.forEach(function (p) {
+      var st = store.partitions[p.id], ok = st && st.status === "done", here = cur && cur.id === p.id;
+      h += '<div style="display:flex;gap:8px;align-items:baseline;padding:6px 0;border-top:1px solid #eef">' +
+        '<span style="font-size:14px">' + (ok ? '✅' : '⬜') + '</span>' +
+        '<div style="flex:1"><div style="font-weight:600">' + esc(p.label) +
+          (here ? ' <span style="color:#034ad8;font-size:11px">(estás aqui)</span>' : '') + '</div>' +
+          '<div style="color:#666;font-size:12px">' + esc(p.why) + '</div>' +
+          (ok || here ? '' : '<a href="' + p.open + '" style="font-size:12px;color:#034ad8">Abrir esta página →</a> ' +
+            '<span style="color:#888;font-size:11px">(depois clica outra vez no favorito)</span>') +
+          (st && st.status === "pending" && st.error ? '<div style="color:#c8102e;font-size:11px">' + esc(st.error) + '</div>' : '') +
+        '</div></div>';
+    });
+    h += '</div>';
+
+    if (cur) {
+      var isDone = store.partitions[cur.id] && store.partitions[cur.id].status === "done";
+      h += '<button type="button" id="fb-read" style="cursor:pointer;' +
+        (isDone ? 'background:#eef;color:#034ad8;border:1px solid #cdd' : 'background:#034ad8;color:#fff;border:0') +
+        ';border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">' +
+        (isDone ? 'Reler ' : 'Ler ') + esc(cur.label) + '</button>';
+    } else {
+      h += '<div style="color:#666;font-size:12px">Esta página não é uma das que lemos. Abre uma da lista acima.</div>';
+    }
+
+    if (done.length)
+      h += '<div style="margin-top:14px;border-top:2px solid #021c51;padding-top:10px">' + profOverlay(assembleProfile(store)) + '</div>';
+    if (done.length === PARTITIONS.length)
+      h += '<div style="margin-top:8px;color:#128a3a;font-weight:600">Perfil completo. Fica guardado neste navegador.</div>';
+    h += '<div style="margin-top:12px"><a href="#" id="fb-reset" style="font-size:11px;color:#888">Apagar perfil deste navegador</a></div>';
+
+    document.getElementById("efh-body").innerHTML = h;
+
+    var rb = document.getElementById("fb-read");
+    if (rb && cur) rb.onclick = function () {
+      rb.disabled = true; rb.textContent = "A ler...";
+      cur.read().then(function (res) {
+        var s = profLoad();
+        s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data, source: res.source };
+        profSave(s); profRender();
+      }).catch(function (e) {
+        var s = profLoad();
+        s.partitions[cur.id] = { status: "pending", error: "Não deu para ler: " + ((e && e.message) || "erro") + ". Confirma o login nesta página.", fetchedAt: new Date().toISOString() };
+        profSave(s); profRender();
+      });
+    };
+    var rs = document.getElementById("fb-reset");
+    if (rs) rs.onclick = function (ev) { ev.preventDefault(); try { localStorage.removeItem(PROF_KEY); } catch (e) {} profRender(); };
+  }
+
+  function runProfiling() { if (profConsent()) profRender(); else profConsentGate(profRender); }
+  /* ======================  end PROFILING  ====================== */
+
+  if (PROFILING) { runProfiling(); }
+  else if (consent()) { document.getElementById("efh-body").innerHTML = "A ler as tuas faturas..."; start(); }
   else { gate(); }
 
   /* Changing the household re-runs the whole pass, which rebuilds the table - so anything already
