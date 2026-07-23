@@ -119,7 +119,9 @@
     { id:"efatura", label:"e-Fatura", open:"https://faturas.portaldasfinancas.gov.pt/consultarDocumentosAdquirente.action",
       why:"As tuas faturas e o setor de dedução de cada uma." },
     { id:"rendas", label:"Rendas (Imóveis)", open:"https://imoveis.portaldasfinancas.gov.pt/arrendamento/consultarContratos/locador",
-      why:"Contratos de arrendamento e recibos de renda - rendimentos da categoria F." }
+      why:"Contratos de arrendamento e recibos de renda - rendimentos da categoria F." },
+    { id:"situacao", label:"Situação fiscal (dívidas e prazos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/geral/dashboard",
+      why:"Dívidas e coimas em aberto, e os próximos prazos da agenda fiscal." }
   ];
 
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
@@ -153,6 +155,7 @@
       prof.detalhes.rendas = P.rendas.data;
       if (P.rendas.data.activos > 0) prof.categorias.push({cat:"F", label:"Rendimentos prediais (senhorio)"});
     }
+    if (P.situacao && P.situacao.status==="done") prof.detalhes.situacao = P.situacao.data;
     return prof;
   }
 
@@ -169,6 +172,16 @@
       h += '<div class="kv">Arrendamento: <b>'+esc(d.rendas.activos)+'</b> contrato(s) activo(s) de '+esc(d.rendas.contratos)+
            (d.rendas.recibos!=null?', '+esc(d.rendas.recibos)+' recibo(s)':'')+'.</div>';
       (d.rendas.avisos||[]).forEach(function(a){ h += '<div class="warn">⚠ '+esc(a)+'</div>'; });
+    }
+    if (d.situacao){
+      var s=d.situacao, td=(s.dividas&&s.dividas.n)||0, tc=(s.coimas&&s.coimas.n)||0;
+      h += '<div class="kv">Situação fiscal: '+
+        (td?'<b style="color:#c8102e">'+esc(td)+' dívida(s)</b>':'<b style="color:#1E5A3A">sem dívidas</b>')+
+        (tc?', <b style="color:#c8102e">'+esc(tc)+' coima(s)</b>':'')+
+        ((s.agenda&&s.agenda.n)?'. '+esc(s.agenda.n)+' obrigação(ões) na agenda.':'.')+'</div>';
+      ((s.agenda&&s.agenda.proximos)||[]).slice(0,3).forEach(function(p){
+        if(p.desc||p.data) h += '<div class="w" style="margin-left:8px">• '+esc(p.data||"")+' '+esc(p.desc||"")+'</div>';
+      });
     }
     return h || '<div class="muted">Ainda sem dados. Segue os passos acima.</div>';
   }

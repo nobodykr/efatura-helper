@@ -39,6 +39,9 @@ function fetchOK(u) {
   // recibos come from /locador (not /emitente). Query string carries a cache-buster.
   if (/obterContratos\/locador/.test(s)) return json([{ referencia: "C1", estado: { codigo: "ACTIVO", label: "Ativo" }, valorRenda: 65000 }]);
   if (/obterRecibos\/locador/.test(s)) return json([{ valor: 65000 }, { valor: 65000 }]);
+  if (/geral\/dividas/.test(s)) return json({ montanteTotal: 0, nAtivasGeral: 0, dataInfoObtida: "2026-07-23" });
+  if (/geral\/coimas/.test(s)) return json({ montanteTotal: 0, nAtivasGeral: 0 });
+  if (/agendaFiscal/.test(s)) return json([{ data: "2026-08-31", descricao: "Entrega da declaracao de IRS" }]);
   if (/sectors\.json|\/bucket\//.test(s)) return json({});
   return json({ linhas: [] });
 }
@@ -88,6 +91,15 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
       ok("handoff payload has NO nif/name fields", !JSON.stringify(d).match(/nomeLocador|nomeLocatario|nif/i));
     }
   }
+
+  // 4c. situacao fiscal partition (sitfiscal): reads dividas/coimas/agenda, hands off
+  w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK);
+  eval(SRC); await wait();
+  w.document.getElementById("fb-prof-go").click(); await wait();
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("situacao auto-read + stored", store.partitions.situacao && store.partitions.situacao.status === "done");
+  ok("situacao: 0 dividas, 1 agenda item", store.partitions.situacao.data.dividas.n === 0 && store.partitions.situacao.data.agenda.n === 1);
+  ok("situacao hands off to /perfil", /perfil#p=situacao&d=/.test(w.__nav || ""));
 
   // 5. rule 3: HTML 200 on the contracts endpoint => pending, not stored as done
   const fetchHtml = (u) => {

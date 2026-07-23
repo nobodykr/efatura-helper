@@ -435,7 +435,10 @@
       why: "As tuas faturas e o setor de dedu\u00e7\u00e3o de cada uma.", read: readEfatura },
     { id: "rendas", label: "Rendas (Im\u00f3veis)", host: "imoveis.portaldasfinancas.gov.pt",
       open: "https://imoveis.portaldasfinancas.gov.pt/arrendamento/consultarContratos/locador",
-      why: "Contratos de arrendamento e recibos de renda - rendimentos da categoria F.", read: readRendas }
+      why: "Contratos de arrendamento e recibos de renda - rendimentos da categoria F.", read: readRendas },
+    { id: "situacao", label: "Situa\u00e7\u00e3o fiscal (d\u00edvidas e prazos)", host: "sitfiscal.portaldasfinancas.gov.pt",
+      open: "https://sitfiscal.portaldasfinancas.gov.pt/geral/dashboard",
+      why: "D\u00edvidas e coimas em aberto, e os pr\u00f3ximos prazos da agenda fiscal.", read: readSituacao }
   ];
 
   function profLoad() { try { return JSON.parse(localStorage.getItem(PROF_KEY)) || { partitions: {} }; } catch (e) { return { partitions: {} }; } }
@@ -513,6 +516,37 @@
     });
   }
 
+  /* Situacao fiscal (sitfiscal / PFAP): outstanding debts, fines, and the OFFICIAL deadline agenda.
+   * dividas/coimas fields per ENDPOINTS.md: montanteTotal, nAtivasGeral, dataInfoObtida. Counts are
+   * reliable; the monetary total is stored RAW (its number format is not re-derived here). The
+   * `dividas` call is the session gate (getJSON throws on the not-logged-in HTML); coimas + agenda
+   * are best-effort. agendaFiscal item keys vary, so date/description are picked from the usual
+   * candidates and anything unknown is simply omitted rather than guessed. */
+  function pickAgenda(o) {
+    return { data: o.data || o.dataLimite || o.dataFim || o.prazo || o.dataLimitePagamento || null,
+             desc: o.descricao || o.titulo || o.designacao || o.assunto || o.obrigacao || null };
+  }
+  function readSituacao() {
+    return getJSON("/geral/dividas?_=" + Date.now()).then(function (div) {
+      return Promise.all([
+        getJSON("/geral/coimas?_=" + Date.now()).catch(function () { return null; }),
+        getJSON("/geral/dashboard/agendaFiscal?_=" + Date.now()).catch(function () { return null; })
+      ]).then(function (rest) {
+        div = div || {};
+        var coi = rest[0] || {};
+        var ag = rest[1];
+        var agenda = Array.isArray(ag) ? ag : (ag && (ag.listaAgenda || ag.agenda || ag.lista)) || [];
+        return { data: {
+          dividas: { total: (div.montanteTotal != null ? div.montanteTotal : null),
+                     n: (div.nAtivasGeral != null ? div.nAtivasGeral : null), em: div.dataInfoObtida || null },
+          coimas: { total: (coi.montanteTotal != null ? coi.montanteTotal : null),
+                    n: (coi.nAtivasGeral != null ? coi.nAtivasGeral : null) },
+          agenda: { n: agenda.length, proximos: agenda.slice(0, 5).map(pickAgenda) }
+        }, source: "/geral/dividas + /geral/coimas + /geral/dashboard/agendaFiscal" };
+      });
+    });
+  }
+
   /* Assemble the cross-partition profile. Separate from rendering ON PURPOSE: the future /perfil
    * page (SPEC v1) consumes this SAME object, so nothing here may emit HTML. */
   function assembleProfile(store) {
@@ -523,6 +557,9 @@
     if (P.rendas && P.rendas.status === "done") {
       var r = P.rendas.data; prof.detalhes.rendas = r; prof.recolhidoEm.rendas = P.rendas.fetchedAt;
       if (r.activos > 0) prof.categorias.push({ cat: "F", label: "Rendimentos prediais (senhorio)", base: "contratos de arrendamento activos" });
+    }
+    if (P.situacao && P.situacao.status === "done") {
+      var s = P.situacao.data; prof.detalhes.situacao = s; prof.recolhidoEm.situacao = P.situacao.fetchedAt;
     }
     return prof;
   }
@@ -545,6 +582,19 @@
       h += '<div style="font-size:12px;color:#333;margin:2px 0">Arrendamento: <b>' + esc(d.rendas.activos) + '</b> contrato(s) activo(s) de ' + esc(d.rendas.contratos) +
            (d.rendas.recibos != null ? ', ' + esc(d.rendas.recibos) + ' recibo(s)' : '') + '.</div>';
       (d.rendas.avisos || []).forEach(function (a) { h += '<div style="font-size:11px;color:#8a6100">\u26a0 ' + esc(a) + '</div>'; });
+    }
+    if (d.situacao) {
+      var s = d.situacao;
+      var temDiv = (s.dividas && s.dividas.n) ? s.dividas.n : 0;
+      var temCoi = (s.coimas && s.coimas.n) ? s.coimas.n : 0;
+      h += '<div style="font-size:12px;color:#333;margin:2px 0">Situa\u00e7\u00e3o fiscal: ' +
+        (temDiv ? '<b style="color:#c8102e">' + esc(temDiv) + ' d\u00edvida(s)</b>' : '<b style="color:#128a3a">sem d\u00edvidas</b>') +
+        (temCoi ? ', <b style="color:#c8102e">' + esc(temCoi) + ' coima(s)</b>' : '') +
+        ((s.agenda && s.agenda.n) ? '. ' + esc(s.agenda.n) + ' obriga\u00e7\u00e3o(\u00f5es) na agenda.' : '.') + '</div>';
+      (s.agenda && s.agenda.proximos || []).slice(0, 3).forEach(function (p) {
+        if (p.desc || p.data)
+          h += '<div style="font-size:11px;color:#666;margin-left:8px">\u2022 ' + esc(p.data || "") + ' ' + esc(p.desc || "") + '</div>';
+      });
     }
     return h;
   }
@@ -583,7 +633,8 @@
       // separate "Guardar" click that was being missed: click bookmarklet -> read -> land on
       // /perfil with this step ticked. A brief confirmation first so the jump is not a surprise.
       var n = res.data && (res.data.porClassificar != null ? res.data.porClassificar + " por classificar"
-             : (res.data.activos != null ? res.data.activos + " contrato(s) activo(s)" : "lido"));
+             : (res.data.activos != null ? res.data.activos + " contrato(s) activo(s)"
+             : (res.data.dividas ? ((res.data.dividas.n || 0) + " d\u00edvida(s)") : "lido")));
       document.getElementById("efh-body").innerHTML =
         '<div style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
         '.<br>A abrir o teu perfil...</div>';
