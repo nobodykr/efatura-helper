@@ -76,6 +76,17 @@
      escolheres contribuir (em baixo), e mesmo aí sem o teu nome nem NIF.</p>
 </div></header>
 <main class="wrap">
+  <!-- The PROFILING bookmarklet (private). Different from the public one on the home page: this
+       allows ALL portaldasfinancas.gov.pt partitions and sets __FB_PROFILE to unlock the profile
+       flow. Drag it to the bookmarks bar once; use it on every Financas page. -->
+  <div class="card" style="background:#f4f6f9">
+    <div style="font-weight:700;margin-bottom:6px">1. Instala o favorito (uma vez)</div>
+    <p class="w" style="margin:0 0 10px">Arrasta este botao para a tua barra de favoritos. Depois,
+       em <b>qualquer pagina das Financas</b>, clica nele - ele le a pagina e traz-te de volta aqui.</p>
+    <a class="btn" style="font-size:1rem;padding:10px 18px" href="javascript:(function(){if(!/portaldasfinancas\.gov\.pt$/.test(location.host)){alert('Abre uma pagina do Portal das Financas e faz login.');return;}window.__FB_PROFILE=1;var s=document.createElement('script');s.charset='utf-8';s.src='https://faturas.diogoandrade.com/tool.js?v='+Date.now();document.body.appendChild(s);})();">Fatura Boa - Perfil</a>
+    <p class="w" style="margin:10px 0 0">Nao e o mesmo favorito da pagina inicial (esse so funciona no e-Fatura). Este funciona em todas as paginas do Portal.</p>
+  </div>
+  <div class="card" style="padding-top:12px"><div style="font-weight:700;margin-bottom:2px">2. Junta o teu perfil</div></div>
   <div id="banner"></div>
   <div id="out"></div>
 </main>
