@@ -558,8 +558,27 @@
     document.getElementById("fb-prof-go").onclick = function () {
       try { localStorage.setItem(PROF_CONSENT, JSON.stringify({ ok: true, ts: Date.now() })); } catch (e) {}
       var p = profLoad(); if (!p.consentedAt) { p.consentedAt = new Date().toISOString(); profSave(p); }
-      profRender();
+      runProfiling();            // consent given -> go straight to auto-reading this page
     };
+  }
+
+  /* Read the current partition immediately, no separate button click. "send data before the
+   * buttons" - the panel opens, reads the page you are on, and only THEN shows Guardar / re-read.
+   * A per-page-load guard stops it re-reading on every render. */
+  var _autoRead = {};
+  function autoReadCurrent(cur) {
+    if (_autoRead[cur.id]) return profRender();
+    _autoRead[cur.id] = 1;
+    document.getElementById("efh-body").innerHTML = "A ler " + esc(cur.label) + "\u2026";
+    cur.read().then(function (res) {
+      var s = profLoad();
+      s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data, source: res.source };
+      profSave(s); profRender();
+    }).catch(function (e) {
+      var s = profLoad();
+      s.partitions[cur.id] = { status: "pending", error: "N\u00e3o deu para ler: " + ((e && e.message) || "erro") + ". Confirma o login nesta p\u00e1gina.", fetchedAt: new Date().toISOString() };
+      profSave(s); profRender();
+    });
   }
 
   function profRender() {
@@ -624,7 +643,16 @@
     if (rs) rs.onclick = function (ev) { ev.preventDefault(); try { localStorage.removeItem(PROF_KEY); } catch (e) {} profRender(); };
   }
 
-  function runProfiling() { if (profConsent()) profRender(); else profConsentGate(); }
+  function runProfiling() {
+    if (!profConsent()) return profConsentGate();
+    var cur = currentPartition(), store = profLoad();
+    // On a known partition not yet read this session, read it AUTOMATICALLY. Otherwise just show
+    // the checklist (e.g. an AT page we do not read, or one already collected).
+    if (cur && !(store.partitions[cur.id] && store.partitions[cur.id].status === "done"))
+      autoReadCurrent(cur);
+    else
+      profRender();
+  }
   /* ======================  end PROFILING  ====================== */
 
   if (PROFILING) { runProfiling(); }
