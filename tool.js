@@ -438,8 +438,17 @@
       why: "Contratos de arrendamento e recibos de renda - rendimentos da categoria F.", read: readRendas },
     { id: "situacao", label: "Situa\u00e7\u00e3o fiscal (d\u00edvidas e prazos)", host: "sitfiscal.portaldasfinancas.gov.pt",
       open: "https://sitfiscal.portaldasfinancas.gov.pt/geral/dashboard",
-      why: "D\u00edvidas e coimas em aberto, e os pr\u00f3ximos prazos da agenda fiscal.", read: readSituacao }
+      why: "D\u00edvidas e coimas em aberto, e os pr\u00f3ximos prazos da agenda fiscal.", read: readSituacao },
+    // Same HOST as rendas (imoveis) but a DIFFERENT app path and login partition (SMPP vs SICI),
+    // so it is its own step. `pathHint` disambiguates the two on the shared host - see
+    // currentPartition().
+    { id: "patrimonio", label: "Patrim\u00f3nio predial (IMI)", host: "imoveis.portaldasfinancas.gov.pt",
+      pathHint: "/matrizesinter",
+      open: "https://imoveis.portaldasfinancas.gov.pt/matrizesinter/web/consultar-patrimonio-predial",
+      why: "Im\u00f3veis que possuis e o seu VPT - a base do IMI.", read: readPatrimonio }
   ];
+  // rendas lives on the same host; tag its path so host+path matching can tell them apart.
+  PARTITIONS[1].pathHint = "/arrendamento";
 
   function profLoad() { try { return JSON.parse(localStorage.getItem(PROF_KEY)) || { partitions: {} }; } catch (e) { return { partitions: {} }; } }
   function profSave(p) { try { localStorage.setItem(PROF_KEY, JSON.stringify(p)); } catch (e) {} }
@@ -456,7 +465,16 @@
     return PROF_SITE + "#p=" + encodeURIComponent(pid) + "&d=" + encodeURIComponent(b64(JSON.stringify(data)));
   }
   function profConsent() { try { return JSON.parse(localStorage.getItem(PROF_CONSENT) || "null"); } catch (e) { return null; } }
-  function currentPartition() { for (var i = 0; i < PARTITIONS.length; i++) if (location.host === PARTITIONS[i].host) return PARTITIONS[i]; return null; }
+  function currentPartition() {
+    var here = PARTITIONS.filter(function (p) { return location.host === p.host; });
+    if (here.length <= 1) return here[0] || null;
+    // Several partitions share this host (imoveis: rendas vs patrimonio). Disambiguate by path so
+    // the reader for the page you are ACTUALLY on runs - a host-only match would always pick the
+    // first and read the wrong thing.
+    for (var i = 0; i < here.length; i++)
+      if (here[i].pathHint && location.pathname.indexOf(here[i].pathHint) === 0) return here[i];
+    return null;   // on the shared host but not on a page we read - prompt to open one
+  }
 
   /* RULE 3 (SPEC): a wrong session or missing permission on AT returns 200 + an HTML redirect,
    * never 401. So assert on CONTENT - did we get the JSON shape we asked for - never on r.ok. */
@@ -547,6 +565,33 @@
     });
   }
 
+  /* Patrimonio predial (SMPP): the properties you own and their VPT - the base of IMI, and a
+   * pointer to Cat G if one is later sold. The response shape is not pinned in our recon, so the
+   * property list is read from the usual container keys and each property's fields from the usual
+   * candidates; anything unknown is omitted, never guessed. Count is reliable; VPT is stored raw
+   * (not summed - its format is unconfirmed). */
+  function readPatrimonio() {
+    return getJSON("/matrizesinter/api/patrimonio?_=" + Date.now()).then(function (j) {
+      var lista = [];
+      if (Array.isArray(j)) lista = j;
+      else if (j) {
+        lista = j.imoveis || j.listaPredios || j.predios || j.dados ||
+                [].concat(j.prediosUrbanos || [], j.prediosRusticos || []);
+        if (!Array.isArray(lista)) lista = [];
+      }
+      function vpt(o) { return o.valorPatrimonial != null ? o.valorPatrimonial : (o.vpt != null ? o.vpt : (o.valorPatrimonialActual != null ? o.valorPatrimonialActual : (o.VPT != null ? o.VPT : null))); }
+      return { data: {
+        imoveis: lista.length,
+        lista: lista.slice(0, 8).map(function (o) {
+          return { artigo: o.artigo || o.artigoMatricial || o.identificacao || o.numeroArtigo || null,
+                   freguesia: o.freguesia || o.nomeFreguesia || o.designacaoFreguesia || null,
+                   tipo: o.tipo || o.tipoPredio || o.especie || o.tipoImovel || null,
+                   vpt: vpt(o) };
+        })
+      }, source: "/matrizesinter/api/patrimonio" };
+    });
+  }
+
   /* Assemble the cross-partition profile. Separate from rendering ON PURPOSE: the future /perfil
    * page (SPEC v1) consumes this SAME object, so nothing here may emit HTML. */
   function assembleProfile(store) {
@@ -560,6 +605,10 @@
     }
     if (P.situacao && P.situacao.status === "done") {
       var s = P.situacao.data; prof.detalhes.situacao = s; prof.recolhidoEm.situacao = P.situacao.fetchedAt;
+    }
+    if (P.patrimonio && P.patrimonio.status === "done") {
+      var pt = P.patrimonio.data; prof.detalhes.patrimonio = pt; prof.recolhidoEm.patrimonio = P.patrimonio.fetchedAt;
+      if (pt.imoveis > 0) prof.categorias.push({ cat: "IMI", label: "Propriet\u00e1rio de im\u00f3veis", base: "patrim\u00f3nio predial" });
     }
     return prof;
   }
@@ -594,6 +643,13 @@
       (s.agenda && s.agenda.proximos || []).slice(0, 3).forEach(function (p) {
         if (p.desc || p.data)
           h += '<div style="font-size:11px;color:#666;margin-left:8px">\u2022 ' + esc(p.data || "") + ' ' + esc(p.desc || "") + '</div>';
+      });
+    }
+    if (d.patrimonio) {
+      h += '<div style="font-size:12px;color:#333;margin:2px 0">Patrim\u00f3nio: <b>' + esc(d.patrimonio.imoveis) + '</b> im\u00f3vel(is).</div>';
+      (d.patrimonio.lista || []).slice(0, 3).forEach(function (im) {
+        h += '<div style="font-size:11px;color:#666;margin-left:8px">\u2022 ' + esc(im.artigo || "artigo?") +
+             (im.freguesia ? ", " + esc(im.freguesia) : "") + (im.vpt != null ? " (VPT " + esc(im.vpt) + ")" : "") + '</div>';
       });
     }
     return h;
@@ -634,7 +690,8 @@
       // /perfil with this step ticked. A brief confirmation first so the jump is not a surprise.
       var n = res.data && (res.data.porClassificar != null ? res.data.porClassificar + " por classificar"
              : (res.data.activos != null ? res.data.activos + " contrato(s) activo(s)"
-             : (res.data.dividas ? ((res.data.dividas.n || 0) + " d\u00edvida(s)") : "lido")));
+             : (res.data.dividas ? ((res.data.dividas.n || 0) + " d\u00edvida(s)")
+             : (res.data.imoveis != null ? res.data.imoveis + " im\u00f3vel(is)" : "lido"))));
       document.getElementById("efh-body").innerHTML =
         '<div style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
         '.<br>A abrir o teu perfil...</div>';

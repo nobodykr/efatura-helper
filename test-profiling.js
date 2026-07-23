@@ -10,15 +10,15 @@ const SRC = fs.readFileSync(process.argv[2], "utf8");
 let failures = 0;
 function ok(name, cond) { console.log((cond ? "  PASS " : "  FAIL ") + name); if (!cond) failures++; }
 
-function mkEnv(host, flag, fetchImpl) {
-  const dom = new JSDOM(`<!doctype html><body></body>`, { url: "https://" + host + "/x" });
+function mkEnv(host, flag, fetchImpl, path) {
+  const dom = new JSDOM(`<!doctype html><body></body>`, { url: "https://" + host + (path || "/x") });
   const { window } = dom;
   global.window = window; global.document = window.document;
-  // Replace `location` with a plain capturing stub: tool.js reads location.host and, on a
-  // successful read, sets location.href to the /perfil handoff URL. jsdom's real location would
-  // try to navigate; this records the target instead so we can assert on it.
+  // Replace `location` with a plain capturing stub: tool.js reads location.host + location.pathname
+  // (host+path picks the partition when several share a host) and, on a successful read, sets
+  // location.href to the /perfil handoff URL. jsdom's real location would navigate; capture instead.
   window.__nav = null;
-  const loc = { host: host, hash: "", pathname: "/x", assign(v) { window.__nav = v; } };
+  const loc = { host: host, hash: "", pathname: path || "/x", assign(v) { window.__nav = v; } };
   Object.defineProperty(loc, "href", { get() { return "https://" + host + "/x"; }, set(v) { window.__nav = v; } });
   global.location = loc;
   global.localStorage = { _d: {}, getItem(k) { return this._d[k] ?? null; }, setItem(k, v) { this._d[k] = String(v); }, removeItem(k) { delete this._d[k]; } };
@@ -42,6 +42,7 @@ function fetchOK(u) {
   if (/geral\/dividas/.test(s)) return json({ montanteTotal: 0, nAtivasGeral: 0, dataInfoObtida: "2026-07-23" });
   if (/geral\/coimas/.test(s)) return json({ montanteTotal: 0, nAtivasGeral: 0 });
   if (/agendaFiscal/.test(s)) return json([{ data: "2026-08-31", descricao: "Entrega da declaracao de IRS" }]);
+  if (/matrizesinter\/api\/patrimonio/.test(s)) return json({ prediosUrbanos: [{ artigo: "1234", freguesia: "Benfica", valorPatrimonial: 120000 }], prediosRusticos: [] });
   if (/sectors\.json|\/bucket\//.test(s)) return json({});
   return json({ linhas: [] });
 }
@@ -72,7 +73,7 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   //    new _d each call, which is exactly the same-origin policy. So: consent asked again, then the
   //    rendas read populates THIS origin's store and hands off. Cross-origin assembly is a known
   //    limit that the /perfil fragment handoff exists to bridge.
-  w = mkEnv("imoveis.portaldasfinancas.gov.pt", true, fetchOK);
+  w = mkEnv("imoveis.portaldasfinancas.gov.pt", true, fetchOK, "/arrendamento/consultarContratos/locador");
   eval(SRC); await wait();
   ok("cross-origin: consent asked again on Imoveis (separate localStorage)", !!w.document.getElementById("fb-prof-go"));
   w.document.getElementById("fb-prof-go").click(); await wait();
@@ -101,13 +102,23 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   ok("situacao: 0 dividas, 1 agenda item", store.partitions.situacao.data.dividas.n === 0 && store.partitions.situacao.data.agenda.n === 1);
   ok("situacao hands off to /perfil", /perfil#p=situacao&d=/.test(w.__nav || ""));
 
+  // 4d. patrimonio: SAME host as rendas (imoveis) but a /matrizesinter path -> host+path matching
+  //     must pick patrimonio, NOT rendas. Proves the disambiguation.
+  w = mkEnv("imoveis.portaldasfinancas.gov.pt", true, fetchOK, "/matrizesinter/web/consultar-patrimonio-predial");
+  eval(SRC); await wait();
+  w.document.getElementById("fb-prof-go").click(); await wait();
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("patrimonio picked (not rendas) on /matrizesinter path", store.partitions.patrimonio && store.partitions.patrimonio.status === "done" && !store.partitions.rendas);
+  ok("patrimonio: 1 imovel parsed", store.partitions.patrimonio.data.imoveis === 1 && store.partitions.patrimonio.data.lista[0].artigo === "1234");
+  ok("patrimonio hands off to /perfil", /perfil#p=patrimonio&d=/.test(w.__nav || ""));
+
   // 5. rule 3: HTML 200 on the contracts endpoint => pending, not stored as done
   const fetchHtml = (u) => {
     const s = String(u);
     if (/obterContratos\/locador/.test(s)) return Promise.resolve({ ok: true, headers: { get: () => "text/html" }, text: () => Promise.resolve("<html>login</html>") });
     return fetchOK(u);
   };
-  w = mkEnv("imoveis.portaldasfinancas.gov.pt", true, fetchHtml);
+  w = mkEnv("imoveis.portaldasfinancas.gov.pt", true, fetchHtml, "/arrendamento/consultarContratos/locador");
   global.localStorage.removeItem("fb-profile-v1");
   global.localStorage.setItem("fb-profile-consent-v1", JSON.stringify({ ok: true }));
   eval(SRC); await wait();   // consent already set -> auto-reads, which fails on the HTML body
