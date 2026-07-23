@@ -107,7 +107,7 @@
 
   /* masthead */
   .mast{border-bottom:3px solid var(--pri);background:#fff}
-  .mast .wrap{display:flex;align-items:center;gap:14px;min-height:72px;flex-wrap:wrap}
+  .mast .wrap{display:flex;align-items:center;gap:14px;min-height:72px}
   /* 44px, not 38: the monogram carries more detail than the two letters it replaced, and the
      D's bowl and the A's crossbar close up below about 40px. Also hits the 44px touch target. */
   .mark{width:44px;height:44px;flex:none;display:block;line-height:0;border-radius:var(--r)}
@@ -119,22 +119,23 @@
   .mark .plate,.mark .cut{transition:fill .15s ease}
   .mark:hover .plate,.mark:hover .cut{fill:var(--pri-dark)}
   .mark:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
-  .mast .nm{font-weight:600;font-size:1.05rem;line-height:1.2}
-  .mast .nm span{display:block;font-weight:400;font-size:.8rem;color:var(--mute)}
-  /* margin-left:auto pushes it to the right edge without needing a wrapper. 44px min target. */
-  /* first nav item takes the auto margin so the group sits right; the rest just follow it */
-  .mast .mastnav:first-of-type{margin-left:auto}
-  .mast .mastnav + .mastnav{margin-left:10px}
-  .mast .mastnav{display:inline-flex;align-items:center;min-height:44px;
+  .mast .nm{font-weight:600;font-size:1.05rem;line-height:1.25;min-width:0}
+  .mast .nm span{display:block;font-weight:400;font-size:.8rem;color:var(--mute);
+                 white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* Nav sits in its own right-aligned group so the two buttons align to each other, not by margin
+     hacks. Primary (O meu perfil) is filled, secondary is outlined: that hierarchy is the logic. */
+  .mast .nav{margin-left:auto;display:flex;align-items:center;gap:10px;flex:none}
+  .mast .mastnav{display:inline-flex;align-items:center;height:40px;
                  padding:0 16px;border:1.5px solid var(--pri);border-radius:var(--r);
-                 color:var(--pri);font-weight:600;font-size:.92rem;text-decoration:none;
-                 white-space:nowrap}
+                 color:var(--pri);font-weight:600;font-size:.92rem;text-decoration:none;white-space:nowrap}
   .mast .mastnav:hover{background:var(--pri);color:#fff}
-  /* on narrow screens both nav items stack full-width; :first-of-type must be overridden too,
-     or it keeps the auto margin and the pair sits lopsided */
-  @media (max-width:560px){
-    .mast .mastnav, .mast .mastnav:first-of-type, .mast .mastnav + .mastnav{
-      margin-left:0;width:100%;justify-content:center;margin-top:8px}
+  .mast .mastnav.primary{background:var(--pri);color:#fff}
+  .mast .mastnav.primary:hover{background:var(--pri-dark);border-color:var(--pri-dark)}
+  @media (max-width:600px){
+    .mast .wrap{flex-wrap:wrap}
+    .mast .nm span{white-space:normal}
+    .mast .nav{width:100%;margin-left:0;margin-top:4px}
+    .mast .mastnav{flex:1;justify-content:center}
   }
 
   header{padding:52px 0 40px;background:var(--bg2);border-bottom:1px solid var(--rule)}
@@ -143,8 +144,8 @@
   /* it now lives inside the h1, so it needs to behave like the standalone div it replaced */
   h1 .eyebrow{display:block;line-height:1.4;margin-bottom:.5em}
   h1{font-weight:600;font-size:clamp(1.9rem,4.6vw,2.9rem);line-height:1.15;
-     letter-spacing:-.015em;margin:.3em 0 .35em;color:var(--pri-dark)}
-  .sub{color:var(--ink2);font-size:1.08rem;max-width:56ch;margin:0}
+     letter-spacing:-.015em;margin:.15em 0 .5em;color:var(--pri-dark)}
+  .sub{color:var(--ink2);font-size:1.08rem;max-width:60ch;margin:0;line-height:1.6}
 
   /* signature: a ceiling that keeps filling after it is full */
   .thesis{margin:28px 0 10px;padding:20px 22px;background:#fff;
@@ -175,6 +176,7 @@
   p{margin:0 0 .95em;text-align:justify;hyphens:auto;-webkit-hyphens:auto;text-wrap:pretty}
   p.note,.badge,.meter-key,caption,.step .n{text-align:left;hyphens:manual}
   .sub{text-align:left;hyphens:manual}          /* display type: justification looks broken */
+  header .sub,#faz .lead,#faz .r-item,#faz .r-item div{text-align:left;hyphens:manual}
   .safe li,.step div{text-align:justify;hyphens:auto;-webkit-hyphens:auto}
   @media (max-width:640px){                      /* narrow columns river no matter what */
     p,.safe li,.step div{text-align:left;hyphens:auto}
@@ -313,8 +315,10 @@
       </svg>
     </a>
     <div class="nm">Fatura Boa<span>O teu perfil fiscal, das fontes oficiais</span></div>
-    <a class="mastnav" href="/perfil">O meu perfil</a>
-    <a class="mastnav" href="/consulta">Consultar NIF</a>
+    <nav class="nav">
+      <a class="mastnav primary" href="/perfil">O meu perfil</a>
+      <a class="mastnav" href="/consulta">Consultar NIF</a>
+    </nav>
   </div>
 </div>
 
