@@ -1,23 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Three pages, hand-written. A generator would be more machinery than this needs.
-     Keep lastmod honest: update it when the page's CONTENT changes, not on every deploy. -->
+<!-- Hand-written. Keep lastmod honest: update when the page CONTENT changes, not on every deploy. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://faturas.diogoandrade.com/</loc>
-    <lastmod>2026-07-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://faturas.diogoandrade.com/consulta</loc>
-    <lastmod>2026-07-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://faturas.diogoandrade.com/deducoes</loc>
-    <lastmod>2026-07-22</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.8</priority>
-  </url>
+  <url><loc>https://faturas.diogoandrade.com/</loc><lastmod>2026-07-24</lastmod><changefreq>monthly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://faturas.diogoandrade.com/perfil</loc><lastmod>2026-07-24</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://faturas.diogoandrade.com/consulta</loc><lastmod>2026-07-24</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://faturas.diogoandrade.com/deducoes</loc><lastmod>2026-07-24</lastmod><changefreq>yearly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://faturas.diogoandrade.com/verificar</loc><lastmod>2026-07-24</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://faturas.diogoandrade.com/sobre</loc><lastmod>2026-07-24</lastmod><changefreq>yearly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://faturas.diogoandrade.com/privacidade</loc><lastmod>2026-07-24</lastmod><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://faturas.diogoandrade.com/termos</loc><lastmod>2026-07-24</lastmod><changefreq>yearly</changefreq><priority>0.4</priority></url>
 </urlset>

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Fatura Boa | Classificar faturas pendentes no e-Fatura (IRS)</title>
-<meta name="description" content="Ferramenta gratuita que sugere o setor certo para cada fatura pendente no e-Fatura, a partir da atividade oficial de cada comerciante no SICAE, e mostra-te os tetos de deducao do IRS. Corre no teu navegador e nunca pede a password.">
+<title>Fatura Boa | O teu perfil fiscal, das fontes oficiais (grátis, sem password)</title>
+<meta name="description" content="Ferramenta gratuita e verificável que lê o teu próprio registo nas Finanças e na Segurança Social, na tua sessão, sem password, e monta o teu perfil fiscal: faturas do e-Fatura por setor e teto de dedução, rendas, situação fiscal e prazos, património e IMI, e histórico de IRS. Corre no teu navegador, nada sai de lá.">
 <link rel="canonical" href="https://faturas.diogoandrade.com/">
 <!-- Diogo's DA monogram, same mark as diogoandrade.com. There was no favicon at all before, so
      every tab showed the browser default and /favicon.ico returned 404. Regenerate the raster
@@ -18,15 +18,15 @@
 <meta property="og:locale" content="pt_PT">
 <meta property="og:site_name" content="Fatura Boa">
 <meta property="og:url" content="https://faturas.diogoandrade.com/">
-<meta property="og:title" content="Fatura Boa | Classificar faturas pendentes no e-Fatura">
-<meta property="og:description" content="Sugere o setor certo para cada fatura a partir da atividade oficial do comerciante, e mostra-te quanto ja gastaste de cada teto de deducao do IRS. Gratuita, corre no teu navegador, nunca pede a password.">
+<meta property="og:title" content="Fatura Boa | O teu perfil fiscal, das fontes oficiais">
+<meta property="og:description" content="Lê o teu próprio registo nas Finanças e na Segurança Social, na tua sessão, sem password, e monta o teu perfil fiscal: faturas, rendas, situação fiscal, IMI e IRS. Grátis, no teu navegador, verificável.">
 <meta property="og:image" content="https://faturas.diogoandrade.com/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Fatura Boa - classificar faturas pendentes no e-Fatura">
+<meta property="og:image:alt" content="Fatura Boa - o teu perfil fiscal, das fontes oficiais">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Fatura Boa | Classificar faturas pendentes no e-Fatura">
-<meta name="twitter:description" content="Sugere o setor certo para cada fatura a partir da atividade oficial do comerciante, e mostra os tetos de deducao do IRS.">
+<meta name="twitter:title" content="Fatura Boa | O teu perfil fiscal, das fontes oficiais">
+<meta name="twitter:description" content="Lê o teu próprio registo fiscal na tua sessão, sem password, e monta o teu perfil: faturas, rendas, situação, IMI, IRS. Grátis e verificável.">
 <!-- twitter:card has said summary_large_image since the beginning, but there was no image, so
      every share on WhatsApp, LinkedIn and Slack rendered blank. Regenerate with: node make-og.mjs -->
 <meta name="twitter:image" content="https://faturas.diogoandrade.com/assets/og.png">
@@ -37,7 +37,7 @@
  "operatingSystem":"Qualquer navegador",
  "url":"https://faturas.diogoandrade.com/",
  "inLanguage":"pt-PT",
- "description":"Ferramenta gratuita que sugere o setor certo para cada fatura pendente no e-Fatura, a partir da atividade oficial de cada comerciante, e mostra os tetos de deducao do IRS.",
+ "description":"Ferramenta gratuita e verificavel que le o proprio registo do utilizador nas Financas e na Seguranca Social, na sua sessao, sem password, e monta o perfil fiscal: faturas do e-Fatura por setor, rendas, situacao fiscal e prazos, patrimonio e IMI, e historico de IRS.",
  "author":{"@type":"Person","name":"Diogo Andrade","url":"https://diogoandrade.com"},
  "offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},
  "isAccessibleForFree":true,
@@ -248,7 +248,22 @@
   .cf-turnstile{margin:0 0 14px}
   footer{color:var(--ink2);font-size:.87rem;padding:34px 0 60px;background:var(--bg2);
          border-top:3px solid var(--pri)}
-  .badges{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0}
+  #faz .lead{color:var(--ink2);margin:0 0 14px;max-width:70ch}
+  #faz .coming-head{margin:26px 0 10px;font-weight:600;color:var(--ink)}
+  .ready{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px}
+  @media (max-width:600px){ .ready{grid-template-columns:1fr} }
+  .r-item{display:flex;gap:10px;align-items:flex-start;font-size:.95rem;line-height:1.5}
+  .r-item .dot{flex:none;width:11px;height:11px;border-radius:50%;margin-top:6px}
+  .dot.ok{background:var(--green)}
+  .dot.dev{background:var(--amber)}
+  .cta-row{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin:22px 0 4px}
+  .cta-main{background:var(--pri);color:#fff;text-decoration:none;font-weight:600;
+            padding:13px 26px;border-radius:var(--r);cursor:pointer;font-size:1.02rem;
+            display:inline-flex;align-items:center;min-height:48px}
+  .cta-main:hover{background:var(--pri-dark);color:#fff}
+  .cta-alt{color:var(--pri);font-weight:600;text-decoration:none;text-underline-offset:3px}
+  .cta-alt:hover{color:var(--pri-dark);text-decoration:underline}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
   .badge{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--ink2);
          border:1px solid var(--rule);border-radius:2px;padding:5px 10px;background:#fff}
   .badge b{color:var(--pri);font-weight:600}
@@ -297,8 +312,8 @@
         <path class="cut" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/>
       </svg>
     </a>
-    <div class="nm">Fatura Boa<span>Classificar faturas pendentes do e-Fatura, por setor, para o IRS</span></div>
-    <a class="mastnav" href="/deducoes">Deduções</a>
+    <div class="nm">Fatura Boa<span>O teu perfil fiscal, das fontes oficiais</span></div>
+    <a class="mastnav" href="/perfil">O meu perfil</a>
     <a class="mastnav" href="/consulta">Consultar NIF</a>
   </div>
 </div>
@@ -309,36 +324,24 @@
        thing to say to a human and worthless to a search engine - nobody types that. The eyebrow
        was already sitting here saying "e-Fatura / IRS"; making it a full phrase and moving it
        into the heading buys the search intent without changing what the page looks like. -->
-  <h1><span class="eyebrow">Classificar faturas pendentes no e-Fatura</span>Fontes oficiais,<br>em vez de palpites.</h1>
-  <p class="sub">Fartei-me de classificar faturas uma a uma sem saber se estava a acertar, e não me
-     apetece entregar isso a alguém e ficar na mesma. Esta ferramenta vai buscar a atividade real de
-     cada comerciante ao registo do Estado, mostra-te onde estão os teus tetos, e a decisão continua
-     a ser tua.</p>
+  <h1><span class="eyebrow">e-Fatura · IRS · Segurança Social</span>O teu perfil fiscal,<br>das fontes oficiais.</h1>
+  <p class="sub">Não te pede a password. Corre na sessão que <b>já tens aberta</b> no Portal das
+     Finanças (e na Segurança Social), lê o que o Estado já sabe sobre ti, e monta o teu perfil:
+     as faturas do e-Fatura por setor e teto de dedução, as tuas rendas, a tua situação fiscal e
+     prazos, o teu património e IMI, o histórico de IRS. Tudo <b>no teu navegador</b>, e o código
+     é <a href="/verificar">verificável</a>.</p>
 
-  <div class="thesis">
-    <div class="line"><span>Despesas gerais familiares</span><span class="dots"></span><b>17.035,28 €</b></div>
-    <div class="line" style="color:var(--mute)"><span>dedução obtida</span><span class="dots"></span><b>250,00 €</b></div>
-    <div class="meter" role="img" aria-label="Teto cheio: 250 euros deram dedução, o resto não acrescenta dedução nenhuma">
-      <div class="used" style="width:12%"></div><div class="void"></div>
-    </div>
-    <div class="meter-key">
-      <span><i class="k-used"></i>250 € de dedução</span>
-      <span><i class="k-void"></i>o resto não dá dedução</span>
-    </div>
+  <div class="cta-row">
+    <a class="bm cta-main" href="/perfil">Criar o meu perfil</a>
+    <a class="cta-alt" href="#como">Como funciona</a>
   </div>
-  <p class="note" style="margin-top:10px">
-     Isto é a minha conta de 2025. O teto das despesas gerais estava cheio há muito, enquanto a
-     Saúde tinha 784 € por usar. Não é drama nenhum, é só informação que eu não tinha à frente
-     enquanto classificava.</p>
-  <p class="note">Uma fatura acima do teto continua a contar para a
-     <a href="https://faturadasorte.portaldasfinancas.gov.pt" target="_blank" rel="noopener">Fatura
-     da Sorte</a> e continua a ser um registo teu. O que deixa de crescer é só a dedução.</p>
 
   <div class="badges">
-    <span class="badge">corre <b>no teu navegador</b></span>
     <span class="badge"><b>nunca</b> pede password</span>
-    <span class="badge">as faturas <b>não saem</b> daqui</span>
-    <span class="badge">código <b>auditável</b></span>
+    <span class="badge">corre <b>na tua sessão</b></span>
+    <span class="badge">os dados <b>não saem</b> do navegador</span>
+    <span class="badge">código <b>verificável</b></span>
+    <span class="badge"><b>grátis</b>, sem contas</span>
   </div>
 </div>
 </header>
@@ -346,19 +349,31 @@
 <div class="wrap">
 
 <div class="box draft">
-  <b>Versão de teste. Ainda não submete nada.</b>
+  <b>Só lê. Não submete nada.</b>
   <p style="margin:6px 0 0">
-    Nesta fase a ferramenta <b>analisa e mostra-te o plano</b>: que setor faz sentido para cada fatura,
-    quanto já gastaste de cada teto, e quanta dedução estás a perder. <b>A submissão fazes tu</b>, no
-    e-Fatura, com o plano à frente. Copias ou envias para o teu email e aplicas.
-  </p>
-  <p style="margin:6px 0 0">
-    É de propósito: classificar uma fatura é uma <b>declaração tua à AT</b>, e antes de deixar um
-    programa fazer isso sozinho quero ver a coisa a funcionar em contas reais. Se experimentares e
-    algo estiver errado, <a id="ghissues2" href="#" target="_blank" rel="noopener">diz-me</a>. É a
-    forma mais útil de ajudar.
+    A ferramenta lê o teu registo e monta o teu perfil, mas <b>não altera nada</b> nas Finanças.
+    Qualquer submissão ou classificação fá-la <b>tu</b>, com o plano à frente. Os números são
+    <b>indicadores para confirmares</b>, não aconselhamento fiscal. Se algo estiver errado,
+    <a id="ghissues2" href="#" target="_blank" rel="noopener">diz-me</a>.
   </p>
 </div>
+
+<section id="faz">
+  <h2>O que já faz por ti</h2>
+  <p class="lead">Para muita gente já dá para montar um perfil útil, a partir do que o Estado já sabe:</p>
+  <div class="ready">
+    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Faturas do e-Fatura</b> - o setor certo para cada fatura pendente e quanto já usaste de cada teto de dedução.</div></div>
+    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Rendas</b> - os teus contratos de arrendamento e recibos (categoria F).</div></div>
+    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Situação fiscal</b> - dívidas, coimas e os próximos prazos da agenda fiscal.</div></div>
+    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Património e IMI</b> - os imóveis que tens e o respetivo VPT.</div></div>
+    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Histórico de IRS</b> - as liquidações e reembolsos de todos os anos.</div></div>
+    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Consultar NIF</b> - a atividade oficial de qualquer empresa.</div></div>
+  </div>
+  <p class="lead coming-head">O que ainda não</p>
+  <div class="ready">
+    <div class="r-item"><span class="dot dev" aria-hidden="true"></span><div><b>Atividade e recibos verdes</b> (categoria B) e <b>regime de IVA</b> - em desenvolvimento. Estes números podem estar incompletos, por isso aparecem marcados para confirmares.</div></div>
+  </div>
+</section>
 
 <section><div class="box give">
   <h2>Apoia esta ferramenta <span class="note">(sem custo nenhum para ti)</span></h2>
@@ -692,9 +707,9 @@
 </div>
 
 <footer class="wrap">
-  <p>Ferramenta comunitária e independente. <b>Não</b> afiliada à Autoridade Tributária. Sem garantias ,  confirma sempre no e-Fatura.</p>
-  <p><a href="/consulta">Consulta de NIF</a>  |  <a id="gh2" href="#" target="_blank" rel="noopener">Código no GitHub</a>  |  <a href="https://polyformproject.org/licenses/noncommercial/1.0.0" target="_blank" rel="noopener">PolyForm Noncommercial 1.0.0</a> - livre para uso pessoal, proibido monetizar.</p>
-  <p class="note">Feito por <a href="https://diogoandrade.com" target="_blank" rel="noopener">Diogo Andrade</a>.</p>
+  <p>Ferramenta comunitária e independente. <b>Não</b> afiliada à Autoridade Tributária. Sem garantias, confirma sempre nas Finanças.</p>
+  <p><a href="/perfil">O meu perfil</a> | <a href="/consulta">Consultar NIF</a> | <a href="/verificar">Verificar</a> | <a href="/sobre">Sobre</a> | <a href="/privacidade">Privacidade</a> | <a href="/termos">Termos</a> | <a id="gh2" href="#" target="_blank" rel="noopener">Código no GitHub</a></p>
+  <p class="note"><a href="https://polyformproject.org/licenses/noncommercial/1.0.0" target="_blank" rel="noopener">PolyForm Noncommercial 1.0.0</a> - livre para uso pessoal, proibido monetizar. Feito por <a href="https://diogoandrade.com" target="_blank" rel="noopener">Diogo Andrade</a>.</p>
 </footer>
 
 <script>
@@ -770,7 +785,10 @@
   });
 
   // Loader bookmarklet: injects the open-source tool.js from this site into the e-Fatura page.
-  var loader = "javascript:(function(){if(!/faturas\\.portaldasfinancas\\.gov\\.pt$/.test(location.host)){alert('Abre o e-Fatura e faz login primeiro.');return;}var s=document.createElement('script');s.charset='utf-8';s.src='" + HOST + "/tool.js?v='+Date.now();document.body.appendChild(s);})();";
+  // Profile is public now: the loader allows all Financas + Seguranca Social hosts and sets the
+  // __FB_PROFILE flag that unlocks the profile flow. (The e-Fatura classifier still runs on the
+  // faturas page.) The SRI-pinned "verified" variant lives on /verificar.
+  var loader = "javascript:(function(){if(!/(portaldasfinancas\\.gov\\.pt|seg-social\\.pt)$/.test(location.host)){alert('Abre uma pagina das Financas ou da Seguranca Social e faz login primeiro.');return;}window.__FB_PROFILE=1;var s=document.createElement('script');s.charset='utf-8';s.src='" + HOST + "/tool.js?v='+Date.now();document.body.appendChild(s);})();";
   document.getElementById("bookmarklet").setAttribute("href", loader);
 </script>
 </body>

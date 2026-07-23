@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="/favicon.ico" sizes="48x48" type="image/x-icon">
+<link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png">
+<title>Privacidade | Fatura Boa</title>
+<meta name="description" content="Como o Fatura Boa trata os teus dados: nada sai do teu navegador, nunca pede a password, e só é enviado o que escolheres contribuir, sem nome nem NIF.">
+<link rel="canonical" href="https://faturas.diogoandrade.com/privacidade">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--pri:#034ad8;--pri-dark:#021c51;--ink:#2B363C;--ink2:#4a5a63;--mute:#6b7780;--bg:#fff;--bg2:#f4f6f9;--bg3:#E1E4EA;--rule:#d5dae1;--green:#1E5A3A;--focus:#f408fc;--r:6px;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.65 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:0 24px}
+  a{color:var(--pri);text-underline-offset:3px} a:hover{color:var(--pri-dark)}
+  a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+  code{font-family:'IBM Plex Mono',monospace;background:var(--bg2);border:1px solid var(--rule);padding:1px 5px;border-radius:3px;font-size:.9em}
+  header{background:var(--pri-dark);color:#fff;padding:26px 0}
+  header h1{margin:0;font-size:1.5rem}
+  main{padding:28px 0 60px}
+  h2{font-size:1.15rem;margin:26px 0 8px;color:var(--pri-dark)}
+  .lead{background:#e9f5ee;border:1px solid var(--green);color:var(--green);border-radius:var(--r);padding:12px 16px;font-weight:600}
+  ul{padding-left:20px} li{margin:6px 0}
+  .mast{border-bottom:3px solid var(--pri);background:#fff}
+  .mast .wrap{display:flex;align-items:center;gap:12px;min-height:64px}
+  .mast .mark{width:40px;height:40px;flex:none} .mast .mark svg{width:100%;height:100%;display:block}
+  .mast .mark .plate,.mast .mark .cut{fill:var(--pri)}
+  .mast .nm{font-weight:600;color:var(--ink)} .mast a.home{margin-left:auto;color:var(--pri);font-weight:600;text-decoration:none}
+  footer{border-top:1px solid var(--rule);padding:22px 0;color:var(--mute);font-size:.85rem}
+  .upd{color:var(--mute);font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="mast"><div class="wrap">
+  <a class="mark" href="/" aria-label="Fatura Boa, início">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect class="plate" width="32" height="32" rx="7"/>
+      <path fill="#fff" d="M6.75 6.5 H13.375 C18.875 6.5 22.75 10.3125 22.75 16 C22.75 21.6875 18.875 25.5 13.375 25.5 H6.75 Z M10 9.5 V22.5 H13.1875 C16.8125 22.5 19.5 20 19.5 16 C19.5 12 16.8125 9.5 13.1875 9.5 H10 Z"/>
+      <path fill="#fff" d="M18.25 25.5 L23.875 6.5 H26.375 L20.75 25.5 Z"/><path fill="#fff" d="M25.25 6.5 H27.75 L22.125 25.5 H19.625 Z"/>
+      <rect class="cut" x="20.875" y="16.375" width="4.875" height="2.25" rx="0.5"/><path class="cut" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/></svg>
+  </a>
+  <div class="nm">Fatura Boa</div><a class="home" href="/">Início</a>
+</div></div>
+<header><div class="wrap"><h1>Privacidade</h1></div></header>
+<main class="wrap">
+  <p class="lead">A regra é simples: os teus dados ficam no teu navegador. O Fatura Boa nunca vê a tua password e não guarda os teus dados nos nossos servidores.</p>
+
+  <h2>O que a ferramenta lê, e onde</h2>
+  <p>O Fatura Boa corre no teu próprio navegador, na sessão que <b>tu</b> já abriste no Portal das Finanças e na Segurança Social. Lê o teu registo (faturas, rendas, situação fiscal, património, IRS) a partir dessa sessão, e faz as contas <b>no teu computador</b>. Não recebe, não transmite e não consegue ver a tua password.</p>
+
+  <h2>Onde ficam os dados</h2>
+  <p>O teu perfil é montado e guardado no armazenamento local do teu navegador (<code>localStorage</code>). Não sai dali. Podes apagá-lo a qualquer momento em <a href="/perfil">O meu perfil</a>, ou limpando os dados do site no navegador.</p>
+
+  <h2>O que é enviado (só se escolheres)</h2>
+  <p>Por omissão, <b>nada</b> é enviado. Há uma opção de contribuir, desligada de origem, que envia um resumo <b>anónimo</b> para ajudar a melhorar a ferramenta:</p>
+  <ul>
+    <li>Nunca inclui o teu <b>nome</b>, <b>NIF</b> ou <b>NISS</b> - por construção, e o servidor remove qualquer campo que pareça identificar-te.</li>
+    <li>Serve para percebermos que tipos de situação existem e para corrigir erros - nunca para te identificar.</li>
+    <li>Podes desligar quando quiseres.</li>
+  </ul>
+
+  <h2>Sem contas, sem seguimento</h2>
+  <p>Não há registo nem login nesta ferramenta. Não usamos cookies de seguimento nem publicidade que te siga. O formulário de contacto usa proteção anti-spam (Cloudflare Turnstile) e envia a tua mensagem por email; se deixares um email, é só para te podermos responder.</p>
+
+  <h2>Consultar NIF</h2>
+  <p>A pesquisa de NIF (<a href="/consulta">Consultar NIF</a>) consulta dados <b>públicos</b> de empresas (registo do Estado e VIES). É uma pesquisa por pedido, por isso revela o que pesquisaste ao servidor dessa consulta; não guardamos histórico associado a ti.</p>
+
+  <h2>Contacto</h2>
+  <p>Dúvidas sobre privacidade: pelo formulário na <a href="/">página inicial</a>. O código é público e auditável em <a href="https://github.com/nobodykr/efatura-helper" target="_blank" rel="noopener">GitHub</a>, e podes <a href="/verificar">verificar</a> que o que corre é o código publicado.</p>
+
+  <p class="upd">Última atualização: 24 de julho de 2026.</p>
+</main>
+<footer class="wrap"><a href="/">Fatura Boa</a> &middot; <a href="/termos">Termos</a> &middot; <a href="/sobre">Sobre</a></footer>
+</body>
+</html>
