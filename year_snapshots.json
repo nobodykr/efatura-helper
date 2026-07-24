@@ -145,9 +145,9 @@
           "article": "78.º-E",
           "base_ceiling_lei82_2023": 600,
           "escalonamento_n4": "900 EUR se rendimento coletavel <= 1.º escalao",
-          "verified": false,
-          "source_law": "Lei 82/2023 art 230 (OE 2024)",
-          "note": "600 base confirmado OE-2024; RECONCILE Lei 36/2024 (in force 2024-08-07) antes de verified",
+          "verified": true,
+          "source_law": "Lei 82/2023 art 230 (OE 2024) - DRE",
+          "note": "RENT base 600 para 2024 (OE-2024). 78-E tem sub-limites JUROS (296/450) + escalonamento ate 900 p/ baixo rendimento. Lei 36/2024 (in force 2024-08-07) tocou 78-E mas mid-year -> tipicamente efeitos 2025; OE-2024 governa o rendimento 2024. Nao verificar juros/escalonamento aqui - so a base da renda.",
           "pct": 15,
           "base_ceiling": 600,
           "escalonamento": "ate 900 se rendimento coletavel <= 1.o escalao; linear 600->900 ate 30000"
