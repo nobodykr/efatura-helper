@@ -213,6 +213,42 @@
     });
     return used;
   }
+
+  /* PAST-YEAR RE-AUDIT. e-Fatura keeps invoices per year (the same obterDocumentosAdquirente endpoint
+   * takes a date range), so we can read any past year and see how much of each ceiling was used vs
+   * still free - i.e. deduction that MIGHT be recoverable via a declaracao de substituicao (within
+   * the CPPT/LGT windows). Only the rendas ceiling (C07) moved across years; the rest held. Values
+   * are DRE/AT-verified in year_snapshots.json. Indicators only - never a submission. */
+  var RENDAS_CAP_ANO = { 2023: 502, 2024: 600, 2025: 600 };   // C07 base ceiling per income year
+  function fetchAno(ano) {
+    var u = "/json/obterDocumentosAdquirente.action?dataInicioFilter=" + ano + "-01-01&dataFimFilter=" + ano + "-12-31";
+    return getJSON(u).then(function (j) {
+      if (j && (j.expiredSession === true || j.success === false)) throw new Error("sessão do e-Fatura expirada");
+      var rows = (j && (j.linhas || j.documentos)) || [];
+      return Array.isArray(rows) ? rows : [];
+    });
+  }
+  function reAuditAno(ano, rows, prof) {
+    var used = usedSoFar(rows, prof);
+    // pending (not yet classified) invoices per sector-key = the deduction still capturable
+    var pend = {};
+    rows.forEach(function (x) {
+      var c = CEIL[x.actividadeEmitente]; if (!c || x.estadoBeneficio === "R") return;
+      pend[c.pot || x.actividadeEmitente] = (pend[c.pot || x.actividadeEmitente] || 0) + 1;
+    });
+    var cats = [{ k: "C05", n: "Saúde" }, { k: "C06", n: "Educação" }, { k: "C07", n: "Imóveis / habitação" },
+                { k: "C08", n: "Lares" }, { k: "C99", n: "Despesas gerais" }, { k: POT, n: "Setores com IVA (pote 250)" }];
+    var rows2 = [], totalFree = 0;
+    cats.forEach(function (c) {
+      var cap = c.k === "C07" ? (RENDAS_CAP_ANO[ano] || CEIL.C07.cap) : (c.k === POT ? POT_CAP : capFor(c.k, prof));
+      var u = +(used[c.k] || 0).toFixed(2);
+      var free = +(cap - u).toFixed(2);
+      var status = free <= 0.005 ? "MAXED" : (u > 0 ? "PARCIAL" : "VAZIO");
+      if (free > 0) totalFree += free;
+      rows2.push({ cat: c.n, cap: cap, usado: u, livre: free, status: status, porClassificar: pend[c.k] || 0 });
+    });
+    return { ano: ano, categorias: rows2, totalLivre: +totalFree.toFixed(2) };
+  }
   function esc(s) { return String(s == null ? "" : s).replace(/[<>&]/g, function (x) { return { "<": "&lt;", ">": "&gt;", "&": "&amp;" }[x]; }); }
   /* e-Fatura returns merchant names ALREADY html-encoded ("Irm&atilde;dona Supermercados"), so
    * escaping them again turned the & into &amp; and printed the entity literally on screen.
@@ -625,8 +661,17 @@
         if (x.estadoBeneficio === "P") pend++;
         var a = x.actividadeEmitente; if (a) byAct[a] = (byAct[a] || 0) + 1;
       });
-      return { data: { ano: year, totalFaturas: (j && j.totalElementos != null ? j.totalElementos : rows.length),
-                       porClassificar: pend, atividades: byAct }, source: u };
+      // Re-audit the recent past income years (the same endpoint, per year). Caps assume an
+      // INDIVIDUAL filer (mono/joint not known here); /perfil can refine. Best-effort: a year that
+      // fails (no data / lapsed) just drops out.
+      var anos = [year - 1, year - 2, year - 3];
+      return Promise.all(anos.map(function (a) {
+        return fetchAno(a).then(function (r) { return reAuditAno(a, r, {}); }).catch(function () { return null; });
+      })).then(function (ra) {
+        return { data: { ano: year, totalFaturas: (j && j.totalElementos != null ? j.totalElementos : rows.length),
+                         porClassificar: pend, atividades: byAct,
+                         reAudit: ra.filter(Boolean) }, source: u };
+      });
     });
   }
 
