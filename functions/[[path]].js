@@ -62,8 +62,9 @@ async function record(request, env, ctx, kind) {
     city: cap(cf.city, 60),
   };
   console.log("FB_HONEYPOT " + JSON.stringify(hit));   // greppable in Cloudflare function logs
-  // Optional persistence for the admin panel: POST to ONE fixed, trusted sink (never a request
-  // value). Fire-and-forget with a hard timeout so a slow sink cannot hold the worker.
+  // Persist to the private cae-db sink (env HONEYPOT_SINK, shared key HONEYPOT_KEY). Fire-and-forget
+  // via waitUntil with a hard timeout: the scanner never waits on it, and a slow/blocked sink cannot
+  // hold the worker. The sink URL/key are Pages secrets, never in this public source.
   if (env && env.HONEYPOT_SINK) {
     const p = fetch(env.HONEYPOT_SINK, {
       method: "POST",
