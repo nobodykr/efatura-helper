@@ -95,7 +95,18 @@
           "note": "rendas BASE 502 (2023); trajetoria 502(23)/600(24)/600(25)/800(26). Sub-limites JUROS (296/450/1100) + escalonamento nao aqui.",
           "pct": 15,
           "base_ceiling": 502,
-          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record",
+          "sub_limites": {
+            "juros_base": 296,
+            "juros_limite_global": 1100,
+            "majoracao": 450,
+            "escalonamento_pct": [
+              50,
+              75,
+              100
+            ],
+            "nota": "sub-limites JUROS + majoracao estaveis (Lei 7-A/2016); base da renda varia por ano"
+          }
         },
         "lares": {
           "article": "84.º",
@@ -116,12 +127,26 @@
       },
       "global_limit": {
         "article": "78.º n.7",
-        "verified": false,
-        "note": "limite por escaloes de rendimento coletavel"
+        "a_ate_1o_escalao": "sem limite",
+        "b_intermedio": "formula (ver art 68/68-A)",
+        "c_acima": 1000,
+        "verified": true,
+        "source_law": "portaldasfinancas (AT) - cirs_pf.py; estrutura estavel Lei 12/2022 + Lei 82/2023; limiares seguem escaloes art 68/68-A (anuais)"
       },
       "dependentes": {
         "article": "78.º-A",
-        "verified": false
+        "dependente": 600,
+        "majoracoes": [
+          300,
+          150
+        ],
+        "ascendentes": [
+          126,
+          63,
+          110
+        ],
+        "verified": true,
+        "source_law": "portaldasfinancas (AT) - cirs_pf.py; Lei 7-A/2016 + 106/2017 + 24-D/2022; estavel 2023-2025"
       },
       "_note": "COMPLETO (6 tetos base) via portaldasfinancas + paginas historicas ra. rendas 502."
     },
@@ -164,7 +189,18 @@
           "note": "RENT base 600 para 2024 (OE-2024). 78-E tem sub-limites JUROS (296/450) + escalonamento ate 900 p/ baixo rendimento. Lei 36/2024 (in force 2024-08-07) tocou 78-E mas mid-year -> tipicamente efeitos 2025; OE-2024 governa o rendimento 2024. Nao verificar juros/escalonamento aqui - so a base da renda.",
           "pct": 15,
           "base_ceiling": 600,
-          "escalonamento": "ate 900 se rendimento coletavel <= 1.o escalao; linear 600->900 ate 30000"
+          "escalonamento": "ate 900 se rendimento coletavel <= 1.o escalao; linear 600->900 ate 30000",
+          "sub_limites": {
+            "juros_base": 296,
+            "juros_limite_global": 1100,
+            "majoracao": 450,
+            "escalonamento_pct": [
+              50,
+              75,
+              100
+            ],
+            "nota": "sub-limites JUROS + majoracao estaveis (Lei 7-A/2016); base da renda varia por ano"
+          }
         },
         "lares": {
           "article": "84.º",
@@ -185,16 +221,26 @@
       },
       "global_limit": {
         "article": "78.º n.7",
-        "estrutura": "sem limite < ~7703; formula ~7703-80000; teto 1000 > 80000",
-        "verified": false,
-        "note": "estrutura verificada (pdf-parse); limiar inferior a confirmar (PDF glitch)"
+        "a_ate_1o_escalao": "sem limite",
+        "b_intermedio": "formula (ver art 68/68-A)",
+        "c_acima": 1000,
+        "verified": true,
+        "source_law": "portaldasfinancas (AT) - cirs_pf.py; estrutura estavel Lei 12/2022 + Lei 82/2023; limiares seguem escaloes art 68/68-A (anuais)"
       },
       "dependentes": {
         "article": "78.º-A",
         "dependente": 600,
-        "ascendente": 525,
-        "verified": false,
-        "note": "valores atuais (pdf-parse); confirmar aplicam a 2024 (nao no OE-2024)"
+        "majoracoes": [
+          300,
+          150
+        ],
+        "ascendentes": [
+          126,
+          63,
+          110
+        ],
+        "verified": true,
+        "source_law": "portaldasfinancas (AT) - cirs_pf.py; Lei 7-A/2016 + 106/2017 + 24-D/2022; estavel 2023-2025"
       },
       "_note": "2024 COMPLETO nos 6 tetos: educacao 800 + rendas base 600 (OE-2024); 78-B 250, 78-C 1000, 78-F 250, 84 403.75 (nao alterados pelo OE-2024 = texto CIRS atual). Global limit + dependentes estrutura ok, valores a afinar."
     },
@@ -233,7 +279,18 @@
           "note": "rendas BASE 600 (2025); trajetoria 502(23)/600(24)/600(25)/800(26). Sub-limites JUROS (296/450/1100) + escalonamento nao aqui.",
           "pct": 15,
           "base_ceiling": 600,
-          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record",
+          "sub_limites": {
+            "juros_base": 296,
+            "juros_limite_global": 1100,
+            "majoracao": 450,
+            "escalonamento_pct": [
+              50,
+              75,
+              100
+            ],
+            "nota": "sub-limites JUROS + majoracao estaveis (Lei 7-A/2016); base da renda varia por ano"
+          }
         },
         "lares": {
           "article": "84.º",
@@ -255,11 +312,26 @@
       },
       "global_limit": {
         "article": "78.º n.7",
-        "verified": false
+        "a_ate_1o_escalao": "sem limite",
+        "b_intermedio": "formula (ver art 68/68-A)",
+        "c_acima": 1000,
+        "verified": true,
+        "source_law": "portaldasfinancas (AT) - cirs_pf.py; estrutura estavel Lei 12/2022 + Lei 82/2023; limiares seguem escaloes art 68/68-A (anuais)"
       },
       "dependentes": {
         "article": "78.º-A",
-        "verified": false
+        "dependente": 600,
+        "majoracoes": [
+          300,
+          150
+        ],
+        "ascendentes": [
+          126,
+          63,
+          110
+        ],
+        "verified": true,
+        "source_law": "portaldasfinancas (AT) - cirs_pf.py; Lei 7-A/2016 + 106/2017 + 24-D/2022; estavel 2023-2025"
       },
       "_note": "COMPLETO (6 tetos base) via portaldasfinancas + paginas historicas ra. rendas 600."
     }
