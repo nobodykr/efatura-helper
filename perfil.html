@@ -326,6 +326,43 @@
       }
     };
   }
+
+  // Verified per-income-year deduction ceilings (source: year_snapshots.json, from portaldasfinancas
+  // with redacao-law provenance; DRE is source of record). Only rendas moves across these years
+  // (base 502/600/600). Keep in sync with year_snapshots.json when a new year is sourced.
+  var CEILINGS = {
+    2023: { despesas_gerais:{pct:35,ceiling:250}, saude:{pct:15,ceiling:1000}, educacao:{pct:30,ceiling:800},
+            imoveis_rendas:{pct:15,base_ceiling:502}, lares:{pct:25,ceiling:403.75}, iva_conjunto:{pct:15,ceiling:250} },
+    2024: { despesas_gerais:{pct:35,ceiling:250}, saude:{pct:15,ceiling:1000}, educacao:{pct:30,ceiling:800},
+            imoveis_rendas:{pct:15,base_ceiling:600}, lares:{pct:25,ceiling:403.75}, iva_conjunto:{pct:15,ceiling:250} },
+    2025: { despesas_gerais:{pct:35,ceiling:250}, saude:{pct:15,ceiling:1000}, educacao:{pct:30,ceiling:800},
+            imoveis_rendas:{pct:15,base_ceiling:600}, lares:{pct:25,ceiling:403.75}, iva_conjunto:{pct:15,ceiling:250} }
+  };
+
+  // Re-audit of a past year: given that year's ceilings (from year_snapshots.json) and how much the
+  // person actually spent per category (from e-Fatura for that year), how much of each ceiling is
+  // still FREE - i.e. deduction they could still capture if they have invoices for it. Pure and
+  // testable. The deductible for a category is rate% of the spend, capped at the ceiling; headroom
+  // is what is left under the cap. Indicators only, never a submission. `rules` is a year's rules
+  // object; `spent` is {categoryKey: eur}. Categories with no pct/ceiling (unsourced) are skipped.
+  function reAudit(rules, spent){
+    rules = rules || {}; spent = spent || {};
+    var rows = [], totalHeadroom = 0;
+    Object.keys(rules).forEach(function(cat){
+      var r = rules[cat] || {};
+      var pct = r.pct;
+      var ceiling = (r.ceiling != null) ? r.ceiling : (r.base_ceiling != null ? r.base_ceiling : null);
+      if (pct == null || ceiling == null) return;          // not sourced for this year - skip
+      var s = Number(spent[cat] || 0);
+      var deductible = Math.min(ceiling, +(s * pct / 100).toFixed(2));
+      var headroom = +(ceiling - deductible).toFixed(2);
+      var status = deductible >= ceiling - 0.005 ? "MAXED" : (s > 0 ? "PARCIAL" : "VAZIO");
+      totalHeadroom += headroom;
+      rows.push({ cat: cat, pct: pct, ceiling: ceiling, spent: s,
+                  deductible: deductible, headroom: headroom, status: status });
+    });
+    return { rows: rows, totalHeadroom: +totalHeadroom.toFixed(2) };
+  }
   function agendaMatch(prof, kws){
     var ag = (prof.detalhes.situacao && prof.detalhes.situacao.agenda && prof.detalhes.situacao.agenda.proximos) || [];
     for (var i=0;i<ag.length;i++){
