@@ -467,13 +467,18 @@
         var raHtml = '';
         if (ra && ra.recuperavel > 0.5){
           // The optimiser result: invoices sitting in a full pot where the SAME merchant is also
-          // registered for a sector with room -> reclassify to recover deduction. porSetor keys are
-          // already sector names (Saude/Educacao/...).
+          // registered for a sector with room. It is only RECOVERABLE while the correction window is
+          // open (recover.open). Once closed, it is a lost opportunity, not money on the table -
+          // show it honestly (muted), not as green "recuperavel".
           var setores = Object.keys(ra.porSetor||{}).map(function(k){ return esc(k)+' ('+ra.porSetor[k]+')'; }).join(', ');
-          raHtml = '<div class="w" style="margin-top:4px;color:var(--green)"><b>Recuperável ~&euro;'+esc(Math.round(ra.recuperavel))+'</b>: '+
-            ra.nMover+' fatura(s) estão numa categoria cheia mas o comerciante também está registado noutra com espaço'+
-            (setores?': '+setores:'')+'. Corrige o setor no e-Fatura (Alterar, escolhe o setor, Guardar)'+
-            (wnd.recover.open?' e entrega uma declaração de substituição (ainda no prazo)':'')+'.</div>';
+          var quadro = ra.nMover+' fatura(s) estavam numa categoria cheia quando o comerciante também estava registado noutra com espaço'+(setores?': '+setores:'')+'.';
+          if (wnd.recover.open){
+            raHtml = '<div class="w" style="margin-top:4px;color:var(--green)"><b>Recuperável ~&euro;'+esc(Math.round(ra.recuperavel))+'</b>: '+quadro+
+              ' Corrige o setor no e-Fatura (Alterar, escolhe o setor, Guardar) e entrega uma declaração de substituição - ainda estás no prazo.</div>';
+          } else {
+            raHtml = '<div class="w" style="margin-top:4px">Havia ~&euro;'+esc(Math.round(ra.recuperavel))+' de dedução por otimizar em '+yy+' ('+quadro+
+              ') mas o prazo para corrigir já fechou, por isso <b>já não é recuperável</b> - fica como referência.</div>';
+          }
         } else if (ra){
           raHtml = '<div class="w" style="margin-top:4px">Nada por reclassificar em '+yy+' - as faturas já estão no melhor setor possível.</div>';
         }
