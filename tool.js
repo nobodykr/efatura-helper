@@ -225,15 +225,34 @@
    * (a sector code), and a single sector is always well under 300 - so we fetch PER SECTOR to get
    * the whole year accurately. It also refuses a multi-year range ("mesmo ano"), so one year at a
    * time. Verified on real data 2026-07-24. */
-  function fetchSector(ano, sec) {
-    var u = "/json/obterDocumentosAdquirente.action?dataInicioFilter=" + ano + "-01-01&dataFimFilter=" + ano +
-            "-12-31&ambitoAquisicaoFilter=" + sec;
+  function _d(s) { var a = s.split("-"); return new Date(+a[0], +a[1] - 1, +a[2]); }
+  function _iso(d) { var p = function (n) { return (n < 10 ? "0" : "") + n; }; return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()); }
+  function _midDate(ini, fim) {
+    var a = _d(ini), z = _d(fim);
+    var mid = new Date((a.getTime() + z.getTime()) / 2); mid.setHours(0, 0, 0, 0);
+    if (_iso(mid) <= ini || _iso(mid) >= fim) return null;   // range too small to split
+    return _iso(mid);
+  }
+  function _nextDay(iso) { var d = _d(iso); d.setDate(d.getDate() + 1); return _iso(d); }
+  /* Fetch every invoice for a sector in [ini,fim] (SAME YEAR). obterDocumentosAdquirente caps at 300
+   * and reports the true count in totalElementos - so if we got fewer than that, the range is capped
+   * and we split it in half and recurse. Halves stay inside the year, so no "mesmo ano" error. This
+   * GUARANTEES completeness (rows.length >= totalElementos) instead of silently truncating. */
+  function fetchRange(sec, ini, fim) {
+    var u = "/json/obterDocumentosAdquirente.action?dataInicioFilter=" + ini + "&dataFimFilter=" + fim + "&ambitoAquisicaoFilter=" + sec;
     return getJSON(u).then(function (j) {
       if (j && (j.expiredSession === true || j.success === false)) throw new Error("sessão do e-Fatura expirada");
-      var rows = (j && (j.linhas || j.documentos)) || [];
-      return Array.isArray(rows) ? rows : [];
+      var rows = (j && (j.linhas || j.documentos)) || []; if (!Array.isArray(rows)) rows = [];
+      var total = (j && j.totalElementos != null) ? j.totalElementos : rows.length;
+      if (rows.length >= total) return rows;                 // complete
+      var mid = _midDate(ini, fim);
+      if (!mid) return rows;                                  // cannot split further - accept what we have
+      return fetchRange(sec, ini, mid).then(function (a) {
+        return fetchRange(sec, _nextDay(mid), fim).then(function (b) { return a.concat(b); });
+      });
     });
   }
+  function fetchSector(ano, sec) { return fetchRange(sec, ano + "-01-01", ano + "-12-31"); }
   // Deduction is "used" once the benefit is ATTRIBUTED (R Registado, B Beneficio, E Registado apos);
   // only P Pendente is still capturable by classifying; N/A/C/O never count.
   function isAttributed(s) { return s === "R" || s === "B" || s === "E"; }
