@@ -491,8 +491,8 @@
             raHtml = '<div class="w" style="margin-top:4px;color:var(--green)"><b>Recuperável ~&euro;'+esc(Math.round(ra.recuperavel))+'</b>: '+quadro+
               ' Corrige o setor no e-Fatura (Alterar, escolhe o setor, Guardar) e entrega uma declaração de substituição - ainda estás no prazo.</div>';
           } else {
-            raHtml = '<div class="w" style="margin-top:4px;color:var(--mute)"><b>~&euro;'+esc(Math.round(ra.recuperavel))+' desperdiçado</b> em '+yy+': '+quadro+
-              ' O prazo para corrigir já fechou, por isso já não dá para recuperar - fica só como referência.</div>';
+            raHtml = '<div class="w" style="margin-top:4px;color:var(--amber)"><b>~&euro;'+esc(Math.round(ra.recuperavel))+' desperdiçado</b> em '+yy+': '+quadro+
+              ' O prazo para corrigir já fechou, por isso já não dá para recuperar - fica como referência do que a ferramenta deteta.</div>';
           }
         } else if (ra){
           raHtml = '<div class="w" style="margin-top:4px">Nada por reclassificar em '+yy+' - as faturas já estão no melhor setor possível.</div>';
