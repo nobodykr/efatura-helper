@@ -25,53 +25,205 @@
   },
   "amendment_map": {
     "_note": "Years an amendment came INTO FORCE, from the dedicated pages. A rule is STABLE for target years if nothing came into force within them; then all target years = current value (verified by absence of change). A rule that changed within 2023-2025 needs the as-in-force text read per year.",
-    "78.º-C_saude": { "in_force_years": [2015, 2016, 2022, 2025], "reads": "stable 2022->2024 (one value for 2023 and 2024); 2025 changed - read separately" },
-    "78.º-E_imoveis": { "in_force_years": [2016, 2017, 2020, 2022, 2024, 2025, 2026], "reads": "VOLATILE - changed 2024, 2025, 2026; every target year likely distinct; escalonamento not a flat ceiling" },
-    "78.º-B_gerais": { "in_force_years": "PENDING" },
-    "78.º-D_educacao": { "in_force_years": "PENDING (render errored, re-run)" },
-    "78.º-F_iva": { "in_force_years": "PENDING" },
-    "84.º_lares": { "in_force_years": "PENDING" }
+    "78.º-C_saude": {
+      "in_force_years": [
+        2015,
+        2016,
+        2022,
+        2025
+      ],
+      "reads": "stable 2022->2024 (one value for 2023 and 2024); 2025 changed - read separately"
+    },
+    "78.º-E_imoveis": {
+      "in_force_years": [
+        2016,
+        2017,
+        2020,
+        2022,
+        2024,
+        2025,
+        2026
+      ],
+      "reads": "VOLATILE - changed 2024, 2025, 2026; every target year likely distinct; escalonamento not a flat ceiling"
+    },
+    "78.º-B_gerais": {
+      "in_force_years": "PENDING"
+    },
+    "78.º-D_educacao": {
+      "in_force_years": "PENDING (render errored, re-run)"
+    },
+    "78.º-F_iva": {
+      "in_force_years": "PENDING"
+    },
+    "84.º_lares": {
+      "in_force_years": "PENDING"
+    }
   },
   "years": {
     "2023": {
       "declared_in": 2024,
       "rules": {
-        "despesas_gerais": { "article": "78.º-B", "pct": null, "ceiling": null, "verified": false },
-        "saude": { "article": "78.º-C", "pct": null, "ceiling": null, "verified": false },
-        "educacao": { "article": "78.º-D", "pct": null, "ceiling": null, "verified": false },
-        "imoveis_rendas": { "article": "78.º-E", "verified": false, "note": "escalonamento - capture full param set, not one number" },
-        "lares": { "article": "84.º", "pct": null, "ceiling": null, "verified": false },
-        "iva_conjunto": { "article": "78.º-F", "pct": null, "ceiling": null, "verified": false }
+        "despesas_gerais": {
+          "article": "78.º-B",
+          "pct": null,
+          "ceiling": null,
+          "verified": false
+        },
+        "saude": {
+          "article": "78.º-C",
+          "pct": null,
+          "ceiling": null,
+          "verified": false
+        },
+        "educacao": {
+          "article": "78.º-D",
+          "pct": null,
+          "ceiling": null,
+          "verified": false
+        },
+        "imoveis_rendas": {
+          "article": "78.º-E",
+          "verified": false,
+          "note": "escalonamento - capture full param set, not one number"
+        },
+        "lares": {
+          "article": "84.º",
+          "pct": null,
+          "ceiling": null,
+          "verified": false
+        },
+        "iva_conjunto": {
+          "article": "78.º-F",
+          "pct": null,
+          "ceiling": null,
+          "verified": false
+        }
       },
-      "global_limit": { "article": "78.º n.7", "verified": false, "note": "limite por escaloes de rendimento coletavel" },
-      "dependentes": { "article": "78.º-A", "verified": false }
+      "global_limit": {
+        "article": "78.º n.7",
+        "verified": false,
+        "note": "limite por escaloes de rendimento coletavel"
+      },
+      "dependentes": {
+        "article": "78.º-A",
+        "verified": false
+      }
     },
     "2024": {
       "declared_in": 2025,
       "priority": "HIGHEST - most recent closed year, most likely still inside a correction window",
       "rules": {
-        "despesas_gerais": { "article": "78.º-B", "pct": null, "ceiling": null, "verified": false },
-        "saude": { "article": "78.º-C", "pct": null, "ceiling": null, "verified": false },
-        "educacao": { "article": "78.º-D", "pct": null, "ceiling": null, "verified": false },
-        "imoveis_rendas": { "article": "78.º-E", "base_ceiling_lei82_2023": 600, "escalonamento_n4": "900 EUR se rendimento coletavel <= 1.º escalao", "verified": false, "source_law": "Lei 82/2023 art 230 (OE 2024)", "note": "600 is the Lei 82/2023 wording; RECONCILE with Lei 36/2024 (in force 2024-08-07) before verified=true" },
-        "lares": { "article": "84.º", "pct": null, "ceiling": null, "verified": false },
-        "iva_conjunto": { "article": "78.º-F", "pct": null, "ceiling": null, "verified": false }
+        "despesas_gerais": {
+          "article": "78.º-B",
+          "pct": 35,
+          "ceiling": 250,
+          "verified": false,
+          "pct_monoparental": 45,
+          "ceiling_monoparental": 335,
+          "note": "nao alterado por OE-2024; = valor 2023 (confirmar historico 78-B)"
+        },
+        "saude": {
+          "article": "78.º-C",
+          "pct": 15,
+          "ceiling": 1000,
+          "verified": false,
+          "note": "nao alterado por OE-2024; 78-C mudou so em 2025, logo 2024=1000 (confirmar)"
+        },
+        "educacao": {
+          "article": "78.º-D",
+          "pct": 30,
+          "ceiling": 800,
+          "verified": true,
+          "source_law": "Lei 82/2023 art 230 (OE 2024)",
+          "note": "estudante deslocado: renda sub-limite 400/ano, teto global 800 aumentado +300"
+        },
+        "imoveis_rendas": {
+          "article": "78.º-E",
+          "base_ceiling_lei82_2023": 600,
+          "escalonamento_n4": "900 EUR se rendimento coletavel <= 1.º escalao",
+          "verified": false,
+          "source_law": "Lei 82/2023 art 230 (OE 2024)",
+          "note": "600 base confirmado OE-2024; RECONCILE Lei 36/2024 (in force 2024-08-07) antes de verified",
+          "pct": 15,
+          "base_ceiling": 600,
+          "escalonamento": "ate 900 se rendimento coletavel <= 1.o escalao; linear 600->900 ate 30000"
+        },
+        "lares": {
+          "article": "84.º",
+          "pct": 25,
+          "ceiling": 403.75,
+          "verified": false,
+          "note": "nao alterado por OE-2024; = valor 2023 (confirmar historico 84)"
+        },
+        "iva_conjunto": {
+          "article": "78.º-F",
+          "pct": 15,
+          "ceiling": 250,
+          "verified": false,
+          "note": "78-F ALTERADO por OE-2024 mas o teto (n.1) colapsa no SPA da DRE; confirmar 250 pelo PDF do OE. n.8 novo: 30% do IVA de servicos"
+        }
       },
-      "global_limit": { "article": "78.º n.7", "verified": false },
-      "dependentes": { "article": "78.º-A", "verified": false }
+      "global_limit": {
+        "article": "78.º n.7",
+        "verified": false
+      },
+      "dependentes": {
+        "article": "78.º-A",
+        "verified": false
+      },
+      "_note": "2024 = OE 2024 (Lei 82/2023). educacao 800 + rendas base 600 VERIFICADOS (prose). SPA colapsa 78-F teto + limite global 78 n.7 -> precisam do PDF do OE. 78-B/C/84 nao alterados pelo OE-2024."
     },
     "2025": {
       "declared_in": 2026,
       "rules": {
-        "despesas_gerais": { "article": "78.º-B", "pct": 35, "pct_monoparental": 45, "ceiling": 250, "ceiling_monoparental": 335, "verified": false, "note": "current-render figures; re-confirm on dedicated page" },
-        "saude": { "article": "78.º-C", "pct": 15, "ceiling": 1000, "verified": false, "note": "2025 amendment in force - confirm 1000 still holds for income 2025" },
-        "educacao": { "article": "78.º-D", "pct": 30, "ceiling": 800, "verified": false },
-        "imoveis_rendas": { "article": "78.º-E", "verified": false, "note": "escalonamento; DL 97/2026 is 2026 not 2025 - use pre-2026 in-force text" },
-        "lares": { "article": "84.º", "pct": 25, "ceiling": 403, "verified": false },
-        "iva_conjunto": { "article": "78.º-F", "pct": 15, "ceiling_conjunto": 250, "verified": false }
+        "despesas_gerais": {
+          "article": "78.º-B",
+          "pct": 35,
+          "pct_monoparental": 45,
+          "ceiling": 250,
+          "ceiling_monoparental": 335,
+          "verified": false,
+          "note": "current-render figures; re-confirm on dedicated page"
+        },
+        "saude": {
+          "article": "78.º-C",
+          "pct": 15,
+          "ceiling": 1000,
+          "verified": false,
+          "note": "2025 amendment in force - confirm 1000 still holds for income 2025"
+        },
+        "educacao": {
+          "article": "78.º-D",
+          "pct": 30,
+          "ceiling": 800,
+          "verified": false
+        },
+        "imoveis_rendas": {
+          "article": "78.º-E",
+          "verified": false,
+          "note": "escalonamento; DL 97/2026 is 2026 not 2025 - use pre-2026 in-force text"
+        },
+        "lares": {
+          "article": "84.º",
+          "pct": 25,
+          "ceiling": 403,
+          "verified": false
+        },
+        "iva_conjunto": {
+          "article": "78.º-F",
+          "pct": 15,
+          "ceiling_conjunto": 250,
+          "verified": false
+        }
       },
-      "global_limit": { "article": "78.º n.7", "verified": false },
-      "dependentes": { "article": "78.º-A", "verified": false }
+      "global_limit": {
+        "article": "78.º n.7",
+        "verified": false
+      },
+      "dependentes": {
+        "article": "78.º-A",
+        "verified": false
+      }
     }
   },
   "_todo_in_order": [
