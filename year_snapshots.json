@@ -67,38 +67,43 @@
       "rules": {
         "despesas_gerais": {
           "article": "78.º-B",
-          "pct": null,
-          "ceiling": null,
-          "verified": false
+          "pct": 35,
+          "ceiling": 250,
+          "verified": false,
+          "note": "carried from 2024; confirmar nao alterado por OE-2023 (DRE only)"
         },
         "saude": {
           "article": "78.º-C",
-          "pct": null,
-          "ceiling": null,
-          "verified": false
+          "pct": 15,
+          "ceiling": 1000,
+          "verified": false,
+          "note": "carried from 2024; confirmar nao alterado por OE-2023 (DRE only)"
         },
         "educacao": {
           "article": "78.º-D",
-          "pct": null,
-          "ceiling": null,
-          "verified": false
+          "pct": 30,
+          "ceiling": 800,
+          "verified": false,
+          "note": "OE-2024 alterou 78-D para 800; 2023 pode diferir - confirmar OE-2023"
         },
         "imoveis_rendas": {
           "article": "78.º-E",
           "verified": false,
-          "note": "escalonamento - capture full param set, not one number"
+          "note": "pre-OE-2024: rendas base ~502 (confirmar via OE-2023 art / DRE, NAO web)"
         },
         "lares": {
           "article": "84.º",
-          "pct": null,
-          "ceiling": null,
-          "verified": false
+          "pct": 25,
+          "ceiling": 403.75,
+          "verified": false,
+          "note": "carried from 2024; confirmar nao alterado por OE-2023 (DRE only)"
         },
         "iva_conjunto": {
           "article": "78.º-F",
-          "pct": null,
-          "ceiling": null,
-          "verified": false
+          "pct": 15,
+          "ceiling": 250,
+          "verified": false,
+          "note": "carried from 2024; confirmar nao alterado por OE-2023 (DRE only)"
         }
       },
       "global_limit": {
@@ -109,7 +114,8 @@
       "dependentes": {
         "article": "78.º-A",
         "verified": false
-      }
+      },
+      "_note": "SCAFFOLD: 5 tetos carried de 2024 (verified:false, confirmar); rendas por ano. Version-at-date SPA nao drivavel; usar OE-<ano> art pages (DRE, sem web)."
     },
     "2024": {
       "declared_in": 2025,
@@ -194,37 +200,41 @@
           "ceiling": 250,
           "ceiling_monoparental": 335,
           "verified": false,
-          "note": "current-render figures; re-confirm on dedicated page"
+          "note": "carried from 2024; confirmar nao alterado por OE-2025 (DRE only)"
         },
         "saude": {
           "article": "78.º-C",
           "pct": 15,
           "ceiling": 1000,
           "verified": false,
-          "note": "2025 amendment in force - confirm 1000 still holds for income 2025"
+          "note": "carried from 2024; confirmar nao alterado por OE-2025 (DRE only)"
         },
         "educacao": {
           "article": "78.º-D",
           "pct": 30,
           "ceiling": 800,
-          "verified": false
+          "verified": false,
+          "note": "carried from 2024; confirmar nao alterado por OE-2025 (DRE only)"
         },
         "imoveis_rendas": {
           "article": "78.º-E",
           "verified": false,
-          "note": "escalonamento; DL 97/2026 is 2026 not 2025 - use pre-2026 in-force text"
+          "note": "entre 600 (2024) e 900 (2026); confirmar via OE-2025 art / DRE"
         },
         "lares": {
           "article": "84.º",
           "pct": 25,
-          "ceiling": 403,
-          "verified": false
+          "ceiling": 403.75,
+          "verified": false,
+          "note": "carried from 2024; confirmar nao alterado por OE-2025 (DRE only)"
         },
         "iva_conjunto": {
           "article": "78.º-F",
           "pct": 15,
           "ceiling_conjunto": 250,
-          "verified": false
+          "verified": false,
+          "ceiling": 250,
+          "note": "carried from 2024; confirmar nao alterado por OE-2025 (DRE only)"
         }
       },
       "global_limit": {
@@ -234,7 +244,8 @@
       "dependentes": {
         "article": "78.º-A",
         "verified": false
-      }
+      },
+      "_note": "SCAFFOLD: 5 tetos carried de 2024 (verified:false, confirmar); rendas por ano. Version-at-date SPA nao drivavel; usar OE-<ano> art pages (DRE, sem web)."
     }
   },
   "_todo_in_order": [
