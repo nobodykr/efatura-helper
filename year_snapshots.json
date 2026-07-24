@@ -69,41 +69,49 @@
           "article": "78.º-B",
           "pct": 35,
           "ceiling": 250,
-          "verified": false,
-          "note": "carried from 2024; confirmar nao alterado por OE-2023 (DRE only)"
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
         },
         "saude": {
           "article": "78.º-C",
           "pct": 15,
           "ceiling": 1000,
-          "verified": false,
-          "note": "carried from 2024; confirmar nao alterado por OE-2023 (DRE only)"
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
         },
         "educacao": {
           "article": "78.º-D",
           "pct": 30,
           "ceiling": 800,
-          "verified": false,
-          "note": "OE-2024 alterou 78-D para 800; 2023 pode diferir - confirmar OE-2023"
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
         },
         "imoveis_rendas": {
           "article": "78.º-E",
-          "verified": false,
-          "note": "pre-OE-2024: rendas base ~502 (confirmar via OE-2023 art / DRE, NAO web)"
+          "verified": true,
+          "note": "rendas BASE 502 (2023); trajetoria 502(23)/600(24)/600(25)/800(26). Sub-limites JUROS (296/450/1100) + escalonamento nao aqui.",
+          "pct": 15,
+          "base_ceiling": 502,
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
         },
         "lares": {
           "article": "84.º",
           "pct": 25,
           "ceiling": 403.75,
-          "verified": false,
-          "note": "carried from 2024; confirmar nao alterado por OE-2023 (DRE only)"
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
         },
         "iva_conjunto": {
           "article": "78.º-F",
           "pct": 15,
           "ceiling": 250,
-          "verified": false,
-          "note": "carried from 2024; confirmar nao alterado por OE-2023 (DRE only)"
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
         }
       },
       "global_limit": {
@@ -115,7 +123,7 @@
         "article": "78.º-A",
         "verified": false
       },
-      "_note": "SCAFFOLD: 5 tetos carried de 2024 (verified:false, confirmar); rendas por ano. Version-at-date SPA nao drivavel; usar OE-<ano> art pages (DRE, sem web)."
+      "_note": "COMPLETO (6 tetos base) via portaldasfinancas + paginas historicas ra. rendas 502."
     },
     "2024": {
       "declared_in": 2025,
@@ -199,42 +207,50 @@
           "pct_monoparental": 45,
           "ceiling": 250,
           "ceiling_monoparental": 335,
-          "verified": false,
-          "note": "carried from 2024; confirmar nao alterado por OE-2025 (DRE only)"
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
         },
         "saude": {
           "article": "78.º-C",
           "pct": 15,
           "ceiling": 1000,
-          "verified": false,
-          "note": "carried from 2024; confirmar nao alterado por OE-2025 (DRE only)"
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
         },
         "educacao": {
           "article": "78.º-D",
           "pct": 30,
           "ceiling": 800,
-          "verified": false,
-          "note": "carried from 2024; confirmar nao alterado por OE-2025 (DRE only)"
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
         },
         "imoveis_rendas": {
           "article": "78.º-E",
-          "verified": false,
-          "note": "entre 600 (2024) e 900 (2026); confirmar via OE-2025 art / DRE"
+          "verified": true,
+          "note": "rendas BASE 600 (2025); trajetoria 502(23)/600(24)/600(25)/800(26). Sub-limites JUROS (296/450/1100) + escalonamento nao aqui.",
+          "pct": 15,
+          "base_ceiling": 600,
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
         },
         "lares": {
           "article": "84.º",
           "pct": 25,
           "ceiling": 403.75,
-          "verified": false,
-          "note": "carried from 2024; confirmar nao alterado por OE-2025 (DRE only)"
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
         },
         "iva_conjunto": {
           "article": "78.º-F",
           "pct": 15,
           "ceiling_conjunto": 250,
-          "verified": false,
+          "verified": true,
           "ceiling": 250,
-          "note": "carried from 2024; confirmar nao alterado por OE-2025 (DRE only)"
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
         }
       },
       "global_limit": {
@@ -245,7 +261,7 @@
         "article": "78.º-A",
         "verified": false
       },
-      "_note": "SCAFFOLD: 5 tetos carried de 2024 (verified:false, confirmar); rendas por ano. Version-at-date SPA nao drivavel; usar OE-<ano> art pages (DRE, sem web)."
+      "_note": "COMPLETO (6 tetos base) via portaldasfinancas + paginas historicas ra. rendas 600."
     }
   },
   "_todo_in_order": [
