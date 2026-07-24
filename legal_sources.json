@@ -122,6 +122,35 @@
       "source_note": "DRE consolidada CPPT. Verificado por render 2026-07-23."
     },
     {
+      "id": "cirs-8",
+      "governs": "Rendimentos prediais (Categoria F) - o que E renda tributavel, e porque a CAUCAO nao e",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
+      "type": "artigo",
+      "critical": true,
+      "why_it_matters": "Base da questao da caucao: art. 8.o define rendimentos prediais como 'rendas... pagas ou colocadas a disposicao'. A caucao (deposito de garantia detido POR CONTA do inquilino) NAO consta do art. 8.o (verificado: sem 'caucao'/'deposito'/'garantia'), logo nao e rendimento predial ao ser recebida/detida. Vira rendimento SO se retida (incumprimento) - entendimento a confirmar. No recibo eletronico so a importancia tipo 'renda' e Cat. F; a tipo 'caucao' nao. NOTA: o n.2 do art. 8 renderiza como '...' no SPA da DRE (limitacao), mas nenhum item do n.2 e uma caucao.",
+      "expect": [
+        "8.º",
+        "rendimentos prediais",
+        "colocadas à disposição"
+      ],
+      "source_note": "DRE consolidada CIRS. Verificado por render 2026-07-24; n.2 colapsa no SPA (ler PDF da republicacao 2014 se precisar do texto integral)."
+    },
+    {
+      "id": "cc-1076",
+      "governs": "Caucao no arrendamento - existe e tem limite legal (lado civil da questao da caucao)",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1966-34509075",
+      "type": "artigo",
+      "critical": false,
+      "why_it_matters": "Art. 1076.o CC: n.1 antecipacao de renda ate DOIS meses (acordo escrito); n.2 as partes podem caucionar o cumprimento das obrigacoes ate ao valor de DUAS RENDAS. Confirma que a caucao e legal e tem tecto (2x renda). NOTA: uma pesquisa web dizia '3 meses' para a antecipacao - a DRE diz DOIS. Usar sempre a DRE, nunca a web.",
+      "expect": [
+        "1076.º",
+        "Antecipação de rendas",
+        "dois meses",
+        "duas rendas"
+      ],
+      "source_note": "DRE consolidada Codigo Civil (DL 47344/66). Verificado por render 2026-07-24."
+    },
+    {
       "id": "lgt-78",
       "governs": "Revisao dos actos tributarios - o alcance de 4 anos, e os seus LIMITES (evitar over-promise)",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1998-34438775",
