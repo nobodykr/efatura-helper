@@ -466,14 +466,20 @@
         var ra = reAuditData.filter(function(x){ return x.ano===yy; })[0];
         var raHtml = '';
         if (ra){
-          var opp = ra.categorias.filter(function(c){ return c.livre>0.5 && c.porClassificar>0; });
-          if (opp.length){
-            raHtml = '<div class="w" style="margin-top:4px;color:var(--green)"><b>Podes ainda recuperar:</b> '+
-              opp.map(function(c){ return esc(c.cat)+' (teto livre &euro;'+esc(Math.round(c.livre))+', '+c.porClassificar+' fatura(s) por classificar)'; }).join('; ')+'. '+
-              'Classifica essas faturas no e-Fatura'+(wnd.recover.open?' e entrega uma declaração de substituição (ainda estás no prazo)':'')+'.</div>';
-          } else {
-            raHtml = '<div class="w" style="margin-top:4px">Sem margem óbvia por recuperar em '+yy+' (tetos já usados ou nada por classificar).</div>';
-          }
+          // (1) real recovery NOW: unused ceiling AND invoices still pending to classify
+          var pend = ra.categorias.filter(function(c){ return c.livre>0.5 && c.porClassificar>0; });
+          // (2) the behavioural flag: a big ceiling barely touched, nothing pending -> you likely had
+          // those expenses but never asked for the NIF fatura, so the deduction was simply lost
+          var unused = ra.categorias.filter(function(c){ return c.porClassificar===0 && c.cap>0 && c.usado < c.cap*0.4; });
+          var parts = [];
+          if (pend.length) parts.push('<b>Recuperável já:</b> '+pend.map(function(c){
+              return esc(c.cat)+' ('+c.porClassificar+' por classificar, teto livre &euro;'+esc(Math.round(c.livre))+')'; }).join('; ')+
+              '. Classifica no e-Fatura'+(wnd.recover.open?' e entrega uma substituição (ainda no prazo)':'')+'.');
+          if (unused.length) parts.push('<b>Teto quase por usar:</b> '+unused.map(function(c){
+              return esc(c.cat)+' (só &euro;'+esc(Math.round(c.usado))+' de &euro;'+esc(c.cap)+')'; }).join('; ')+
+              '. Se tiveste estas despesas sem pedir fatura com NIF, a dedução perdeu-se - pede sempre o NIF.');
+          if (parts.length) raHtml = '<div class="w" style="margin-top:4px;color:var(--green)">'+parts.join(' ')+'</div>';
+          else raHtml = '<div class="w" style="margin-top:4px">Tetos de saúde/educação/lares já usados ou sem faturas por classificar em '+yy+'.</div>';
         }
         h += '<div class="step" style="align-items:baseline"><div class="ic" style="width:18px">•</div><div class="bd">'+
           '<div class="t">IRS '+yy+' <span class="w">(entregue em '+wnd.declaredIn+')</span> '+openPill+'</div>'+

@@ -220,34 +220,48 @@
    * the CPPT/LGT windows). Only the rendas ceiling (C07) moved across years; the rest held. Values
    * are DRE/AT-verified in year_snapshots.json. Indicators only - never a submission. */
   var RENDAS_CAP_ANO = { 2023: 502, 2024: 600, 2025: 600 };   // C07 base ceiling per income year
-  function fetchAno(ano) {
-    var u = "/json/obterDocumentosAdquirente.action?dataInicioFilter=" + ano + "-01-01&dataFimFilter=" + ano + "-12-31";
+  /* obterDocumentosAdquirente CAPS at 300 rows and returns the MOST RECENT first, so summing an
+   * unfiltered year silently misses invoices on a busy year. But it accepts ambitoAquisicaoFilter
+   * (a sector code), and a single sector is always well under 300 - so we fetch PER SECTOR to get
+   * the whole year accurately. It also refuses a multi-year range ("mesmo ano"), so one year at a
+   * time. Verified on real data 2026-07-24. */
+  function fetchSector(ano, sec) {
+    var u = "/json/obterDocumentosAdquirente.action?dataInicioFilter=" + ano + "-01-01&dataFimFilter=" + ano +
+            "-12-31&ambitoAquisicaoFilter=" + sec;
     return getJSON(u).then(function (j) {
       if (j && (j.expiredSession === true || j.success === false)) throw new Error("sessão do e-Fatura expirada");
       var rows = (j && (j.linhas || j.documentos)) || [];
       return Array.isArray(rows) ? rows : [];
     });
   }
-  function reAuditAno(ano, rows, prof) {
-    var used = usedSoFar(rows, prof);
-    // pending (not yet classified) invoices per sector-key = the deduction still capturable
-    var pend = {};
-    rows.forEach(function (x) {
-      var c = CEIL[x.actividadeEmitente]; if (!c || x.estadoBeneficio === "R") return;
-      pend[c.pot || x.actividadeEmitente] = (pend[c.pot || x.actividadeEmitente] || 0) + 1;
+  // Deduction is "used" once the benefit is ATTRIBUTED (R Registado, B Beneficio, E Registado apos);
+  // only P Pendente is still capturable by classifying; N/A/C/O never count.
+  function isAttributed(s) { return s === "R" || s === "B" || s === "E"; }
+  // The individual-ceiling categories are where "money left on the table" is real (unused ceiling +
+  // maybe invoices you never asked a NIF for). Gerais (C99) is a catch-all that fills instantly, so
+  // it is not the story. Each is fetched with its own sector filter (accurate, uncapped).
+  function reAuditAno(ano, prof) {
+    var cats = [{ k: "C05", n: "Saúde" }, { k: "C06", n: "Educação" },
+                { k: "C07", n: "Imóveis / habitação (renda)" }, { k: "C08", n: "Lares" }];
+    return Promise.all(cats.map(function (c) {
+      return fetchSector(ano, c.k).then(function (rows) {
+        var used = 0, pend = 0;
+        rows.forEach(function (x) {
+          if (isAttributed(x.estadoBeneficio)) used += Number(x.valorTotal || 0) / 100 * CEIL[c.k].rate;
+          else if (x.estadoBeneficio === "P") pend++;
+        });
+        var cap = c.k === "C07" ? (RENDAS_CAP_ANO[ano] || CEIL.C07.cap) : CEIL[c.k].cap;
+        used = +used.toFixed(2);
+        var free = +(cap - used).toFixed(2);
+        return { cat: c.n, cap: cap, usado: used, livre: free < 0 ? 0 : free,
+                 porClassificar: pend, faturas: rows.length,
+                 status: free <= 0.005 ? "MAXED" : (used > 0 ? "PARCIAL" : "VAZIO") };
+      }).catch(function () { return null; });
+    })).then(function (rows2) {
+      rows2 = rows2.filter(Boolean);
+      var totalFree = 0; rows2.forEach(function (r) { if (r.livre > 0) totalFree += r.livre; });
+      return { ano: ano, categorias: rows2, totalLivre: +totalFree.toFixed(2) };
     });
-    var cats = [{ k: "C05", n: "Saúde" }, { k: "C06", n: "Educação" }, { k: "C07", n: "Imóveis / habitação" },
-                { k: "C08", n: "Lares" }, { k: "C99", n: "Despesas gerais" }, { k: POT, n: "Setores com IVA (pote 250)" }];
-    var rows2 = [], totalFree = 0;
-    cats.forEach(function (c) {
-      var cap = c.k === "C07" ? (RENDAS_CAP_ANO[ano] || CEIL.C07.cap) : (c.k === POT ? POT_CAP : capFor(c.k, prof));
-      var u = +(used[c.k] || 0).toFixed(2);
-      var free = +(cap - u).toFixed(2);
-      var status = free <= 0.005 ? "MAXED" : (u > 0 ? "PARCIAL" : "VAZIO");
-      if (free > 0) totalFree += free;
-      rows2.push({ cat: c.n, cap: cap, usado: u, livre: free, status: status, porClassificar: pend[c.k] || 0 });
-    });
-    return { ano: ano, categorias: rows2, totalLivre: +totalFree.toFixed(2) };
   }
   function esc(s) { return String(s == null ? "" : s).replace(/[<>&]/g, function (x) { return { "<": "&lt;", ">": "&gt;", "&": "&amp;" }[x]; }); }
   /* e-Fatura returns merchant names ALREADY html-encoded ("Irm&atilde;dona Supermercados"), so
@@ -666,7 +680,7 @@
       // fails (no data / lapsed) just drops out.
       var anos = [year - 1, year - 2, year - 3];
       return Promise.all(anos.map(function (a) {
-        return fetchAno(a).then(function (r) { return reAuditAno(a, r, {}); }).catch(function () { return null; });
+        return reAuditAno(a, {}).catch(function () { return null; });
       })).then(function (ra) {
         return { data: { ano: year, totalFaturas: (j && j.totalElementos != null ? j.totalElementos : rows.length),
                          porClassificar: pend, atividades: byAct,
