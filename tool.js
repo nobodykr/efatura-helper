@@ -256,30 +256,52 @@
   // Deduction is "used" once the benefit is ATTRIBUTED (R Registado, B Beneficio, E Registado apos);
   // only P Pendente is still capturable by classifying; N/A/C/O never count.
   function isAttributed(s) { return s === "R" || s === "B" || s === "E"; }
-  // The individual-ceiling categories are where "money left on the table" is real (unused ceiling +
-  // maybe invoices you never asked a NIF for). Gerais (C99) is a catch-all that fills instantly, so
-  // it is not the story. Each is fetched with its own sector filter (accurate, uncapped).
+  /* THE OPTIMISER CORE, pure and reusable. Given a year's invoices, the cae-db map (NIF -> the
+   * sectors that merchant is ACTUALLY registered for) and the profile, it finds the footgun-safe
+   * `recoverable`: attributed invoices sitting in a full pot where the SAME merchant is also
+   * registered for a sector that still has room -> reclassifying them recovers deduction. Only
+   * sectors the merchant genuinely holds (from caemap/SICAE) are ever offered, so it can never say
+   * "declare groceries as Saude". Used by run() for the current year AND by reAuditAno for past
+   * years (pass the per-year rendas cap for C07). Identical logic; do not let them diverge. */
+  function movablesAndRecoverable(rows, caemap, prof, rendasCap) {
+    var used = usedSoFar(rows, prof);
+    var capOf = function (sec) { return (sec === "C07" && rendasCap != null) ? rendasCap : capFor(sec, prof); };
+    var headroom = function (sec) { var c = CEIL[sec]; if (!c) return Infinity; return capOf(sec) - (used[c.pot || sec] || 0); };
+    var dedu = function (x, sec) { var c = CEIL[sec]; if (!c) return 0; var v = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100; return v * (sec === "C99" ? c99Rate(prof) : c.rate); };
+    var gain = function (sec, x) { var c = CEIL[sec]; if (!c) return 0; var base = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100; return Math.max(0, Math.min(headroom(sec), c.rate * base)); };
+    var movR = [];
+    rows.forEach(function (x) {
+      if (!isAttributed(x.estadoBeneficio)) return;
+      var cur = x.actividadeEmitente; if (!cur || !CEIL[cur]) return;
+      var reg = caemap[x.nifEmitente];
+      reg = reg ? (Object.prototype.toString.call(reg) === "[object Array]" ? reg : [reg]) : [];
+      var bestA = null, bestG = gain(cur, x) + 0.01;   // must beat the current sector
+      reg.forEach(function (a) { if (a === cur || !CEIL[a]) return; var g = gain(a, x); if (g > bestG) { bestG = g; bestA = a; } });
+      if (bestA) movR.push({ x: x, to: bestA });
+    });
+    var recPots = {}, recoverable = 0;
+    movR.slice().sort(function (a, b) { return dedu(b.x, b.to) - dedu(a.x, a.to); }).forEach(function (m) {
+      var c = CEIL[m.to], k = c.pot || m.to;
+      var roomLeft = headroom(m.to) - (recPots[k] || 0);
+      if (roomLeft <= 0.01) return;
+      var g = Math.min(dedu(m.x, m.to), roomLeft);
+      if (g <= 0.01) return;
+      recPots[k] = (recPots[k] || 0) + g; recoverable += g;
+    });
+    return { movR: movR, recoverable: +recoverable.toFixed(2) };
+  }
+  /* Past-year re-audit = the optimiser above, run over EVERY invoice of a year (all sectors, fetched
+   * completely via the recursive splitter), cross-referenced NIF-by-NIF against cae-db. Reports how
+   * much deduction was left on the table by suboptimal classification, and which target sectors. */
   function reAuditAno(ano, prof) {
-    var cats = [{ k: "C05", n: "Saúde" }, { k: "C06", n: "Educação" },
-                { k: "C07", n: "Imóveis / habitação (renda)" }, { k: "C08", n: "Lares" }];
-    return Promise.all(cats.map(function (c) {
-      return fetchSector(ano, c.k).then(function (rows) {
-        var used = 0, pend = 0;
-        rows.forEach(function (x) {
-          if (isAttributed(x.estadoBeneficio)) used += Number(x.valorTotal || 0) / 100 * CEIL[c.k].rate;
-          else if (x.estadoBeneficio === "P") pend++;
-        });
-        var cap = c.k === "C07" ? (RENDAS_CAP_ANO[ano] || CEIL.C07.cap) : CEIL[c.k].cap;
-        used = +used.toFixed(2);
-        var free = +(cap - used).toFixed(2);
-        return { cat: c.n, cap: cap, usado: used, livre: free < 0 ? 0 : free,
-                 porClassificar: pend, faturas: rows.length,
-                 status: free <= 0.005 ? "MAXED" : (used > 0 ? "PARCIAL" : "VAZIO") };
-      }).catch(function () { return null; });
-    })).then(function (rows2) {
-      rows2 = rows2.filter(Boolean);
-      var totalFree = 0; rows2.forEach(function (r) { if (r.livre > 0) totalFree += r.livre; });
-      return { ano: ano, categorias: rows2, totalLivre: +totalFree.toFixed(2) };
+    return fetchSector(ano, "").then(function (rows) {          // "" = all sectors, uncapped
+      return fetchMap(rows.map(function (x) { return x.nifEmitente; })).then(function (caemap) {
+        var mr = movablesAndRecoverable(rows, caemap || {}, prof, RENDAS_CAP_ANO[ano]);
+        var byTarget = {};
+        mr.movR.forEach(function (m) { var s = SECTORS[m.to] || m.to; byTarget[s] = (byTarget[s] || 0) + 1; });
+        return { ano: ano, recuperavel: mr.recoverable, nMover: mr.movR.length,
+                 porSetor: byTarget, totalFaturas: rows.length };
+      });
     });
   }
   function esc(s) { return String(s == null ? "" : s).replace(/[<>&]/g, function (x) { return { "<": "&lt;", ">": "&gt;", "&": "&amp;" }[x]; }); }
@@ -1253,45 +1275,12 @@
          * headroom. A C99-only merchant yields no move, so this can never suggest declaring
          * groceries as Saude. Verified 20-07-2026 that the landing sector is actividadeEmitente
          * (the IRS endpoint's valorTotalSetorBeneficio/DespesasGerais are always 0). */
-        var movR = [];
-        rows.forEach(function (x) {
-          if (x.estadoBeneficio !== "R") return;
-          var cur = x.actividadeEmitente;
-          if (!cur || !CEIL[cur]) return;
-          /* Use the PUBLIC caemap, NOT cascade(). cascade() consults `learned` (your own history)
-           * first, and an already-attributed row's own attribution IS that history - so cascade
-           * would pin every R row to its current sector and no correction could ever surface. The
-           * caemap lists the sectors the merchant is genuinely registered for, independent of how
-           * this invoice was classified. */
-          var reg = caemap[x.nifEmitente];
-          reg = reg ? (Object.prototype.toString.call(reg) === "[object Array]" ? reg : [reg]) : [];
-          var curGain = gain(cur, x);
-          var bestA = null, bestG = curGain + 0.01;   // must beat the current sector to be worth it
-          reg.forEach(function (a) {
-            if (a === cur || !CEIL[a]) return;
-            var g = gain(a, x);                        // gain() applies headroom, so a full sector scores 0
-            if (g > bestG) { bestG = g; bestA = a; }
-          });
-          if (bestA) movR.push({ x: x, to: bestA });
-        });
+        // movR (invoices in a full pot the merchant can move out of) + the footgun-safe recoverable,
+        // now computed by the SHARED core so the current year and the past-year re-audit never drift.
+        var _mr = movablesAndRecoverable(rows, caemap, prof);   // current year -> current ceilings
+        var movR = _mr.movR, recoverable = _mr.recoverable;
         var movTo = {};
         movR.forEach(function (m) { movTo[m.x.idDocumento] = m.to; });
-        /* The REAL recoverable amount - NOT o.wasted. Exceeding a ceiling (especially Despesas
-         * Gerais) is normal: most spending legitimately lands there and CANNOT move, because the
-         * merchant is only registered for that sector. What is recoverable is strictly the movable
-         * rows, and only up to the headroom actually available in their target sectors. Sum them
-         * greedily, tracking per-pot headroom so two rows cannot each "fill" the same 750 EUR of
-         * Saude. This is the honest value; o.wasted overstated it by ~20x on real data. */
-        var recPots = {}, recoverable = 0;
-        movR.slice().sort(function (a, b) { return dedu(b.x, b.to) - dedu(a.x, a.to); }).forEach(function (m) {
-          var c = CEIL[m.to], k = c.pot || m.to;
-          var roomLeft = headroom(m.to) - (recPots[k] || 0);
-          if (roomLeft <= 0.01) return;
-          var g = Math.min(dedu(m.x, m.to), roomLeft);
-          if (g <= 0.01) return;
-          recPots[k] = (recPots[k] || 0) + g;
-          recoverable += g;
-        });
         var actionable = pend.concat(movR.map(function (m) { return m.x; }));
         if (!actionable.length) {
           document.getElementById("efh-body").innerHTML = "\u2705 Est\u00e1s em dia - nada por classificar nem por corrigir em " + year + ".";

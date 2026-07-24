@@ -465,21 +465,17 @@
         // re-audit for this year (from the e-Fatura reader): categories with free ceiling AND pending invoices
         var ra = reAuditData.filter(function(x){ return x.ano===yy; })[0];
         var raHtml = '';
-        if (ra){
-          // (1) real recovery NOW: unused ceiling AND invoices still pending to classify
-          var pend = ra.categorias.filter(function(c){ return c.livre>0.5 && c.porClassificar>0; });
-          // (2) the behavioural flag: a big ceiling barely touched, nothing pending -> you likely had
-          // those expenses but never asked for the NIF fatura, so the deduction was simply lost
-          var unused = ra.categorias.filter(function(c){ return c.porClassificar===0 && c.cap>0 && c.usado < c.cap*0.4; });
-          var parts = [];
-          if (pend.length) parts.push('<b>Recuperável já:</b> '+pend.map(function(c){
-              return esc(c.cat)+' ('+c.porClassificar+' por classificar, teto livre &euro;'+esc(Math.round(c.livre))+')'; }).join('; ')+
-              '. Classifica no e-Fatura'+(wnd.recover.open?' e entrega uma substituição (ainda no prazo)':'')+'.');
-          if (unused.length) parts.push('<b>Teto quase por usar:</b> '+unused.map(function(c){
-              return esc(c.cat)+' (só &euro;'+esc(Math.round(c.usado))+' de &euro;'+esc(c.cap)+')'; }).join('; ')+
-              '. Se tiveste estas despesas sem pedir fatura com NIF, a dedução perdeu-se - pede sempre o NIF.');
-          if (parts.length) raHtml = '<div class="w" style="margin-top:4px;color:var(--green)">'+parts.join(' ')+'</div>';
-          else raHtml = '<div class="w" style="margin-top:4px">Tetos de saúde/educação/lares já usados ou sem faturas por classificar em '+yy+'.</div>';
+        if (ra && ra.recuperavel > 0.5){
+          // The optimiser result: invoices sitting in a full pot where the SAME merchant is also
+          // registered for a sector with room -> reclassify to recover deduction. porSetor keys are
+          // already sector names (Saude/Educacao/...).
+          var setores = Object.keys(ra.porSetor||{}).map(function(k){ return esc(k)+' ('+ra.porSetor[k]+')'; }).join(', ');
+          raHtml = '<div class="w" style="margin-top:4px;color:var(--green)"><b>Recuperável ~&euro;'+esc(Math.round(ra.recuperavel))+'</b>: '+
+            ra.nMover+' fatura(s) estão numa categoria cheia mas o comerciante também está registado noutra com espaço'+
+            (setores?': '+setores:'')+'. Corrige o setor no e-Fatura (Alterar, escolhe o setor, Guardar)'+
+            (wnd.recover.open?' e entrega uma declaração de substituição (ainda no prazo)':'')+'.</div>';
+        } else if (ra){
+          raHtml = '<div class="w" style="margin-top:4px">Nada por reclassificar em '+yy+' - as faturas já estão no melhor setor possível.</div>';
         }
         h += '<div class="step" style="align-items:baseline"><div class="ic" style="width:18px">•</div><div class="bd">'+
           '<div class="t">IRS '+yy+' <span class="w">(entregue em '+wnd.declaredIn+')</span> '+openPill+'</div>'+
