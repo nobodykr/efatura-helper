@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Fatura Boa | O teu perfil fiscal, das fontes oficiais (grátis, sem password)</title>
-<meta name="description" content="Ferramenta gratuita e verificável que lê o teu próprio registo nas Finanças e na Segurança Social, na tua sessão, sem password, e monta o teu perfil fiscal: faturas do e-Fatura por setor e teto de dedução, rendas, situação fiscal e prazos, património e IMI, e histórico de IRS. Corre no teu navegador, nada sai de lá.">
+<title>Fatura Boa | A tua situação fiscal, das fontes oficiais (grátis, sem password)</title>
+<meta name="description" content="Ferramenta gratuita e verificável que lê o teu próprio registo nas Finanças e na Segurança Social, na tua sessão, sem password, e mostra a tua situação fiscal: faturas do e-Fatura por setor e teto de dedução, rendas, situação fiscal e prazos, património e IMI, e histórico de IRS. Corre no teu navegador, nada sai de lá.">
 <link rel="canonical" href="https://faturas.diogoandrade.com/">
 <!-- Diogo's DA monogram, same mark as diogoandrade.com. There was no favicon at all before, so
      every tab showed the browser default and /favicon.ico returned 404. Regenerate the raster
@@ -18,15 +18,15 @@
 <meta property="og:locale" content="pt_PT">
 <meta property="og:site_name" content="Fatura Boa">
 <meta property="og:url" content="https://faturas.diogoandrade.com/">
-<meta property="og:title" content="Fatura Boa | O teu perfil fiscal, das fontes oficiais">
-<meta property="og:description" content="Lê o teu próprio registo nas Finanças e na Segurança Social, na tua sessão, sem password, e monta o teu perfil fiscal: faturas, rendas, situação fiscal, IMI e IRS. Grátis, no teu navegador, verificável.">
+<meta property="og:title" content="Fatura Boa | A tua situação fiscal, das fontes oficiais">
+<meta property="og:description" content="Lê o teu próprio registo nas Finanças e na Segurança Social, na tua sessão, sem password, e mostra a tua situação fiscal: faturas, rendas, situação fiscal, IMI e IRS. Grátis, no teu navegador, verificável.">
 <meta property="og:image" content="https://faturas.diogoandrade.com/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Fatura Boa - o teu perfil fiscal, das fontes oficiais">
+<meta property="og:image:alt" content="Fatura Boa - a tua situação fiscal, das fontes oficiais">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Fatura Boa | O teu perfil fiscal, das fontes oficiais">
-<meta name="twitter:description" content="Lê o teu próprio registo fiscal na tua sessão, sem password, e monta o teu perfil: faturas, rendas, situação, IMI, IRS. Grátis e verificável.">
+<meta name="twitter:title" content="Fatura Boa | A tua situação fiscal, das fontes oficiais">
+<meta name="twitter:description" content="Lê o teu próprio registo fiscal na tua sessão, sem password, e mostra a tua situação: faturas, rendas, situação, IMI, IRS. Grátis e verificável.">
 <!-- twitter:card has said summary_large_image since the beginning, but there was no image, so
      every share on WhatsApp, LinkedIn and Slack rendered blank. Regenerate with: node make-og.mjs -->
 <meta name="twitter:image" content="https://faturas.diogoandrade.com/assets/og.png">
@@ -37,7 +37,7 @@
  "operatingSystem":"Qualquer navegador",
  "url":"https://faturas.diogoandrade.com/",
  "inLanguage":"pt-PT",
- "description":"Ferramenta gratuita e verificavel que le o proprio registo do utilizador nas Financas e na Seguranca Social, na sua sessao, sem password, e monta o perfil fiscal: faturas do e-Fatura por setor, rendas, situacao fiscal e prazos, patrimonio e IMI, e historico de IRS.",
+ "description":"Ferramenta gratuita e verificavel que le o proprio registo do utilizador nas Financas e na Seguranca Social, na sua sessao, sem password, e mostra a situacao fiscal: faturas do e-Fatura por setor, rendas, situacao fiscal e prazos, patrimonio e IMI, e historico de IRS.",
  "author":{"@type":"Person","name":"Diogo Andrade","url":"https://diogoandrade.com"},
  "offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},
  "isAccessibleForFree":true,
@@ -133,7 +133,7 @@
   .mast .nm span{display:block;font-weight:400;font-size:.8rem;color:var(--mute);
                  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   /* Nav sits in its own right-aligned group so the two buttons align to each other, not by margin
-     hacks. Primary (O meu perfil) is filled, secondary is outlined: that hierarchy is the logic. */
+     hacks. Primary (A minha situação) is filled, secondary is outlined: that hierarchy is the logic. */
   .mast .nav{margin-left:auto;display:flex;align-items:center;gap:10px;flex:none}
   .mast .mastnav{display:inline-flex;align-items:center;height:40px;
                  padding:0 16px;border:1.5px solid var(--pri);border-radius:var(--r);
@@ -336,9 +336,9 @@
         <path class="cut" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/>
       </svg>
     </a>
-    <div class="nm">Fatura Boa<span>O teu perfil fiscal, das fontes oficiais</span></div>
+    <div class="nm">Fatura Boa<span>A tua situação fiscal, das fontes oficiais</span></div>
     <nav class="nav">
-      <a class="mastnav primary" href="/perfil">O meu perfil</a>
+      <a class="mastnav primary" href="/perfil">A minha situação</a>
       <a class="mastnav" href="/consulta">Consultar NIF</a>
     </nav>
   </div>
@@ -350,16 +350,31 @@
        thing to say to a human and worthless to a search engine - nobody types that. The eyebrow
        was already sitting here saying "e-Fatura / IRS"; making it a full phrase and moving it
        into the heading buys the search intent without changing what the page looks like. -->
-  <h1><span class="eyebrow">e-Fatura · IRS · Segurança Social</span>O teu perfil fiscal,<br>das fontes oficiais.</h1>
+  <h1><span class="eyebrow">e-Fatura · IRS · Segurança Social</span>A tua situação fiscal,<br>das fontes oficiais.</h1>
   <p class="sub">Não te pede a password. Corre na sessão que <b>já tens aberta</b> nas Finanças
-     e na Segurança Social, lê o que o Estado já sabe sobre ti, e monta o teu perfil: faturas,
+     e na Segurança Social, lê o que o Estado já sabe sobre ti, e mostra a tua situação: faturas,
      rendas, situação fiscal, património e IRS. Tudo <b>no teu navegador</b>, e o código é
      <a href="/verificar">verificável</a>.</p>
 
   <div class="cta-row">
-    <a class="bm cta-main" href="/perfil">Criar o meu perfil</a>
+    <a class="bm cta-main" href="/perfil">Ver a minha situação</a>
     <a class="cta-alt" href="#como">Como funciona</a>
   </div>
+  <!-- Recovered-euro counter. Hidden until there is a real, non-zero number (no fake social proof).
+       Fed by opt-in, deduplicated per user server-side (cae-db /counter/total). -->
+  <p id="fb-counter" style="display:none;margin:10px 0 0;font-size:1rem;color:#0a7d33;font-weight:600"></p>
+  <script>
+  (function(){
+    fetch("https://cae-db.diogoandrade.com/counter/total").then(function(r){return r.json();}).then(function(d){
+      if(!d || !(d.recuperado>0)) return;
+      var el=document.getElementById("fb-counter"); if(!el) return;
+      var eur=Math.round(d.recuperado), users=d.users||0, cur=0, step=Math.max(1,Math.round(eur/40));
+      el.style.display="block";
+      var t=setInterval(function(){ cur+=step; if(cur>=eur){cur=eur;clearInterval(t);}
+        el.innerHTML='<b>€'+cur.toLocaleString("pt-PT")+'</b> já encontrados para recuperar'+(users>1?' por '+users+' pessoas':'')+'.'; },25);
+    }).catch(function(){});
+  })();
+  </script>
 
   <div class="badges">
     <span class="badge"><b>nunca</b> pede password</span>
@@ -376,7 +391,7 @@
 <div class="box draft">
   <b>Só lê. Não submete nada.</b>
   <p style="margin:6px 0 0">
-    A ferramenta lê o teu registo e monta o teu perfil, mas <b>não altera nada</b> nas Finanças.
+    A ferramenta lê o teu registo e mostra a tua situação, mas <b>não altera nada</b> nas Finanças.
     Qualquer submissão ou classificação fá-la <b>tu</b>, com o plano à frente. Os números são
     <b>indicadores para confirmares</b>, não aconselhamento fiscal. Se algo estiver errado,
     <a id="ghissues2" href="#" target="_blank" rel="noopener">diz-me</a>.
@@ -385,7 +400,7 @@
 
 <section id="faz">
   <h2>O que já faz por ti</h2>
-  <p class="lead">Para muita gente já dá para montar um perfil útil, a partir do que o Estado já sabe:</p>
+  <p class="lead">Para muita gente já dá para montar uma visão útil, a partir do que o Estado já sabe:</p>
   <div class="ready">
     <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Faturas do e-Fatura</b> - o setor certo para cada fatura pendente e quanto já usaste de cada teto de dedução.</div></div>
     <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Rendas</b> - os teus contratos de arrendamento e recibos (categoria F).</div></div>
@@ -733,7 +748,7 @@
 
 <footer class="wrap">
   <p>Ferramenta comunitária e independente. <b>Não</b> afiliada à Autoridade Tributária. Sem garantias, confirma sempre nas Finanças.</p>
-  <p><a href="/perfil">O meu perfil</a> | <a href="/consulta">Consultar NIF</a> | <a href="/verificar">Verificar</a> | <a href="/sobre">Sobre</a> | <a href="/privacidade">Privacidade</a> | <a href="/termos">Termos</a> | <a id="gh2" href="#" target="_blank" rel="noopener">Código no GitHub</a></p>
+  <p><a href="/perfil">A minha situação</a> | <a href="/consulta">Consultar NIF</a> | <a href="/verificar">Verificar</a> | <a href="/sobre">Sobre</a> | <a href="/privacidade">Privacidade</a> | <a href="/termos">Termos</a> | <a id="gh2" href="#" target="_blank" rel="noopener">Código no GitHub</a></p>
   <p class="note"><a href="https://polyformproject.org/licenses/noncommercial/1.0.0" target="_blank" rel="noopener">PolyForm Noncommercial 1.0.0</a> - livre para uso pessoal, proibido monetizar. Feito por <a href="https://diogoandrade.com" target="_blank" rel="noopener">Diogo Andrade</a>.</p>
 </footer>
 

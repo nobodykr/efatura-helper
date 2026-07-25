@@ -6,8 +6,8 @@
 <link rel="icon" href="/favicon.ico" sizes="48x48" type="image/x-icon">
 <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png">
-<title>O meu perfil fiscal | Fatura Boa</title>
-<meta name="description" content="Junta o teu perfil fiscal a partir dos documentos oficiais das Finanças. Tudo fica no teu navegador - nada é enviado.">
+<title>A minha situação fiscal | Fatura Boa</title>
+<meta name="description" content="Vê a tua situação fiscal a partir dos documentos oficiais das Finanças. Tudo fica no teu navegador - nada é enviado.">
 <!-- noindex: this is a personal working page, not content to rank. -->
 <meta name="robots" content="noindex,nofollow">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -73,12 +73,12 @@
       <path fill="#fff" d="M18.25 25.5 L23.875 6.5 H26.375 L20.75 25.5 Z"/><path fill="#fff" d="M25.25 6.5 H27.75 L22.125 25.5 H19.625 Z"/>
       <rect class="cut" x="20.875" y="16.375" width="4.875" height="2.25" rx="0.5"/><path class="cut" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/></svg>
   </a>
-  <div class="nm">Fatura Boa<span>O teu perfil fiscal, a partir das fontes oficiais</span></div>
+  <div class="nm">Fatura Boa<span>A tua situação fiscal, a partir das fontes oficiais</span></div>
   <a class="mastnav" href="/consulta">Consultar NIF</a>
 </div></div>
 <header><div class="wrap">
-  <h1>O meu perfil fiscal</h1>
-  <p>Junta, página a página, o que as Finanças já sabem sobre ti. Cada página é lida no teu
+  <h1>A minha situação fiscal</h1>
+  <p>Carrega, página a página, o que as Finanças já sabem sobre ti. Nada de contas nem registos. Cada página é lida no teu
      navegador, na tua sessão. <b>Fica tudo só neste navegador</b> - só é enviado alguma coisa se
      escolheres contribuir (em baixo), e mesmo aí sem o teu nome nem NIF.</p>
 </div></header>
@@ -90,10 +90,10 @@
     <div style="font-weight:700;margin-bottom:6px">1. Instala o favorito (uma vez)</div>
     <p class="w" style="margin:0 0 10px">Arrasta este botao para a tua barra de favoritos. Depois,
        em <b>qualquer pagina das Financas ou da Seguranca Social</b>, clica nele - ele le a pagina e traz-te de volta aqui.</p>
-    <a class="btn" style="font-size:1rem;padding:10px 18px" href="javascript:(function(){if(!/(portaldasfinancas\.gov\.pt|seg-social\.pt)$/.test(location.host)){alert('Abre uma pagina das Financas ou da Seguranca Social e faz login.');return;}window.__FB_PROFILE=1;var s=document.createElement('script');s.charset='utf-8';s.src='https://faturas.diogoandrade.com/tool.js?v='+Date.now();document.body.appendChild(s);})();">Fatura Boa - Perfil</a>
+    <a class="btn" style="font-size:1rem;padding:10px 18px" href="javascript:(function(){if(!/(portaldasfinancas\.gov\.pt|seg-social\.pt)$/.test(location.host)){alert('Abre uma pagina das Financas ou da Seguranca Social e faz login.');return;}window.__FB_PROFILE=1;var s=document.createElement('script');s.charset='utf-8';s.src='https://faturas.diogoandrade.com/tool.js?v='+Date.now();document.body.appendChild(s);})();">Fatura Boa - Situação</a>
     <p class="w" style="margin:10px 0 0">Nao e o mesmo favorito da pagina inicial (esse so funciona no e-Fatura). Este funciona nas Financas e na Seguranca Social.</p>
   </div>
-  <div class="card" style="padding-top:12px"><div style="font-weight:700;margin-bottom:2px">2. Junta o teu perfil</div></div>
+  <div class="card" style="padding-top:12px"><div style="font-weight:700;margin-bottom:2px">2. Carrega a tua informação</div></div>
   <div id="banner"></div>
   <div id="out"></div>
 </main>
@@ -107,17 +107,40 @@
   var API = "https://cae-db.diogoandrade.com";
   function shareOn(){ try { return localStorage.getItem(SHARE_KEY) === "1"; } catch(e){ return false; } }
 
-  // OPT-IN, redacted contribution. Sends the assembled summary (counts, category flags, activity
-  // codes, contract references and amounts) but by construction NO name and NO NIF - the readers
-  // never capture them, and the server re-strips any personal-looking key. Fires only when the box
-  // is ticked. Fails silently: contributing is a bonus, never a blocker for the local profile.
+  // OPT-IN, STRUCTURE-ONLY contribution. Sends the SHAPE skeletons of the AT/Seg-Social responses
+  // (field names + types, e.g. {aaData:[{...keys}], iTotalRecords:"number"}) so we can pin the schema
+  // of endpoints not yet parsed and build readers for them. By construction it carries NO values and
+  // NO name/NIF - only the skeleton the reader captured; the server further coerces every leaf to a
+  // type token. Fires only when the box is ticked. Fails silently: contributing is never a blocker.
   function sendShare(store){
     if (!shareOn()) return;
-    var prof = assemble(store);
-    if (!prof.detalhes || !Object.keys(prof.detalhes).length) return;
+    // Flatten to { endpointURL: skeleton } - the sink groups by endpoint (the URL is the schema key),
+    // NOT by partition. s.shape is already { endpointURL: skeleton }, so merge them across partitions.
+    var shapes = {};
+    PARTITIONS.forEach(function(p){
+      var s = store.partitions[p.id];
+      if (s && s.shape) Object.keys(s.shape).forEach(function(url){ shapes[url] = s.shape[url]; });
+    });
+    if (!Object.keys(shapes).length) return;
     try {
-      fetch(API + "/profile", { method:"POST", headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ consent:true, profile:{ categorias:prof.categorias, detalhes:prof.detalhes } }) }).catch(function(){});
+      fetch(API + "/shapes", { method:"POST", headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ consent:true, shapes:shapes }) }).catch(function(){});
+    } catch(e){}
+  }
+  // Anonymous recovered-euro counter: the hashed user id (from the e-Fatura reader, never the NIF) +
+  // the total STILL-RECOVERABLE amount (open correction windows only). Same opt-in as the shapes.
+  function sendCounter(store){
+    if (!shareOn()) return;
+    var ef = assemble(store).detalhes.efatura;
+    if (!ef || !ef.uid) return;
+    var total = 0;
+    (ef.reAudit||[]).forEach(function(x){
+      if (x && x.recuperavel > 0){ var w = resubmissionWindows(x.ano); if (w.recover.open) total += x.recuperavel; }
+    });
+    if (!(total > 0)) return;
+    try {
+      fetch(API + "/counter", { method:"POST", headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ consent:true, id: ef.uid, recuperavel: Math.round(total*100)/100 }) }).catch(function(){});
     } catch(e){}
   }
   // Mirrors the PARTITIONS list in tool.js (kept in sync by hand - two files, two origins, no
@@ -135,6 +158,8 @@
       why:"Imóveis que possuis e o seu VPT - a base do IMI." },
     { id:"irs", label:"IRS (liquidações e reembolsos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/inffin/entrada.html",
       why:"As liquidações de IRS de todos os anos e os reembolsos - o histórico fiscal." },
+    { id:"movfin", label:"Movimentos financeiros", open:"https://sitfiscal.portaldasfinancas.gov.pt/movfin/resumoCobranca",
+      why:"Todos os pagamentos e reembolsos, de todos os impostos e anos - a tua situação financeira num sítio." },
     { id:"recibos", label:"Recibos verdes (atividade)", open:"https://irs.portaldasfinancas.gov.pt/recibos/portal/consultar",
       why:"Recibos verdes emitidos - rendimentos da categoria B (trabalho independente)." },
     { id:"ss", label:"Segurança Social", open:"https://www.seg-social.pt/ptss/pssd/home",
@@ -147,17 +172,55 @@
   // declaration endpoint. Until wired, the user declares them here. Each carries its legal article;
   // we do NOT hardcode amounts/limits we cannot verify - the note says "confirma".
   var EXTRA_KEY = "fb-profile-extra";
+  // rate/cap are the dedução à coleta rule; when both are set we compute an estimate from the amount
+  // the person types. rate:null = rule not pinned to a number here (varies/complex) -> capture the
+  // value but tell them to confirm. The three with numbers are DRE/portal-verified (see year_snapshots).
   var EXTRAS = [
-    { id:"ppr", label:"PPR / Plano Poupança-Reforma", base:"art. 21.º EBF", nota:"Entregas em PPR dão dedução à coleta (limite varia com a idade)." },
-    { id:"creche", label:"Creche / pré-escolar (0-3 anos)", base:"art. 78.º-D CIRS", nota:"Despesas de creche têm regras próprias, além do e-Fatura educação." },
-    { id:"donativos", label:"Donativos / mecenato", base:"Estatuto dos Benefícios Fiscais", nota:"Donativos a entidades elegíveis dão dedução à coleta." },
-    { id:"deficiencia", label:"Pessoa com deficiência no agregado", base:"art. 87.º CIRS", nota:"Deduções específicas e majorações." },
-    { id:"alimentos", label:"Pensão de alimentos paga", base:"art. 83.º-A CIRS", nota:"As pensões de alimentos pagas dão dedução à coleta." },
-    { id:"juroshab", label:"Juros de crédito à habitação (contrato até 2011)", base:"regime transitório", nota:"Só contratos anteriores a 2012; confirma a elegibilidade." },
-    { id:"trabdomestico", label:"Trabalho doméstico", base:"art. 78.º-H CIRS", nota:"Pagamentos a trabalhador doméstico inscrito na Segurança Social dão dedução à coleta (5%). Encontrado na auditoria à DRE 2026-07-23." }
+    { id:"trabdomestico", label:"Trabalho doméstico", base:"art. 78.º-H CIRS", rate:0.05, cap:200,
+      ask:"Quanto pagaste a trabalhador(es) doméstico(s) inscrito(s) na Segurança Social, no ano?",
+      nota:"Trabalhador doméstico inscrito na Segurança Social: 5% do que pagaste, até 200 EUR. Verificado na DRE." },
+    { id:"alimentos", label:"Pensão de alimentos paga", base:"art. 83.º-A CIRS", rate:0.20, cap:null,
+      ask:"Quanto pagaste em pensões de alimentos (com decisão judicial ou acordo homologado), no ano?",
+      nota:"20% do que pagaste, sem limite. Verificado na DRE." },
+    { id:"juroshab", label:"Juros de crédito à habitação (contrato até 2011)", base:"art. 78.º-E CIRS", rate:0.15, cap:296,
+      ask:"Quanto pagaste de juros nesse crédito, no ano?",
+      nota:"Só contratos anteriores a 2012. 15% dos juros, até 296 EUR (o teto pode subir com rendimento baixo). Verificado na DRE." },
+    { id:"ppr", label:"PPR / Plano Poupança-Reforma", base:"art. 21.º EBF", rate:0.20, capByAge:{ lt35:400, mid:350, gt50:300 },
+      ask:"Quanto entregaste em PPR, no ano?",
+      nota:"20% do que entregaste, com teto conforme a idade: 400 EUR (menos de 35), 350 EUR (35-50), 300 EUR (mais de 50). Verificado na DRE (art. 21.º n.2 EBF)." },
+    { id:"creche", label:"Creche / pré-escolar (0-3 anos)", base:"art. 78.º-D CIRS", rate:0.30, cap:800,
+      capNote:"dentro do teto da educação (800 EUR), partilhado com outras despesas de educação",
+      ask:"Quanto pagaste de creche / pré-escolar (0-3 anos), no ano?",
+      nota:"30% das despesas, dentro do teto da educação (800 EUR) que partilha com as outras despesas de educação. Verificado na DRE (art. 78.º-D CIRS)." },
+    { id:"donativos", label:"Donativos / mecenato", base:"art. 63.º EBF", rate:0.25, cap:null,
+      capNote:"até 15% da coleta (sem limite para donativos ao Estado)",
+      ask:"Quanto deste em donativos a entidades elegíveis, no ano?",
+      nota:"25% do donativo. Em regra limitado a 15% da coleta; donativos ao Estado sem limite. Verificado na DRE (art. 63.º n.1 EBF)." },
+    { id:"deficiencia", label:"Pessoa com deficiência no agregado", base:"art. 87.º CIRS", rate:null, cap:null,
+      ask:"Despesas específicas da pessoa com deficiência no ano (saúde/educação próprias)? As regras do art. 87.º diferem das normais.",
+      nota:"Dá uma dedução fixa por pessoa (múltiplo do IAS) e permite despesas de saúde/educação da pessoa com deficiência fora dos tetos normais. Varia com o caso - guarda o valor e confirma na declaração." }
   ];
   function loadExtra(){ try { return JSON.parse(localStorage.getItem(EXTRA_KEY)) || {}; } catch(e){ return {}; } }
   function saveExtra(e){ try { localStorage.setItem(EXTRA_KEY, JSON.stringify(e)); } catch(e2){} }
+  // Estimate the dedução à coleta from a typed amount. Green + number only when the rule is pinned
+  // (DRE-verified rate/cap); otherwise capture the value but tell them to confirm - never invent a %.
+  function recLine(x, v, age) {
+    v = +v || 0;
+    if (!(v > 0)) return '';
+    if (x.rate == null)
+      return '<span class="w">Valor guardado. Confirma a % e o limite (' + esc(x.base) + ') antes de o contares no IRS.</span>';
+    // PPR: the teto depends on the age bracket - ask for it before computing.
+    var cap = x.cap;
+    if (x.capByAge) {
+      if (!age) return '<span class="w">Escolhe o escalão de idade acima - o teto do PPR varia com a idade.</span>';
+      cap = x.capByAge[age];
+    }
+    var d = v * x.rate, atCap = false;
+    if (cap != null && d > cap) { d = cap; atCap = true; }
+    var capTxt = (cap != null) ? ', teto &euro;' + esc(String(cap)) : (x.capNote ? ', ' + esc(x.capNote) : ', sem limite');
+    return '<span style="color:var(--green)"><b>&asymp; &euro;' + esc(d.toFixed(2)) + '</b> a menos de imposto</span> ' +
+      '<span class="w">(' + Math.round(x.rate * 100) + '% do valor' + capTxt + (atCap ? ' - já no teto' : '') + ')</span>';
+  }
 
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
   // The profile is sensitive fiscal data, so it is NOT kept indefinitely: it self-destructs at the
@@ -210,6 +273,7 @@
       if (P.patrimonio.data.imoveis > 0) prof.categorias.push({cat:"IMI", label:"Proprietário de imóveis"});
     }
     if (P.irs && P.irs.status==="done") prof.detalhes.irs = P.irs.data;
+    if (P.movfin && P.movfin.status==="done") prof.detalhes.movfin = P.movfin.data;
     if (P.recibos && P.recibos.status==="done"){
       prof.detalhes.recibos = P.recibos.data;
       if (P.recibos.data.recibosVerdes > 0) prof.categorias.push({cat:"B", label:"Trabalho independente (recibos verdes)"});
@@ -232,6 +296,26 @@
     }
     var d = prof.detalhes;
     if (d.efatura) h += '<div class="kv">e-Fatura '+esc(d.efatura.ano)+': <b>'+esc(d.efatura.porClassificar)+'</b> por classificar de '+esc(d.efatura.totalFaturas)+'.</div>';
+    // Deduções à coleta OFICIAIS (calculadas pela AT) - melhores que qualquer estimativa nossa.
+    var dedOf = d.recibos && d.recibos.deducoesOficiais;
+    if (dedOf && dedOf.total > 0){
+      var parts = Object.keys(dedOf.categorias).filter(function(k){ return dedOf.categorias[k].deducao > 0; })
+        .map(function(k){ return esc(k.replace(/ e seguros de saúde/,''))+' <b>€'+esc(dedOf.categorias[k].deducao.toFixed(2))+'</b>'; });
+      h += '<div class="kv">Deduções à coleta'+(dedOf.ano?' '+esc(dedOf.ano):'')+' <span class="w">(valor oficial da AT)</span>: <b>€'+esc(dedOf.total.toFixed(2))+'</b>'+
+           (parts.length?' - '+parts.join(', '):'')+'.</div>'+
+           '<div class="w" style="margin-left:2px">Por titular: não considera agregado nem tributação conjunta.</div>';
+    }
+    var despAt = d.recibos && d.recibos.despesasAtividade;
+    if (despAt && despAt.categorias && Object.keys(despAt.categorias).length){
+      var dp = Object.keys(despAt.categorias).map(function(k){ return esc(k)+' €'+esc((despAt.categorias[k].considerar||0).toFixed(2)); });
+      h += '<div class="kv">Despesas afetas à atividade'+(despAt.ano?' '+esc(despAt.ano):'')+' <span class="w">(Cat. B, simplificado)</span>: '+dp.join(', ')+'.</div>';
+    }
+    if (d.movfin){
+      var pj = d.movfin.porImposto||{};
+      var parts = Object.keys(pj).map(function(k){ var v=pj[k]||{}; return esc(k)+' ('+esc(v.n)+(v.anulados?', '+esc(v.anulados)+' anul.':'')+')'; }).slice(0,6).join(', ');
+      h += '<div class="kv">Movimentos financeiros: <b>'+esc(d.movfin.movimentos)+'</b> documento(s)'+(parts?' - '+parts:'')+'.</div>';
+      (d.movfin.avisos||[]).forEach(function(a){ h += '<div class="warn">⚠ '+esc(a)+'</div>'; });
+    }
     if (d.rendas){
       h += '<div class="kv">Arrendamento: <b>'+esc(d.rendas.activos)+'</b> contrato(s) activo(s) de '+esc(d.rendas.contratos)+
            (d.rendas.recibos!=null?', '+esc(d.rendas.recibos)+' recibo(s)':'')+'.</div>';
@@ -345,23 +429,43 @@
   // testable. The deductible for a category is rate% of the spend, capped at the ceiling; headroom
   // is what is left under the cap. Indicators only, never a submission. `rules` is a year's rules
   // object; `spent` is {categoryKey: eur}. Categories with no pct/ceiling (unsourced) are skipped.
-  function reAudit(rules, spent){
-    rules = rules || {}; spent = spent || {};
-    var rows = [], totalHeadroom = 0;
-    Object.keys(rules).forEach(function(cat){
-      var r = rules[cat] || {};
-      var pct = r.pct;
-      var ceiling = (r.ceiling != null) ? r.ceiling : (r.base_ceiling != null ? r.base_ceiling : null);
-      if (pct == null || ceiling == null) return;          // not sourced for this year - skip
-      var s = Number(spent[cat] || 0);
-      var deductible = Math.min(ceiling, +(s * pct / 100).toFixed(2));
-      var headroom = +(ceiling - deductible).toFixed(2);
-      var status = deductible >= ceiling - 0.005 ? "MAXED" : (s > 0 ? "PARCIAL" : "VAZIO");
-      totalHeadroom += headroom;
-      rows.push({ cat: cat, pct: pct, ceiling: ceiling, spent: s,
-                  deductible: deductible, headroom: headroom, status: status });
-    });
-    return { rows: rows, totalHeadroom: +totalHeadroom.toFixed(2) };
+  /* Escalões IRS oficiais (art. 68 CIRS, Continente) - [limite, taxa, parcela a abater OFICIAL].
+     A parcela vem da coluna "taxa Média (B)" da tabela da AT: parcela_n = limite_ant x (Normal_n -
+     Média_ant). NUNCA derivar de cabeça - foi assim que uma tabela pré-redução (37% em vez de 35,5%)
+     passou despercebida. Validado contra as liquidações reais de 2023/2024/2025. */
+  var ESCALOES = {
+    2023: [[7479,0.145,0],[11284,0.21,485.14],[15992,0.265,1105.76],[20700,0.285,1425.60],
+           [26355,0.35,2771.10],[38632,0.37,3299.12],[50483,0.435,5809.20],[78834,0.45,6566.45],[null,0.48,8931.47]],
+    2024: [[7703,0.13,0],[11623,0.165,269.61],[16472,0.22,908.87],[21321,0.25,1402.03],
+           [27146,0.32,2894.50],[39791,0.355,3845.50],[43000,0.435,7028.78],[80000,0.45,7673.78],[null,0.48,10073.78]],
+    2025: [[8059,0.125,0],[12160,0.16,282.07],[17233,0.215,951.42],[22306,0.244,1451.18],
+           [28400,0.314,3012.63],[41629,0.349,4006.63],[44987,0.431,7423.61],[83696,0.446,8098.42],[null,0.48,10944.08]]
+  };
+  var DED_ESPECIFICA = 4104;         // art. 25: max(4104, contribuições obrigatórias)
+  var TAXA_AUTONOMA_F = 0.28;        // art. 72: rendas, taxa especial
+
+  function coletaIRS(coletavel, ano){
+    var br = ESCALOES[ano]; if (!br) return null;
+    for (var i=0;i<br.length;i++){
+      if (br[i][0] === null || coletavel <= br[i][0])
+        return { coleta: coletavel*br[i][1] - br[i][2], taxa: br[i][1] };
+    }
+    return null;
+  }
+
+  /* O que teria dado MENOS imposto, com o MESMO rendimento. Só compara opções que a lei permitia
+     nesse ano e que se aplicam ao perfil real - por isso a comparação de rendas só aparece se houve
+     rendas. Devolve null quando não há nada a dizer (não inventa sugestões). */
+  function whatIfRendas(ano, rendimentoA, contribuicoes, rendasLiquidas){
+    if (!rendasLiquidas || !ESCALOES[ano]) return null;
+    var esp = Math.max(DED_ESPECIFICA, contribuicoes || 0);
+    var cEng = coletaIRS(rendimentoA + rendasLiquidas - esp, ano);
+    var cAut = coletaIRS(rendimentoA - esp, ano);
+    if (!cEng || !cAut) return null;
+    var eng = cEng.coleta, aut = cAut.coleta + rendasLiquidas*TAXA_AUTONOMA_F;
+    return { melhor: (aut < eng ? "autonoma" : "englobamento"),
+             diferenca: +Math.abs(eng-aut).toFixed(2),
+             marginal: cAut.taxa, autonoma: TAXA_AUTONOMA_F };
   }
   function agendaMatch(prof, kws){
     var ag = (prof.detalhes.situacao && prof.detalhes.situacao.agenda && prof.detalhes.situacao.agenda.proximos) || [];
@@ -407,12 +511,16 @@
     return ob;
   }
 
+  // Accordions must survive a re-render (a checkbox change rebuilds #out); without this the
+  // "Outras situacoes" details snapped shut on every click. Read the live open-state before rebuild.
+  var ACC = {};
   function render(justAdded){
+    Array.prototype.forEach.call(document.querySelectorAll('#out details[data-acc]'), function(d){ ACC[d.getAttribute('data-acc')] = d.open; });
     var store = load();
     var done = PARTITIONS.filter(function(p){ return store.partitions[p.id] && store.partitions[p.id].status==="done"; });
 
     document.getElementById("banner").innerHTML = justAdded
-      ? '<div class="banner"><i class="fa-solid fa-check"></i> Guardei os dados de <b>'+esc((PARTITIONS.filter(function(p){return p.id===justAdded;})[0]||{}).label||justAdded)+'</b> no teu perfil, aqui neste navegador.</div>'
+      ? '<div class="banner"><i class="fa-solid fa-check"></i> Guardei os dados de <b>'+esc((PARTITIONS.filter(function(p){return p.id===justAdded;})[0]||{}).label||justAdded)+'</b>, aqui neste navegador.</div>'
       : '';
 
     var h = '<div class="card"><div style="font-weight:700;font-size:1.05rem;margin-bottom:4px">Passos ('+done.length+'/'+PARTITIONS.length+')</div>';
@@ -429,20 +537,36 @@
     h += '</div>';
 
     var prof = assemble(store);
-    h += '<div class="card"><div style="font-weight:700;font-size:1.05rem;margin-bottom:8px">O teu perfil</div>'+overlay(prof);
-    if (done.length===PARTITIONS.length) h += '<div class="banner" style="margin-top:12px">Perfil completo. Fica guardado só neste navegador.</div>';
+    h += '<div class="card"><div style="font-weight:700;font-size:1.05rem;margin-bottom:8px">A tua situação fiscal</div>'+overlay(prof);
+    if (done.length===PARTITIONS.length) h += '<div class="banner" style="margin-top:12px">Situação carregada. Fica guardada só neste navegador.</div>';
 
     // Self-declared deductions come FIRST (before the results) - they complete the picture the
     // e-Fatura reader cannot see. Collapsible so it does not push the results down.
     if (done.length){
       var extra = loadExtra();
-      h += '<details class="card"><summary style="font-weight:700;font-size:1.05rem;cursor:pointer">Outras situações <span class="w" style="font-weight:400">(declaras tu - deduções fora do e-Fatura)</span></summary>'+
-        '<div class="w" style="margin:8px 0">Deduções que as Finanças não mostram aqui à ferramenta (constam da tua declaração de IRS). Marca as que se aplicam.</div>';
+      h += '<details class="card" data-acc="extras"'+(ACC.extras?' open':'')+'><summary style="font-weight:700;font-size:1.05rem;cursor:pointer">Outras situações <span class="w" style="font-weight:400">(declaras tu - deduções fora do e-Fatura)</span></summary>'+
+        '<div class="w" style="margin:8px 0">Deduções que as Finanças não mostram aqui à ferramenta (constam da tua declaração de IRS). Marca as que se aplicam e, onde der, diz o valor - a ferramenta estima quanto poupas.</div>';
       EXTRAS.forEach(function(x){
+        var on = !!extra[x.id], v = +extra[x.id+"_v"] || 0;
         h += '<label style="display:block;padding:6px 0;border-top:1px solid var(--bg3);font-size:.9rem;cursor:pointer">'+
-          '<input type="checkbox" class="fbx" data-id="'+x.id+'" '+(extra[x.id]?'checked':'')+' style="margin-right:6px">'+
+          '<input type="checkbox" class="fbx" data-id="'+x.id+'" '+(on?'checked':'')+' style="margin-right:6px">'+
           '<b>'+esc(x.label)+'</b> <span class="w">('+esc(x.base)+')</span>'+
           '<div class="w" style="margin-left:22px">'+esc(x.nota)+'</div></label>';
+        if (on && x.ask){
+          var age = extra[x.id+"_age"] || "";
+          var ageSel = '';
+          if (x.capByAge){
+            var opts = [["","idade..."],["lt35","menos de 35"],["mid","35 a 50"],["gt50","mais de 50"]];
+            ageSel = ' <select class="fage" data-id="'+x.id+'" style="padding:6px 8px;border:1px solid var(--rule);border-radius:8px;font-size:.9rem">'+
+              opts.map(function(o){ return '<option value="'+o[0]+'"'+(age===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+'</select>';
+          }
+          h += '<div style="margin:2px 0 8px 22px">'+
+            '<div class="w" style="margin-bottom:3px">'+esc(x.ask)+'</div>'+
+            '<input type="number" inputmode="decimal" min="0" step="0.01" class="fval" data-id="'+x.id+'" value="'+(v>0?esc(String(v)):'')+'" placeholder="0,00" style="width:150px;padding:6px 8px;border:1px solid var(--rule);border-radius:8px;font-size:.9rem">'+
+            ' <span class="w">EUR / ano</span>'+ageSel+
+            '<div class="rec" id="rec_'+x.id+'" style="margin-top:5px">'+recLine(x, v, age)+'</div>'+
+          '</div>';
+        }
       });
       h += '</details>';
     }
@@ -468,9 +592,9 @@
       var detected = anos.length>0;
       if (!detected){ for (var yg=nowY-1; yg>=nowY-4; yg--) anos.push(yg); }
       anos = anos.slice(0,6);
-      h += '<details class="card" open><summary style="font-weight:700;font-size:1.05rem;cursor:pointer;margin-bottom:4px">Anos anteriores - relatório de correção</summary>'+
+      h += '<details class="card" data-acc="anos"'+((('anos' in ACC)?ACC.anos:true)?' open':'')+'><summary style="font-weight:700;font-size:1.05rem;cursor:pointer;margin-bottom:4px">Anos anteriores - relatório de correção</summary>'+
         '<div class="w" style="margin-bottom:8px">Se num ano deixaste deduções por fora, ainda podes entregar uma declaração de substituição <b>a teu favor</b> - mas só dentro do prazo. A janela para recuperar é curta: cerca de 120 dias a contar da liquidação desse ano (na prática, até ao fim do ano em que entregaste).'+
-        (detected?' Mostrando os anos com liquidação detetada no teu perfil.':'')+'</div>';
+        (detected?' Mostrando os anos com liquidação detetada nos teus dados.':'')+'</div>';
       var reAuditData = (prof.detalhes.efatura && prof.detalhes.efatura.reAudit) || [];
       anos.forEach(function(yy){
         var wnd = resubmissionWindows(yy);
@@ -480,25 +604,94 @@
         // re-audit for this year (from the e-Fatura reader): categories with free ceiling AND pending invoices
         var ra = reAuditData.filter(function(x){ return x.ano===yy; })[0];
         var raHtml = '';
-        if (ra && ra.recuperavel > 0.5){
-          // The optimiser result: invoices sitting in a full pot where the SAME merchant is also
-          // registered for a sector with room. It is only RECOVERABLE while the correction window is
-          // open (recover.open). Once closed, it is a lost opportunity, not money on the table -
-          // show it honestly (muted), not as green "recuperavel".
-          var setores = Object.keys(ra.porSetor||{}).map(function(k){ return esc(k)+' ('+ra.porSetor[k]+')'; }).join(', ');
-          var quadro = ra.nMover+' fatura(s) estavam numa categoria cheia quando o comerciante também estava registado noutra com espaço'+(setores?': '+setores:'')+'.';
-          if (wnd.recover.open){
-            raHtml = '<div class="w" style="margin-top:4px;color:var(--green)"><b>Recuperável ~&euro;'+esc(Math.round(ra.recuperavel))+'</b>: '+quadro+
-              ' Corrige o setor no e-Fatura (Alterar, escolhe o setor, Guardar) e entrega uma declaração de substituição - ainda estás no prazo.</div>';
-          } else {
-            raHtml = '<div class="w" style="margin-top:4px;color:var(--amber)"><b>~&euro;'+esc(Math.round(ra.recuperavel))+' desperdiçado</b> em '+yy+': '+quadro+
-              ' O prazo para corrigir já fechou, por isso já não dá para recuperar - fica como referência do que a ferramenta deteta.</div>';
+        if (ra && (ra.recuperavel > 0.5 || ra.recuperavelAconselhado > 0.5)){
+          // DOIS cenarios, deliberadamente separados (pedido do Diogo):
+          //  ACONSELHADO - so faturas que podem ir para o setor do CAE PRINCIPAL do emitente. E o
+          //    que se defende numa inspecao: e a atividade principal da empresa. Verde.
+          //  OTIMIZADO   - o MAXIMO aritmetico: qualquer setor em que o emitente esteja registado,
+          //    incluindo secundarios (um hipermercado com CAE de farmacia). Nao e conselho: e o teto
+          //    do que seria possivel SE a despesa pertencesse mesmo la. Ambar.
+          var fmtSet = function(o){ return Object.keys(o||{}).map(function(k){ return esc(k)+' ('+o[k]+')'; }).join(', '); };
+          var acon = ra.recuperavelAconselhado || 0, otim = ra.recuperavel || 0;
+          var aberta = wnd.recover.open;
+          raHtml += '<div style="margin-top:6px;border-left:3px solid '+(aberta?'var(--green)':'var(--amber)')+';padding-left:8px">'+
+            '<div class="w"><b>Aconselhado</b> (setor principal do comerciante): '+
+            (acon > 0.5
+              ? '<b style="color:'+(aberta?'var(--green)':'var(--amber)')+'">~&euro;'+esc(Math.round(acon))+'</b> em '+esc(ra.nMoverAconselhado||0)+' fatura(s)'+
+                (Object.keys(ra.porSetorAconselhado||{}).length?' - '+fmtSet(ra.porSetorAconselhado):'')+'. '+
+                'Estas sao as mais defensaveis: o setor sugerido <b>e a atividade principal</b> de quem emitiu a fatura.'
+              : 'nada a mover com seguranca - as faturas ja estao no setor principal do comerciante.')+
+            '</div></div>';
+          if (otim > acon + 0.5){
+            raHtml += '<div style="margin-top:4px;border-left:3px solid var(--rule);padding-left:8px">'+
+              '<div class="w"><b>Máximo teórico</b> (inclui setores secundários): <b>~&euro;'+esc(Math.round(otim))+'</b> em '+esc(ra.nMover)+' fatura(s)'+
+              (Object.keys(ra.porSetor||{}).length?' - '+fmtSet(ra.porSetor):'')+'. '+
+              '<span style="color:var(--amber)">Isto <b>não</b> é uma recomendação: só conta se a compra pertencer mesmo a esse setor. '+
+              'O comerciante estar registado num setor não transforma um jantar em despesa de saúde.</span>'+
+              (ra.nDeGerais ? ' <span class="w">('+esc(ra.nDeGerais)+' vinham de Despesas Gerais - o saco por omissão.)</span>' : '')+
+              '</div></div>';
           }
+          if (aberta){
+            raHtml += '<div class="w" style="margin-top:4px">Para corrigir: e-Fatura &rarr; Alterar &rarr; escolhe o setor &rarr; Guardar, e entrega uma declaração de substituição. Ainda estás no prazo.</div>';
+          } else {
+            raHtml += '<div class="w" style="margin-top:4px;color:var(--amber)">O prazo para corrigir '+yy+' já fechou - fica como referência do que a ferramenta deteta.</div>';
+          }
+          raHtml += '<div class="w" style="margin-top:3px;color:var(--amber);font-size:.82rem">Classificar mal só para deduzir mais é ilegal e pode levar a inspeção - otimizar não é o mesmo que declarar bem. Isto não é aconselhamento fiscal.</div>';
         } else if (ra){
           raHtml = '<div class="w" style="margin-top:4px">Nada por reclassificar em '+yy+' - as faturas já estão no melhor setor possível.</div>';
         }
+        // WHAT-IF de tributação: só aparece se a lei dava mesmo essa escolha nesse ano para este
+        // perfil. Hoje: rendas (Cat F) englobamento vs taxa autónoma 28% - só se houve rendas nesse
+        // ano. Nunca sugere nada a quem não se aplica.
+        var rd = prof.detalhes.rendas || {};
+        var rendasAno = (rd.rendasPorAno && rd.rendasPorAno[yy]) || null;
+        var rendasVal = rendasAno && rendasAno.valor;
+        // A decisão englobar-vs-28% depende SÓ da taxa marginal. NÃO pedimos o rendimento: para um
+        // ano já entregue a taxa vem impressa na demonstração de liquidação ("Quociente familiar 1,00
+        // taxa 35,500%"), logo pedir o rendimento é (a) redundante - a informação está na liquidação -
+        // e (b) perigoso: um valor errado/parcial atirava o cálculo para o 1.º escalão (12,5%) e
+        // INVERTIA o conselho. Bug real (2026-07-25): dizia "englobar poupa ~632 EUR" quando a marginal
+        // verdadeira era 44,6% e o correto era a autónoma (que o Diogo já tinha escolhido).
+        var ex = loadExtra();
+        var marg = +ex["marg_"+yy] || 0;                 // %, lida da demonstração desse ano
+        if (rendasVal > 0 && marg > 0){
+          var melhor = (marg/100 > TAXA_AUTONOMA_F) ? 'autonoma' : 'englobamento';
+          var dif = Math.abs((marg/100 - TAXA_AUTONOMA_F) * rendasVal);
+          raHtml += '<div class="w" style="margin-top:4px">Rendas em '+yy+' (&euro;'+esc(Math.round(rendasVal))+'): a tua taxa marginal foi <b>'+esc(marg)+'%</b>. '+
+            (melhor === 'autonoma'
+               ? 'Como é <b>acima de 28%</b>, a <b>taxa autónoma</b> (art. 72.º) é melhor - englobar custaria mais <b>~&euro;'+esc(Math.round(dif))+'</b>.'
+               : 'Como é <b>abaixo de 28%</b>, o <b>englobamento</b> é melhor - poupa <b>~&euro;'+esc(Math.round(dif))+'</b>.')+
+            ' <span style="color:var(--mute)">Estimativa sobre a renda recebida: não conhecemos os gastos do art. 41.º (IMI, condomínio, obras) que reduzem a renda tributável.</span></div>';
+        } else if (rendasVal > 0){
+          raHtml += '<div class="w" style="margin-top:4px">Recebeste <b>&euro;'+esc(Math.round(rendasVal))+'</b> de rendas em '+yy+'. '+
+            'Podes declará-las a <b>28%</b> (taxa autónoma, art. 72.º) ou <b>englobá-las</b>. '+
+            'A regra é simples: <b>englobar só compensa se a tua taxa marginal for inferior a 28%</b>. '+
+            'Essa taxa está na tua <b>demonstração de liquidação</b> de '+yy+' (linha "Quociente familiar ... taxa X%") - '+
+            'escreve-a aqui e dizemos-te qual das duas era melhor: '+
+            '<input type="number" class="fmarg" data-ano="'+yy+'" min="0" max="60" step="0.1" placeholder="taxa marginal %" '+
+            'style="width:150px;padding:5px 7px;border:1px solid var(--rule);border-radius:8px;font-size:.88rem;margin-top:4px"> <span class="w">%</span></div>';
+        }
+        // Resultado REAL desse ano, lido das declarações (a que conta é a última - ver readDeclaracoes).
+        var dcl = (prof.detalhes.recibos && prof.detalhes.recibos.declaracoes && prof.detalhes.recibos.declaracoes[yy]) || null;
+        var dclHtml = '';
+        if (dcl){
+          // O `montante` da linha só é o resultado real quando NÃO houve substituição. Numa
+          // substituição vem 0,00 / "saldo nulo" (o valor verdadeiro só está na demonstração de
+          // liquidação, um PDF). Nesse caso NÃO mostramos número nenhum - mostrar 0,00 seria mentir -
+          // e mandamos o utilizador ao documento certo.
+          var semNumero = dcl.substituida || /nul/i.test(dcl.situacao||'');
+          dclHtml = '<div class="w" style="margin-top:4px">Entrega: <b>'+esc(dcl.tipo||'?')+'</b>'+
+            (dcl.situacao?' - '+esc(dcl.situacao):'')+
+            (!semNumero && dcl.montante ? ' (<b>'+esc(dcl.montante)+' €</b>)' : '')+'.'+
+            (dcl.substituida
+               ? ' <span style="color:var(--amber)">Entregaste <b>'+esc(dcl.n)+' declarações</b> em '+yy+' - vale a <b>última</b>. '+
+                 'O valor final <b>não</b> aparece nesta lista (mostra 0,00): está na <b>demonstração de liquidação</b>'+
+                 (dcl.numLiquidacao?' n.º '+esc(dcl.numLiquidacao):'')+', em <a href="https://irs.portaldasfinancas.gov.pt/app/consulta" target="_blank" rel="noopener">Consultar Declarações</a>.</span>'
+               : '')+'</div>';
+        }
         h += '<div class="step" style="align-items:baseline"><div class="ic" style="width:18px">•</div><div class="bd">'+
           '<div class="t">IRS '+yy+' <span class="w">(entregue em '+wnd.declaredIn+')</span> '+openPill+'</div>'+
+          dclHtml+
           '<div class="w">Prazo para corrigir a teu favor (estimado): <b>'+esc(wnd.recover.deadline)+'</b>'+
           (wnd.recover.open?' - faltam ~'+esc(wnd.recover.daysLeft)+' dias':'')+'. '+
           (wnd.recover.open?'':'Depois disto, só por revisão do ato (4 anos), que <b>não</b> serve para uma dedução que te esqueceste - exige erro dos serviços.')+'</div>'+
@@ -510,15 +703,17 @@
     // opt-in contribution
     h += '<label style="display:block;background:var(--bg2);border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px;margin-top:14px;font-size:.85rem;cursor:pointer">'+
       '<input type="checkbox" id="share" '+(shareOn()?'checked':'')+' style="margin-right:6px">'+
-      'Contribuir com o meu perfil, de forma <b>anónima</b> (sem nome nem NIF), para melhorar a ferramenta. '+
-      'Envia contagens, categorias e valores - nunca quem és. Podes desligar quando quiseres.</label>';
+      'Ajudar a melhorar a ferramenta, de forma <b>anónima</b>. '+
+      'Envia a <b>estrutura</b> das respostas das Finanças (os nomes dos campos) e o <b>total que dá para recuperar</b> '+
+      'que a ferramenta te encontrou - identificado por um código sem retorno, <b>nunca o teu nome nem NIF</b>. '+
+      'Assim cobrimos mais situações e mostramos quanto já ajudámos a poupar. Podes desligar quando quiseres.</label>';
     h += '<div class="card">';
     // Debug: copy the response STRUCTURES (keys+types, values redacted) to validate the readers.
     // Only appears once at least one partition captured a shape. Safe to paste - carries no values.
     var haveShapes = PARTITIONS.some(function(p){ return store.partitions[p.id] && store.partitions[p.id].shape; });
     if (haveShapes)
       h += '<div style="margin-top:8px"><a href="#" id="copyshape" class="muted" style="font-size:.8rem">Copiar estrutura das respostas (sem valores) - para validacao</a></div>';
-    h += '<div class="w" style="margin-top:12px;font-size:.8rem">O teu perfil é apagado automaticamente ao fim do dia, aqui neste navegador. Podes apagá-lo já: <a href="#" id="reset" class="muted">apagar agora</a>.</div></div>';
+    h += '<div class="w" style="margin-top:12px;font-size:.8rem">Os teus dados são apagados automaticamente ao fim do dia, aqui neste navegador. Podes apagá-los já: <a href="#" id="reset" class="muted">apagar agora</a>.</div></div>';
 
     document.getElementById("out").innerHTML = h;
     var cs = document.getElementById("copyshape");
@@ -532,12 +727,44 @@
     Array.prototype.forEach.call(document.querySelectorAll(".fbx"), function(cb){
       cb.onchange = function(){ var e = loadExtra(); e[cb.getAttribute("data-id")] = cb.checked; saveExtra(e); render(); };
     });
+    // Value inputs: save + refresh ONLY that row's estimate (a full render would steal focus mid-typing).
+    function refreshRec(id){
+      var e = loadExtra(), x = EXTRAS.filter(function(z){ return z.id === id; })[0];
+      var rl = document.getElementById("rec_"+id);
+      if (x && rl) rl.innerHTML = recLine(x, e[id+"_v"], e[id+"_age"]);
+    }
+    Array.prototype.forEach.call(document.querySelectorAll(".fval"), function(inp){
+      inp.oninput = function(){
+        var id = inp.getAttribute("data-id"), e = loadExtra();
+        var val = parseFloat(String(inp.value).replace(",", "."));
+        e[id+"_v"] = (isFinite(val) && val > 0) ? val : 0; saveExtra(e);
+        refreshRec(id);
+      };
+    });
+    // Taxa marginal por ano, lida da demonstração de liquidação: destranca o what-if das rendas.
+    // Guardamos a TAXA (não o rendimento) porque é ela que decide englobar-vs-28% e vem impressa no
+    // documento - evita recalcular escalões a partir de um rendimento que o utilizador pode errar.
+    Array.prototype.forEach.call(document.querySelectorAll(".fmarg"), function(inp){
+      inp.onchange = function(){
+        var ano = inp.getAttribute("data-ano"), e = loadExtra();
+        var v = parseFloat(String(inp.value).replace(",", "."));
+        e["marg_"+ano] = (isFinite(v) && v > 0 && v < 60) ? v : 0; saveExtra(e); render();
+      };
+    });
+    // PPR age bracket: changes which teto applies - save it and refresh the estimate.
+    Array.prototype.forEach.call(document.querySelectorAll(".fage"), function(sel){
+      sel.onchange = function(){
+        var id = sel.getAttribute("data-id"), e = loadExtra();
+        e[id+"_age"] = sel.value; saveExtra(e);
+        refreshRec(id);
+      };
+    });
     var rs = document.getElementById("reset");
     if (rs) rs.onclick = function(ev){ ev.preventDefault(); try{ localStorage.removeItem(PKEY); }catch(e){} render(); };
     var sh = document.getElementById("share");
     if (sh) sh.onchange = function(){
       try { localStorage.setItem(SHARE_KEY, sh.checked ? "1" : "0"); } catch(e){}
-      if (sh.checked) sendShare(load());          // send current profile the moment they opt in
+      if (sh.checked) { sendShare(load()); sendCounter(load()); }   // contribute the moment they opt in
     };
   }
 
@@ -551,7 +778,7 @@
 
   var added = ingestHash();
   render(added);
-  if (added) sendShare(load());     // a new partition just arrived - contribute it if opted in
+  if (added) { sendShare(load()); sendCounter(load()); }   // a new partition arrived - contribute if opted in
 })();
 </script>
 </body>

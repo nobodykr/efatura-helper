@@ -210,7 +210,7 @@
     h += '<div class="card"><h2><i class="fa-solid fa-building-columns"></i> Entidade adjudicante</h2>';
     h += '<div class="party"><div class="nm">'+esc(d.adjudicante||"—")+'</div>'
        + (d.adjudicante_nif?'<span class="nif mono">NIF '+esc(d.adjudicante_nif)+'</span>'
-          +' <a href="/consulta?q='+encodeURIComponent(d.adjudicante_nif)+'">ver perfil</a>':'')
+          +' <a href="/consulta?q='+encodeURIComponent(d.adjudicante_nif)+'">ver registo</a>':'')
        + '</div></div>';
 
     var ad = d.adjudicatarias||[];
@@ -220,7 +220,7 @@
     h += ad.map(function(p){
       return '<div class="party"><div class="nm">'+esc(p.nome||"(sem nome)")+'</div>'
            + (p.nif?'<span class="nif mono">NIF '+esc(p.nif)+'</span>'
-              +' <a href="/consulta?q='+encodeURIComponent(p.nif)+'">ver perfil</a>':'')
+              +' <a href="/consulta?q='+encodeURIComponent(p.nif)+'">ver registo</a>':'')
            + '</div>';
     }).join("") || '<span class="muted">sem adjudicatário registado</span>';
     h += '</div>';
@@ -231,7 +231,7 @@
       h += d.concorrentes.map(function(p){
         return '<div class="party"><div class="nm">'+esc(p.nome||"(sem nome)")+'</div>'
              + (p.nif?'<span class="nif mono">NIF '+esc(p.nif)+'</span>'
-                +' <a href="/consulta?q='+encodeURIComponent(p.nif)+'">ver perfil</a>':'')
+                +' <a href="/consulta?q='+encodeURIComponent(p.nif)+'">ver registo</a>':'')
              + '</div>';
       }).join("");
       h += '</div>';

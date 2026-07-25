@@ -45,7 +45,7 @@
   var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.07.24";
+  var FB_VERSION = "2026.07.25f";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -180,6 +180,20 @@
       return ("0" + x.toString(16)).slice(-2); }).join("");
   }
   var ROOM_RE = /^[0-9a-f]{32,128}$/i;   // must match household.py ROOM_RE
+
+  /* Anonymous per-user id for the recovered-euro counter (dedup + distinct-user count). Hash of the
+   * user's OWN NIF - the NIF never leaves the browser, only the hash. UNLIKE the room key above, this
+   * is NOT a secret and grants NOTHING: the server peppers it (HMAC) before storing and /counter/total
+   * returns only aggregates, so "guessable NIF -> recompute hash" buys an attacker nothing (they can
+   * at most re-post that user's own recoverable figure). And deriving per-person is exactly what we
+   * want here (one id per taxpayer), the very thing that was wrong for a SHARED room key. */
+  var FB_UID_SALT = "fatura-boa-uid-v1";
+  function sha256hex(s) {
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)).then(function (buf) {
+      return Array.prototype.map.call(new Uint8Array(buf), function (x) { return ("0" + x.toString(16)).slice(-2); }).join("");
+    });
+  }
+  function uidFromNif(nif) { return nif ? sha256hex(String(nif) + FB_UID_SALT) : Promise.resolve(null); }
   function loadProfile() {
     try { return JSON.parse(localStorage.getItem(PKEY)) || {}; } catch (e) { return {}; }
   }
@@ -277,18 +291,38 @@
       reg = reg ? (Object.prototype.toString.call(reg) === "[object Array]" ? reg : [reg]) : [];
       var bestA = null, bestG = gain(cur, x) + 0.01;   // must beat the current sector
       reg.forEach(function (a) { if (a === cur || !CEIL[a]) return; var g = gain(a, x); if (g > bestG) { bestG = g; bestA = a; } });
-      if (bestA) movR.push({ x: x, to: bestA });
+      // ACONSELHADO vs OTIMIZADO. O `reg` vem do cae-db ORDENADO: reg[0] deriva do **CAE PRINCIPAL**
+      // (cae-db guarda caes = [principal] + secundarios, dedup preservando a ordem). Mover para o
+      // setor do CAE PRINCIPAL e DEFENSAVEL - e o que o comerciante faz mesmo. Mover para um setor
+      // secundario e apenas ARITMETICAMENTE possivel (um hipermercado tem CAE de farmacia, mas a
+      // compra provavelmente nao foi um medicamento). E o caso mais forte de todos: a fatura estar em
+      // "gerais/C99" (o saco por omissao) quando o emitente TEM um setor especifico - aqui a
+      // classificacao atual e que provavelmente esta errada, contra o contribuinte.
+      var primario = reg.length ? reg[0] : null;
+      if (bestA) {
+        var aconselhado = (bestA === primario) &&
+                          (cur === "C99" || !CEIL[cur] || primario !== cur);
+        movR.push({ x: x, to: bestA, primario: primario, aconselhado: !!aconselhado,
+                    deGerais: cur === "C99" });
+      }
     });
-    var recPots = {}, recoverable = 0;
-    movR.slice().sort(function (a, b) { return dedu(b.x, b.to) - dedu(a.x, a.to); }).forEach(function (m) {
-      var c = CEIL[m.to], k = c.pot || m.to;
-      var roomLeft = headroom(m.to) - (recPots[k] || 0);
-      if (roomLeft <= 0.01) return;
-      var g = Math.min(dedu(m.x, m.to), roomLeft);
-      if (g <= 0.01) return;
-      recPots[k] = (recPots[k] || 0) + g; recoverable += g;
-    });
-    return { movR: movR, recoverable: +recoverable.toFixed(2) };
+    // Greedy por teto. `only` limita o conjunto (usado para o cenario ACONSELHADO).
+    var greedy = function (set) {
+      var pots = {}, total = 0;
+      set.slice().sort(function (a, b) { return dedu(b.x, b.to) - dedu(a.x, a.to); }).forEach(function (m) {
+        var c = CEIL[m.to], k = c.pot || m.to;
+        var roomLeft = headroom(m.to) - (pots[k] || 0);
+        if (roomLeft <= 0.01) return;
+        var g = Math.min(dedu(m.x, m.to), roomLeft);
+        if (g <= 0.01) return;
+        pots[k] = (pots[k] || 0) + g; total += g;
+      });
+      return +total.toFixed(2);
+    };
+    var movA = movR.filter(function (m) { return m.aconselhado; });
+    return { movR: movR, recoverable: greedy(movR),
+             movA: movA, recoverableAconselhado: greedy(movA),
+             nDeGerais: movR.filter(function (m) { return m.deGerais; }).length };
   }
   /* Past-year re-audit = the optimiser above, run over EVERY invoice of a year (all sectors, fetched
    * completely via the recursive splitter), cross-referenced NIF-by-NIF against cae-db. Reports how
@@ -299,8 +333,13 @@
         var mr = movablesAndRecoverable(rows, caemap || {}, prof, RENDAS_CAP_ANO[ano]);
         var byTarget = {};
         mr.movR.forEach(function (m) { var s = SECTORS[m.to] || m.to; byTarget[s] = (byTarget[s] || 0) + 1; });
+        var byTargetA = {};
+        (mr.movA || []).forEach(function (m) { var s = SECTORS[m.to] || m.to; byTargetA[s] = (byTargetA[s] || 0) + 1; });
         return { ano: ano, recuperavel: mr.recoverable, nMover: mr.movR.length,
-                 porSetor: byTarget, totalFaturas: rows.length };
+                 porSetor: byTarget, totalFaturas: rows.length,
+                 // cenario ACONSELHADO: so movimentos para o setor do CAE PRINCIPAL do emitente
+                 recuperavelAconselhado: mr.recoverableAconselhado, nMoverAconselhado: (mr.movA || []).length,
+                 porSetorAconselhado: byTargetA, nDeGerais: mr.nDeGerais };
       });
     });
   }
@@ -578,6 +617,12 @@
       pathHint: "/inffin",
       open: "https://sitfiscal.portaldasfinancas.gov.pt/inffin/entrada.html",
       why: "As liquida\u00e7\u00f5es de IRS de todos os anos e os reembolsos - o hist\u00f3rico fiscal.", read: readIRS },
+    // Movimentos financeiros (movfin). One rich page: ALL taxes, all years, pagamentos + reembolsos +
+    // coimas classified. Server-rendered HTML table, so its own reader parses it. Own /movfin session.
+    { id: "movfin", label: "Movimentos financeiros (pagamentos e reembolsos)", host: "sitfiscal.portaldasfinancas.gov.pt",
+      pathHint: "/movfin",
+      open: "https://sitfiscal.portaldasfinancas.gov.pt/movfin/resumoCobranca",
+      why: "Todos os documentos de cobran\u00e7a e reembolsos - de todos os impostos e anos, num s\u00f3 s\u00edtio.", read: readMovfin },
     { id: "recibos", label: "Recibos verdes (atividade)", host: "irs.portaldasfinancas.gov.pt",
       open: "https://irs.portaldasfinancas.gov.pt/recibos/portal/consultar",
       why: "Recibos verdes emitidos - rendimentos da categoria B (trabalho independente).", read: readRecibos },
@@ -638,7 +683,11 @@
     return typeof v;   // number / boolean
   }
   function recordShape(url, kind, val) {
-    var key = String(url).split("?")[0];
+    // The URL is the schema key, but some paths embed identifiers (NISS/NIF, e.g.
+    // /posicao-atual/<NISS>/situacao-contributiva). Redact any long digit run to :id BEFORE the
+    // shape is captured - so an identifier never enters the skeleton, and every user's copy of that
+    // endpoint collapses to one key for aggregation. (Query string already dropped.)
+    var key = String(url).split("?")[0].replace(/\d{5,}/g, ":id");
     if (kind === "html") _shapes[key] = { html: true, len: (val || "").length, comprovativo: (String(val).match(/\/comprovativo\//g) || []).length };
     else _shapes[key] = skeleton(val);
   }
@@ -647,6 +696,20 @@
    * never 401. So assert on CONTENT - did we get the JSON shape we asked for - never on r.ok. */
   function getJSON(url) {
     return fetch(url, { credentials: "include", headers: { "Accept": "application/json" } }).then(function (r) {
+      var ct = r.headers.get("content-type") || "";
+      return r.text().then(function (t) {
+        if (/text\/html/i.test(ct) || /^\s*</.test(t)) throw new Error("sess\u00e3o n\u00e3o iniciada nesta p\u00e1gina");
+        try { var j = JSON.parse(t); recordShape(url, "json", j); return j; } catch (e) { throw new Error("resposta inesperada"); }
+      });
+    });
+  }
+
+  /* POST variant for the .api endpoints whose search form posts a JSON body (e.g. recibos consultar
+   * posts searchParameters.dataEmissaoInicio/Fim). Same session gate + shape capture as getJSON. */
+  function postJSON(url, body) {
+    return fetch(url, { method: "POST", credentials: "include",
+      headers: { "Accept": "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify(body) }).then(function (r) {
       var ct = r.headers.get("content-type") || "";
       return r.text().then(function (t) {
         if (/text\/html/i.test(ct) || /^\s*</.test(t)) throw new Error("sess\u00e3o n\u00e3o iniciada nesta p\u00e1gina");
@@ -695,9 +758,63 @@
       // is already answerable from this list. Deep detail, if ever needed, is the server-side path.
       var avisos = ["leitura heur\u00edstica - confirmar aberta/cessada"];
       if (!regime) avisos.push("regime de IVA n\u00e3o consta aqui - ver 'Atividade Exercida' na Situa\u00e7\u00e3o Fiscal Integrada");
-      return { data: { declaracoes: n, cessada: cessada, regimeIva: regime, avisos: avisos },
-               source: "/atividade/atividade/consultardeclaracoes" };
+      // "Atividade Exercida" (Situacao Fiscal Integrada) TEM os dados a serio: data de inicio, tipo de
+      // sujeito passivo, tipo de contabilidade (organizada vs nao -> regime simplificado), CAE
+      // principal + secundarios e o CIRS (o codigo que fixa o coeficiente da Cat B), e a cessacao.
+      // Isto e o que distingue ler de perguntar ao utilizador.
+      return readAtividadeExercida().catch(function () { return null; }).then(function (ex) {
+        var d = { declaracoes: n, cessada: cessada, regimeIva: regime, avisos: avisos };
+        if (ex) {
+          if (ex.inicio) { d.inicio = ex.inicio; d.cessada = ex.cessacao ? true : false; }
+          if (ex.cessacao) d.cessacao = ex.cessacao;
+          if (ex.tipoSujeito) d.tipoSujeito = ex.tipoSujeito;
+          if (ex.contabilidade) { d.contabilidade = ex.contabilidade; d.regimeIrs = /organiz/i.test(ex.contabilidade) && !/n[a\u00e3]o/i.test(ex.contabilidade) ? "organizada" : "simplificado"; }
+          if (ex.codigos && ex.codigos.length) d.codigos = ex.codigos;
+          d.avisos = ["lido de 'Atividade Exercida' (Situa\u00e7\u00e3o Fiscal Integrada)"];
+        }
+        return { data: d, source: "/atividade/atividade/consultardeclaracoes" + (ex ? " + integrada/ecraActividade" : "") };
+      });
     });
+  }
+
+  /* "Atividade Exercida" - o ecra da Situacao Fiscal Integrada com o cadastro REAL da atividade.
+   * O URL e assinado (hmac) e MUDA, por isso NAO se forja: abre-se /integrada/ e colhe-se o link
+   * targetScreen=ecraActividade da propria pagina. Devolve HTML, que se le por rotulos. */
+  function readAtividadeExercida() {
+    return fetch("/integrada/presentation", { credentials: "include" })
+      .then(function (r) { return r.text(); })
+      .then(function (html) {
+        var m = html.match(/\/integrada\/presentation\?queryStringS=targetScreen=ecraActividade&hmac=[^"'&\s]+/);
+        if (!m) throw new Error("sem link ecraActividade");
+        return fetch(m[0].replace(/&amp;/g, "&"), { credentials: "include" }).then(function (r) { return r.text(); });
+      })
+      .then(function (html) {
+        var txt = html.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ");
+        var pick = function (re) { var x = txt.match(re); return x ? x[1].trim() : null; };
+        // CESSACAO: o ecra tem DUAS secoes ("Atividade em IVA" e "Atividade em IRS") e cada uma tem a
+        // sua "Data de Cessacao" + motivo, MUITO abaixo dos dados gerais. Ler o ecra INTEIRO e apanhar
+        // TODAS as ocorrencias - ler so o inicio do texto dava "atividade aberta" numa atividade
+        // CESSADA (erro real: Diogo cessou em 2025-09-08 e a leitura parcial nao viu).
+        var cess = (txt.match(/Data de Cessa[\u00e7c][\u00e3a]o\s+(\d{4}-\d{2}-\d{2})/gi) || [])
+          .map(function (s) { return (s.match(/(\d{4}-\d{2}-\d{2})/) || [])[1]; }).filter(Boolean);
+        var motivos = (txt.match(/Motivo de Cessa[\u00e7c][\u00e3a]o\s+([^]{3,40}?)\s+(?:NIF|Nome|Op[\u00e7c]|Data|Consultas)/gi) || [])
+          .map(function (s) { return s.replace(/Motivo de Cessa[\u00e7c][\u00e3a]o\s+/i, "").trim(); });
+        var out = {
+          inicio: pick(/Data de In[i\u00ed]cio\s+(\d{4}-\d{2}-\d{2})/i),
+          cessacao: cess.length ? cess.sort()[0] : null,     // a mais ANTIGA = quando deixou de estar ativa
+          cessacoes: cess, motivosCessacao: motivos,
+          enquadramentoIva: pick(/Atividade em IVA\s+Enquadramento\s+([^]{3,30}?)\s+Data de Enquadramento/i),
+          enquadramentoIrs: pick(/Atividade em IRS\s+Enquadramento\s+([^]{3,30}?)\s+Data de Enquadramento/i),
+          tipoSujeito: pick(/Tipo de Sujeito Passivo\s+([^]{3,60}?)\s+(?:Contabilidade|Tipo de Contab)/i),
+          contabilidade: pick(/Tipo de Contabilidade\s+(N[\u00e3a]o organizada|Organizada)/i),
+          codigos: []
+        };
+        // "CAE Principal 47125 DESCRICAO 2025-01-01" / "CIRS Secundario 1 1332 ..." etc.
+        var re = /(CAE Principal|CAE Secund[\u00e1a]rio \d+|CIRS(?: Secund[\u00e1a]rio \d+| Principal)?)\s+(\d{4,5})\s+([A-Z\u00c1\u00c2\u00c3\u00c0\u00c9\u00ca\u00cd\u00d3\u00d4\u00d5\u00da\u00c7][^]{3,90}?)\s+(\d{4}-\d{2}-\d{2})/g, mm;
+        while ((mm = re.exec(txt)) !== null && out.codigos.length < 12)
+          out.codigos.push({ tipo: mm[1].trim(), codigo: mm[2], desc: mm[3].replace(/\s+/g, " ").trim(), desde: mm[4] });
+        return out;
+      });
   }
 
   function readEfatura() {
@@ -723,9 +840,15 @@
       return Promise.all(anos.map(function (a) {
         return reAuditAno(a, {}).catch(function () { return null; });
       })).then(function (ra) {
-        return { data: { ano: year, totalFaturas: (j && j.totalElementos != null ? j.totalElementos : rows.length),
-                         porClassificar: pend, atividades: byAct,
-                         reAudit: ra.filter(Boolean) }, source: u };
+        // The user IS the adquirente, so their own NIF is on every row - hash it (locally) for the
+        // anonymous counter id; store the HASH, never the NIF.
+        var ownNif = null;
+        for (var i = 0; i < rows.length; i++) { if (rows[i].nifAdquirente) { ownNif = rows[i].nifAdquirente; break; } }
+        return uidFromNif(ownNif).then(function (uid) {
+          return { data: { ano: year, totalFaturas: (j && j.totalElementos != null ? j.totalElementos : rows.length),
+                           porClassificar: pend, atividades: byAct, uid: uid,
+                           reAudit: ra.filter(Boolean) }, source: u };
+        });
       });
     });
   }
@@ -755,10 +878,23 @@
       // so scan each row for a year (schema-agnostic, like readIRS) - another contributor-schema target.
       var yNow = new Date().getFullYear();
       var recibosAno = o.recibos ? o.recibos.filter(function (r) { return scanYear(rowVals(r)) === yNow; }).length : null;
+      // Rendas RECEBIDAS por ano (valor, nao so contagem) - base do what-if englobamento vs 28%.
+      // Recibos ANULADOS nao contam (mesma armadilha do anulado no movfin).
+      var rendasPorAno = {};
+      (o.recibos || []).forEach(function (r) {
+        var estado = (r.estado && (r.estado.label || r.estado.codigo)) || "";
+        if (/anul/i.test(estado)) return;
+        var ano = scanYear(rowVals(r));
+        var v = +r.valor || +r.importancia || 0;
+        if (!ano || !v) return;
+        if (!rendasPorAno[ano]) rendasPorAno[ano] = { n: 0, valor: 0 };
+        rendasPorAno[ano].n++; rendasPorAno[ano].valor += v;
+      });
+      Object.keys(rendasPorAno).forEach(function (a) { rendasPorAno[a].valor = +rendasPorAno[a].valor.toFixed(2); });
       var avisos = [];
       if (o.recibos && ativos.length && recCount === 0) avisos.push("contrato activo sem recibos no per\u00edodo - confirmar");
       return { data: { contratos: o.contratos.length, activos: ativos.length, recibos: recCount,
-                       recibosAno: recibosAno, ano: yNow, periodosHeuristica: true,
+                       recibosAno: recibosAno, rendasPorAno: rendasPorAno, ano: yNow, periodosHeuristica: true,
                        lista: ativos.slice(0, 8).map(function (c) {
                          var cv = rowVals(c), dt = scanDate(cv);
                          // inicio as YYYY-MM when a start date is present; used to not over-count months
@@ -837,11 +973,63 @@
     out.sort(function (a, b) { return b.ano - a.ano; });
     return out;
   }
+  /* Movimentos financeiros (movfin/resumoCobranca). filtraMeusDocumentos.web is SERVER-RENDERED HTML
+   * (not JSON - confirmed even with X-Requested-With), so parse the table. Columns confirmed
+   * 2026-07-24: Id. Documento | Periodo | Imposto | Valor | Valor Regularizado/Anulado. Empty filters
+   * = ALL taxes/years, pagamentos + reembolsos; filtro = last-N movements. Schema-agnostic: reads
+   * whatever <th>/<td> exist. Only COLUMN NAMES + row count are recorded for the shape - NO cell
+   * values, so no amounts/doc numbers leave the browser. TODO >999: paginate by exercicio x imposto. */
+  function readMovfin() {
+    var u = "/movfin/filtraMeusDocumentos.web?imposto=&exercicio=&tipoDocumento=&filtro=999&_=" + Date.now();
+    return fetch(u, { credentials: "include", headers: { "X-Requested-With": "XMLHttpRequest" } })
+      .then(function (r) { return r.text(); }).then(function (t) {
+        var docp = new DOMParser().parseFromString(t, "text/html");
+        var table = docp.querySelector("#tabela_documentos") || docp.querySelector("table");
+        var cols = [];
+        if (table) Array.prototype.forEach.call(table.querySelectorAll("th"), function (th) {
+          var x = (th.textContent || "").replace(/\s+/g, " ").trim(); if (x) cols.push(x);
+        });
+        var trs = table ? table.querySelectorAll("tbody tr") : [];
+        if (table && !trs.length) trs = table.querySelectorAll("tr");
+        var rows = [];
+        Array.prototype.forEach.call(trs, function (tr) {
+          var tds = tr.querySelectorAll("td");
+          if (tds.length) rows.push(Array.prototype.map.call(tds, function (td) { return (td.textContent || "").replace(/\s+/g, " ").trim(); }));
+        });
+        recordShape(u, "json", { movfinTable: { columns: cols, rows: rows.length } });   // structure only
+        // Local summary (stays in the browser): per Imposto, with anulados/regularizados split out -
+        // a document in the "Valor Regularizado/Anulado" column is NOT a live charge, so we never
+        // count it as owed/paid. This is the "situacao financeira" view. PT currency -> Number.
+        function eurNum(s) { s = String(s || "").replace(/[^\d.,-]/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", "."); var n = parseFloat(s); return isFinite(n) ? n : 0; }
+        var iImp = cols.indexOf("Imposto"); if (iImp < 0) iImp = 2;
+        var iVal = cols.indexOf("Valor"); if (iVal < 0) iVal = 3;
+        var iAnul = cols.length - 1;      // "Valor Regularizado/Anulado" is the last column
+        var porImposto = {}, totalAnulados = 0;
+        rows.forEach(function (c) {
+          var k = (c[iImp] || "?");
+          var anulTxt = c[iAnul] || "";
+          var anulado = /anul|regular/i.test(anulTxt) || eurNum(anulTxt) !== 0;
+          if (!porImposto[k]) porImposto[k] = { n: 0, anulados: 0, valor: 0 };
+          porImposto[k].n++;
+          if (anulado) { porImposto[k].anulados++; totalAnulados++; }
+          else porImposto[k].valor += eurNum(c[iVal]);   // only live docs count toward the total
+        });
+        var avisos = [];
+        if (rows.length >= 999) avisos.push("999 movimentos - lista pode estar truncada; paginar por ano/imposto");
+        else if (!rows.length) avisos.push("0 movimentos lidos - confirmar");
+        if (totalAnulados) avisos.push(totalAnulados + " documento(s) anulados/regularizados - nao contam como encargo");
+        return { data: { movimentos: rows.length, colunas: cols, porImposto: porImposto, anulados: totalAnulados, avisos: avisos }, source: u + " (HTML)" };
+      });
+  }
+
   function readIRS() {
+    // DataTables .web endpoints return an empty aaData without server-side paging params; send the
+    // standard trio so rows come back and the column order can finally be pinned by contributors.
+    var dt = "?sEcho=1&iDisplayStart=0&iDisplayLength=200&_=" + Date.now();
     var uL = "/inffin/liquidacoesIRSDataTables.web";
     var uR = "/inffin/reembolsosDataTables.web";
-    return getJSON(uL + "?_=" + Date.now()).then(function (jl) {
-      return getJSON(uR + "?_=" + Date.now()).catch(function () { return null; }).then(function (jr) {
+    return getJSON(uL + dt).then(function (jl) {
+      return getJSON(uR + dt).catch(function () { return null; }).then(function (jr) {
         var liq = dtRows(jl), reemb = jr ? dtRows(jr) : null;
         var liqN = dtCount(jl, liq);
         var porAno = liqPorAno(liq);
@@ -885,17 +1073,143 @@
    * rows read from the usual container keys, counted only, not column-interpreted. */
   function readRecibos() {
     var u = "/recibos/api/obtemDocumentosV2";
-    return getJSON(u + "?_=" + Date.now()).then(function (j) {
+    // The consultar page (recibos/portal/consultar) POSTs a date range - searchParameters.
+    // dataEmissaoInicio / dataEmissaoFim (yyyy-MM-dd), with pesquisaPorDataEmissao. A bare read comes
+    // back empty. Send a WIDE range so any issued recibo is found and its row schema gets pinned.
+    var yr = new Date().getFullYear();
+    var body = { dataEmissaoInicio: (yr - 6) + "-01-01", dataEmissaoFim: yr + "-12-31", pesquisaPorDataEmissao: true };
+    return postJSON(u, body).catch(function () { return getJSON(u + "?_=" + Date.now()); }).then(function (j) {
       // Real shape confirmed 2026-07-23: {success, listaDocumentos, totalDocs, ...}. The list is
-      // `listaDocumentos` and the count is `totalDocs` (both were wrong before). success:false means
-      // the query returned nothing (a period filter is likely required) - flag, do not assert 0.
+      // `listaDocumentos` and the count is `totalDocs`. success:false means the query returned nothing.
       var rows = (j && (j.listaDocumentos || j.documentos || j.data || j.lista)) || (Array.isArray(j) ? j : []);
       if (!Array.isArray(rows)) rows = [];
       var count = (j && j.totalDocs != null) ? j.totalDocs : rows.length;
       var avisos = [];
-      if (j && j.success === false) avisos.push("resposta sem dados - pode precisar de indicar um per\u00edodo (ou atividade cessada); confirmar");
-      else if (count === 0) avisos.push("0 recibos - confirmar");
-      return { data: { recibosVerdes: count, avisos: avisos }, source: u };
+      if (j && j.success === false) avisos.push("resposta sem dados - pode precisar de outro per\u00edodo ou pagina\u00e7\u00e3o; confirmar");
+      else if (count === 0) avisos.push("0 recibos no per\u00edodo - confirmar");
+      // VALORES por ano (nao so a contagem): e a base do rendimento da Cat B. Recibos ANULADOS nao
+      // contam. Os nomes dos campos ainda nao estao pinados, por isso tentam-se os candidatos usuais
+      // e assinala-se quando nao se encontrou valor nenhum - nunca se inventa um total.
+      var porAno = {}, semValor = 0;
+      rows.forEach(function (r) {
+        var est = String(r.estado || r.situacao || r.estadoDoc || "");
+        if (/anul/i.test(est)) return;
+        var dt = String(r.dataEmissao || r.data || r.dataDoc || "");
+        var ano = (dt.match(/(20\d{2})/) || [])[1];
+        var v = +r.valorBase || +r.valorTotal || +r.importancia || +r.valor || 0;
+        if (!ano) return;
+        if (!porAno[ano]) porAno[ano] = { n: 0, valor: 0 };
+        porAno[ano].n++;
+        if (v) porAno[ano].valor += v; else semValor++;
+      });
+      Object.keys(porAno).forEach(function (a) { porAno[a].valor = +porAno[a].valor.toFixed(2); });
+      if (semValor) avisos.push(semValor + " recibo(s) sem valor reconhecido - campos por confirmar");
+      // A app das DECLARA\u00c7\u00d5ES vive no MESMO host (irs.portaldasfinancas.gov.pt), por isso d\u00e1 para a ler
+      // aqui - mesma sess\u00e3o, mesma origem. Fornece, por ano, a declara\u00e7\u00e3o que CONTA e o seu resultado.
+      return Promise.all([
+        readDeclaracoes().catch(function () { return null; }),
+        readDeducoesOficiais().catch(function () { return null; }),
+        readDespesasAtividade().catch(function () { return null; })
+      ]).then(function (r) {
+        var decl = r[0], ded = r[1], desp = r[2];
+        return { data: { recibosVerdes: count, recibosPorAno: porAno, declaracoes: decl,
+                         deducoesOficiais: ded, despesasAtividade: desp, avisos: avisos },
+                 source: u + " (POST dataEmissao)" + (decl ? " + /app/consulta/pesquisa" : "") +
+                         (ded ? " + /consultarDespesasDeducoes.action" : "") +
+                         (desp ? " + /app/dashboard-regime-simplificado" : "") };
+      });
+    });
+  }
+
+  /* DEDU\u00c7\u00d5ES \u00c0 COLETA calculadas pela AT, por categoria (/consultarDespesasDeducoes.action).
+   * \u00c9 o n\u00famero OFICIAL - o mesmo que aparece na demonstra\u00e7\u00e3o de liquida\u00e7\u00e3o - e evita somar faturas e
+   * aplicar tetos \u00e0 m\u00e3o. Cobre ainda categorias que as faturas n\u00e3o d\u00e3o (im\u00f3veis, lares).
+   * ARMADILHA: o seletor de ano (`anoDashboard`) \u00e9 STATEFUL - pass\u00e1-lo no GET N\u00c3O muda o ano
+   * (testado: 2025/2024/2023 devolvem tudo igual). Por isso lemos S\u00d3 o ano que a p\u00e1gina mostrar e
+   * devolvemo-lo com esse ano; nunca se assume que um par\u00e2metro pegou.
+   * A p\u00e1gina \u00e9 HTML server-rendered (n\u00e3o JSON). Nota da pr\u00f3pria AT: os valores s\u00e3o POR TITULAR,
+   * sem considerar agregado nem tributa\u00e7\u00e3o conjunta. */
+  function readDeducoesOficiais() {
+    return fetch("/consultarDespesasDeducoes.action", { credentials: "include" })
+      .then(function (r) { return r.text(); })
+      .then(function (html) {
+        var t = html.replace(/<[^>]+>/g, " ").replace(/&nbsp;?/g, " ").replace(/&euro;/g, "\u20ac").replace(/\s+/g, " ");
+        var num = function (s) { return +String(s).replace(/\./g, "").replace(",", ".") || 0; };
+        var cats = {}, total = 0, m;
+        var re = /(Despesas gerais familiares|Sa[\u00fau]de e seguros de sa[\u00fau]de|Educa[\u00e7c][\u00e3a]o e forma[\u00e7c][\u00e3a]o|Encargos com im[\u00f3o]veis|Lares|Import[\u00e2a]ncias respeitantes a IVA|Exig[\u00eae]ncia de fatura)[^0-9]{0,60}([\d.]+,\d{2})\s*\u20ac\s*Dedu[\u00e7c][\u00e3a]o correspondente [\u00e0a] despesa\s*([\d.]+,\d{2})\s*\u20ac/g;
+        while ((m = re.exec(t)) !== null) {
+          var d = num(m[3]);
+          cats[m[1].replace(/\s+/g, " ").trim()] = { despesa: num(m[2]), deducao: d };
+          total += d;
+        }
+        if (!Object.keys(cats).length) return null;
+        // o ano que a p\u00e1gina est\u00e1 mesmo a mostrar (n\u00e3o o que pedimos)
+        var ano = (t.match(/Ano\s+(20\d{2})\s+Esta p[\u00e1a]gina/) || t.match(/\bAno\s+(20\d{2})\b/) || [])[1] || null;
+        return { ano: ano ? +ano : null, categorias: cats, total: +total.toFixed(2),
+                 nota: "valores oficiais da AT, por titular (n\u00e3o consideram agregado nem tributa\u00e7\u00e3o conjunta)" };
+      });
+  }
+
+  /* DESPESAS AFETAS \u00c0 ATIVIDADE (Cat B, regime simplificado) - /app/dashboard-regime-simplificado.
+   * No simplificado tributa-se um coeficiente do bruto (art. 31), mas parte desse benef\u00edcio exige
+   * despesas efetivamente afetas \u00e0 atividade (art. 31 n.13): pessoal, rendas, VPT de im\u00f3veis afetos,
+   * outras. Esta p\u00e1gina mostra o que a AT j\u00e1 tem, com o "valor a considerar" j\u00e1 calculado.
+   * Mesmo padr\u00e3o (e mesma armadilha) da p\u00e1gina das dedu\u00e7\u00f5es: HTML server-rendered e ano STATEFUL. */
+  function readDespesasAtividade() {
+    return fetch("/app/dashboard-regime-simplificado", { credentials: "include" })
+      .then(function (r) { return r.text(); })
+      .then(function (html) {
+        var t = html.replace(/<[^>]+>/g, " ").replace(/&nbsp;?/g, " ").replace(/&euro;/g, "\u20ac").replace(/\s+/g, " ");
+        if (!/Despesas Afetas [\u00e0a] Atividade/i.test(t)) return null;
+        var num = function (s) { return +String(s).replace(/\./g, "").replace(",", ".") || 0; };
+        var cats = {}, m;
+        var re = /(Despesas com pessoal|Rendas de im[\u00f3o]veis|Outras despesas|Valor patrimonial tribut[\u00e1a]rio|Import[\u00e2a]ncias)[^0-9]{0,80}([\d.]+,\d{2})\s*\u20ac\s*Valor a considerar[^0-9]{0,60}([\d.]+,\d{2})\s*\u20ac/g;
+        while ((m = re.exec(t)) !== null)
+          cats[m[1].replace(/\s+/g, " ").trim()] = { valor: num(m[2]), considerar: num(m[3]) };
+        var ano = (t.match(/Ano\s+(20\d{2})\s+Esta p[\u00e1a]gina/) || t.match(/\bAno\s+(20\d{2})\b/) || [])[1] || null;
+        if (!Object.keys(cats).length) return { ano: ano ? +ano : null, categorias: {}, vazio: true };
+        return { ano: ano ? +ano : null, categorias: cats,
+                 nota: "despesas afetas \u00e0 atividade (art. 31.\u00ba n.13 CIRS) - relevantes s\u00f3 no regime simplificado" };
+      });
+  }
+
+  /* DECLARA\u00c7\u00d5ES de IRS por ano (irs.../app/consulta). POST com {anoDeclaracoes:"YYYY"} - um GET
+   * devolve vazio. ARMADILHA CR\u00cdTICA: um ano pode ter V\u00c1RIAS declara\u00e7\u00f5es (1.\u00aa + substitui\u00e7\u00f5es) e a que
+   * conta \u00e9 a \u00daLTIMA; o `montante` da linha pode dizer 0,00 / "SALDO NULO EMITIDO" e ainda assim haver
+   * imposto (foi o caso real de 2025: 1.\u00aa dizia 2.281,60, a substitui\u00e7\u00e3o dizia 0,00 mas eram 1.487,44).
+   * Por isso: ordenar por tipo ("N. D.PRAZO") e dataRececao, e assinalar que houve substitui\u00e7\u00e3o. */
+  function readDeclaracoes() {
+    var anos = [], y = new Date().getFullYear();
+    for (var i = 1; i <= 5; i++) anos.push(y - i);
+    return Promise.all(anos.map(function (ano) {
+      return postJSON("/app/consulta/pesquisa", { anoDeclaracoes: String(ano) })
+        .then(function (j) { return (j && j.linhas) || []; })
+        .catch(function () { return []; });
+    })).then(function (lists) {
+      var out = {};
+      lists.forEach(function (linhas) {
+        linhas.forEach(function (l) {
+          var ano = String(l.ano); if (!out[ano]) out[ano] = [];
+          out[ano].push(l);
+        });
+      });
+      var porAno = {};
+      Object.keys(out).forEach(function (ano) {
+        var ls = out[ano].slice().sort(function (a, b) {
+          var oa = (String(a.tipo || "").match(/^(\d+)\s*\./) || [0, 1])[1];
+          var ob = (String(b.tipo || "").match(/^(\d+)\s*\./) || [0, 1])[1];
+          if (+ob !== +oa) return +ob - +oa;
+          return String(b.dataRececao || "").localeCompare(String(a.dataRececao || ""));
+        });
+        var v = ls[0] || {};
+        porAno[ano] = {
+          n: ls.length, substituida: ls.length > 1,
+          tipo: v.tipo || null, situacao: (v.situacao || "").trim() || null,
+          montante: v.montante || null, numLiquidacao: v.numeroLiquidacao || null,
+          dataRececao: v.dataRececao || null, temDemonstracao: !!v.hasDemLiquidacao
+        };
+      });
+      return porAno;
     });
   }
 
@@ -966,7 +1280,7 @@
   }
 
   function profOverlay(prof) {
-    var h = '<div style="font-size:14px;font-weight:700;margin:0 0 6px">Resumo do perfil</div>';
+    var h = '<div style="font-size:14px;font-weight:700;margin:0 0 6px">Resumo da situa\u00e7\u00e3o</div>';
     if (prof.categorias.length) {
       h += '<div style="margin:0 0 8px">';
       prof.categorias.forEach(function (c) {
@@ -1031,7 +1345,7 @@
 
   function profConsentGate() {
     document.getElementById("efh-body").innerHTML =
-      '<p style="margin:0 0 10px">Isto constr\u00f3i o <b>teu perfil fiscal</b> a partir dos documentos ' +
+      '<p style="margin:0 0 10px">Isto carrega a <b>tua situa\u00e7\u00e3o fiscal</b> a partir dos documentos ' +
       'oficiais das Finan\u00e7as, na sess\u00e3o que j\u00e1 tens aberta. L\u00eas uma p\u00e1gina de cada vez.</p>' +
       '<ul style="margin:0 0 12px 18px;padding:0;line-height:1.5">' +
       '<li>N\u00e3o te pede, nem v\u00ea, a password.</li>' +
@@ -1039,7 +1353,7 @@
       '<li>S\u00f3 leitura: nada \u00e9 submetido \u00e0s Finan\u00e7as.</li>' +
       '</ul>' +
       '<button type="button" id="fb-prof-go" style="cursor:pointer;background:#034ad8;color:#fff;border:0;' +
-      'border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">Concordo, criar perfil</button>';
+      'border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">Concordo, carregar</button>';
     document.getElementById("fb-prof-go").onclick = function () {
       try { localStorage.setItem(PROF_CONSENT, JSON.stringify({ ok: true, ts: Date.now() })); } catch (e) {}
       var p = profLoad(); if (!p.consentedAt) { p.consentedAt = new Date().toISOString(); profSave(p); }
@@ -1057,7 +1371,7 @@
     document.getElementById("efh-body").innerHTML = "A ler " + esc(cur.label) + "...";
     cur.read().then(function (res) {
       var s = profLoad();
-      s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data, source: res.source };
+      s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data, source: res.source, shape: _shapes };
       profSave(s);
       // Read OK -> go STRAIGHT to /perfil with the data (URL fragment, no server). This removes the
       // separate "Guardar" click that was being missed: click bookmarklet -> read -> land on
@@ -1072,7 +1386,7 @@
              : (res.data.declaracoes != null ? ("atividade " + (res.data.cessada === true ? "cessada" : res.data.cessada === false ? "aberta" : "?")) : "lido"))))))));
       document.getElementById("efh-body").innerHTML =
         '<div style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
-        '.<br>A abrir o teu perfil...</div>';
+        '.<br>A abrir a tua situa\u00e7\u00e3o...</div>';
       setTimeout(function () { location.href = handoffUrl(cur.id, res.data, _shapes); }, 700);
     }).catch(function (e) {
       var s = profLoad();
@@ -1095,7 +1409,7 @@
     var store = profLoad(), cur = currentPartition();
     var done = PARTITIONS.filter(function (p) { return store.partitions[p.id] && store.partitions[p.id].status === "done"; });
 
-    var h = '<div style="font-size:15px;font-weight:700;margin:0 0 8px">O teu perfil fiscal ' +
+    var h = '<div style="font-size:15px;font-weight:700;margin:0 0 8px">A tua situa\u00e7\u00e3o fiscal ' +
             '<span style="font-weight:400;color:#555">(' + done.length + '/' + PARTITIONS.length + ')</span></div>' +
             '<div style="margin:0 0 12px">';
     PARTITIONS.forEach(function (p) {
@@ -1121,9 +1435,9 @@
       // Once THIS partition is read, hand it to /perfil (via URL fragment - stays in the browser)
       // so the profile assembles across origins. This is the only way to combine partitions.
       if (isDone)
-        h += ' <a href="' + handoffUrl(cur.id, store.partitions[cur.id].data) + '" ' +
+        h += ' <a href="' + handoffUrl(cur.id, store.partitions[cur.id].data, store.partitions[cur.id].shape) + '" ' +
           'style="display:inline-block;cursor:pointer;background:#128a3a;color:#fff;text-decoration:none;' +
-          'border-radius:6px;padding:9px 16px;font-weight:600">Guardar no meu perfil \u2192</a>';
+          'border-radius:6px;padding:9px 16px;font-weight:600">Guardar a minha situa\u00e7\u00e3o \u2192</a>';
     } else {
       h += '<div style="color:#666;font-size:12px">Esta p\u00e1gina n\u00e3o \u00e9 uma das que lemos. Abre uma da lista acima.</div>';
     }
@@ -1131,8 +1445,8 @@
     if (done.length)
       h += '<div style="margin-top:14px;border-top:2px solid #021c51;padding-top:10px">' + profOverlay(assembleProfile(store)) + '</div>';
     if (done.length === PARTITIONS.length)
-      h += '<div style="margin-top:8px;color:#128a3a;font-weight:600">Perfil completo. Fica guardado neste navegador.</div>';
-    h += '<div style="margin-top:12px"><a href="#" id="fb-reset" style="font-size:11px;color:#888">Apagar perfil deste navegador</a></div>';
+      h += '<div style="margin-top:8px;color:#128a3a;font-weight:600">Situa\u00e7\u00e3o carregada. Fica guardada neste navegador.</div>';
+    h += '<div style="margin-top:12px"><a href="#" id="fb-reset" style="font-size:11px;color:#888">Apagar a situa\u00e7\u00e3o deste navegador</a></div>';
 
     document.getElementById("efh-body").innerHTML = h;
 
@@ -1141,7 +1455,7 @@
       rb.disabled = true; rb.textContent = "A ler...";
       cur.read().then(function (res) {
         var s = profLoad();
-        s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data, source: res.source };
+        s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data, source: res.source, shape: _shapes };
         profSave(s); profRender();
       }).catch(function (e) {
         var s = profLoad();
@@ -1656,6 +1970,7 @@
             bits.push('Podes recuperar <b style="color:#1E5A3A">\u20ac' + recoverable.toFixed(2) + '</b> ' +
                       'movendo <b>' + movR.length + '</b> fatura' + (movR.length === 1 ? '' : 's') +
                       ' j\u00e1 registada' + (movR.length === 1 ? '' : 's') + ' para um setor com espa\u00e7o');
+            bits.push('<span style="color:#b8860b;font-size:11px">S\u00f3 se a compra <b>pertencer mesmo</b> a esse setor. O comerciante est\u00e1 l\u00e1 registado, mas classificar mal s\u00f3 para deduzir mais \u00e9 ilegal e pode dar inspe\u00e7\u00e3o. Otimizar \u2260 declarar bem. N\u00e3o \u00e9 aconselhamento fiscal.</span>');
           } else if (o.wasted > 1) {
             bits.push('<span style="color:#6b7780">\u20ac' + o.wasted.toFixed(0) + ' acima do teto de ' +
                       'Despesas Gerais - <b>normal</b>, e sem outro setor registado n\u00e3o h\u00e1 nada a mover.</span>');

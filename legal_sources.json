@@ -202,6 +202,26 @@
       "why_it_matters": "The data source itself. Watch for the Rev.3 to Rev.4 switch completing, and for an unknown NIF returning the literal string 'NIPC nao encontrado' rather than a 404.",
       "verify": false,
       "verify_note": "live registry search page, not an article"
+    },
+    {
+      "id": "ebf-21",
+      "governs": "PPR (Plano Poupanca-Reforma) IRS deduction - 20% ate teto por idade 400/350/300 EUR",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/bf_rep/Pages/ebf-artigo-21-ordm-.aspx",
+      "type": "artigo",
+      "critical": false,
+      "why_it_matters": "Feeds the self-declared PPR estimate in /perfil (art. 21.o n.2 EBF). Rate 20%; teto 400 (<35a) / 350 (35-50a) / 300 (>50a). EBF lives under bf_rep (NOT ebf_rep) on portaldasfinancas; the DRE consolidada is a JS SPA dre.mjs cannot render, so read it here.",
+      "expect": "Artigo 21",
+      "source_note": "portaldasfinancas server-HTML mirror; EBF index: bf_rep/Pages/estatuto-dos-beneficios-fiscais-indice.aspx"
+    },
+    {
+      "id": "ebf-63",
+      "governs": "Donativos/mecenato IRS deduction - 25% ate 15% da coleta (sem limite ao Estado)",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/bf_rep/Pages/ebf-artigo-63-ordm-.aspx",
+      "type": "artigo",
+      "critical": false,
+      "why_it_matters": "Feeds the self-declared donativos estimate in /perfil (art. 63.o n.1 EBF). Rate 25%; regra geral limitada a 15% da coleta, donativos ao Estado sem limite; nocao de donativo em art. 61.o.",
+      "expect": "Artigo 63",
+      "source_note": "portaldasfinancas server-HTML mirror (bf_rep)"
     }
   ],
   "watch": [
@@ -217,5 +237,11 @@
       "where": "corrections[] in cae_sectors.json",
       "when": "Whenever a user reports one"
     }
-  ]
+  ],
+  "_indices": {
+    "codigos_tributarios": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/Pages/default-com-pdf.aspx",
+    "ebf": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/bf_rep/Pages/estatuto-dos-beneficios-fiscais-indice.aspx",
+    "note": "portaldasfinancas server-HTML mirrors of AT's codes; EBF under bf_rep, CIRS under cirs_rep. Easier to read than the DRE JS SPA; DRE stays source of record.",
+    "cirs": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/codigo-do-irs-indice.aspx"
+  }
 }

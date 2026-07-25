@@ -342,5 +342,345 @@
     "Fill income year 2024 first (all six rules verified) - highest re-audit value.",
     "Then 2025, then 2023.",
     "Add art. 78.º n.7 global limit table and 78.º-A dependentes amounts per year (needed for household ceilings)."
-  ]
+  ],
+  "escaloes_irs": {
+    "_source": "CIRS art. 68 (Continente). URL info.portaldasfinancas.gov.pt/.../cirs_rep/ra/Pages/irs68ra_<AAAAMM>.aspx",
+    "_method": "coleta = coletavel * taxa - parcela_a_abater; parcela derived from boundaries+rates (see fiscal-monitor/irs_calc.py)",
+    "_status": "2024 brackets 1-6 VALIDATED AGAINST REALITY 2026-07-24: Diogo income 37287.11 -> coleta 8243.68; real liquidacao (movfin) reembolso 46.03 => implied deducoes 986.71 (plausible). Brackets 7-9 still need DRE-confirm (taxpayer sat in bracket 6). The /ra/ page is a JS SPA - confirm via dre.mjs, not plain curl.",
+    "2024": {
+      "continente": [
+        [
+          7703.0,
+          0.13
+        ],
+        [
+          11623.0,
+          0.165
+        ],
+        [
+          16472.0,
+          0.22
+        ],
+        [
+          21321.0,
+          0.25
+        ],
+        [
+          27146.0,
+          0.32
+        ],
+        [
+          39791.0,
+          0.355,
+          3845.5
+        ],
+        [
+          43000.0,
+          0.435
+        ],
+        [
+          80000.0,
+          0.45
+        ],
+        [
+          null,
+          0.48
+        ]
+      ],
+      "deducao_especifica_catA": 4104.0,
+      "_status": "CORRIGIDO 2026-07-25: reduzida (Lei 33-A/2024). Confirmado vs demonstracao (numLiq 4591807): bracket 6=35,5%, parcela ~3845,50, coletavel 32936,87, benef.municipal 2%, deducoes 442,02 -> reembolso 46,03 EXATO. NOTA: guardar as parcelas OFICIAIS do art.68 anual (nao derivadas) e chavear por regiao."
+    },
+    "2023": {
+      "continente": [
+        [
+          7479,
+          0.145,
+          0.0
+        ],
+        [
+          11284,
+          0.21,
+          486.13
+        ],
+        [
+          15992,
+          0.265,
+          1106.73
+        ],
+        [
+          20700,
+          0.285,
+          1426.65
+        ],
+        [
+          26355,
+          0.35,
+          2772.14
+        ],
+        [
+          38632,
+          0.37,
+          3299.12
+        ],
+        [
+          50483,
+          0.435,
+          5810.25
+        ],
+        [
+          78834,
+          0.45,
+          6567.33
+        ],
+        [
+          null,
+          0.48,
+          8932.68
+        ]
+      ],
+      "deducao_especifica_catA": 4104.0,
+      "_status": "Oficial: portaldasfinancas /ra/ irs68ra_202312 (Normal+Media). Parcela = limite_ant*(normal-media_ant)."
+    },
+    "2022": {
+      "continente": [
+        [
+          7112,
+          0.145,
+          0.0
+        ],
+        [
+          10732,
+          0.23,
+          604.52
+        ],
+        [
+          20322,
+          0.285,
+          1194.79
+        ],
+        [
+          25075,
+          0.35,
+          2515.66
+        ],
+        [
+          36967,
+          0.37,
+          3017.27
+        ],
+        [
+          80882,
+          0.45,
+          5974.61
+        ],
+        [
+          null,
+          0.48,
+          8401.21
+        ]
+      ],
+      "deducao_especifica_catA": 4104.0,
+      "_status": "Oficial: portaldasfinancas /ra/ irs68ra_202206 (Normal+Media). 7 escaloes nesse ano."
+    },
+    "2025": {
+      "continente": [
+        [
+          8059,
+          0.125,
+          0.0
+        ],
+        [
+          12160,
+          0.16,
+          282.07
+        ],
+        [
+          17233,
+          0.215,
+          950.91
+        ],
+        [
+          22306,
+          0.244,
+          1450.67
+        ],
+        [
+          28400,
+          0.314,
+          3011.98
+        ],
+        [
+          41629,
+          0.349,
+          4006.1
+        ],
+        [
+          44987,
+          0.431,
+          7419.54
+        ],
+        [
+          83696,
+          0.446,
+          8094.51
+        ],
+        [
+          null,
+          0.48,
+          10939.9
+        ]
+      ],
+      "deducao_especifica_catA": 4104.0,
+      "_status": "Oficial: portaldasfinancas /ra/ irs68ra_202512 (Normal+Media)."
+    },
+    "_regioes": {
+      "_fonte": "Tabelas de retencao (doclib tabela_ret_doclib). Nomes de ficheiro INCONSISTENTES: Tabelas_RF_Continente_2026.xlsx | Tabelas_RF_2025_RAM.xlsx | Tabelas_RF_RA_Acores_2025.xlsx | Tabelas_RF_RAA_2025_01_08_a_30_09_GSEAF_vf.xlsx (periodos a meio do ano!). NAO assumir padrao - listar a doclib e apanhar o href real.",
+      "acores": {
+        "regra": "taxa_regional = taxa_continente * 0.70",
+        "verificado": "2026-07-25 contra Tabelas_RF_RA_Acores_2025: racio EXATAMENTE 0,70 em todos os escalaes (0.091/0.13, 0.1155/0.165, 0.154/0.22, 0.175/0.25, 0.224/0.32, 0.2485/0.355) | RE-VERIFICADO 2026-07-25 em 3 periodos independentes (2025-jan, 2024-set/out, 2024-anual): fator 0,700 constante em todos os escaloes.",
+        "fator": 0.7,
+        "tabela_retencao_2025_jan": [
+          {
+            "limite": 914.0,
+            "taxa": 0.0,
+            "parcela": 0.0
+          },
+          {
+            "limite": 992.0,
+            "taxa": 0.091,
+            "parcela": 0.0
+          },
+          {
+            "limite": 1070.0,
+            "taxa": 0.1155,
+            "parcela": 0.0
+          },
+          {
+            "limite": 1136.0,
+            "taxa": 0.1155,
+            "parcela": 70.98
+          },
+          {
+            "limite": 1187.0,
+            "taxa": 0.154,
+            "parcela": 114.72
+          },
+          {
+            "limite": 1787.0,
+            "taxa": 0.175,
+            "parcela": 139.96
+          },
+          {
+            "limite": 2078.0,
+            "taxa": 0.224,
+            "parcela": 227.52
+          },
+          {
+            "limite": 2432.0,
+            "taxa": 0.2485,
+            "parcela": 278.43
+          },
+          {
+            "limite": 3233.0,
+            "taxa": 0.271,
+            "parcela": 333.15
+          },
+          {
+            "limite": 5547.0,
+            "taxa": 0.2804,
+            "parcela": 363.54
+          },
+          {
+            "limite": 20221.0,
+            "taxa": 0.3146,
+            "parcela": 553.25
+          },
+          {
+            "limite": 20221.0,
+            "taxa": 0.3302,
+            "parcela": 868.7
+          }
+        ],
+        "_fonte_tabela": "tabelas_rf/Tabelas_RF_RA_Acores_2025.xlsx (Tabela I: nao casado sem dependentes), parseada por parse_tabelas_rf.py"
+      },
+      "madeira": {
+        "regra": "TABELA PROPRIA - nao e um fator constante",
+        "verificado": "2026-07-25: racios vs continente irregulares (0.714, 0.764, 0.827, 0.917, 0.720, 0.992) -> tem de se guardar a tabela da RAM, nao derivar | RE-VERIFICADO 2026-07-25: racios vs continente 0,714/0,764/0,827/0,917/0,720/0,992/1,003 - o ultimo e SUPERIOR a 1, logo nao ha reducao uniforme: a Madeira tem tabela propria e tem de ser guardada.",
+        "taxas_retencao_2025_amostra": [
+          0.0928,
+          0.126,
+          0.182,
+          0.2293,
+          0.2305,
+          0.3523
+        ],
+        "tabela_retencao_2025_jan": [
+          {
+            "limite": 915.0,
+            "taxa": 0.0,
+            "parcela": 0.0
+          },
+          {
+            "limite": 949.0,
+            "taxa": 0.0928,
+            "parcela": 0.0
+          },
+          {
+            "limite": 1015.0,
+            "taxa": 0.126,
+            "parcela": 0.0
+          },
+          {
+            "limite": 1125.0,
+            "taxa": 0.126,
+            "parcela": 75.31
+          },
+          {
+            "limite": 1521.0,
+            "taxa": 0.182,
+            "parcela": 138.3
+          },
+          {
+            "limite": 2185.0,
+            "taxa": 0.2293,
+            "parcela": 210.18
+          },
+          {
+            "limite": 3001.0,
+            "taxa": 0.2305,
+            "parcela": 212.93
+          },
+          {
+            "limite": 3387.0,
+            "taxa": 0.3523,
+            "parcela": 578.4
+          },
+          {
+            "limite": 6171.0,
+            "taxa": 0.3885,
+            "parcela": 700.95
+          },
+          {
+            "limite": 6517.0,
+            "taxa": 0.4144,
+            "parcela": 860.76
+          },
+          {
+            "limite": 20064.0,
+            "taxa": 0.4316,
+            "parcela": 972.95
+          },
+          {
+            "limite": 20064.0,
+            "taxa": 0.467,
+            "parcela": 1682.88
+          }
+        ],
+        "_fonte_tabela": "tabelas_rf/Tabelas_RF_2025_RAM.xlsx (Tabela I: nao casado sem dependentes), parseada por parse_tabelas_rf.py"
+      },
+      "_aviso": "Estas sao taxas de RETENCAO mensal. Para a LIQUIDACAO anual confirmar o art. 68 na versao regional (DLR proprio) - o CIRS art. 68 nao tem variantes regionais. O fator 0,70 dos Acores e o mesmo que a regiao aplica a liquidacao, mas CONFIRMAR antes de usar em producao.",
+      "_arquivo_local": "fiscal-monitor/tabelas_rf/ (38 ficheiros, MANIFEST.json) + parser fiscal-monitor/parse_tabelas_rf.py",
+      "_aviso_parser": "A coluna da PARCELA A ABATER e a col.4 da folha; a col.10 e 'Parcela ADICIONAL' (ex. 21,43 na Madeira) e NAO serve para o calculo - ler por POSICAO, nunca por heuristica de 'ultimo numero'."
+    }
+  }
 }

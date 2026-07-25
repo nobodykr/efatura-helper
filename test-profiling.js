@@ -142,7 +142,13 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("SS auto-read + stored", store.partitions.ss && store.partitions.ss.status === "done");
   ok("SS estado REGULARIZADA, 1 pagamento", store.partitions.ss.data.estado === "REGULARIZADA" && store.partitions.ss.data.pagamentosCorrentes === 1);
-  ok("SS: NISS and name NOT stored", !/11111111111|SECRET NAME|niss/i.test(JSON.stringify(store.partitions.ss)));
+  // PII: o NISS/nome nao podem ser guardados como VALOR. O `shape` (esqueleto para a contribuicao
+  // opt-in) pode conter os NOMES dos campos com o respetivo TIPO ("niss":"str") - isso nao e PII.
+  // E o NISS no PATH do endpoint tem de estar redigido como :id (ver recordShape em tool.js).
+  var ssJson = JSON.stringify(store.partitions.ss);
+  ok("SS: NISS/name values NOT stored", !/11111111111|SECRET NAME/.test(ssJson));
+  ok("SS: NISS redacted in endpoint path", !/posicao-atual\/\d/.test(ssJson) && /posicao-atual\/:id/.test(ssJson));
+  ok("SS: shape has only field names + types", !/"(?:niss|nome)"\s*:\s*"(?!str"|number"|boolean"|null")/.test(ssJson));
   ok("SS handoff carries NO NISS/name", !/11111111111|SECRET NAME|niss/i.test(w.__nav || ""));
 
   // 4c-5. atividade (cadastro): the mock has BOTH inicio + cessacao -> CLOSED, so NO Cat B, and it
