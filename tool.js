@@ -45,7 +45,7 @@
   var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.07.25f";
+  var FB_VERSION = "2026.07.25h";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -1073,12 +1073,43 @@
    * rows read from the usual container keys, counted only, not column-interpreted. */
   function readRecibos() {
     var u = "/recibos/api/obtemDocumentosV2";
-    // The consultar page (recibos/portal/consultar) POSTs a date range - searchParameters.
-    // dataEmissaoInicio / dataEmissaoFim (yyyy-MM-dd), with pesquisaPorDataEmissao. A bare read comes
-    // back empty. Send a WIDE range so any issued recibo is found and its row schema gets pinned.
+    // PARAMETROS REAIS (capturados do botao Pesquisar da propria pagina, 2026-07-25):
+    //   GET ?dataEmissaoInicio&dataEmissaoFim&modoConsulta=Prestador&tipoPesquisa=1
+    //       &nifPrestadorServicos=<o proprio NIF>&offset=0&tableSize=<n>&isAutoSearchOn=on
+    // ARMADILHAS confirmadas contra o servidor:
+    //   - E **GET**. Um POST devolve 405 "Request method 'POST' not supported".
+    //   - Sem tipoPesquisa/modoConsulta -> 200 com success:false "O tipo de consulta e invalido."
+    //   - O intervalo NAO pode abranger varios anos: 6 anos -> "Por favor, confira os campos
+    //     assinalados."; um ANO CIVIL de cada vez -> success:true. Por isso pede-se ano a ano.
+    // O NIF e o do proprio (lido da pagina) e serve so para construir o URL - nunca e guardado.
     var yr = new Date().getFullYear();
-    var body = { dataEmissaoInicio: (yr - 6) + "-01-01", dataEmissaoFim: yr + "-12-31", pesquisaPorDataEmissao: true };
-    return postJSON(u, body).catch(function () { return getJSON(u + "?_=" + Date.now()); }).then(function (j) {
+    var nif = (document.body.innerHTML.match(/\b(\d{9})\b/) || [])[1] || "";
+    var anos = [];
+    for (var a = yr; a >= yr - 5; a--) anos.push(a);
+    var qFor = function (ano) {
+      return "?dataEmissaoInicio=" + ano + "-01-01&dataEmissaoFim=" + ano + "-12-31" +
+             "&modoConsulta=Prestador&tipoPesquisa=1&isAutoSearchOn=on&offset=0&tableSize=500" +
+             (nif ? "&nifPrestadorServicos=" + nif : "") + "&_=" + Date.now();
+    };
+    return Promise.all(anos.map(function (ano) {
+      return getJSON(u + qFor(ano)).catch(function () { return null; });
+    })).then(function (parts) {
+      // juntar os anos num unico envelope, no formato que o resto do codigo ja espera
+      var todos = [], total = 0, algum = false;
+      parts.forEach(function (j) {
+        if (!j) return;
+        algum = true;
+        var l = j.listaDocumentos || j.documentos || j.lista || [];
+        if (Object.prototype.toString.call(l) === "[object Array]") todos = todos.concat(l);
+        if (typeof j.totalDocs === "number") total += j.totalDocs;
+      });
+      return algum ? { success: true, listaDocumentos: todos, totalDocs: total } : null;
+    })
+    // FAIL-SOFT: esta particao transporta MUITO mais do que os recibos - traz tambem as declaracoes
+    // (+ a demonstracao de liquidacao, de onde sai a taxa marginal), as deducoes oficiais da AT e as
+    // despesas afetas a atividade. Se o endpoint dos recibos falhar (ex.: atividade CESSADA devolve
+    // uma pagina de erro em vez de JSON), NAO se pode deitar fora tudo o resto: segue-se com j=null.
+      .then(function (j) {
       // Real shape confirmed 2026-07-23: {success, listaDocumentos, totalDocs, ...}. The list is
       // `listaDocumentos` and the count is `totalDocs`. success:false means the query returned nothing.
       var rows = (j && (j.listaDocumentos || j.documentos || j.data || j.lista)) || (Array.isArray(j) ? j : []);
@@ -1178,6 +1209,60 @@
    * conta \u00e9 a \u00daLTIMA; o `montante` da linha pode dizer 0,00 / "SALDO NULO EMITIDO" e ainda assim haver
    * imposto (foi o caso real de 2025: 1.\u00aa dizia 2.281,60, a substitui\u00e7\u00e3o dizia 0,00 mas eram 1.487,44).
    * Por isso: ordenar por tipo ("N. D.PRAZO") e dataRececao, e assinalar que houve substitui\u00e7\u00e3o. */
+  /* DEMONSTRACAO DE LIQUIDACAO: ler o PDF NO PROPRIO NAVEGADOR, sem biblioteca nenhuma.
+   * Ao contrario do comprovativo do Modelo 3, este PDF NAO esta encriptado - basta inflacionar os
+   * streams FlateDecode (DecompressionStream('deflate') e nativo) e apanhar o texto entre parentesis
+   * dos operadores Tj/TJ. Da os numeros OFICIAIS do ano (taxa marginal, taxa efetiva, deducoes), por
+   * isso NAO se pergunta nada ao utilizador sobre um ano ja entregue: esta no documento da AT. */
+  function inflate(bytes) {
+    if (typeof DecompressionStream === "undefined") return Promise.resolve(null);
+    try {
+      var ds = new DecompressionStream("deflate");
+      return new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer()
+        .then(function (b) { return new Uint8Array(b); }).catch(function () { return null; });
+    } catch (e) { return Promise.resolve(null); }
+  }
+
+  function pdfTexto(buf) {
+    var u8 = new Uint8Array(buf), lat = "";
+    for (var i = 0; i < u8.length; i++) lat += String.fromCharCode(u8[i]);
+    var jobs = [], re = /stream\r?\n/g, m;
+    while ((m = re.exec(lat)) !== null) {
+      var st = m.index + m[0].length, en = lat.indexOf("endstream", st);
+      if (en < 0) continue;
+      jobs.push(inflate(u8.subarray(st, en)));
+    }
+    return Promise.all(jobs).then(function (parts) {
+      var out = [];
+      parts.forEach(function (p) {
+        if (!p) return;
+        var s = "";
+        for (var i = 0; i < p.length; i++) s += String.fromCharCode(p[i]);
+        if (s.indexOf("Tj") < 0 && s.indexOf("TJ") < 0) return;
+        var t, rx = /\(((?:[^()\\]|\\.)*)\)/g;
+        while ((t = rx.exec(s)) !== null) out.push(t[1].replace(/\\([()])/g, "$1"));
+      });
+      return out.join(" ").replace(/\s+/g, " ");
+    });
+  }
+
+  function lerDemonstracao(url) {
+    return fetch(url, { credentials: "include" }).then(function (r) { return r.arrayBuffer(); })
+      .then(pdfTexto).then(function (t) {
+        if (!t || t.length < 200) return null;
+        var num = function (x) { return x ? +String(x).replace(/\./g, "").replace(",", ".") : null; };
+        var pick = function (re) { var m = t.match(re); return m ? m[1] : null; };
+        return {
+          marginal: num(pick(/Quociente familiar\s+[\d,]+\s+taxa\s+([\d,]+)\s*%/i)),
+          taxaEfetiva: num(pick(/Taxa Efetiva de Tributa[çc][ãa]o\s*-\s*([\d,]+)\s*%/i)),
+          deducoesTotal: num(pick(/Total das Dedu[çc][õo]es\s*:?\s*([\d.]+,\d{2})/i)),
+          deducaoEfetiva: num(pick(/Dedu[çc][ãa]o Efetiva\s*:?\s*([\d.]+,\d{2})/i)),
+          fonte: "demonstracao de liquidacao (PDF lido no navegador)"
+        };
+      }).catch(function () { return null; });
+  }
+
+
   function readDeclaracoes() {
     var anos = [], y = new Date().getFullYear();
     for (var i = 1; i <= 5; i++) anos.push(y - i);
@@ -1206,10 +1291,17 @@
           n: ls.length, substituida: ls.length > 1,
           tipo: v.tipo || null, situacao: (v.situacao || "").trim() || null,
           montante: v.montante || null, numLiquidacao: v.numeroLiquidacao || null,
-          dataRececao: v.dataRececao || null, temDemonstracao: !!v.hasDemLiquidacao
+          dataRececao: v.dataRececao || null, temDemonstracao: !!v.hasDemLiquidacao,
+          urlDem: v.urlPDFLiquidacao || null
         };
       });
-      return porAno;
+      // Ler a demonstracao VIGENTE de cada ano (PDF, no navegador) - da os numeros oficiais e evita
+      // perguntar ao utilizador o que ja esta no documento.
+      var anos = Object.keys(porAno).filter(function (a) { return porAno[a].urlDem; });
+      return Promise.all(anos.map(function (a) {
+        return lerDemonstracao(porAno[a].urlDem).then(function (d) { if (d) porAno[a].liquidacao = d; })
+          .catch(function () {});
+      })).then(function () { return porAno; });
     });
   }
 

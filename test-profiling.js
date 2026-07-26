@@ -45,7 +45,14 @@ function fetchOK(u) {
   if (/matrizesinter\/api\/patrimonio/.test(s)) return json([{ artigo: "1234", nomeFreguesia: "Benfica", tipo: "U", valor: 120000, valorInicial: 90000, estado: {codigo:"ATIVO"} }]);
   if (/liquidacoesIRSDataTables/.test(s)) return json({ iTotalRecords: 3, iTotalDisplayRecords: 3, aaData: [{ ano: 2024 }, { ano: 2023 }, { ano: 2022 }] });
   if (/reembolsosDataTables/.test(s)) return json({ iTotalRecords: 1, aaData: [{ ano: 2024 }] });
-  if (/obtemDocumentosV2/.test(s)) return json({ success: true, listaDocumentos: [{ n: 1 }, { n: 2 }], totalDocs: 2 });
+  // O leitor consulta ANO A ANO (o servidor rejeita intervalos multi-ano), por isso o mock so
+  // devolve documentos para UM ano - devolver 2 em todas as chamadas multiplicaria o total.
+  if (/obtemDocumentosV2/.test(s)) {
+    var anoQ = (s.match(/dataEmissaoInicio=(\d{4})/) || [])[1];
+    var alvo = String(new Date().getFullYear() - 1);
+    if (anoQ && anoQ !== alvo) return json({ success: true, listaDocumentos: [], totalDocs: 0 });
+    return json({ success: true, listaDocumentos: [{ n: 1 }, { n: 2 }], totalDocs: 2 });
+  }
   if (/consultardeclaracoes/.test(s)) return Promise.resolve({ ok: true, headers: { get: () => "text/html" }, text: () => Promise.resolve(
     "<html><table>" +
     "<tr><td>Declaracao de inicio de atividade</td><td><a href='/atividade/atividade/consultardeclaracoes/comprovativo/9996N00829690'>ver</a></td></tr>" +

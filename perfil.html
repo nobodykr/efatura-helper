@@ -135,7 +135,11 @@
     if (!ef || !ef.uid) return;
     var total = 0;
     (ef.reAudit||[]).forEach(function(x){
-      if (x && x.recuperavel > 0){ var w = resubmissionWindows(x.ano); if (w.recover.open) total += x.recuperavel; }
+      // Soma o ACONSELHADO (setor do CAE principal do emitente), NUNCA o maximo teorico: esse inclui
+      // setores secundarios e a propria pagina diz que "nao e uma recomendacao". Um contador publico
+      // alimentado pelo maximo teorico anunciaria dinheiro que nos proprios desaconselhamos.
+      var val = (x && x.recuperavelAconselhado != null) ? x.recuperavelAconselhado : 0;
+      if (val > 0){ var w = resubmissionWindows(x.ano); if (w.recover.open) total += val; }
     });
     if (!(total > 0)) return;
     try {
@@ -514,6 +518,7 @@
   // Accordions must survive a re-render (a checkbox change rebuilds #out); without this the
   // "Outras situacoes" details snapped shut on every click. Read the live open-state before rebuild.
   var ACC = {};
+  var TAB = 'otim';        // aba activa da revisao por ano: 'otim' (por omissao) ou 'acon'
   function render(justAdded){
     Array.prototype.forEach.call(document.querySelectorAll('#out details[data-acc]'), function(d){ ACC[d.getAttribute('data-acc')] = d.open; });
     var store = load();
@@ -605,71 +610,82 @@
         var ra = reAuditData.filter(function(x){ return x.ano===yy; })[0];
         var raHtml = '';
         if (ra && (ra.recuperavel > 0.5 || ra.recuperavelAconselhado > 0.5)){
-          // DOIS cenarios, deliberadamente separados (pedido do Diogo):
-          //  ACONSELHADO - so faturas que podem ir para o setor do CAE PRINCIPAL do emitente. E o
-          //    que se defende numa inspecao: e a atividade principal da empresa. Verde.
-          //  OTIMIZADO   - o MAXIMO aritmetico: qualquer setor em que o emitente esteja registado,
-          //    incluindo secundarios (um hipermercado com CAE de farmacia). Nao e conselho: e o teto
-          //    do que seria possivel SE a despesa pertencesse mesmo la. Ambar.
+          // DUAS ABAS (pedido do Diogo): "Otimizado" e a que abre por omissao (o numero maximo), e
+          // "Aconselhado" mostra so o que se defende. As duas ficam sempre no DOM; a barra de abas
+          // troca a visibilidade. O contador publico soma SEMPRE o aconselhado, mesmo com a aba
+          // Otimizado aberta - anunciar publicamente um valor que a propria pagina desaconselha seria
+          // desonesto.
           var fmtSet = function(o){ return Object.keys(o||{}).map(function(k){ return esc(k)+' ('+o[k]+')'; }).join(', '); };
           var acon = ra.recuperavelAconselhado || 0, otim = ra.recuperavel || 0;
           var aberta = wnd.recover.open;
-          raHtml += '<div style="margin-top:6px;border-left:3px solid '+(aberta?'var(--green)':'var(--amber)')+';padding-left:8px">'+
-            '<div class="w"><b>Aconselhado</b> (setor principal do comerciante): '+
+          var cor = aberta ? 'var(--green)' : 'var(--amber)';
+
+          var paneOtim = '<div class="w"><b style="color:'+cor+'">~&euro;'+esc(Math.round(otim))+'</b> em '+esc(ra.nMover)+' fatura(s)'+
+            (Object.keys(ra.porSetor||{}).length?' - '+fmtSet(ra.porSetor):'')+'.'+
+            (ra.nDeGerais ? ' <span class="w">('+esc(ra.nDeGerais)+' vinham de Despesas Gerais.)</span>' : '')+
+            '<div style="margin-top:3px;color:var(--amber)">Este é o <b>máximo teórico</b>: inclui setores <b>secundários</b> do comerciante. '+
+            'Não é uma recomendação - só conta se a compra pertencer mesmo a esse setor. Estar registado num setor não transforma um jantar em despesa de saúde.</div></div>';
+
+          var paneAcon = '<div class="w">'+
             (acon > 0.5
-              ? '<b style="color:'+(aberta?'var(--green)':'var(--amber)')+'">~&euro;'+esc(Math.round(acon))+'</b> em '+esc(ra.nMoverAconselhado||0)+' fatura(s)'+
-                (Object.keys(ra.porSetorAconselhado||{}).length?' - '+fmtSet(ra.porSetorAconselhado):'')+'. '+
-                'Estas sao as mais defensaveis: o setor sugerido <b>e a atividade principal</b> de quem emitiu a fatura.'
-              : 'nada a mover com seguranca - as faturas ja estao no setor principal do comerciante.')+
-            '</div></div>';
-          if (otim > acon + 0.5){
-            raHtml += '<div style="margin-top:4px;border-left:3px solid var(--rule);padding-left:8px">'+
-              '<div class="w"><b>Máximo teórico</b> (inclui setores secundários): <b>~&euro;'+esc(Math.round(otim))+'</b> em '+esc(ra.nMover)+' fatura(s)'+
-              (Object.keys(ra.porSetor||{}).length?' - '+fmtSet(ra.porSetor):'')+'. '+
-              '<span style="color:var(--amber)">Isto <b>não</b> é uma recomendação: só conta se a compra pertencer mesmo a esse setor. '+
-              'O comerciante estar registado num setor não transforma um jantar em despesa de saúde.</span>'+
-              (ra.nDeGerais ? ' <span class="w">('+esc(ra.nDeGerais)+' vinham de Despesas Gerais - o saco por omissão.)</span>' : '')+
-              '</div></div>';
-          }
-          if (aberta){
-            raHtml += '<div class="w" style="margin-top:4px">Para corrigir: e-Fatura &rarr; Alterar &rarr; escolhe o setor &rarr; Guardar, e entrega uma declaração de substituição. Ainda estás no prazo.</div>';
-          } else {
-            raHtml += '<div class="w" style="margin-top:4px;color:var(--amber)">O prazo para corrigir '+yy+' já fechou - fica como referência do que a ferramenta deteta.</div>';
-          }
-          raHtml += '<div class="w" style="margin-top:3px;color:var(--amber);font-size:.82rem">Classificar mal só para deduzir mais é ilegal e pode levar a inspeção - otimizar não é o mesmo que declarar bem. Isto não é aconselhamento fiscal.</div>';
+              ? '<b style="color:'+cor+'">~&euro;'+esc(Math.round(acon))+'</b> em '+esc(ra.nMoverAconselhado||0)+' fatura(s)'+
+                (Object.keys(ra.porSetorAconselhado||{}).length?' - '+fmtSet(ra.porSetorAconselhado):'')+'.'+
+                '<div style="margin-top:3px">Só faturas cujo setor sugerido <b>é a atividade principal</b> de quem as emitiu - as mais fáceis de defender.</div>'
+              : 'Nada a mover com segurança: as faturas já estão no setor principal do comerciante.')+
+            '</div>';
+
+          raHtml += '<div class="fbtabs" style="margin-top:6px">'+
+            '<div style="display:flex;gap:6px;margin-bottom:6px">'+
+              '<button type="button" class="fbtab" data-pane="otim" style="cursor:pointer;border:1px solid var(--rule);background:var(--bg2);border-radius:999px;padding:3px 11px;font:inherit;font-size:.82rem">Otimizado</button>'+
+              '<button type="button" class="fbtab" data-pane="acon" style="cursor:pointer;border:1px solid var(--rule);background:transparent;border-radius:999px;padding:3px 11px;font:inherit;font-size:.82rem">Aconselhado</button>'+
+            '</div>'+
+            '<div class="fbpane" data-pane="otim">'+paneOtim+'</div>'+
+            '<div class="fbpane" data-pane="acon" style="display:none">'+paneAcon+'</div>'+
+          '</div>';
+
+          raHtml += '<div class="w" style="margin-top:4px">'+
+            (aberta ? 'Para corrigir: e-Fatura &rarr; Alterar &rarr; escolhe o setor &rarr; Guardar, e entrega uma declaração de substituição. Ainda estás no prazo.'
+                    : '<span style="color:var(--amber)">O prazo para corrigir '+yy+' já fechou - fica como referência do que a ferramenta deteta.</span>')+'</div>'+
+            '<div class="w" style="margin-top:3px;color:var(--amber);font-size:.82rem">Classificar mal só para deduzir mais é ilegal e pode levar a inspeção - otimizar não é o mesmo que declarar bem. Isto não é aconselhamento fiscal.</div>';
         } else if (ra){
           raHtml = '<div class="w" style="margin-top:4px">Nada por reclassificar em '+yy+' - as faturas já estão no melhor setor possível.</div>';
         }
-        // WHAT-IF de tributação: só aparece se a lei dava mesmo essa escolha nesse ano para este
-        // perfil. Hoje: rendas (Cat F) englobamento vs taxa autónoma 28% - só se houve rendas nesse
-        // ano. Nunca sugere nada a quem não se aplica.
-        var rd = prof.detalhes.rendas || {};
-        var rendasAno = (rd.rendasPorAno && rd.rendasPorAno[yy]) || null;
-        var rendasVal = rendasAno && rendasAno.valor;
         // A decisão englobar-vs-28% depende SÓ da taxa marginal. NÃO pedimos o rendimento: para um
         // ano já entregue a taxa vem impressa na demonstração de liquidação ("Quociente familiar 1,00
         // taxa 35,500%"), logo pedir o rendimento é (a) redundante - a informação está na liquidação -
         // e (b) perigoso: um valor errado/parcial atirava o cálculo para o 1.º escalão (12,5%) e
         // INVERTIA o conselho. Bug real (2026-07-25): dizia "englobar poupa ~632 EUR" quando a marginal
         // verdadeira era 44,6% e o correto era a autónoma (que o Diogo já tinha escolhido).
+        // Rendas recebidas nesse ano (do leitor de rendas; anulados já excluídos). Sem rendas, nada
+        // disto se aplica - a comparação englobamento vs 28% só existe para quem tem Cat F.
+        var rd = prof.detalhes.rendas || {};
+        var rendasAno = (rd.rendasPorAno && rd.rendasPorAno[yy]) || null;
+        var rendasVal = (rendasAno && rendasAno.valor) || 0;
+        // A taxa marginal vem AGORA da própria demonstração de liquidação, lida pelo tool.js no
+        // navegador (o PDF não está encriptado). Só se cai no input manual se, por alguma razão, a
+        // leitura falhar - nunca se pergunta o que já está no documento que a AT nos serve.
         var ex = loadExtra();
-        var marg = +ex["marg_"+yy] || 0;                 // %, lida da demonstração desse ano
+        var liq = (prof.detalhes.recibos && prof.detalhes.recibos.declaracoes
+                   && prof.detalhes.recibos.declaracoes[yy] && prof.detalhes.recibos.declaracoes[yy].liquidacao) || null;
+        var marg = (liq && liq.marginal) || +ex["marg_"+yy] || 0;
         if (rendasVal > 0 && marg > 0){
           var melhor = (marg/100 > TAXA_AUTONOMA_F) ? 'autonoma' : 'englobamento';
           var dif = Math.abs((marg/100 - TAXA_AUTONOMA_F) * rendasVal);
-          raHtml += '<div class="w" style="margin-top:4px">Rendas em '+yy+' (&euro;'+esc(Math.round(rendasVal))+'): a tua taxa marginal foi <b>'+esc(marg)+'%</b>. '+
+          raHtml += '<div class="w" style="margin-top:4px">Rendas em '+yy+' (&euro;'+esc(Math.round(rendasVal))+'): a tua taxa marginal foi <b>'+esc(marg)+'%</b>'+(liq&&liq.marginal?' <span class="w">(lida da tua demonstração)</span>':'')+'. '+
             (melhor === 'autonoma'
                ? 'Como é <b>acima de 28%</b>, a <b>taxa autónoma</b> (art. 72.º) é melhor - englobar custaria mais <b>~&euro;'+esc(Math.round(dif))+'</b>.'
                : 'Como é <b>abaixo de 28%</b>, o <b>englobamento</b> é melhor - poupa <b>~&euro;'+esc(Math.round(dif))+'</b>.')+
             ' <span style="color:var(--mute)">Estimativa sobre a renda recebida: não conhecemos os gastos do art. 41.º (IMI, condomínio, obras) que reduzem a renda tributável.</span></div>';
         } else if (rendasVal > 0){
+          // NUNCA pedir um numero que esta no documento. Esta pagina nao tem sessao da AT (corre em
+          // faturas.diogoandrade.com), por isso quem le a demonstracao e o FAVORITO, na pagina da AT.
+          // Se a taxa nao esta aqui e porque os dados guardados sao anteriores a essa leitura -> a
+          // accao certa e reler, nao escrever a mao.
           raHtml += '<div class="w" style="margin-top:4px">Recebeste <b>&euro;'+esc(Math.round(rendasVal))+'</b> de rendas em '+yy+'. '+
-            'Podes declará-las a <b>28%</b> (taxa autónoma, art. 72.º) ou <b>englobá-las</b>. '+
-            'A regra é simples: <b>englobar só compensa se a tua taxa marginal for inferior a 28%</b>. '+
-            'Essa taxa está na tua <b>demonstração de liquidação</b> de '+yy+' (linha "Quociente familiar ... taxa X%") - '+
-            'escreve-a aqui e dizemos-te qual das duas era melhor: '+
-            '<input type="number" class="fmarg" data-ano="'+yy+'" min="0" max="60" step="0.1" placeholder="taxa marginal %" '+
-            'style="width:150px;padding:5px 7px;border:1px solid var(--rule);border-radius:8px;font-size:.88rem;margin-top:4px"> <span class="w">%</span></div>';
+            'Podes declará-las a <b>28%</b> (taxa autónoma, art. 72.º) ou <b>englobá-las</b> - e englobar só compensa se a tua taxa marginal for inferior a 28%. '+
+            '<b>Essa taxa está na tua demonstração de liquidação e a ferramenta lê-a sozinha</b>: abre '+
+            '<a href="https://irs.portaldasfinancas.gov.pt/app/consulta" target="_blank" rel="noopener">Consultar Declaração</a> '+
+            'e clica no favorito <b>Fatura Boa</b> - depois volta aqui e a comparação aparece feita.</div>';
         }
         // Resultado REAL desse ano, lido das declarações (a que conta é a última - ver readDeclaracoes).
         var dcl = (prof.detalhes.recibos && prof.detalhes.recibos.declaracoes && prof.detalhes.recibos.declaracoes[yy]) || null;
@@ -741,16 +757,23 @@
         refreshRec(id);
       };
     });
-    // Taxa marginal por ano, lida da demonstração de liquidação: destranca o what-if das rendas.
-    // Guardamos a TAXA (não o rendimento) porque é ela que decide englobar-vs-28% e vem impressa no
-    // documento - evita recalcular escalões a partir de um rendimento que o utilizador pode errar.
-    Array.prototype.forEach.call(document.querySelectorAll(".fmarg"), function(inp){
-      inp.onchange = function(){
-        var ano = inp.getAttribute("data-ano"), e = loadExtra();
-        var v = parseFloat(String(inp.value).replace(",", "."));
-        e["marg_"+ano] = (isFinite(v) && v > 0 && v < 60) ? v : 0; saveExtra(e); render();
+    // Abas Otimizado/Aconselhado: trocam TODAS as de uma vez (uma escolha para a secção inteira) e
+    // sem re-render, para não perder o estado dos acordeões. A escolha fica em TAB.
+    Array.prototype.forEach.call(document.querySelectorAll(".fbtab"), function(btn){
+      btn.onclick = function(){
+        TAB = btn.getAttribute("data-pane");
+        Array.prototype.forEach.call(document.querySelectorAll(".fbpane"), function(pn){
+          pn.style.display = (pn.getAttribute("data-pane") === TAB) ? "" : "none";
+        });
+        Array.prototype.forEach.call(document.querySelectorAll(".fbtab"), function(b){
+          b.style.background = (b.getAttribute("data-pane") === TAB) ? "var(--bg2)" : "transparent";
+          b.style.fontWeight = (b.getAttribute("data-pane") === TAB) ? "600" : "400";
+        });
       };
+      // aplicar a escolha corrente logo apos cada render
+      if (btn.getAttribute("data-pane") === TAB) btn.onclick();
     });
+
     // PPR age bracket: changes which teto applies - save it and refresh the estimate.
     Array.prototype.forEach.call(document.querySelectorAll(".fage"), function(sel){
       sel.onchange = function(){
