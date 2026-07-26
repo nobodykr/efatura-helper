@@ -45,7 +45,7 @@
   var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.07.25h";
+  var FB_VERSION = "2026.07.25i";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -255,7 +255,7 @@
   function fetchRange(sec, ini, fim) {
     var u = "/json/obterDocumentosAdquirente.action?dataInicioFilter=" + ini + "&dataFimFilter=" + fim + "&ambitoAquisicaoFilter=" + sec;
     return getJSON(u).then(function (j) {
-      if (j && (j.expiredSession === true || j.success === false)) throw new Error("sessão do e-Fatura expirada");
+      if (j && (j.expiredSession === true || j.success === false)) throw new Error("sess\u00e3o do e-Fatura expirada");
       var rows = (j && (j.linhas || j.documentos)) || []; if (!Array.isArray(rows)) rows = [];
       var total = (j && j.totalElementos != null) ? j.totalElementos : rows.length;
       if (rows.length >= total) return rows;                 // complete
@@ -1254,9 +1254,9 @@
         var pick = function (re) { var m = t.match(re); return m ? m[1] : null; };
         return {
           marginal: num(pick(/Quociente familiar\s+[\d,]+\s+taxa\s+([\d,]+)\s*%/i)),
-          taxaEfetiva: num(pick(/Taxa Efetiva de Tributa[çc][ãa]o\s*-\s*([\d,]+)\s*%/i)),
-          deducoesTotal: num(pick(/Total das Dedu[çc][õo]es\s*:?\s*([\d.]+,\d{2})/i)),
-          deducaoEfetiva: num(pick(/Dedu[çc][ãa]o Efetiva\s*:?\s*([\d.]+,\d{2})/i)),
+          taxaEfetiva: num(pick(/Taxa Efetiva de Tributa[\u00e7c][\u00e3a]o\s*-\s*([\d,]+)\s*%/i)),
+          deducoesTotal: num(pick(/Total das Dedu[\u00e7c][\u00f5o]es\s*:?\s*([\d.]+,\d{2})/i)),
+          deducaoEfetiva: num(pick(/Dedu[\u00e7c][\u00e3a]o Efetiva\s*:?\s*([\d.]+,\d{2})/i)),
           fonte: "demonstracao de liquidacao (PDF lido no navegador)"
         };
       }).catch(function () { return null; });
