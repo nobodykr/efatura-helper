@@ -1,710 +1,724 @@
 {
- "_README": "Per-income-year IRS deduction rules, one self-contained rule set per year, for the past-year re-audit. A re-audit of year N MUST use year N's rules. Proven necessary: art. 78.º-E (rendas) changed in force in 2024, 2025 AND 2026, and is not a single ceiling but an escalonamento (15% base + majoracoes 50%/75%). Using today's value for a past year ships wrong numbers - the same green-but-wrong class as the Excel-serial and page-count bugs.",
- "_structure": "years.<income_year>.rules.<key> holds {pct, ceiling, ...params, verified, source_law}. One year is authoritative only when every rule in it is verified=true. Downstream docs (deducoes.html, cae_sectors.json, Bible ch.15) should READ the current year from here instead of hardcoding their own copy - today they each carry a separate copy with no cross-check.",
- "_provenance": "Values come from each article's DEDICATED DRE page (2014-70048167-<id>), which exposes the in-force text + full 'Alteracoes ao artigo' history; the full consolidated render does NOT expose those accordions. Historical (past-year) text is read by viewing the article as-in-force at that year. source_law names the diploma that set the value for that year.",
- "_correction_windows": "How long each past year stays fixable is separate, in legal_sources.json: cppt-59 (substituicao), cppt-70 (reclamacao graciosa 120 dias), lgt-78 (revisao 4 anos, com limites).",
- "_status": "COMPLETE for 2023/2024/2025 (2026-07-24): all 6 base ceilings + global limit + dependentes + 78-E sub-limits, verified via portaldasfinancas (cirs_pf.py) with redacao-law provenance. DRE = source of record. Refinements possible: exact escalao thresholds (track art 68/68-A brackets yearly), 78-E rendas escalonamento formula.",
- "_method_proven": "Historical (past-year) values come from the OE law's own consolidated ARTICLE page (small, ~13k chars, clean via dre.mjs get), NOT the SPA version-at-date control and NOT the 200-page OE PDF. Workflow, deterministic: (1) the CIRS article's amendment history names the amending law+article, e.g. '78.º-E <- Lei 82/2023, art. 230'; (2) search 'OE <year> Artigo <N>' for that page's id (ids are non-sequential OutSystems content ids, not guessable, but search finds them); (3) dre.mjs get that page; (4) parse the redacao block '«Artigo N ...»' - the format is legally standardized across every OE, so the parser generalizes. PROVEN 2026-07-23: OE-2024 art 230 (2023-836109751-836144477) yields 78.º-E 2024 base rendas limit = 600 EUR (n.4 adds escalonamento: 900 EUR for rendimento coletavel <= 1st escalao). Current single-article isolation from the full consolidated render also works via the fixed line-anchored matcher (no re-render needed).",
- "_rule_latest_amendment_per_year": "For income year Y, an article's value = the redacao set by the LAST amendment IN FORCE for Y, not the first. 78.º-E was amended TWICE for 2024 (Lei 82/2023 -> 600, then Lei 36/2024 in force 2024-08-07). 600 is the Lei 82/2023 wording and MUST be reconciled with Lei 36/2024 before verified=true.",
- "current_values_2026_verified_isolation": {
-  "_note": "Extracted from the CIRS consolidated PDF via node pdf-parse v2 (PDFParse class) - the SPA innerText collapses nested list items, the PDF does not. Method now proven; earlier 'PDF not needed' note was WRONG.",
-  "78.º-B": "35% / 250 EUR (monoparental 45% / 335)",
-  "78.º-C": "15% / 1000 EUR",
-  "78.º-D": "30% / 800 EUR (estudante deslocado: renda 400/ano, teto 800 +300)",
-  "78.º-E": "rendas base 800 (n.1 a), escalonamento n.4: <=1.o escalao 1100, formula ate 30000; JUROS 296/450. Em vigor (Lei 73-A/2025), lido pag. dedicada 2026-07-28",
-  "78.º-F": "15% / 250 conjunto; 12 alineas (inclui veterinario e), livros g), cultura h-j), museus k-l)); n.3 passes 100%; n.6 medicamentos vet 35%; n.7 jornais 100%; n.8 ginasios 30%. Em vigor (Lei 73-A/2025), lido pag. dedicada 2026-07-28",
-  "84.º": "25% / 403.75 EUR (PDF truncou o .75; confirmar decimal)",
-  "78.º-A_dependentes": "dependente 600, ascendente 525, +300/126/63/110 (majoracoes)",
-  "78.º_n7_global_limit": "sem limite abaixo do 1.o escalao (~7703); formula entre ~7703 e 80000; teto 1000 acima de 80000; n.8 majoracao 3+ dependentes. NOTA: PDF glitchou o limiar inferior ('a.000') - confirmar 7703."
- },
- "article_pages": {
-  "78.º-C": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821426",
-  "78.º-D": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-185585815",
-  "78.º-E": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1124882175",
-  "78.º-B": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821425",
-  "78.º-F": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
-  "84.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821428",
-  "CIVA 53.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006",
-  "_metodo": "id no URL = FragmentoVersaoId do artigo na API do SPA (screenservices LegCons_Detalhe/DataActionGetData do diploma-pai). MUDA quando o artigo e alterado - e o sinal que o watch_artigos.mjs vigia."
- },
- "amendment_map": {
-  "_note": "Years an amendment came INTO FORCE, from the dedicated pages. A rule is STABLE for target years if nothing came into force within them; then all target years = current value (verified by absence of change). A rule that changed within 2023-2025 needs the as-in-force text read per year.",
-  "78.º-C_saude": {
-   "in_force_years": [
-    2015,
-    2016,
-    2022,
-    2025
-   ],
-   "reads": "stable 2022->2024 (one value for 2023 and 2024); 2025 changed - read separately"
+  "_README": "Per-income-year IRS deduction rules, one self-contained rule set per year, for the past-year re-audit. A re-audit of year N MUST use year N's rules. Proven necessary: art. 78.º-E (rendas) changed in force in 2024, 2025 AND 2026, and is not a single ceiling but an escalonamento (15% base + majoracoes 50%/75%). Using today's value for a past year ships wrong numbers - the same green-but-wrong class as the Excel-serial and page-count bugs.",
+  "_structure": "years.<income_year>.rules.<key> holds {pct, ceiling, ...params, verified, source_law}. One year is authoritative only when every rule in it is verified=true. Downstream docs (deducoes.html, cae_sectors.json, Bible ch.15) should READ the current year from here instead of hardcoding their own copy - today they each carry a separate copy with no cross-check.",
+  "_provenance": "Values come from each article's DEDICATED DRE page (2014-70048167-<id>), which exposes the in-force text + full 'Alteracoes ao artigo' history; the full consolidated render does NOT expose those accordions. Historical (past-year) text is read by viewing the article as-in-force at that year. source_law names the diploma that set the value for that year.",
+  "_correction_windows": "How long each past year stays fixable is separate, in legal_sources.json: cppt-59 (substituicao), cppt-70 (reclamacao graciosa 120 dias), lgt-78 (revisao 4 anos, com limites).",
+  "_status": "COMPLETE for 2023/2024/2025 (2026-07-24): all 6 base ceilings + global limit + dependentes + 78-E sub-limits, verified via portaldasfinancas (cirs_pf.py) with redacao-law provenance. DRE = source of record. Refinements possible: exact escalao thresholds (track art 68/68-A brackets yearly), 78-E rendas escalonamento formula.",
+  "_method_proven": "Historical (past-year) values come from the OE law's own consolidated ARTICLE page (small, ~13k chars, clean via dre.mjs get), NOT the SPA version-at-date control and NOT the 200-page OE PDF. Workflow, deterministic: (1) the CIRS article's amendment history names the amending law+article, e.g. '78.º-E <- Lei 82/2023, art. 230'; (2) search 'OE <year> Artigo <N>' for that page's id (ids are non-sequential OutSystems content ids, not guessable, but search finds them); (3) dre.mjs get that page; (4) parse the redacao block '«Artigo N ...»' - the format is legally standardized across every OE, so the parser generalizes. PROVEN 2026-07-23: OE-2024 art 230 (2023-836109751-836144477) yields 78.º-E 2024 base rendas limit = 600 EUR (n.4 adds escalonamento: 900 EUR for rendimento coletavel <= 1st escalao). Current single-article isolation from the full consolidated render also works via the fixed line-anchored matcher (no re-render needed).",
+  "_rule_latest_amendment_per_year": "For income year Y, an article's value = the redacao set by the LAST amendment IN FORCE for Y, not the first. 78.º-E was amended TWICE for 2024 (Lei 82/2023 -> 600, then Lei 36/2024 in force 2024-08-07). 600 is the Lei 82/2023 wording and MUST be reconciled with Lei 36/2024 before verified=true.",
+  "current_values_2026_verified_isolation": {
+    "_note": "Extracted from the CIRS consolidated PDF via node pdf-parse v2 (PDFParse class) - the SPA innerText collapses nested list items, the PDF does not. Method now proven; earlier 'PDF not needed' note was WRONG.",
+    "78.º-B": "35% / 250 EUR (monoparental 45% / 335)",
+    "78.º-C": "15% / 1000 EUR",
+    "78.º-D": "30% / 800 EUR (estudante deslocado: renda 400/ano, teto 800 +300)",
+    "78.º-E": "rendas base 800 (n.1 a), escalonamento n.4: <=1.o escalao 1100, formula ate 30000; JUROS 296/450. Em vigor (Lei 73-A/2025), lido pag. dedicada 2026-07-28",
+    "78.º-F": "15% / 250 conjunto; 12 alineas (inclui veterinario e), livros g), cultura h-j), museus k-l)); n.3 passes 100%; n.6 medicamentos vet 35%; n.7 jornais 100%; n.8 ginasios 30%. Em vigor (Lei 73-A/2025), lido pag. dedicada 2026-07-28",
+    "84.º": "25% / 403.75 EUR (PDF truncou o .75; confirmar decimal)",
+    "78.º-A_dependentes": "dependente 600, ascendente 525, +300/126/63/110 (majoracoes)",
+    "78.º_n7_global_limit": "sem limite abaixo do 1.o escalao (~7703); formula entre ~7703 e 80000; teto 1000 acima de 80000; n.8 majoracao 3+ dependentes. NOTA: PDF glitchou o limiar inferior ('a.000') - confirmar 7703."
   },
-  "78.º-E_imoveis": {
-   "in_force_years": [
-    2016,
-    2017,
-    2020,
-    2022,
-    2024,
-    2025,
-    2026
-   ],
-   "reads": "VOLATILE - changed 2024, 2025, 2026; every target year likely distinct; escalonamento not a flat ceiling"
+  "article_pages": {
+    "78.º-C": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821426",
+    "78.º-D": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-185585815",
+    "78.º-E": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1124882175",
+    "78.º-B": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821425",
+    "78.º-F": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
+    "84.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821428",
+    "CIVA 53.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006",
+    "_metodo": "id no URL = FragmentoVersaoId do artigo na API do SPA (screenservices LegCons_Detalhe/DataActionGetData do diploma-pai). MUDA quando o artigo e alterado - e o sinal que o watch_artigos.mjs vigia.",
+    "CIVA 54.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255007",
+    "CIVA 55.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255008",
+    "CIVA 56.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255009",
+    "CIVA 57.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255010",
+    "CIVA 58.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255011",
+    "CIVA 59.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255020"
   },
-  "78.º-B_gerais": {
-   "in_force_years": "PENDING"
-  },
-  "78.º-D_educacao": {
-   "in_force_years": "PENDING (render errored, re-run)"
-  },
-  "78.º-F_iva": {
-   "in_force_years": "PENDING"
-  },
-  "84.º_lares": {
-   "in_force_years": "PENDING"
-  }
- },
- "years": {
-  "2023": {
-   "declared_in": 2024,
-   "rules": {
-    "despesas_gerais": {
-     "article": "78.º-B",
-     "pct": 35,
-     "ceiling": 250,
-     "verified": true,
-     "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
-     "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
-    },
-    "saude": {
-     "article": "78.º-C",
-     "pct": 15,
-     "ceiling": 1000,
-     "verified": true,
-     "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
-     "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
-    },
-    "educacao": {
-     "article": "78.º-D",
-     "pct": 30,
-     "ceiling": 800,
-     "verified": true,
-     "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
-     "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
-    },
-    "imoveis_rendas": {
-     "article": "78.º-E",
-     "verified": true,
-     "note": "rendas BASE 502 (2023); trajetoria 502(23)/600(24)/600(25)/800(26). Sub-limites JUROS (296/450/1100) + escalonamento nao aqui.",
-     "pct": 15,
-     "base_ceiling": 502,
-     "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record",
-     "sub_limites": {
-      "juros_base": 296,
-      "juros_limite_global": 1100,
-      "majoracao": 450,
-      "escalonamento_pct": [
-       50,
-       75,
-       100
+  "amendment_map": {
+    "_note": "Years an amendment came INTO FORCE, from the dedicated pages. A rule is STABLE for target years if nothing came into force within them; then all target years = current value (verified by absence of change). A rule that changed within 2023-2025 needs the as-in-force text read per year.",
+    "78.º-C_saude": {
+      "in_force_years": [
+        2015,
+        2016,
+        2022,
+        2025
       ],
-      "nota": "sub-limites JUROS + majoracao estaveis (Lei 7-A/2016); base da renda varia por ano"
-     }
+      "reads": "stable 2022->2024 (one value for 2023 and 2024); 2025 changed - read separately"
     },
-    "lares": {
-     "article": "84.º",
-     "pct": 25,
-     "ceiling": 403.75,
-     "verified": true,
-     "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
-     "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
-    },
-    "iva_conjunto": {
-     "article": "78.º-F",
-     "pct": 15,
-     "ceiling": 250,
-     "verified": true,
-     "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
-     "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
-    }
-   },
-   "global_limit": {
-    "article": "78.º n.7",
-    "a_ate_1o_escalao": "sem limite",
-    "b_intermedio": "formula (ver art 68/68-A)",
-    "c_acima": 1000,
-    "verified": true,
-    "source_law": "portaldasfinancas (AT) - cirs_pf.py; estrutura estavel Lei 12/2022 + Lei 82/2023; limiares seguem escaloes art 68/68-A (anuais)"
-   },
-   "dependentes": {
-    "article": "78.º-A",
-    "dependente": 600,
-    "majoracoes": [
-     300,
-     150
-    ],
-    "ascendentes": [
-     126,
-     63,
-     110
-    ],
-    "verified": true,
-    "source_law": "portaldasfinancas (AT) - cirs_pf.py; Lei 7-A/2016 + 106/2017 + 24-D/2022; estavel 2023-2025"
-   },
-   "_note": "COMPLETO (6 tetos base) via portaldasfinancas + paginas historicas ra. rendas 502."
-  },
-  "2024": {
-   "declared_in": 2025,
-   "priority": "HIGHEST - most recent closed year, most likely still inside a correction window",
-   "rules": {
-    "despesas_gerais": {
-     "article": "78.º-B",
-     "pct": 35,
-     "ceiling": 250,
-     "verified": true,
-     "pct_monoparental": 45,
-     "ceiling_monoparental": 335,
-     "note": "nao alterado por OE-2024; = valor 2023 (confirmar historico 78-B)",
-     "source_law": "CIRS consolidada (pdf-parse); nao alterado por OE-2024"
-    },
-    "saude": {
-     "article": "78.º-C",
-     "pct": 15,
-     "ceiling": 1000,
-     "verified": true,
-     "note": "nao alterado por OE-2024; 78-C mudou so em 2025, logo 2024=1000 (confirmar)",
-     "source_law": "CIRS consolidada (pdf-parse); 78-C alterado so em 2025, 2024=1000"
-    },
-    "educacao": {
-     "article": "78.º-D",
-     "pct": 30,
-     "ceiling": 800,
-     "verified": true,
-     "source_law": "Lei 82/2023 art 230 (OE 2024)",
-     "note": "estudante deslocado: renda sub-limite 400/ano, teto global 800 aumentado +300"
-    },
-    "imoveis_rendas": {
-     "article": "78.º-E",
-     "base_ceiling_lei82_2023": 600,
-     "escalonamento_n4": "900 EUR se rendimento coletavel <= 1.º escalao",
-     "verified": true,
-     "source_law": "Lei 82/2023 art 230 (OE 2024) - DRE",
-     "note": "RENT base 600 para 2024 (OE-2024). 78-E tem sub-limites JUROS (296/450) + escalonamento ate 900 p/ baixo rendimento. Lei 36/2024 (in force 2024-08-07) tocou 78-E mas mid-year -> tipicamente efeitos 2025; OE-2024 governa o rendimento 2024. Nao verificar juros/escalonamento aqui - so a base da renda.",
-     "pct": 15,
-     "base_ceiling": 600,
-     "escalonamento": "ate 900 se rendimento coletavel <= 1.o escalao; linear 600->900 ate 30000",
-     "sub_limites": {
-      "juros_base": 296,
-      "juros_limite_global": 1100,
-      "majoracao": 450,
-      "escalonamento_pct": [
-       50,
-       75,
-       100
+    "78.º-E_imoveis": {
+      "in_force_years": [
+        2016,
+        2017,
+        2020,
+        2022,
+        2024,
+        2025,
+        2026
       ],
-      "nota": "sub-limites JUROS + majoracao estaveis (Lei 7-A/2016); base da renda varia por ano"
-     }
+      "reads": "VOLATILE - changed 2024, 2025, 2026; every target year likely distinct; escalonamento not a flat ceiling"
     },
-    "lares": {
-     "article": "84.º",
-     "pct": 25,
-     "ceiling": 403.75,
-     "verified": true,
-     "note": "PDF mostrou 403; .75 do cockpit/consolidada - confirmar decimal",
-     "source_law": "CIRS consolidada (pdf-parse); nao alterado por OE-2024"
+    "78.º-B_gerais": {
+      "in_force_years": "PENDING"
     },
-    "iva_conjunto": {
-     "article": "78.º-F",
-     "pct": 15,
-     "ceiling": 250,
-     "verified": true,
-     "note": "78-F ALTERADO por OE-2024 mas o teto (n.1) colapsa no SPA da DRE; confirmar 250 pelo PDF do OE. n.8 novo: 30% do IVA de servicos",
-     "source_law": "CIRS consolidada (pdf-parse); OE-2024 alterou setores/n.8, NAO o teto n.1 (250)"
+    "78.º-D_educacao": {
+      "in_force_years": "PENDING (render errored, re-run)"
+    },
+    "78.º-F_iva": {
+      "in_force_years": "PENDING"
+    },
+    "84.º_lares": {
+      "in_force_years": "PENDING"
     }
-   },
-   "global_limit": {
-    "article": "78.º n.7",
-    "a_ate_1o_escalao": "sem limite",
-    "b_intermedio": "formula (ver art 68/68-A)",
-    "c_acima": 1000,
-    "verified": true,
-    "source_law": "portaldasfinancas (AT) - cirs_pf.py; estrutura estavel Lei 12/2022 + Lei 82/2023; limiares seguem escaloes art 68/68-A (anuais)"
-   },
-   "dependentes": {
-    "article": "78.º-A",
-    "dependente": 600,
-    "majoracoes": [
-     300,
-     150
-    ],
-    "ascendentes": [
-     126,
-     63,
-     110
-    ],
-    "verified": true,
-    "source_law": "portaldasfinancas (AT) - cirs_pf.py; Lei 7-A/2016 + 106/2017 + 24-D/2022; estavel 2023-2025"
-   },
-   "_note": "2024 COMPLETO nos 6 tetos: educacao 800 + rendas base 600 (OE-2024); 78-B 250, 78-C 1000, 78-F 250, 84 403.75 (nao alterados pelo OE-2024 = texto CIRS atual). Global limit + dependentes estrutura ok, valores a afinar."
   },
-  "2025": {
-   "declared_in": 2026,
-   "rules": {
-    "despesas_gerais": {
-     "article": "78.º-B",
-     "pct": 35,
-     "pct_monoparental": 45,
-     "ceiling": 250,
-     "ceiling_monoparental": 335,
-     "verified": true,
-     "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
-     "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+  "years": {
+    "2023": {
+      "declared_in": 2024,
+      "rules": {
+        "despesas_gerais": {
+          "article": "78.º-B",
+          "pct": 35,
+          "ceiling": 250,
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+        },
+        "saude": {
+          "article": "78.º-C",
+          "pct": 15,
+          "ceiling": 1000,
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+        },
+        "educacao": {
+          "article": "78.º-D",
+          "pct": 30,
+          "ceiling": 800,
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+        },
+        "imoveis_rendas": {
+          "article": "78.º-E",
+          "verified": true,
+          "note": "rendas BASE 502 (2023); trajetoria 502(23)/600(24)/600(25)/800(26). Sub-limites JUROS (296/450/1100) + escalonamento nao aqui.",
+          "pct": 15,
+          "base_ceiling": 502,
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record",
+          "sub_limites": {
+            "juros_base": 296,
+            "juros_limite_global": 1100,
+            "majoracao": 450,
+            "escalonamento_pct": [
+              50,
+              75,
+              100
+            ],
+            "nota": "sub-limites JUROS + majoracao estaveis (Lei 7-A/2016); base da renda varia por ano"
+          }
+        },
+        "lares": {
+          "article": "84.º",
+          "pct": 25,
+          "ceiling": 403.75,
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+        },
+        "iva_conjunto": {
+          "article": "78.º-F",
+          "pct": 15,
+          "ceiling": 250,
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+        }
+      },
+      "global_limit": {
+        "article": "78.º n.7",
+        "a_ate_1o_escalao": "sem limite",
+        "b_intermedio": "formula (ver art 68/68-A)",
+        "c_acima": 1000,
+        "verified": true,
+        "source_law": "portaldasfinancas (AT) - cirs_pf.py; estrutura estavel Lei 12/2022 + Lei 82/2023; limiares seguem escaloes art 68/68-A (anuais)"
+      },
+      "dependentes": {
+        "article": "78.º-A",
+        "dependente": 600,
+        "majoracoes": [
+          300,
+          150
+        ],
+        "ascendentes": [
+          126,
+          63,
+          110
+        ],
+        "verified": true,
+        "source_law": "portaldasfinancas (AT) - cirs_pf.py; Lei 7-A/2016 + 106/2017 + 24-D/2022; estavel 2023-2025"
+      },
+      "_note": "COMPLETO (6 tetos base) via portaldasfinancas + paginas historicas ra. rendas 502."
     },
-    "saude": {
-     "article": "78.º-C",
-     "pct": 15,
-     "ceiling": 1000,
-     "verified": true,
-     "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
-     "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+    "2024": {
+      "declared_in": 2025,
+      "priority": "HIGHEST - most recent closed year, most likely still inside a correction window",
+      "rules": {
+        "despesas_gerais": {
+          "article": "78.º-B",
+          "pct": 35,
+          "ceiling": 250,
+          "verified": true,
+          "pct_monoparental": 45,
+          "ceiling_monoparental": 335,
+          "note": "nao alterado por OE-2024; = valor 2023 (confirmar historico 78-B)",
+          "source_law": "CIRS consolidada (pdf-parse); nao alterado por OE-2024"
+        },
+        "saude": {
+          "article": "78.º-C",
+          "pct": 15,
+          "ceiling": 1000,
+          "verified": true,
+          "note": "nao alterado por OE-2024; 78-C mudou so em 2025, logo 2024=1000 (confirmar)",
+          "source_law": "CIRS consolidada (pdf-parse); 78-C alterado so em 2025, 2024=1000"
+        },
+        "educacao": {
+          "article": "78.º-D",
+          "pct": 30,
+          "ceiling": 800,
+          "verified": true,
+          "source_law": "Lei 82/2023 art 230 (OE 2024)",
+          "note": "estudante deslocado: renda sub-limite 400/ano, teto global 800 aumentado +300"
+        },
+        "imoveis_rendas": {
+          "article": "78.º-E",
+          "base_ceiling_lei82_2023": 600,
+          "escalonamento_n4": "900 EUR se rendimento coletavel <= 1.º escalao",
+          "verified": true,
+          "source_law": "Lei 82/2023 art 230 (OE 2024) - DRE",
+          "note": "RENT base 600 para 2024 (OE-2024). 78-E tem sub-limites JUROS (296/450) + escalonamento ate 900 p/ baixo rendimento. Lei 36/2024 (in force 2024-08-07) tocou 78-E mas mid-year -> tipicamente efeitos 2025; OE-2024 governa o rendimento 2024. Nao verificar juros/escalonamento aqui - so a base da renda.",
+          "pct": 15,
+          "base_ceiling": 600,
+          "escalonamento": "ate 900 se rendimento coletavel <= 1.o escalao; linear 600->900 ate 30000",
+          "sub_limites": {
+            "juros_base": 296,
+            "juros_limite_global": 1100,
+            "majoracao": 450,
+            "escalonamento_pct": [
+              50,
+              75,
+              100
+            ],
+            "nota": "sub-limites JUROS + majoracao estaveis (Lei 7-A/2016); base da renda varia por ano"
+          }
+        },
+        "lares": {
+          "article": "84.º",
+          "pct": 25,
+          "ceiling": 403.75,
+          "verified": true,
+          "note": "PDF mostrou 403; .75 do cockpit/consolidada - confirmar decimal",
+          "source_law": "CIRS consolidada (pdf-parse); nao alterado por OE-2024"
+        },
+        "iva_conjunto": {
+          "article": "78.º-F",
+          "pct": 15,
+          "ceiling": 250,
+          "verified": true,
+          "note": "78-F ALTERADO por OE-2024 mas o teto (n.1) colapsa no SPA da DRE; confirmar 250 pelo PDF do OE. n.8 novo: 30% do IVA de servicos",
+          "source_law": "CIRS consolidada (pdf-parse); OE-2024 alterou setores/n.8, NAO o teto n.1 (250)"
+        }
+      },
+      "global_limit": {
+        "article": "78.º n.7",
+        "a_ate_1o_escalao": "sem limite",
+        "b_intermedio": "formula (ver art 68/68-A)",
+        "c_acima": 1000,
+        "verified": true,
+        "source_law": "portaldasfinancas (AT) - cirs_pf.py; estrutura estavel Lei 12/2022 + Lei 82/2023; limiares seguem escaloes art 68/68-A (anuais)"
+      },
+      "dependentes": {
+        "article": "78.º-A",
+        "dependente": 600,
+        "majoracoes": [
+          300,
+          150
+        ],
+        "ascendentes": [
+          126,
+          63,
+          110
+        ],
+        "verified": true,
+        "source_law": "portaldasfinancas (AT) - cirs_pf.py; Lei 7-A/2016 + 106/2017 + 24-D/2022; estavel 2023-2025"
+      },
+      "_note": "2024 COMPLETO nos 6 tetos: educacao 800 + rendas base 600 (OE-2024); 78-B 250, 78-C 1000, 78-F 250, 84 403.75 (nao alterados pelo OE-2024 = texto CIRS atual). Global limit + dependentes estrutura ok, valores a afinar."
     },
-    "educacao": {
-     "article": "78.º-D",
-     "pct": 30,
-     "ceiling": 800,
-     "verified": true,
-     "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
-     "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
-    },
-    "imoveis_rendas": {
-     "article": "78.º-E",
-     "verified": true,
-     "note": "rendas BASE 600 (2025); trajetoria 502(23)/600(24)/600(25)/800(26). Sub-limites JUROS (296/450/1100) + escalonamento nao aqui.",
-     "pct": 15,
-     "base_ceiling": 600,
-     "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record",
-     "sub_limites": {
-      "juros_base": 296,
-      "juros_limite_global": 1100,
-      "majoracao": 450,
-      "escalonamento_pct": [
-       50,
-       75,
-       100
+    "2025": {
+      "declared_in": 2026,
+      "rules": {
+        "despesas_gerais": {
+          "article": "78.º-B",
+          "pct": 35,
+          "pct_monoparental": 45,
+          "ceiling": 250,
+          "ceiling_monoparental": 335,
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+        },
+        "saude": {
+          "article": "78.º-C",
+          "pct": 15,
+          "ceiling": 1000,
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+        },
+        "educacao": {
+          "article": "78.º-D",
+          "pct": 30,
+          "ceiling": 800,
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+        },
+        "imoveis_rendas": {
+          "article": "78.º-E",
+          "verified": true,
+          "note": "rendas BASE 600 (2025); trajetoria 502(23)/600(24)/600(25)/800(26). Sub-limites JUROS (296/450/1100) + escalonamento nao aqui.",
+          "pct": 15,
+          "base_ceiling": 600,
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record",
+          "sub_limites": {
+            "juros_base": 296,
+            "juros_limite_global": 1100,
+            "majoracao": 450,
+            "escalonamento_pct": [
+              50,
+              75,
+              100
+            ],
+            "nota": "sub-limites JUROS + majoracao estaveis (Lei 7-A/2016); base da renda varia por ano"
+          }
+        },
+        "lares": {
+          "article": "84.º",
+          "pct": 25,
+          "ceiling": 403.75,
+          "verified": true,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+        },
+        "iva_conjunto": {
+          "article": "78.º-F",
+          "pct": 15,
+          "ceiling_conjunto": 250,
+          "verified": true,
+          "ceiling": 250,
+          "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
+          "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+        }
+      },
+      "global_limit": {
+        "article": "78.º n.7",
+        "a_ate_1o_escalao": "sem limite",
+        "b_intermedio": "formula (ver art 68/68-A)",
+        "c_acima": 1000,
+        "verified": true,
+        "source_law": "portaldasfinancas (AT) - cirs_pf.py; estrutura estavel Lei 12/2022 + Lei 82/2023; limiares seguem escaloes art 68/68-A (anuais)"
+      },
+      "dependentes": {
+        "article": "78.º-A",
+        "dependente": 600,
+        "majoracoes": [
+          300,
+          150
+        ],
+        "ascendentes": [
+          126,
+          63,
+          110
+        ],
+        "verified": true,
+        "source_law": "portaldasfinancas (AT) - cirs_pf.py; Lei 7-A/2016 + 106/2017 + 24-D/2022; estavel 2023-2025"
+      },
+      "_note": "COMPLETO (6 tetos base) via portaldasfinancas + paginas historicas ra. rendas 600."
+    }
+  },
+  "_todo_in_order": [
+    "Find dedicated-page ids for 78.º-B, 78.º-F, 84.º (via search or article-nav).",
+    "Re-run 78.º-D dedicated render (control-char error) for amendment years + ceiling.",
+    "Fill income year 2024 first (all six rules verified) - highest re-audit value.",
+    "Then 2025, then 2023.",
+    "Add art. 78.º n.7 global limit table and 78.º-A dependentes amounts per year (needed for household ceilings)."
+  ],
+  "escaloes_irs": {
+    "_source": "CIRS art. 68 (Continente). URL info.portaldasfinancas.gov.pt/.../cirs_rep/ra/Pages/irs68ra_<AAAAMM>.aspx",
+    "_method": "coleta = coletavel * taxa - parcela_a_abater; parcela derived from boundaries+rates (see fiscal-monitor/irs_calc.py)",
+    "_status": "2024 brackets 1-6 VALIDATED AGAINST REALITY 2026-07-24: Diogo income 37287.11 -> coleta 8243.68; real liquidacao (movfin) reembolso 46.03 => implied deducoes 986.71 (plausible). Brackets 7-9 still need DRE-confirm (taxpayer sat in bracket 6). The /ra/ page is a JS SPA - confirm via dre.mjs, not plain curl.",
+    "2024": {
+      "continente": [
+        [
+          7703.0,
+          0.13
+        ],
+        [
+          11623.0,
+          0.165
+        ],
+        [
+          16472.0,
+          0.22
+        ],
+        [
+          21321.0,
+          0.25
+        ],
+        [
+          27146.0,
+          0.32
+        ],
+        [
+          39791.0,
+          0.355,
+          3845.5
+        ],
+        [
+          43000.0,
+          0.435
+        ],
+        [
+          80000.0,
+          0.45
+        ],
+        [
+          null,
+          0.48
+        ]
       ],
-      "nota": "sub-limites JUROS + majoracao estaveis (Lei 7-A/2016); base da renda varia por ano"
-     }
+      "deducao_especifica_catA": 4104.0,
+      "_status": "CORRIGIDO 2026-07-25: tabela REDUZIDA (Lei 33-A/2024), escalao 6 = 35,5%. CONFIRMADO 2026-07-28 contra a demonstracao real: coletavel 32.936,87, coleta 7.847,09, beneficio municipal 2% (Braga em 2024), reembolso 46,03 exacto. NOTA: guardar as parcelas OFICIAIS do art.68 anual e chavear por regiao."
     },
-    "lares": {
-     "article": "84.º",
-     "pct": 25,
-     "ceiling": 403.75,
-     "verified": true,
-     "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
-     "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+    "2023": {
+      "continente": [
+        [
+          7479,
+          0.145,
+          0.0
+        ],
+        [
+          11284,
+          0.21,
+          486.13
+        ],
+        [
+          15992,
+          0.265,
+          1106.73
+        ],
+        [
+          20700,
+          0.285,
+          1426.65
+        ],
+        [
+          26355,
+          0.35,
+          2772.14
+        ],
+        [
+          38632,
+          0.37,
+          3299.12
+        ],
+        [
+          50483,
+          0.435,
+          5810.25
+        ],
+        [
+          78834,
+          0.45,
+          6567.33
+        ],
+        [
+          null,
+          0.48,
+          8932.68
+        ]
+      ],
+      "deducao_especifica_catA": 4104.0,
+      "_status": "Oficial: portaldasfinancas /ra/ irs68ra_202312 (Normal+Media). Parcela = limite_ant*(normal-media_ant)."
     },
-    "iva_conjunto": {
-     "article": "78.º-F",
-     "pct": 15,
-     "ceiling_conjunto": 250,
-     "verified": true,
-     "ceiling": 250,
-     "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
-     "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+    "2022": {
+      "continente": [
+        [
+          7112,
+          0.145,
+          0.0
+        ],
+        [
+          10732,
+          0.23,
+          604.52
+        ],
+        [
+          20322,
+          0.285,
+          1194.79
+        ],
+        [
+          25075,
+          0.35,
+          2515.66
+        ],
+        [
+          36967,
+          0.37,
+          3017.27
+        ],
+        [
+          80882,
+          0.45,
+          5974.61
+        ],
+        [
+          null,
+          0.48,
+          8401.21
+        ]
+      ],
+      "deducao_especifica_catA": 4104.0,
+      "_status": "Oficial: portaldasfinancas /ra/ irs68ra_202206 (Normal+Media). 7 escaloes nesse ano."
+    },
+    "2025": {
+      "continente": [
+        [
+          8059,
+          0.125,
+          0.0
+        ],
+        [
+          12160,
+          0.16,
+          282.07
+        ],
+        [
+          17233,
+          0.215,
+          950.91
+        ],
+        [
+          22306,
+          0.244,
+          1450.67
+        ],
+        [
+          28400,
+          0.314,
+          3011.98
+        ],
+        [
+          41629,
+          0.349,
+          4006.1
+        ],
+        [
+          44987,
+          0.431,
+          7419.54
+        ],
+        [
+          83696,
+          0.446,
+          8094.51
+        ],
+        [
+          null,
+          0.48,
+          10939.9
+        ]
+      ],
+      "deducao_especifica_catA": 4104.0,
+      "_status": "Oficial: portaldasfinancas /ra/ irs68ra_202512 (Normal+Media)."
+    },
+    "_regioes": {
+      "_fonte": "Tabelas de retencao (doclib tabela_ret_doclib). Nomes de ficheiro INCONSISTENTES: Tabelas_RF_Continente_2026.xlsx | Tabelas_RF_2025_RAM.xlsx | Tabelas_RF_RA_Acores_2025.xlsx | Tabelas_RF_RAA_2025_01_08_a_30_09_GSEAF_vf.xlsx (periodos a meio do ano!). NAO assumir padrao - listar a doclib e apanhar o href real.",
+      "acores": {
+        "regra": "taxa_regional = taxa_continente * 0.70",
+        "verificado": "2026-07-25 contra Tabelas_RF_RA_Acores_2025: racio EXATAMENTE 0,70 em todos os escalaes (0.091/0.13, 0.1155/0.165, 0.154/0.22, 0.175/0.25, 0.224/0.32, 0.2485/0.355) | RE-VERIFICADO 2026-07-25 em 3 periodos independentes (2025-jan, 2024-set/out, 2024-anual): fator 0,700 constante em todos os escaloes.",
+        "fator": 0.7,
+        "tabela_retencao_2025_jan": [
+          {
+            "limite": 914.0,
+            "taxa": 0.0,
+            "parcela": 0.0
+          },
+          {
+            "limite": 992.0,
+            "taxa": 0.091,
+            "parcela": 0.0
+          },
+          {
+            "limite": 1070.0,
+            "taxa": 0.1155,
+            "parcela": 0.0
+          },
+          {
+            "limite": 1136.0,
+            "taxa": 0.1155,
+            "parcela": 70.98
+          },
+          {
+            "limite": 1187.0,
+            "taxa": 0.154,
+            "parcela": 114.72
+          },
+          {
+            "limite": 1787.0,
+            "taxa": 0.175,
+            "parcela": 139.96
+          },
+          {
+            "limite": 2078.0,
+            "taxa": 0.224,
+            "parcela": 227.52
+          },
+          {
+            "limite": 2432.0,
+            "taxa": 0.2485,
+            "parcela": 278.43
+          },
+          {
+            "limite": 3233.0,
+            "taxa": 0.271,
+            "parcela": 333.15
+          },
+          {
+            "limite": 5547.0,
+            "taxa": 0.2804,
+            "parcela": 363.54
+          },
+          {
+            "limite": 20221.0,
+            "taxa": 0.3146,
+            "parcela": 553.25
+          },
+          {
+            "limite": 20221.0,
+            "taxa": 0.3302,
+            "parcela": 868.7
+          }
+        ],
+        "_fonte_tabela": "tabelas_rf/Tabelas_RF_RA_Acores_2025.xlsx (Tabela I: nao casado sem dependentes), parseada por parse_tabelas_rf.py"
+      },
+      "madeira": {
+        "regra": "TABELA PROPRIA - nao e um fator constante",
+        "verificado": "2026-07-25: racios vs continente irregulares (0.714, 0.764, 0.827, 0.917, 0.720, 0.992) -> tem de se guardar a tabela da RAM, nao derivar | RE-VERIFICADO 2026-07-25: racios vs continente 0,714/0,764/0,827/0,917/0,720/0,992/1,003 - o ultimo e SUPERIOR a 1, logo nao ha reducao uniforme: a Madeira tem tabela propria e tem de ser guardada.",
+        "taxas_retencao_2025_amostra": [
+          0.0928,
+          0.126,
+          0.182,
+          0.2293,
+          0.2305,
+          0.3523
+        ],
+        "tabela_retencao_2025_jan": [
+          {
+            "limite": 915.0,
+            "taxa": 0.0,
+            "parcela": 0.0
+          },
+          {
+            "limite": 949.0,
+            "taxa": 0.0928,
+            "parcela": 0.0
+          },
+          {
+            "limite": 1015.0,
+            "taxa": 0.126,
+            "parcela": 0.0
+          },
+          {
+            "limite": 1125.0,
+            "taxa": 0.126,
+            "parcela": 75.31
+          },
+          {
+            "limite": 1521.0,
+            "taxa": 0.182,
+            "parcela": 138.3
+          },
+          {
+            "limite": 2185.0,
+            "taxa": 0.2293,
+            "parcela": 210.18
+          },
+          {
+            "limite": 3001.0,
+            "taxa": 0.2305,
+            "parcela": 212.93
+          },
+          {
+            "limite": 3387.0,
+            "taxa": 0.3523,
+            "parcela": 578.4
+          },
+          {
+            "limite": 6171.0,
+            "taxa": 0.3885,
+            "parcela": 700.95
+          },
+          {
+            "limite": 6517.0,
+            "taxa": 0.4144,
+            "parcela": 860.76
+          },
+          {
+            "limite": 20064.0,
+            "taxa": 0.4316,
+            "parcela": 972.95
+          },
+          {
+            "limite": 20064.0,
+            "taxa": 0.467,
+            "parcela": 1682.88
+          }
+        ],
+        "_fonte_tabela": "tabelas_rf/Tabelas_RF_2025_RAM.xlsx (Tabela I: nao casado sem dependentes), parseada por parse_tabelas_rf.py"
+      },
+      "_aviso": "Estas sao taxas de RETENCAO mensal. Para a LIQUIDACAO anual confirmar o art. 68 na versao regional (DLR proprio) - o CIRS art. 68 nao tem variantes regionais. O fator 0,70 dos Acores e o mesmo que a regiao aplica a liquidacao, mas CONFIRMAR antes de usar em producao.",
+      "_arquivo_local": "fiscal-monitor/tabelas_rf/ (38 ficheiros, MANIFEST.json) + parser fiscal-monitor/parse_tabelas_rf.py",
+      "_aviso_parser": "A coluna da PARCELA A ABATER e a col.4 da folha; a col.10 e 'Parcela ADICIONAL' (ex. 21,43 na Madeira) e NAO serve para o calculo - ler por POSICAO, nunca por heuristica de 'ultimo numero'."
     }
-   },
-   "global_limit": {
-    "article": "78.º n.7",
-    "a_ate_1o_escalao": "sem limite",
-    "b_intermedio": "formula (ver art 68/68-A)",
-    "c_acima": 1000,
-    "verified": true,
-    "source_law": "portaldasfinancas (AT) - cirs_pf.py; estrutura estavel Lei 12/2022 + Lei 82/2023; limiares seguem escaloes art 68/68-A (anuais)"
-   },
-   "dependentes": {
-    "article": "78.º-A",
-    "dependente": 600,
-    "majoracoes": [
-     300,
-     150
-    ],
-    "ascendentes": [
-     126,
-     63,
-     110
-    ],
-    "verified": true,
-    "source_law": "portaldasfinancas (AT) - cirs_pf.py; Lei 7-A/2016 + 106/2017 + 24-D/2022; estavel 2023-2025"
-   },
-   "_note": "COMPLETO (6 tetos base) via portaldasfinancas + paginas historicas ra. rendas 600."
+  },
+  "civa": {
+    "_fonte": "pagina dedicada DRE do art. 53 CIVA (consolidado = DL 102/2008, anexo IV; codigo aprovado pelo DL 394-B/84). Lido 2026-07-28; ultima alteracao 2026-05-20.",
+    "_descoberta": "o id por-artigo NAO aparece em links da pagina - vem da API interna do SPA (screenservices .../LegCons_Detalhe/DataActionGetData), que lista {Id, PaiId, FullName} por artigo. Metodo reutilizavel para qualquer diploma consolidado.",
+    "art53_isencao": {
+      "limiar_eur": 15000,
+      "condicoes_em_vigor": [
+        "nao praticar operacoes de EXPORTACAO ou atividades conexas",
+        "volume de negocios NACIONAL do ano civil anterior <= 15.000 EUR",
+        "inicio de atividade (n.5): conta o volume ESTIMADO para o ano civil corrente (remete p/ art. 52.o-A a); se ha anualizacao, vive nesse artigo - NAO verificado aqui)",
+        "n.6: nao aplicavel a quem pratique uma SO operacao tributavel (ato isolado) nem a transmissoes intracomunitarias de meios de transporte novos"
+      ],
+      "condicoes_REMOVIDAS_do_texto_atual": "'sem contabilidade organizada' e 'importacoes' JA NAO constam do n.1 (reescrito pelo regime UE das PME, DL 35/2025, em vigor 2025-03-29) - nao repetir essas condicoes como atuais",
+      "n2_alargamento_UE": "sujeitos de outros EM: vol. UE <= 100.000 + notificacao previa + numero com sufixo 'EX'",
+      "n3_contrapartida": "isentos ficam SEM direito a deducao (arts. 19/20) nem reembolso",
+      "alteracoes": [
+        "DL 35/2025 (2025-03-29)",
+        "Lei 24-D/2022 art.235 (2023-01-01)",
+        "Lei 75-B/2020 (2021-01-01)",
+        "Lei 2/2020 (2020-04-01)"
+      ]
+    },
+    "art56_impedimentos": {
+      "_fonte": "pagina dedicada DRE do art. 56 CIVA. Lido 2026-07-28. Redaccao atual dada pelo art. 2.o do DL 35/2025, DR 58/2025 Serie I de 2025-03-24, em vigor desde 2025-03-29. n.1 REVOGADO.",
+      "n2_a": "Nos 12 MESES SEGUINTES ao da cessacao, quem estivesse enquadrado num REGIME DE TRIBUTACAO a data da cessacao e reinicie ESSA OU OUTRA atividade NAO pode beneficiar da isencao. 'Outra atividade' esta expresso: mudar de CAE nao contorna.",
+      "n2_b": "No ANO SEGUINTE ao da cessacao, se ao reiniciar seria enquadrado no regime normal por forca do art. 58.o n.2 a) - ou seja, se o volume de negocios do ano civil anterior tiver excedido os 15.000 EUR do art. 53.o n.1.",
+      "consequencia_pratica": "Um REINICIO nao volta automaticamente a isencao, e e ISTO que o assistente da AT aplica quando mostra 'o seu enquadramento em IVA neste momento e: Normal Trimestral'. CONFIRMADO empiricamente a 2026-07-28: com data de inicio dentro da janela dos 12 meses saiu Normal Trimestral; movendo a data para depois de 2026-09-30 saiu 'isento ao abrigo do artigo 53'. O CAE, o volume estimado e a resposta profissional/empresarial nao alteram nada disto.",
+      "caso_diogo_2026": "Cessacao 2025-09-08 em regime Normal Trimestral (onde entrou por ter sobre-declarado o volume ESTIMADO na primeira abertura, nao por renuncia - logo sem o bloqueio de 5 anos do art. 55 n.3). Volume de negocios do periodo: ZERO, todas as declaracoes periodicas entregues a 0, pelo que o art. 56 n.2 b) nao se aplica. So a alinea a) mordia, e expirava a 2026-09-30. Declaracao submetida com data posterior, isenta ao abrigo do art. 53.",
+      "art55_lock_a_verificar": "Art. 55 n.3: quem OPTA pelo regime de tributacao fica obrigado a permanecer nele pelo menos CINCO anos; n.4 so admite a declaracao de regresso em Janeiro de um ano seguinte ao termo do prazo; n.5 abre excepcao por 'modificacao essencial das condicoes de exercicio' mediante requerimento no servico de financas. Pagina dedicada: 2008-34500675-912255008."
+    }
   }
- },
- "_todo_in_order": [
-  "Find dedicated-page ids for 78.º-B, 78.º-F, 84.º (via search or article-nav).",
-  "Re-run 78.º-D dedicated render (control-char error) for amendment years + ceiling.",
-  "Fill income year 2024 first (all six rules verified) - highest re-audit value.",
-  "Then 2025, then 2023.",
-  "Add art. 78.º n.7 global limit table and 78.º-A dependentes amounts per year (needed for household ceilings)."
- ],
- "escaloes_irs": {
-  "_source": "CIRS art. 68 (Continente). URL info.portaldasfinancas.gov.pt/.../cirs_rep/ra/Pages/irs68ra_<AAAAMM>.aspx",
-  "_method": "coleta = coletavel * taxa - parcela_a_abater; parcela derived from boundaries+rates (see fiscal-monitor/irs_calc.py)",
-  "_status": "2024 brackets 1-6 VALIDATED AGAINST REALITY 2026-07-24: Diogo income 37287.11 -> coleta 8243.68; real liquidacao (movfin) reembolso 46.03 => implied deducoes 986.71 (plausible). Brackets 7-9 still need DRE-confirm (taxpayer sat in bracket 6). The /ra/ page is a JS SPA - confirm via dre.mjs, not plain curl.",
-  "2024": {
-   "continente": [
-    [
-     7703.0,
-     0.13
-    ],
-    [
-     11623.0,
-     0.165
-    ],
-    [
-     16472.0,
-     0.22
-    ],
-    [
-     21321.0,
-     0.25
-    ],
-    [
-     27146.0,
-     0.32
-    ],
-    [
-     39791.0,
-     0.355,
-     3845.5
-    ],
-    [
-     43000.0,
-     0.435
-    ],
-    [
-     80000.0,
-     0.45
-    ],
-    [
-     null,
-     0.48
-    ]
-   ],
-   "deducao_especifica_catA": 4104.0,
-   "_status": "CORRIGIDO 2026-07-25: tabela REDUZIDA (Lei 33-A/2024) - o escalao 6 e 35,5%, nao os 37% pre-reducao. Verificado contra uma demonstracao de liquidacao real, que reproduz ao cetimo. NOTA: guardar as parcelas OFICIAIS do art.68 anual (nao derivadas) e chavear por regiao."
-  },
-  "2023": {
-   "continente": [
-    [
-     7479,
-     0.145,
-     0.0
-    ],
-    [
-     11284,
-     0.21,
-     486.13
-    ],
-    [
-     15992,
-     0.265,
-     1106.73
-    ],
-    [
-     20700,
-     0.285,
-     1426.65
-    ],
-    [
-     26355,
-     0.35,
-     2772.14
-    ],
-    [
-     38632,
-     0.37,
-     3299.12
-    ],
-    [
-     50483,
-     0.435,
-     5810.25
-    ],
-    [
-     78834,
-     0.45,
-     6567.33
-    ],
-    [
-     null,
-     0.48,
-     8932.68
-    ]
-   ],
-   "deducao_especifica_catA": 4104.0,
-   "_status": "Oficial: portaldasfinancas /ra/ irs68ra_202312 (Normal+Media). Parcela = limite_ant*(normal-media_ant)."
-  },
-  "2022": {
-   "continente": [
-    [
-     7112,
-     0.145,
-     0.0
-    ],
-    [
-     10732,
-     0.23,
-     604.52
-    ],
-    [
-     20322,
-     0.285,
-     1194.79
-    ],
-    [
-     25075,
-     0.35,
-     2515.66
-    ],
-    [
-     36967,
-     0.37,
-     3017.27
-    ],
-    [
-     80882,
-     0.45,
-     5974.61
-    ],
-    [
-     null,
-     0.48,
-     8401.21
-    ]
-   ],
-   "deducao_especifica_catA": 4104.0,
-   "_status": "Oficial: portaldasfinancas /ra/ irs68ra_202206 (Normal+Media). 7 escaloes nesse ano."
-  },
-  "2025": {
-   "continente": [
-    [
-     8059,
-     0.125,
-     0.0
-    ],
-    [
-     12160,
-     0.16,
-     282.07
-    ],
-    [
-     17233,
-     0.215,
-     950.91
-    ],
-    [
-     22306,
-     0.244,
-     1450.67
-    ],
-    [
-     28400,
-     0.314,
-     3011.98
-    ],
-    [
-     41629,
-     0.349,
-     4006.1
-    ],
-    [
-     44987,
-     0.431,
-     7419.54
-    ],
-    [
-     83696,
-     0.446,
-     8094.51
-    ],
-    [
-     null,
-     0.48,
-     10939.9
-    ]
-   ],
-   "deducao_especifica_catA": 4104.0,
-   "_status": "Oficial: portaldasfinancas /ra/ irs68ra_202512 (Normal+Media)."
-  },
-  "_regioes": {
-   "_fonte": "Tabelas de retencao (doclib tabela_ret_doclib). Nomes de ficheiro INCONSISTENTES: Tabelas_RF_Continente_2026.xlsx | Tabelas_RF_2025_RAM.xlsx | Tabelas_RF_RA_Acores_2025.xlsx | Tabelas_RF_RAA_2025_01_08_a_30_09_GSEAF_vf.xlsx (periodos a meio do ano!). NAO assumir padrao - listar a doclib e apanhar o href real.",
-   "acores": {
-    "regra": "taxa_regional = taxa_continente * 0.70",
-    "verificado": "2026-07-25 contra Tabelas_RF_RA_Acores_2025: racio EXATAMENTE 0,70 em todos os escalaes (0.091/0.13, 0.1155/0.165, 0.154/0.22, 0.175/0.25, 0.224/0.32, 0.2485/0.355) | RE-VERIFICADO 2026-07-25 em 3 periodos independentes (2025-jan, 2024-set/out, 2024-anual): fator 0,700 constante em todos os escaloes.",
-    "fator": 0.7,
-    "tabela_retencao_2025_jan": [
-     {
-      "limite": 914.0,
-      "taxa": 0.0,
-      "parcela": 0.0
-     },
-     {
-      "limite": 992.0,
-      "taxa": 0.091,
-      "parcela": 0.0
-     },
-     {
-      "limite": 1070.0,
-      "taxa": 0.1155,
-      "parcela": 0.0
-     },
-     {
-      "limite": 1136.0,
-      "taxa": 0.1155,
-      "parcela": 70.98
-     },
-     {
-      "limite": 1187.0,
-      "taxa": 0.154,
-      "parcela": 114.72
-     },
-     {
-      "limite": 1787.0,
-      "taxa": 0.175,
-      "parcela": 139.96
-     },
-     {
-      "limite": 2078.0,
-      "taxa": 0.224,
-      "parcela": 227.52
-     },
-     {
-      "limite": 2432.0,
-      "taxa": 0.2485,
-      "parcela": 278.43
-     },
-     {
-      "limite": 3233.0,
-      "taxa": 0.271,
-      "parcela": 333.15
-     },
-     {
-      "limite": 5547.0,
-      "taxa": 0.2804,
-      "parcela": 363.54
-     },
-     {
-      "limite": 20221.0,
-      "taxa": 0.3146,
-      "parcela": 553.25
-     },
-     {
-      "limite": 20221.0,
-      "taxa": 0.3302,
-      "parcela": 868.7
-     }
-    ],
-    "_fonte_tabela": "tabelas_rf/Tabelas_RF_RA_Acores_2025.xlsx (Tabela I: nao casado sem dependentes), parseada por parse_tabelas_rf.py"
-   },
-   "madeira": {
-    "regra": "TABELA PROPRIA - nao e um fator constante",
-    "verificado": "2026-07-25: racios vs continente irregulares (0.714, 0.764, 0.827, 0.917, 0.720, 0.992) -> tem de se guardar a tabela da RAM, nao derivar | RE-VERIFICADO 2026-07-25: racios vs continente 0,714/0,764/0,827/0,917/0,720/0,992/1,003 - o ultimo e SUPERIOR a 1, logo nao ha reducao uniforme: a Madeira tem tabela propria e tem de ser guardada.",
-    "taxas_retencao_2025_amostra": [
-     0.0928,
-     0.126,
-     0.182,
-     0.2293,
-     0.2305,
-     0.3523
-    ],
-    "tabela_retencao_2025_jan": [
-     {
-      "limite": 915.0,
-      "taxa": 0.0,
-      "parcela": 0.0
-     },
-     {
-      "limite": 949.0,
-      "taxa": 0.0928,
-      "parcela": 0.0
-     },
-     {
-      "limite": 1015.0,
-      "taxa": 0.126,
-      "parcela": 0.0
-     },
-     {
-      "limite": 1125.0,
-      "taxa": 0.126,
-      "parcela": 75.31
-     },
-     {
-      "limite": 1521.0,
-      "taxa": 0.182,
-      "parcela": 138.3
-     },
-     {
-      "limite": 2185.0,
-      "taxa": 0.2293,
-      "parcela": 210.18
-     },
-     {
-      "limite": 3001.0,
-      "taxa": 0.2305,
-      "parcela": 212.93
-     },
-     {
-      "limite": 3387.0,
-      "taxa": 0.3523,
-      "parcela": 578.4
-     },
-     {
-      "limite": 6171.0,
-      "taxa": 0.3885,
-      "parcela": 700.95
-     },
-     {
-      "limite": 6517.0,
-      "taxa": 0.4144,
-      "parcela": 860.76
-     },
-     {
-      "limite": 20064.0,
-      "taxa": 0.4316,
-      "parcela": 972.95
-     },
-     {
-      "limite": 20064.0,
-      "taxa": 0.467,
-      "parcela": 1682.88
-     }
-    ],
-    "_fonte_tabela": "tabelas_rf/Tabelas_RF_2025_RAM.xlsx (Tabela I: nao casado sem dependentes), parseada por parse_tabelas_rf.py"
-   },
-   "_aviso": "Estas sao taxas de RETENCAO mensal. Para a LIQUIDACAO anual confirmar o art. 68 na versao regional (DLR proprio) - o CIRS art. 68 nao tem variantes regionais. O fator 0,70 dos Acores e o mesmo que a regiao aplica a liquidacao, mas CONFIRMAR antes de usar em producao.",
-   "_arquivo_local": "fiscal-monitor/tabelas_rf/ (38 ficheiros, MANIFEST.json) + parser fiscal-monitor/parse_tabelas_rf.py",
-   "_aviso_parser": "A coluna da PARCELA A ABATER e a col.4 da folha; a col.10 e 'Parcela ADICIONAL' (ex. 21,43 na Madeira) e NAO serve para o calculo - ler por POSICAO, nunca por heuristica de 'ultimo numero'."
-  }
- },
- "civa": {
-  "_fonte": "pagina dedicada DRE do art. 53 CIVA (consolidado = DL 102/2008, anexo IV; codigo aprovado pelo DL 394-B/84). Lido 2026-07-28; ultima alteracao 2026-05-20.",
-  "_descoberta": "o id por-artigo NAO aparece em links da pagina - vem da API interna do SPA (screenservices .../LegCons_Detalhe/DataActionGetData), que lista {Id, PaiId, FullName} por artigo. Metodo reutilizavel para qualquer diploma consolidado.",
-  "art53_isencao": {
-   "limiar_eur": 15000,
-   "condicoes_em_vigor": [
-    "nao praticar operacoes de EXPORTACAO ou atividades conexas",
-    "volume de negocios NACIONAL do ano civil anterior <= 15.000 EUR",
-    "inicio de atividade (n.5): conta o volume ESTIMADO para o ano civil corrente (remete p/ art. 52.o-A a); se ha anualizacao, vive nesse artigo - NAO verificado aqui)",
-    "n.6: nao aplicavel a quem pratique uma SO operacao tributavel (ato isolado) nem a transmissoes intracomunitarias de meios de transporte novos"
-   ],
-   "condicoes_REMOVIDAS_do_texto_atual": "'sem contabilidade organizada' e 'importacoes' JA NAO constam do n.1 (reescrito pelo regime UE das PME, DL 35/2025, em vigor 2025-03-29) - nao repetir essas condicoes como atuais",
-   "n2_alargamento_UE": "sujeitos de outros EM: vol. UE <= 100.000 + notificacao previa + numero com sufixo 'EX'",
-   "n3_contrapartida": "isentos ficam SEM direito a deducao (arts. 19/20) nem reembolso",
-   "alteracoes": [
-    "DL 35/2025 (2025-03-29)",
-    "Lei 24-D/2022 art.235 (2023-01-01)",
-    "Lei 75-B/2020 (2021-01-01)",
-    "Lei 2/2020 (2020-04-01)"
-   ]
-  }
- }
 }
