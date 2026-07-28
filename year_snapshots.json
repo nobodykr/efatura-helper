@@ -21,10 +21,11 @@
   "78.º-C": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821426",
   "78.º-D": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-185585815",
   "78.º-E": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1124882175",
-  "78.º-B": "UNKNOWN - dedicated id to find",
+  "78.º-B": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821425",
   "78.º-F": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
-  "84.º": "UNKNOWN - dedicated id to find",
-  "CIVA 53.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006"
+  "84.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821428",
+  "CIVA 53.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006",
+  "_metodo": "id no URL = FragmentoVersaoId do artigo na API do SPA (screenservices LegCons_Detalhe/DataActionGetData do diploma-pai). MUDA quando o artigo e alterado - e o sinal que o watch_artigos.mjs vigia."
  },
  "amendment_map": {
   "_note": "Years an amendment came INTO FORCE, from the dedicated pages. A rule is STABLE for target years if nothing came into force within them; then all target years = current value (verified by absence of change). A rule that changed within 2023-2025 needs the as-in-force text read per year.",
