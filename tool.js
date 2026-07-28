@@ -45,7 +45,7 @@
   var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.07.28a";
+  var FB_VERSION = "2026.07.28b";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -114,24 +114,23 @@
   var CEIL = {
     C05: { rate: 0.15, base: "total", cap: 1000 },
     C06: { rate: 0.30, base: "total", cap: 800 },
-    // Art. 78.o-E n.1 a), lido do texto consolidado no DRE (2026-07-28): rendas 15% ate 502 EUR.
-    // O 900 que aqui estava nao corresponde a NENHUM valor do artigo e estava marcado unconfirmed.
-    // Escolhemos 502 tambem por ser o lado seguro: um teto inflacionado diz ao utilizador que ainda
-    // ha espaco quando ja nao ha. NOTA por confirmar: o artigo tem um ESCALONAMENTO (coletavel
-    // abaixo de 7.000 EUR sobe o limite ate 800) que nao esta modelado, e o year_snapshots guarda
-    // 600 para 2024/2025, valor que o consolidado nao suporta - ver REVIEW-PAGINAS.md A1.
-    C07: { rate: 0.15, base: "total", cap: 502, unconfirmed: true },
+    // Art. 78.o-E n.1 a) EM VIGOR (pagina dedicada DRE 2014-70048167-1124882175, alterada
+    // 2026-06-03, lida 2026-07-28): rendas 15% ate 800 EUR. O n.4 ESCALONA para cima (ate 1.100 p/
+    // coletavel <= 1.o escalao, formula ate 30.000) - nao modelado; 800 e o piso, logo conservador.
+    // Historico: 900 (original) nao era o valor de nenhum ano; 502 (fix de ontem) era o texto
+    // DESATUALIZADO do render do diploma-pai - o valor por ano vive em RENDAS_CAP_ANO abaixo.
+    C07: { rate: 0.15, base: "total", cap: 800 },
     C08: { rate: 0.25, base: "total", cap: 403.75 },
     C99: { rate: 0.35, base: "total", cap: 250, perTaxpayer: true },
     C01: { rate: 0.15, base: "iva", pot: POT }, C02: { rate: 0.15, base: "iva", pot: POT },
     C03: { rate: 0.15, base: "iva", pot: POT }, C04: { rate: 0.15, base: "iva", pot: POT },
+    // C09: atividades veterinarias 15% (n.1 e); MEDICAMENTOS veterinarios sao 35% (n.6) mas a fatura
+    // nao distingue consulta de medicamento, por isso usamos 15% em tudo - subestima, nunca inventa.
     C09: { rate: 0.15, base: "iva", pot: POT }, C10: { rate: 1.00, base: "iva", pot: POT },
     C11: { rate: 0.30, base: "iva", pot: POT }, C12: { rate: 1.00, base: "iva", pot: POT },
     C13: { rate: 0.15, base: "iva", pot: POT }, C14: { rate: 0.15, base: "iva", pot: POT },
-    // C15 (museus e monumentos) shares the same art. 78.o-F pot. Rate unconfirmed - treated as the
-    // 15% family default until a source is checked; being in the pot, the exact rate only affects
-    // this sector's contribution to a shared 250 EUR ceiling, so the risk of the guess is small.
-    C15: { rate: 0.15, base: "iva", pot: POT, unconfirmed: true }
+    // C15 museus e monumentos: art. 78.o-F n.1 k) e l) EM VIGOR - 15% confirmado (DRE, 2026-07-28).
+    C15: { rate: 0.15, base: "iva", pot: POT }
   };
   var POT_CAP = 250;
 
@@ -239,7 +238,7 @@
    * still free - i.e. deduction that MIGHT be recoverable via a declaracao de substituicao (within
    * the CPPT/LGT windows). Only the rendas ceiling (C07) moved across years; the rest held. Values
    * are DRE/AT-verified in year_snapshots.json. Indicators only - never a submission. */
-  var RENDAS_CAP_ANO = { 2023: 502, 2024: 600, 2025: 600 };   // C07 base ceiling per income year
+  var RENDAS_CAP_ANO = { 2023: 502, 2024: 600, 2025: 600, 2026: 800 };   // C07 base per income year (2026: Lei 73-A/2025 OE-2026, DRE em vigor)
   /* obterDocumentosAdquirente CAPS at 300 rows and returns the MOST RECENT first, so summing an
    * unfiltered year silently misses invoices on a busy year. But it accepts ambitoAquisicaoFilter
    * (a sector code), and a single sector is always well under 300 - so we fetch PER SECTOR to get

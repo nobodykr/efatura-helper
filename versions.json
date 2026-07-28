@@ -1,10 +1,10 @@
 {
-  "current": "2026.07.28a",
+  "current": "2026.07.28b",
   "files": {
     "tool.js": {
-      "version": "2026.07.28a",
-      "integrity": "sha384-Fy7TzB/f4dzR6O39ZlOgLUk6e7VG/guYJ3M5ex1dLvPWYS1nAHTpoJhv/9pMNFKM",
-      "bytes": 154443
+      "version": "2026.07.28b",
+      "integrity": "sha384-0MqsJfsyldrHl8xLygG/pgXIDLeXUyfR8Czi3pc25tk3dd+Dq05538o6jNnn6JiG",
+      "bytes": 154357
     }
   },
   "note": "Provably-fair release manifest. Verify at /verificar; integrity is the SRI value the pinned bookmarklet uses."
