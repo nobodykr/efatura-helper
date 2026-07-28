@@ -45,7 +45,7 @@
   var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.07.25i";
+  var FB_VERSION = "2026.07.28a";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -114,7 +114,13 @@
   var CEIL = {
     C05: { rate: 0.15, base: "total", cap: 1000 },
     C06: { rate: 0.30, base: "total", cap: 800 },
-    C07: { rate: 0.15, base: "total", cap: 900, unconfirmed: true },
+    // Art. 78.o-E n.1 a), lido do texto consolidado no DRE (2026-07-28): rendas 15% ate 502 EUR.
+    // O 900 que aqui estava nao corresponde a NENHUM valor do artigo e estava marcado unconfirmed.
+    // Escolhemos 502 tambem por ser o lado seguro: um teto inflacionado diz ao utilizador que ainda
+    // ha espaco quando ja nao ha. NOTA por confirmar: o artigo tem um ESCALONAMENTO (coletavel
+    // abaixo de 7.000 EUR sobe o limite ate 800) que nao esta modelado, e o year_snapshots guarda
+    // 600 para 2024/2025, valor que o consolidado nao suporta - ver REVIEW-PAGINAS.md A1.
+    C07: { rate: 0.15, base: "total", cap: 502, unconfirmed: true },
     C08: { rate: 0.25, base: "total", cap: 403.75 },
     C99: { rate: 0.35, base: "total", cap: 250, perTaxpayer: true },
     C01: { rate: 0.15, base: "iva", pot: POT }, C02: { rate: 0.15, base: "iva", pot: POT },
