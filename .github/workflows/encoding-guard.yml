@@ -16,3 +16,7 @@ jobs:
         run: |
           node --check tool.js
           node check-functions.js tool.js
+      - name: deducoes page, CEIL and year_snapshots must agree
+        # the three places a ceiling lives; both real bugs of 2026-07-28 (C07 cap 900, passes at
+        # 15% instead of 100%) would have been a red X here instead of a two-DRE-pass archaeology.
+        run: node test-deducoes-sync.js
