@@ -45,7 +45,7 @@
   var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.07.28c";
+  var FB_VERSION = "2026.07.28d";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -662,8 +662,20 @@
   // rendas lives on the same host; tag its path so host+path matching can tell them apart.
   PARTITIONS[1].pathHint = "/arrendamento";
 
-  function profLoad() { try { return JSON.parse(localStorage.getItem(PROF_KEY)) || { partitions: {} }; } catch (e) { return { partitions: {} }; } }
-  function profSave(p) { try { localStorage.setItem(PROF_KEY, JSON.stringify(p)); } catch (e) {} }
+  /* A MESMA regra de expiracao do /perfil (fim do dia), aplicada TAMBEM aqui: este ficheiro corre
+   * na origem da AT, e o /perfil (outra origem) nao consegue apagar o localStorage desta - so o
+   * proprio tool. Sem isto, a copia da situacao fiscal DESTA origem vivia para sempre e a promessa
+   * "apagada automaticamente ao fim do dia" da pagina de privacidade so era verdade em metade dos
+   * sitios onde os dados estao. */
+  function profExpiry() { var d = new Date(); d.setHours(24, 0, 0, 0); return d.getTime(); }
+  function profLoad() {
+    try {
+      var p = JSON.parse(localStorage.getItem(PROF_KEY)) || { partitions: {} };
+      if (p.expiresAt && Date.now() >= p.expiresAt) { localStorage.removeItem(PROF_KEY); return { partitions: {} }; }
+      return p;
+    } catch (e) { return { partitions: {} }; }
+  }
+  function profSave(p) { try { p.expiresAt = profExpiry(); localStorage.setItem(PROF_KEY, JSON.stringify(p)); } catch (e) {} }
 
   /* CROSS-PARTITION HANDOFF (SPEC Option A). Each AT partition is a separate origin, so this
    * page's localStorage cannot be read on the next partition. To assemble ONE profile we hand
@@ -1577,7 +1589,9 @@
       });
     };
     var rs = document.getElementById("fb-reset");
-    if (rs) rs.onclick = function (ev) { ev.preventDefault(); try { localStorage.removeItem(PROF_KEY); } catch (e) {} profRender(); };
+    // "apagar" = apagar TUDO o que o tool guardou nesta origem: a situacao fiscal E a configuracao
+    // do agregado (incluindo a chave de sala da partilha - quem pede para apagar quer apagar).
+    if (rs) rs.onclick = function (ev) { ev.preventDefault(); try { localStorage.removeItem(PROF_KEY); localStorage.removeItem(PKEY); } catch (e) {} profRender(); };
   }
 
   function runProfiling() {
