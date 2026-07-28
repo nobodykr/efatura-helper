@@ -23,7 +23,8 @@
   "78.º-E": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1124882175",
   "78.º-B": "UNKNOWN - dedicated id to find",
   "78.º-F": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
-  "84.º": "UNKNOWN - dedicated id to find"
+  "84.º": "UNKNOWN - dedicated id to find",
+  "CIVA 53.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006"
  },
  "amendment_map": {
   "_note": "Years an amendment came INTO FORCE, from the dedicated pages. A rule is STABLE for target years if nothing came into force within them; then all target years = current value (verified by absence of change). A rule that changed within 2023-2025 needs the as-in-force text read per year.",
@@ -681,6 +682,28 @@
    "_aviso": "Estas sao taxas de RETENCAO mensal. Para a LIQUIDACAO anual confirmar o art. 68 na versao regional (DLR proprio) - o CIRS art. 68 nao tem variantes regionais. O fator 0,70 dos Acores e o mesmo que a regiao aplica a liquidacao, mas CONFIRMAR antes de usar em producao.",
    "_arquivo_local": "fiscal-monitor/tabelas_rf/ (38 ficheiros, MANIFEST.json) + parser fiscal-monitor/parse_tabelas_rf.py",
    "_aviso_parser": "A coluna da PARCELA A ABATER e a col.4 da folha; a col.10 e 'Parcela ADICIONAL' (ex. 21,43 na Madeira) e NAO serve para o calculo - ler por POSICAO, nunca por heuristica de 'ultimo numero'."
+  }
+ },
+ "civa": {
+  "_fonte": "pagina dedicada DRE do art. 53 CIVA (consolidado = DL 102/2008, anexo IV; codigo aprovado pelo DL 394-B/84). Lido 2026-07-28; ultima alteracao 2026-05-20.",
+  "_descoberta": "o id por-artigo NAO aparece em links da pagina - vem da API interna do SPA (screenservices .../LegCons_Detalhe/DataActionGetData), que lista {Id, PaiId, FullName} por artigo. Metodo reutilizavel para qualquer diploma consolidado.",
+  "art53_isencao": {
+   "limiar_eur": 15000,
+   "condicoes_em_vigor": [
+    "nao praticar operacoes de EXPORTACAO ou atividades conexas",
+    "volume de negocios NACIONAL do ano civil anterior <= 15.000 EUR",
+    "inicio de atividade (n.5): conta o volume ESTIMADO para o ano civil corrente (remete p/ art. 52.o-A a); se ha anualizacao, vive nesse artigo - NAO verificado aqui)",
+    "n.6: nao aplicavel a quem pratique uma SO operacao tributavel (ato isolado) nem a transmissoes intracomunitarias de meios de transporte novos"
+   ],
+   "condicoes_REMOVIDAS_do_texto_atual": "'sem contabilidade organizada' e 'importacoes' JA NAO constam do n.1 (reescrito pelo regime UE das PME, DL 35/2025, em vigor 2025-03-29) - nao repetir essas condicoes como atuais",
+   "n2_alargamento_UE": "sujeitos de outros EM: vol. UE <= 100.000 + notificacao previa + numero com sufixo 'EX'",
+   "n3_contrapartida": "isentos ficam SEM direito a deducao (arts. 19/20) nem reembolso",
+   "alteracoes": [
+    "DL 35/2025 (2025-03-29)",
+    "Lei 24-D/2022 art.235 (2023-01-01)",
+    "Lei 75-B/2020 (2021-01-01)",
+    "Lei 2/2020 (2020-04-01)"
+   ]
   }
  }
 }
