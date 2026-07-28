@@ -37,8 +37,11 @@ The map API stays open where it has to be: `/sectors.json`, `/map.json`, `/cae-m
 `/stats` answer to anyone. Serving the whole map is what lets the bookmarklet work without ever
 telling the server which merchants you shop at.
 
-`/nif/{nif}` and `/search` are token-gated (401 without `x-worker-token`), as are the
-map-mutating routes. Verified 2026-07-21 - do not describe them as open.
+`/nif/{nif}` and `/search` are PUBLIC reads since 2026-07-22 (opened for the NIF searcher;
+/search is deliberately restricted to trading businesses - see the docstring in cae-db server.py,
+that restriction is load-bearing). The map-MUTATING routes remain token-gated. An earlier version
+of this note said both reads were 401-gated; that was true on 2026-07-21 and superseded a day
+later - verified live 2026-07-28.
 
 ## Provably-fair releases
 Before every deploy: bump `FB_VERSION` in tool.js if the code changed, then `node make-versions.mjs` (regenerates versions.json, the published hash). Deploy. Verify at /verificar. Tag the release: `git tag vYYYY.MM.DD && git push --tags` - the tag is the public timestamped commitment.
