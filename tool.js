@@ -45,7 +45,7 @@
   var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.07.28b";
+  var FB_VERSION = "2026.07.28c";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -192,13 +192,29 @@
    * returns only aggregates, so "guessable NIF -> recompute hash" buys an attacker nothing (they can
    * at most re-post that user's own recoverable figure). And deriving per-person is exactly what we
    * want here (one id per taxpayer), the very thing that was wrong for a SHARED room key. */
-  var FB_UID_SALT = "fatura-boa-uid-v1";
+  var FB_UID_SALT = "fatura-boa-uid-v2";
   function sha256hex(s) {
     return crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)).then(function (buf) {
       return Array.prototype.map.call(new Uint8Array(buf), function (x) { return ("0" + x.toString(16)).slice(-2); }).join("");
     });
   }
-  function uidFromNif(nif) { return nif ? sha256hex(String(nif) + FB_UID_SALT) : Promise.resolve(null); }
+  /* PBKDF2 e nao um sha256 simples (v2, 2026-07-28): os NIFs pessoais tem ~3e7 valores validos
+   * (prefixo 1/2/3 + digito de controlo), por isso um hash rapido com salt publico reverte-se com
+   * uma tabela barata. 600k iteracoes tornam essa tabela cara (horas de GPU, nao segundos) - e uma
+   * DESACELERACAO honesta, nao uma impossibilidade; a protecao real em transito e a cifra RSA-OAEP
+   * aplicada no envio (ver sendCounter no /perfil). Corre UMA vez por leitura (~0,5s). */
+  function uidFromNif(nif) {
+    if (!nif) return Promise.resolve(null);
+    var enc = new TextEncoder();
+    return crypto.subtle.importKey("raw", enc.encode(String(nif)), "PBKDF2", false, ["deriveBits"])
+      .then(function (k) {
+        return crypto.subtle.deriveBits(
+          { name: "PBKDF2", hash: "SHA-256", salt: enc.encode(FB_UID_SALT), iterations: 600000 }, k, 256);
+      })
+      .then(function (buf) {
+        return Array.prototype.map.call(new Uint8Array(buf), function (x) { return ("0" + x.toString(16)).slice(-2); }).join("");
+      });
+  }
   function loadProfile() {
     try { return JSON.parse(localStorage.getItem(PKEY)) || {}; } catch (e) { return {}; }
   }

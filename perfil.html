@@ -142,10 +142,26 @@
       if (val > 0){ var w = resubmissionWindows(x.ano); if (w.recover.open) total += val; }
     });
     if (!(total > 0)) return;
+    // O id (ja PBKDF2 do NIF, ver tool.js) segue CIFRADO para a chave publica do servidor: quem
+    // esteja no caminho (logs de WAF/proxy) ve so ciphertext, e como o padding OAEP e aleatorio,
+    // dois envios do MESMO utilizador nem sequer sao ligaveis entre si. A chave esta AFIXADA aqui
+    // - e nao pedida por fetch - para viajar com a mesma verificacao de repo/SRI que o resto da
+    // ferramenta; rodar a chave = novo par + nova constante + bump de versao.
+    encryptCounterId(ef.uid).then(function(idEnc){
+      if (!idEnc) return;
+      return fetch(API + "/counter", { method:"POST", headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ consent:true, idEnc: idEnc, recuperavel: Math.round(total*100)/100 }) });
+    }).catch(function(){});
+  }
+  var COUNTER_PUBKEY_B64 = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyxHHErlqx3sAmH8J2b2soAD39QOlp2RfiJZ9QZQMwITbK7/1OAzAfJ5SwUJCFknYRbUkvhh9mLuCJPPia3gqrHsaW4rXPAuJMV1czRUfbiHmf2Y3QMMe1wxSKQC2TS3c4vR+qLshG/H25cNoIBurcZ+7svBaOP4TxOt23HXme3CSAS+cca/4lTegovnR0QFmxvRE/r+aBR0okDAgnhgXZhNyB1Zv7b3Q98RoYhc/siSuFYiMKDYpHUZ7EX7NNYYzAbYox1jvAnFj7RdJ+kDTTSigJ4fFOJIH2AAChOuGzybI/wEpHuXbxSOBnN2eEq6a7PWTbz2+PtM72NLzUqlGpQIDAQAB";
+  function encryptCounterId(uid){
     try {
-      fetch(API + "/counter", { method:"POST", headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ consent:true, id: ef.uid, recuperavel: Math.round(total*100)/100 }) }).catch(function(){});
-    } catch(e){}
+      var der = Uint8Array.from(atob(COUNTER_PUBKEY_B64), function(c){ return c.charCodeAt(0); });
+      return crypto.subtle.importKey("spki", der.buffer, { name:"RSA-OAEP", hash:"SHA-256" }, false, ["encrypt"])
+        .then(function(k){ return crypto.subtle.encrypt({ name:"RSA-OAEP" }, k, new TextEncoder().encode(uid)); })
+        .then(function(ct){ return btoa(String.fromCharCode.apply(null, new Uint8Array(ct))); })
+        .catch(function(){ return null; });
+    } catch(e){ return Promise.resolve(null); }
   }
   // Mirrors the PARTITIONS list in tool.js (kept in sync by hand - two files, two origins, no
   // shared module). id + where to go to read each one.

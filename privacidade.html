@@ -48,16 +48,18 @@
   <p class="lead">A regra é simples: os teus dados ficam no teu navegador. O Fatura Boa nunca vê a tua password e não guarda os teus dados nos nossos servidores.</p>
 
   <h2>O que a ferramenta lê, e onde</h2>
-  <p>O Fatura Boa corre no teu próprio navegador, na sessão que <b>tu</b> já abriste no Portal das Finanças e na Segurança Social. Lê o teu registo (faturas, rendas, situação fiscal, património, IRS) a partir dessa sessão, e faz as contas <b>no teu computador</b>. Não recebe, não transmite e não consegue ver a tua password.</p>
+  <p>O Fatura Boa corre no teu próprio navegador, na sessão que <b>tu</b> já abriste no Portal das Finanças e na Segurança Social. Lê o teu registo (faturas, rendas, recibos, declarações e demonstrações de IRS, situação cadastral, património) a partir dessa sessão, e faz as contas <b>no teu computador</b>. Não recebe, não transmite e não consegue ver a tua password.</p>
 
   <h2>Onde ficam os dados</h2>
   <p>A tua situação fiscal é montada e guardada no armazenamento local do teu navegador (<code>localStorage</code>). Não sai dali. Para reduzir a exposição, é <b>apagada automaticamente ao fim do dia</b> em que foi guardada. Podes também apagá-la a qualquer momento em <a href="/perfil">A minha situação</a>, ou limpando os dados do site no navegador.</p>
 
   <h2>O que é enviado (só se escolheres)</h2>
-  <p>Por omissão, <b>nada</b> é enviado. Há uma opção de contribuir, desligada de origem, que envia um resumo <b>anónimo</b> para ajudar a melhorar a ferramenta:</p>
+  <p>Por omissão, <b>nada</b> é enviado. Há uma opção de contribuir, desligada de origem, que envia dois resumos <b>anónimos</b> para ajudar a melhorar a ferramenta. Em concreto:</p>
   <ul>
-    <li>Nunca inclui o teu <b>nome</b>, <b>NIF</b> ou <b>NISS</b> - por construção, e o servidor remove qualquer campo que pareça identificar-te.</li>
-    <li>Serve para percebermos que tipos de situação existem e para corrigir erros - nunca para te identificar.</li>
+    <li><b>Formas dos dados, não dados:</b> os nomes e tipos dos campos que o Portal devolve (por exemplo, <code>dataEmissao: date</code>) - para detetarmos quando a AT muda os ecrãs. Valores, nunca; e números longos nos endereços são substituídos por <code>:id</code> antes de sair do navegador.</li>
+    <li><b>Um total em euros</b> (o valor recuperável que a ferramenta encontrou), para o contador público da página inicial.</li>
+    <li><b>Um identificador anónimo</b>, para o contador não contar a mesma pessoa duas vezes. É derivado do NIF por uma função <b>lenta</b> (PBKDF2, 600 mil iterações), viaja <b>cifrado</b> para a chave do servidor - quem esteja no caminho (proxies, registos de firewall) vê só texto cifrado - e o servidor guarda apenas um código com um segredo adicional, nunca o identificador em si. Sejamos exatos: isto torna a reversão <b>cara e restrita ao servidor</b>, não matematicamente impossível; é por isso que também é opcional.</li>
+    <li>Nunca inclui o teu <b>nome</b>, <b>NIF</b> ou <b>NISS</b> em claro, e o servidor remove qualquer campo que pareça identificar-te.</li>
     <li>Podes desligar quando quiseres.</li>
   </ul>
 
@@ -70,7 +72,7 @@
   <h2>Contacto</h2>
   <p>Dúvidas sobre privacidade: pelo formulário na <a href="/">página inicial</a>. O código é público e auditável em <a href="https://github.com/nobodykr/efatura-helper" target="_blank" rel="noopener">GitHub</a>, e podes <a href="/verificar">verificar</a> que o que corre é o código publicado.</p>
 
-  <p class="upd">Última atualização: 24 de julho de 2026.</p>
+  <p class="upd">Última atualização: 28 de julho de 2026.</p>
 </main>
 <footer class="wrap"><a href="/">Fatura Boa</a> &middot; <a href="/termos">Termos</a> &middot; <a href="/sobre">Sobre</a></footer>
 </body>
