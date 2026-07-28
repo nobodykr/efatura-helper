@@ -99,6 +99,8 @@
       margin-left:0;width:100%;justify-content:center;margin-top:8px}
   }
 </style>
+    <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
+    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538"></script>
 </head>
 <body>
 
@@ -149,7 +151,7 @@
 
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, function(c){
     return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
-  function eur(n){ return (n==null?"—":(n).toLocaleString("pt-PT",{maximumFractionDigits:2})+" €"); }
+  function eur(n){ return (n==null?"-":(n).toLocaleString("pt-PT",{maximumFractionDigits:2})+" €"); }
   function row(k,v){ return v==null||v===""?"":'<div class="row"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
   function param(n){ return new URLSearchParams(location.search).get(n); }
 
@@ -208,7 +210,7 @@
 
     // entity + suppliers
     h += '<div class="card"><h2><i class="fa-solid fa-building-columns"></i> Entidade adjudicante</h2>';
-    h += '<div class="party"><div class="nm">'+esc(d.adjudicante||"—")+'</div>'
+    h += '<div class="party"><div class="nm">'+esc(d.adjudicante||"-")+'</div>'
        + (d.adjudicante_nif?'<span class="nif mono">NIF '+esc(d.adjudicante_nif)+'</span>'
           +' <a href="/consulta?q='+encodeURIComponent(d.adjudicante_nif)+'">ver registo</a>':'')
        + '</div></div>';

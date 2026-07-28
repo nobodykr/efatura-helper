@@ -58,6 +58,8 @@
   .mast .mastnav:hover{background:var(--pri);color:#fff}
 </style>
 <meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem faturas.diogoandrade.com; ref fb-lic-63e7b7c353">
+    <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
+    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538"></script>
 </head>
 <body>
 <!-- Fatura Boa (c) 2026 Diogo Andrade. Licenca PolyForm Noncommercial 1.0.0
@@ -348,13 +350,13 @@
         (tc?', <b style="color:#c8102e">'+esc(tc)+' coima(s)</b>':'')+
         ((s.agenda&&s.agenda.n)?'. '+esc(s.agenda.n)+' obrigação(ões) na agenda.':'.')+'</div>';
       ((s.agenda&&s.agenda.proximos)||[]).slice(0,3).forEach(function(p){
-        if(p.desc||p.data) h += '<div class="w" style="margin-left:8px">• '+esc(p.data||"")+' '+esc(p.desc||"")+'</div>';
+        if(p.desc||p.data) h += '<div class="w" style="margin-left:8px">- '+esc(p.data||"")+' '+esc(p.desc||"")+'</div>';
       });
     }
     if (d.patrimonio){
       h += '<div class="kv">Património: <b>'+esc(d.patrimonio.imoveis)+'</b> imóvel(is).</div>';
       (d.patrimonio.lista||[]).slice(0,3).forEach(function(im){
-        h += '<div class="w" style="margin-left:8px">• '+esc(im.artigo||"artigo?")+(im.freguesia?", "+esc(im.freguesia):"")+(im.vpt!=null?" (VPT "+esc(im.vpt)+")":"")+'</div>';
+        h += '<div class="w" style="margin-left:8px">- '+esc(im.artigo||"artigo?")+(im.freguesia?", "+esc(im.freguesia):"")+(im.vpt!=null?" (VPT "+esc(im.vpt)+")":"")+'</div>';
       });
     }
     if (d.irs){
@@ -597,7 +599,7 @@
       var obs = deriveObligations(prof);
       h += '<div class="card"><div style="font-weight:700;font-size:1.05rem;margin-bottom:8px">O que tens de tratar</div>';
       obs.forEach(function(o){
-        h += '<div class="step" style="align-items:baseline"><div class="ic" style="width:18px">•</div><div class="bd">'+
+        h += '<div class="step" style="align-items:baseline"><div class="ic" style="width:18px">-</div><div class="bd">'+
           '<div class="t">'+esc(o.titulo)+(o.prazo&&o.prazo.data?' <span class="pill" style="background:#fff4e0;border-color:var(--amber);color:var(--amber)">'+esc(o.prazo.data)+'</span>':'')+'</div>'+
           '<div class="w">'+esc(o.porque)+(o.prazo&&o.prazo.desc?' - agenda: '+esc(o.prazo.desc):'')+'</div>'+
         '</div></div>';
@@ -721,7 +723,7 @@
                  (dcl.numLiquidacao?' n.º '+esc(dcl.numLiquidacao):'')+', em <a href="https://irs.portaldasfinancas.gov.pt/app/consulta" target="_blank" rel="noopener">Consultar Declarações</a>.</span>'
                : '')+'</div>';
         }
-        h += '<div class="step" style="align-items:baseline"><div class="ic" style="width:18px">•</div><div class="bd">'+
+        h += '<div class="step" style="align-items:baseline"><div class="ic" style="width:18px">-</div><div class="bd">'+
           '<div class="t">IRS '+yy+' <span class="w">(entregue em '+wnd.declaredIn+')</span> '+openPill+'</div>'+
           dclHtml+
           '<div class="w">Prazo para corrigir a teu favor (estimado): <b>'+esc(wnd.recover.deadline)+'</b>'+

@@ -129,6 +129,8 @@
   }
 
 </style>
+    <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
+    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538"></script>
 </head>
 <body>
 
@@ -286,7 +288,7 @@
         + '<strong>' + cp.total.toLocaleString("pt-PT") + '</strong> contratos &middot; '
         + '<strong>' + eur(cp.valor_eur) + '</strong>'
         + (cp.entidades ? ' &middot; ' + cp.entidades + ' entidade' + (cp.entidades>1?'s':'') : '')
-        + (cp.primeiro_ano ? ' &middot; ' + cp.primeiro_ano + '–' + cp.ultimo_ano : '')
+        + (cp.primeiro_ano ? ' &middot; ' + cp.primeiro_ano + '-' + cp.ultimo_ano : '')
         + (cp.ajuste_direto ? ' &middot; <span class="muted">' + cp.ajuste_direto.toLocaleString("pt-PT")
                               + ' por ajuste directo</span>' : '')
         + '</div>';
