@@ -25,13 +25,14 @@ written below.
 ## The problem it solves
 
 IRS deduction ceilings are **per agregado familiar**, but each e-Fatura account only sees its own
-invoices. Measured on real 2026 data:
+invoices. Measured on a real 2026 household, **rounded** - the exact amounts are a second person's
+declared figures and are not ours to publish:
 
 | | despesas gerais |
 |---|---|
-| account A, registered | 8.031,77 EUR |
-| account B, registered | 3.186,84 EUR |
-| **household (AT's own figure)** | **10.389,19 EUR** |
+| account A, registered | ~8.000 EUR |
+| account B, registered | ~3.200 EUR |
+| **household (AT's own figure)** | **~10.400 EUR** |
 
 So a tool looking at one account sees roughly a third of the household's consumption and reports a
 ceiling as having room when it is 14x over. **Undercounting is the dangerous direction** - it makes
