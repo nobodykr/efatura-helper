@@ -35,7 +35,7 @@ const PROFILES = {
       rendasPorAno: { [anoPassado]: { n: 8, valor: 4075 } } } },
     recibos: { status: "done", data: { recibosVerdes: 0, declaracoes: { [anoPassado]: {
       n: 2, substituida: true, tipo: "2. D.PRAZO", situacao: "SALDO NULO EMITIDO", montante: "0,00",
-      numLiquidacao: "2026 500 4986522", liquidacao: { marginal: 44.6, taxaEfetiva: 25.45 } } } } },
+      numLiquidacao: "2026 500 0000000", liquidacao: { marginal: 44.6, taxaEfetiva: 25.45 } } } } },
     irs: { status: "done", data: { liquidacoes: 3, porAno: [{ ano: anoPassado }] } },
     patrimonio: { status: "done", data: { imoveis: 1 } },
   } },

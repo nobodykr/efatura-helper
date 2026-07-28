@@ -388,7 +388,7 @@
         ]
       ],
       "deducao_especifica_catA": 4104.0,
-      "_status": "CORRIGIDO 2026-07-25: reduzida (Lei 33-A/2024). Confirmado vs demonstracao (numLiq 4591807): bracket 6=35,5%, parcela ~3845,50, coletavel 32936,87, benef.municipal 2%, deducoes 442,02 -> reembolso 46,03 EXATO. NOTA: guardar as parcelas OFICIAIS do art.68 anual (nao derivadas) e chavear por regiao."
+      "_status": "CORRIGIDO 2026-07-25: tabela REDUZIDA (Lei 33-A/2024) - o escalao 6 e 35,5%, nao os 37% pre-reducao. Verificado contra uma demonstracao de liquidacao real, que reproduz ao cetimo. NOTA: guardar as parcelas OFICIAIS do art.68 anual (nao derivadas) e chavear por regiao."
     },
     "2023": {
       "continente": [
