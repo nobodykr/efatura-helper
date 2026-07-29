@@ -1110,6 +1110,16 @@ footer a {
   box-shadow: none;
 }
 
+.page-home .site-content a.bm[href*="revolut"] {
+  border-color: #0753b2 !important;
+  background: #0753b2 !important;
+}
+
+.page-home .site-content a.bm[href*="revolut"]:hover {
+  border-color: #053f89 !important;
+  background: #053f89 !important;
+}
+
 .page-home .steps {
   counter-reset: flow;
   gap: 12px;
@@ -1280,7 +1290,7 @@ footer a {
 }
 
 .profile-setup .install-card .btn::before {
-  content: "＋";
+  content: "+";
   font-size: 1.05rem;
 }
 
@@ -1338,6 +1348,101 @@ footer a {
 
 .page-profile #out > .card:first-child {
   border-color: #c8d7ed;
+}
+
+.page-profile .profile-steps-card {
+  display: grid;
+  gap: 12px;
+  padding: 22px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.page-profile .profile-steps-title {
+  display: flex;
+  min-height: 35px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 !important;
+  padding: 0 2px 8px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--navy);
+  grid-column: 1 / -1;
+}
+
+.page-profile .profile-steps-card .step {
+  display: flex;
+  min-width: 0;
+  min-height: 218px;
+  flex-direction: column;
+  gap: 11px;
+  padding: 16px;
+  border: 1px solid #e0e7f0;
+  border-radius: 14px;
+  background: #f9fbfe;
+}
+
+.page-profile .profile-steps-card .step:first-child {
+  border-top: 1px solid #e0e7f0;
+}
+
+.page-profile .profile-steps-card .step.is-done {
+  border-color: #b8dfcf;
+  background: var(--green-soft);
+}
+
+.page-profile .profile-steps-card .step .ic {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  place-items: center;
+  border-radius: 9px;
+  background: #e8eef7;
+}
+
+.page-profile .profile-steps-card .state-icon {
+  display: block;
+  width: 9px;
+  height: 9px;
+  border: 2px solid #7b8ba2;
+  border-radius: 50%;
+}
+
+.page-profile .profile-steps-card .is-done .ic {
+  background: #ccefe1;
+}
+
+.page-profile .profile-steps-card .is-done .state-icon {
+  position: relative;
+  width: 12px;
+  height: 7px;
+  border: 0;
+  border-bottom: 2px solid var(--green);
+  border-left: 2px solid var(--green);
+  border-radius: 0;
+  transform: rotate(-45deg) translateY(-1px);
+}
+
+.page-profile .profile-steps-card .bd {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.page-profile .profile-steps-card .bd > .w:first-of-type {
+  min-height: 47px;
+}
+
+.page-profile .profile-steps-card .btn {
+  width: 100%;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.page-profile .profile-steps-card .btn + .w {
+  margin-top: 10px !important;
+  font-size: .75rem;
+  line-height: 1.45;
 }
 
 .page-profile details.card > summary {
@@ -1620,6 +1725,7 @@ footer a {
   z-index: 2;
   top: 0;
   background: #edf3fb;
+  color: #46566e;
 }
 
 .page-guide .box {
@@ -1642,7 +1748,7 @@ footer a {
   padding: 6px 9px;
   border-radius: 7px;
   background: #edf1f6;
-  color: var(--mute);
+  color: #4e5d73;
   font-size: .73rem;
 }
 
@@ -1820,6 +1926,10 @@ footer a {
 
   .profile-setup {
     grid-template-columns: 1fr;
+  }
+
+  .page-profile .profile-steps-card {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -2054,6 +2164,18 @@ footer a {
   .page-contract .card,
   .page-verify .card {
     padding: 20px;
+  }
+
+  .page-profile .profile-steps-card {
+    grid-template-columns: 1fr;
+  }
+
+  .page-profile .profile-steps-card .step {
+    min-height: 0;
+  }
+
+  .page-profile .profile-steps-card .bd > .w:first-of-type {
+    min-height: 0;
   }
 
   .page-search main > .form {

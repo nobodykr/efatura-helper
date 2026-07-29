@@ -556,10 +556,10 @@
       ? '<div class="banner"><i class="fa-solid fa-check"></i> Guardei os dados de <b>'+esc((PARTITIONS.filter(function(p){return p.id===justAdded;})[0]||{}).label||justAdded)+'</b>, aqui neste navegador.</div>'
       : '';
 
-    var h = '<div class="card"><div style="font-weight:700;font-size:1.05rem;margin-bottom:4px">Passos ('+done.length+'/'+PARTITIONS.length+')</div>';
+    var h = '<div class="card profile-steps-card"><div class="profile-steps-title" style="font-weight:700;font-size:1.05rem;margin-bottom:4px">Passos ('+done.length+'/'+PARTITIONS.length+')</div>';
     PARTITIONS.forEach(function(p){
       var ok = store.partitions[p.id] && store.partitions[p.id].status==="done";
-      h += '<div class="step"><div class="ic">'+(ok?'✅':'⬜')+'</div><div class="bd">'+
+      h += '<div class="step'+(ok?' is-done':'')+'"><div class="ic" aria-hidden="true"><span class="state-icon"></span></div><div class="bd">'+
         '<div class="t">'+esc(p.label)+'</div><div class="w">'+esc(p.why)+'</div>'+
         (ok ? '<a class="btn ghost" href="'+p.open+'">Reler (abrir página)</a>'
             : '<a class="btn" href="'+p.open+'">Abrir e ler esta página</a> '+
