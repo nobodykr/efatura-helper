@@ -1,3 +1,15 @@
+# Defense-in-depth headers on every response. CORS is deliberately NOT set here so the
+# per-resource Access-Control-Allow-Origin below (required for the SRI-pinned, cross-origin
+# tool.js install + its cross-origin JSON fetches) is not disturbed. Full script-src CSP is
+# rolled out separately in report-only first; only frame-ancestors is enforced here (safe).
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Frame-Options: DENY
+  Content-Security-Policy: frame-ancestors 'none'
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
 /tool.js
   Content-Type: application/javascript; charset=utf-8
   Access-Control-Allow-Origin: *

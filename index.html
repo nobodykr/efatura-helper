@@ -677,7 +677,7 @@
     O mesmo para sugestões, dúvidas, ou se simplesmente não perceberes alguma coisa - se não se percebe,
     é problema meu, não teu.
   </p>
-  <form id="fb" class="form" novalidate>
+  <form id="fb" class="form" method="post" action="/api/feedback" novalidate>
     <div class="field">
       <label for="fb-msg">O que correu mal, ou o que sugeres</label>
       <textarea id="fb-msg" name="message" rows="5" maxlength="4000" required
