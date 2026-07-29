@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
 <meta charset="utf-8">
@@ -131,8 +131,10 @@
 </style>
     <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
     <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538"></script>
+<link rel="stylesheet" href="/assets/site.css?v=2">
 </head>
-<body>
+<body class="page-search">
+<a class="skip-link" href="#conteudo">Saltar para o conteúdo</a>
 
 
 <div class="mast">
@@ -152,8 +154,11 @@
       </svg>
     </a>
     <div class="nm">Fatura Boa<span>Classificar faturas pendentes do e-Fatura, por setor, para o IRS</span></div>
-    <a class="mastnav" href="/deducoes">Deduções</a>
-    <a class="mastnav" href="/consulta" aria-current="page">Consultar NIF</a>
+    <nav class="nav" aria-label="Navegação principal">
+      <a class="mastnav" href="/perfil">A minha situação</a>
+      <a class="mastnav" href="/deducoes">Deduções</a>
+      <a class="mastnav" href="/consulta" aria-current="page">Consultar NIF</a>
+    </nav>
   </div>
 </div>
 <header>
@@ -165,16 +170,16 @@
   </div>
 </header>
 
-<main class="wrap">
+<main class="wrap" id="conteudo">
 
   <form class="form" id="f" autocomplete="off">
-    <input id="q" name="q" inputmode="search" placeholder="NIF (9 digitos) ou nome da empresa"
-           aria-label="NIF ou nome da empresa">
+    <input id="q" name="q" type="search" inputmode="search" placeholder="NIF (9 digitos) ou nome da empresa"
+           aria-label="NIF ou nome da empresa" aria-describedby="search-hint">
     <button type="submit"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Consultar</button>
   </form>
-  <p class="hint">Exemplos: <code>500960046</code> &middot; <code>farmacia</code></p>
+  <p class="hint" id="search-hint">Exemplos: <code>500960046</code> &middot; <code>farmacia</code></p>
 
-  <div id="out"></div>
+  <div id="out" aria-live="polite"></div>
 
   <!-- Static copy, deliberately. Everything above the fold here is rendered by JS, so without
        this a crawler saw about 160 words and had nothing to rank. It also answers the question

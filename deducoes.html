@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
 <meta charset="utf-8">
@@ -97,8 +97,10 @@
 </style>
     <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
     <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538"></script>
+<link rel="stylesheet" href="/assets/site.css?v=2">
 </head>
-<body>
+<body class="page-guide">
+<a class="skip-link" href="#conteudo">Saltar para o conteúdo</a>
 
 
 <div class="mast">
@@ -118,8 +120,11 @@
       </svg>
     </a>
     <div class="nm">Fatura Boa<span>Classificar faturas pendentes do e-Fatura, por setor, para o IRS</span></div>
-    <a class="mastnav" href="/deducoes" aria-current="page">Deduções</a>
-    <a class="mastnav" href="/consulta">Consultar NIF</a>
+    <nav class="nav" aria-label="Navegação principal">
+      <a class="mastnav" href="/perfil">A minha situação</a>
+      <a class="mastnav" href="/deducoes" aria-current="page">Deduções</a>
+      <a class="mastnav" href="/consulta">Consultar NIF</a>
+    </nav>
   </div>
 </div>
 <header>
@@ -131,9 +136,10 @@
   </div>
 </header>
 
-<main class="wrap">
+<main class="wrap" id="conteudo">
 
   <h2>Os setores, e quanto vale cada um</h2>
+  <section class="table-shell" aria-label="Tabela de deduções por setor" tabindex="0">
   <table>
     <thead><tr><th>Cod.</th><th>Setor</th><th>Beneficio</th><th>Base legal</th></tr></thead>
     <tbody>
@@ -155,6 +161,7 @@
       <tr><td class="c">C99</td><td>Despesas gerais familiares</td><td>35% ate 250 &euro;</td><td>art. 78.&ordm;-B</td></tr>
     </tbody>
   </table>
+  </section>
   <p class="updated">Taxas e citac&otilde;es conferidas artigo a artigo contra o texto <b>em vigor</b> do CIRS nas p&aacute;ginas
   dedicadas do Di&aacute;rio da Rep&uacute;blica (&uacute;ltima altera&ccedil;&atilde;o: Lei n.&ordm; 73-A/2025, OE-2026, em vigor desde
   2026-01-01). Conferido a 28 de julho de 2026.</p>

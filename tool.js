@@ -45,7 +45,7 @@
   var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.07.28d";
+  var FB_VERSION = "2026.07.29a";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -69,7 +69,7 @@
       if (x.style === "coffee") return '<a href="' + href + '" target="_blank" rel="noopener sponsored nofollow" style="display:inline-flex;align-items:center;gap:4px;color:#2B363C;background:#ffdd00;border-radius:2px;padding:2px 7px;font-weight:700;text-decoration:none">\u2615 ' + label + '</a>';
       return '<a href="' + href + '" target="_blank" rel="noopener sponsored nofollow" style="color:#034ad8;font-weight:600;text-decoration:none">' + label + '</a>';
     }).join("");
-    return '<div style="margin:14px 0 2px;padding:7px 9px;background:#f4f6f9;border:1px solid #d5dae1;border-left:3px solid #034ad8;border-radius:4px;font-size:11px;color:#2B363C;display:flex;flex-wrap:wrap;align-items:center;gap:8px">' +
+    return '<div class="efh-offers" style="margin:14px 0 2px;padding:7px 9px;background:#f4f6f9;border:1px solid #d5dae1;border-left:3px solid #034ad8;border-radius:4px;font-size:11px;color:#2B363C;display:flex;flex-wrap:wrap;align-items:center;gap:8px">' +
       items + '<span style="color:#6b7780">' + esc(o.message || "") + '</span></div>';
   }
 
@@ -450,7 +450,7 @@
            '<p style="margin:8px 0 0;font-size:12px;color:#6b7780">Podes classificar at\u00e9 <b>25 de fevereiro de ' +
            (year + 1) + '</b>. Abre <b>Detalhe</b> para escolher fatura a fatura.</p>';
     }
-    box.innerHTML = h;
+    box.innerHTML = '<div class="efh-summary-card">' + h + '</div>';
   }
 
   /* Learning loop. Fires only when the user ticked the share box in the consent gate, and sends
@@ -490,18 +490,124 @@
     d.setAttribute("role", "dialog");
     d.setAttribute("aria-label", "Fatura Boa");
     d.setAttribute("aria-modal", "false");
-    d.style.cssText = "position:fixed;top:12px;right:12px;width:min(680px,95vw);max-height:90vh;overflow:auto;" +
-      "background:#fff;border:1px solid #021c51;border-radius:8px;font-family:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 8px 40px rgba(0,0,0,.35);" +
-      "z-index:2147483647;font:13px/1.4 system-ui,sans-serif;color:#111";
+    d.style.cssText = "position:fixed;top:16px;right:16px;width:min(760px,calc(100vw - 32px));" +
+      "max-height:calc(100vh - 32px);overflow:auto;overscroll-behavior:contain;background:#f5f7fb;" +
+      "border:1px solid #bac7d9;border-radius:20px;box-shadow:0 28px 80px rgba(4,19,42,.3);" +
+      "z-index:2147483647;font:13px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#17233a";
     d.innerHTML = html; document.body.appendChild(d); return d;
   }
-  // gov-style focus ring: magenta so it can never blend into AT's own blues
+  // Self-contained interface layer. Everything is scoped to the panel so the host portal keeps
+  // its own visual language; stronger selectors neutralise the portal's global button/table CSS.
   if(!document.getElementById('efh-focus-style')){
     var fs=document.createElement('style'); fs.id='efh-focus-style';
-    fs.textContent='#efh-panel a:focus-visible,#efh-panel button:focus-visible,'+
-      '#efh-panel select:focus-visible,#efh-panel input:focus-visible,#efh-panel summary:focus-visible'+
-      '{outline:3px solid #f408fc;outline-offset:2px;border-radius:2px}'+
-      '#efh-panel .efh-num{font-family:\'IBM Plex Mono\',ui-monospace,monospace;font-variant-numeric:tabular-nums}';
+    fs.textContent = [
+      "#efh-panel{--efh-brand:#2563eb;--efh-brand-strong:#174cc7;--efh-brand-soft:#eaf1ff;",
+      "--efh-navy:#071a33;--efh-ink:#17233a;--efh-text:#3c4b63;--efh-muted:#68778d;",
+      "--efh-line:#d9e1ed;--efh-surface:#fff;--efh-green:#087a55;--efh-green-soft:#e9f8f1;",
+      "--efh-amber:#8b5b05;--efh-amber-soft:#fff5dc;--efh-red:#b7223a;--efh-red-soft:#fff0f2;",
+      "isolation:isolate;scrollbar-color:#a8b6c9 transparent;scrollbar-width:thin}",
+      "#efh-panel,#efh-panel *{box-sizing:border-box}",
+      "#efh-panel *::selection{background:#bed3ff;color:#071a33}",
+      "#efh-panel::-webkit-scrollbar,#efh-panel *::-webkit-scrollbar{width:10px;height:10px}",
+      "#efh-panel::-webkit-scrollbar-thumb,#efh-panel *::-webkit-scrollbar-thumb{background:#a8b6c9;border:3px solid transparent;border-radius:999px;background-clip:padding-box}",
+      "#efh-panel a:focus-visible,#efh-panel button:focus-visible,#efh-panel select:focus-visible,",
+      "#efh-panel input:focus-visible,#efh-panel summary:focus-visible{outline:3px solid #ffb000!important;outline-offset:2px!important;border-radius:7px}",
+      "#efh-panel .efh-num,#efh-panel code,#efh-panel .efh-mono{font-family:'IBM Plex Mono','SFMono-Regular',Consolas,ui-monospace,monospace;font-variant-numeric:tabular-nums}",
+      "#efh-panel .efh-shellbar{position:sticky;z-index:30;top:0;display:flex;min-height:64px;align-items:center;gap:12px;padding:10px 13px;",
+      "border-bottom:1px solid rgba(255,255,255,.12);background:linear-gradient(135deg,#071a33,#123b76);color:#fff}",
+      "#efh-panel .efh-brand{display:flex;min-width:0;align-items:center;gap:10px;color:#fff!important;text-decoration:none!important}",
+      "#efh-panel .efh-brand:hover{color:#fff!important}",
+      "#efh-panel .efh-brandmark{display:grid;width:38px;height:38px;flex:0 0 38px;place-items:center;border-radius:12px;",
+      "background:linear-gradient(145deg,#5b8cff,#2563eb);box-shadow:0 8px 18px rgba(0,0,0,.22);font-size:11px;font-weight:800;letter-spacing:-.04em}",
+      "#efh-panel .efh-brandcopy{display:block;min-width:0;line-height:1.2}",
+      "#efh-panel .efh-brandcopy b{display:block;color:#fff;font-size:14px;letter-spacing:-.01em}",
+      "#efh-panel .efh-brandcopy small{display:block;margin-top:3px;color:#bfcde1;font-size:10px;font-weight:500}",
+      "#efh-panel .efh-meta{margin-left:auto;color:#c5d4e9;font-size:10px;white-space:nowrap}",
+      "#efh-panel .efh-meta a{color:#d9e7ff!important;text-decoration:underline;text-underline-offset:2px}",
+      "#efh-panel .efh-close{display:grid!important;width:36px!important;height:36px!important;min-height:36px!important;flex:0 0 36px!important;",
+      "place-items:center!important;padding:0!important;border:1px solid rgba(255,255,255,.2)!important;border-radius:10px!important;",
+      "background:rgba(255,255,255,.08)!important;color:#fff!important;box-shadow:none!important;font-size:18px!important;line-height:1!important}",
+      "#efh-panel .efh-close:hover{background:rgba(255,255,255,.16)!important}",
+      "#efh-panel .efh-safety{display:grid;grid-template-columns:24px minmax(0,1fr);gap:9px;align-items:start;padding:10px 14px;",
+      "border-bottom:1px solid #ecd79f;background:var(--efh-amber-soft);color:#62440d;font-size:11px;line-height:1.45}",
+      "#efh-panel .efh-safety::before{display:grid;width:21px;height:21px;place-items:center;border:1px solid #d7ad50;border-radius:7px;",
+      "background:#fff9e9;color:#80530a;content:'✓';font-size:11px;font-weight:800}",
+      "#efh-panel .efh-safety b{color:#553a09}",
+      "#efh-panel #efh-body{min-height:120px;padding:20px!important;background:#f5f7fb;color:var(--efh-ink)}",
+      "#efh-panel #efh-body>p:first-child{margin-top:0}",
+      "#efh-panel p{color:var(--efh-text);line-height:1.58}",
+      "#efh-panel a{color:var(--efh-brand-strong);text-underline-offset:2px}",
+      "#efh-panel h2,#efh-panel h3{margin:0 0 8px;color:var(--efh-navy);letter-spacing:-.02em;line-height:1.2}",
+      "#efh-panel .efh-consent-head{padding:4px 2px 8px}",
+      "#efh-panel .efh-consent-kicker{display:block;margin-bottom:7px;color:var(--efh-brand);font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}",
+      "#efh-panel .efh-consent-head h2{font-size:20px}",
+      "#efh-panel .efh-checklist{display:grid;gap:7px;margin:14px 0!important;padding:0!important;list-style:none!important}",
+      "#efh-panel .efh-checklist li{position:relative;margin:0!important;padding:9px 11px 9px 34px;border:1px solid #e0e6ef;border-radius:10px;background:#fff;color:var(--efh-text)}",
+      "#efh-panel .efh-checklist li::before{position:absolute;top:9px;left:10px;display:grid;width:16px;height:16px;place-items:center;border-radius:50%;",
+      "background:var(--efh-green-soft);color:var(--efh-green);content:'✓';font-size:9px;font-weight:900}",
+      "#efh-panel .efh-consent-option{display:grid!important;grid-template-columns:18px minmax(0,1fr);gap:9px;align-items:start;",
+      "margin:14px 0!important;padding:12px!important;border:1px solid #d8e1ed!important;border-radius:12px!important;",
+      "background:#fff!important;color:var(--efh-text)!important;font-size:11px!important;line-height:1.5!important;cursor:pointer}",
+      "#efh-panel input[type=checkbox]{width:17px;height:17px;margin:1px 0 0;accent-color:var(--efh-brand);cursor:pointer}",
+      "#efh-panel input[type=text],#efh-panel input[type=number],#efh-panel select{min-height:38px;padding:7px 9px;border:1px solid #bdc9da!important;",
+      "border-radius:9px!important;background:#fff!important;color:var(--efh-ink)!important;font:inherit!important}",
+      "#efh-panel input[type=text]:hover,#efh-panel input[type=number]:hover,#efh-panel select:hover{border-color:#8fa4bf!important}",
+      "#efh-panel button{min-height:38px;padding:8px 13px;border:1px solid #bdc9da!important;border-radius:10px!important;",
+      "background:#fff!important;color:var(--efh-brand-strong)!important;box-shadow:none!important;font:600 12px/1.2 system-ui,-apple-system,Segoe UI,sans-serif!important;cursor:pointer}",
+      "#efh-panel button:hover{border-color:var(--efh-brand)!important;background:var(--efh-brand-soft)!important}",
+      "#efh-panel button:disabled{cursor:not-allowed;opacity:.5}",
+      "#efh-panel #efh-go,#efh-panel #efh-export,#efh-panel #efh-apply,#efh-panel #fb-prof-go,#efh-panel #fb-read{border-color:var(--efh-brand)!important;background:var(--efh-brand)!important;",
+      "color:#fff!important;box-shadow:0 8px 18px rgba(37,99,235,.2)!important;font-weight:700!important}",
+      "#efh-panel #efh-go:hover,#efh-panel #efh-export:hover,#efh-panel #efh-apply:hover,#efh-panel #fb-prof-go:hover,#efh-panel #fb-read:hover{border-color:var(--efh-brand-strong)!important;background:var(--efh-brand-strong)!important}",
+      "#efh-panel #efh-apply{border-color:var(--efh-green)!important;background:var(--efh-green)!important}",
+      "#efh-panel .efh-tabs{display:flex!important;gap:5px!important;margin:0 0 14px!important;padding:4px!important;border:0!important;border-radius:12px;background:#e9eef6}",
+      "#efh-panel [role=tab]{min-height:36px;flex:1;border:0!important;border-radius:9px!important;background:transparent!important;color:#526177!important}",
+      "#efh-panel [role=tab][aria-selected=true]{background:#fff!important;color:var(--efh-brand-strong)!important;box-shadow:0 2px 7px rgba(13,31,57,.1)!important}",
+      "#efh-panel .efh-summary-card{padding:18px;border:1px solid var(--efh-line);border-radius:15px;background:#fff;box-shadow:0 7px 22px rgba(13,31,57,.06)}",
+      "#efh-panel .efh-summary-card .efh-num{margin:4px 0;color:var(--efh-green)!important;font-size:38px!important;letter-spacing:-.05em}",
+      "#efh-panel .efh-offers{margin-top:12px!important;padding:10px 12px!important;border:1px solid var(--efh-line)!important;border-left:3px solid var(--efh-brand)!important;border-radius:10px!important;background:#fff!important}",
+      "#efh-panel .efh-settings{padding:13px!important;border:1px solid var(--efh-line)!important;border-radius:12px!important;background:#fff!important}",
+      "#efh-panel .efh-notice-warning{padding:10px 12px!important;border:1px solid #ecd79f!important;border-left:4px solid #c78a14!important;",
+      "border-radius:9px!important;background:var(--efh-amber-soft)!important;color:#62440d!important}",
+      "#efh-panel details{overflow:hidden;border:1px solid var(--efh-line)!important;border-radius:11px!important;background:#fff!important}",
+      "#efh-panel summary{min-height:42px;padding:10px 12px!important;color:var(--efh-ink);font-weight:650;cursor:pointer}",
+      "#efh-panel .efh-meter{margin:9px 0!important}#efh-panel .efh-meter-label{gap:12px!important;color:var(--efh-text)}",
+      "#efh-panel .efh-meter-label>span:last-child{text-align:right;font-variant-numeric:tabular-nums}",
+      "#efh-panel [role=progressbar]{height:9px!important;border:1px solid #dce3ed;border-radius:999px!important;background:#edf1f6!important}",
+      "#efh-panel .efh-table-wrap{max-height:min(52vh,480px)!important;overflow:auto!important;margin-top:13px;border:1px solid var(--efh-line);border-radius:12px;background:#fff}",
+      "#efh-panel table{width:100%!important;min-width:700px;border-collapse:separate!important;border-spacing:0!important;background:#fff;color:var(--efh-ink);font-size:11px}",
+      "#efh-panel th,#efh-panel td{padding:9px 8px!important;border:0!important;border-bottom:1px solid #e6ebf2!important;vertical-align:middle!important}",
+      "#efh-panel thead th{position:sticky;z-index:5;top:0;background:#edf3fb!important;color:#5e6d83!important;font-size:9px!important;",
+      "font-weight:800!important;letter-spacing:.045em;text-align:left!important;text-transform:uppercase}",
+      "#efh-panel tbody tr:hover{background:#f7f9fd}",
+      "#efh-panel tbody tr:has(.efh-ck:checked){background:#fbfdff}",
+      "#efh-panel .efh-pick{min-height:27px!important;padding:3px 7px!important;border-radius:7px!important;font-size:10px!important}",
+      "#efh-panel .efh-sec{min-height:34px;max-width:180px!important;font-size:10px!important}",
+      "#efh-panel .efh-actions{display:flex!important;flex-wrap:wrap!important;gap:8px!important;align-items:center!important;padding-top:2px}",
+      "#efh-panel #efh-status{display:block;min-height:18px;color:var(--efh-muted)!important;font-size:11px}",
+      "#efh-panel #efh-hh{color:var(--efh-muted)!important;font-size:11px}",
+      "#efh-panel #efh-bars,#efh-panel #efh-opt{margin-top:10px!important}",
+      "#efh-panel #efh-pane-r>div[style*='background:#f4f6f9']{border-color:var(--efh-line)!important;border-radius:11px!important;background:#fff!important}",
+      "#efh-panel .efh-profile-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;color:var(--efh-navy);font-size:17px!important;letter-spacing:-.02em}",
+      "#efh-panel .efh-profile-list{display:grid;gap:7px}",
+      "#efh-panel .efh-profile-step{align-items:flex-start!important;padding:11px!important;border:1px solid #e1e7f0!important;border-radius:11px;background:#fff}",
+      "#efh-panel .efh-profile-step.is-done{border-color:#bce0d1!important;background:var(--efh-green-soft)}",
+      "#efh-panel .efh-profile-step.is-current{border-color:#b7cafa!important;box-shadow:0 0 0 2px rgba(37,99,235,.08)}",
+      "#efh-panel .efh-profile-check{display:grid;width:24px;height:24px;flex:0 0 24px;place-items:center;border-radius:8px;background:#edf1f6;font-size:12px!important}",
+      "#efh-panel .efh-profile-step.is-done .efh-profile-check{background:#ccefe1}",
+      "#efh-panel .efh-save-profile{display:inline-flex!important;min-height:38px;align-items:center;margin-top:8px;padding:8px 13px!important;border-radius:10px!important;",
+      "background:var(--efh-green)!important;color:#fff!important;font-weight:700!important;text-decoration:none!important;box-shadow:0 8px 18px rgba(8,122,85,.16)}",
+      "#efh-panel .efh-profile-overlay{padding-top:14px!important;border-top:1px solid var(--efh-line)!important}",
+      "#efh-panel .efh-profile-summary{padding:15px;border:1px solid var(--efh-line);border-radius:12px;background:#fff}",
+      "#efh-panel .efh-profile-reset{padding-top:10px;border-top:1px solid var(--efh-line);text-align:right}",
+      "#efh-panel .efh-read-success{padding:16px;border:1px solid #add8c5;border-radius:12px;background:var(--efh-green-soft);color:var(--efh-green)}",
+      "#efh-panel .efh-read-error{padding:15px!important;border-color:#ebb7c0!important;border-radius:12px!important;background:var(--efh-red-soft)!important;color:#84192c!important}",
+      "@media(max-width:640px){#efh-panel{top:8px!important;right:8px!important;width:calc(100vw - 16px)!important;max-height:calc(100vh - 16px)!important;border-radius:16px!important}",
+      "#efh-panel .efh-shellbar{min-height:58px;padding:9px 10px}#efh-panel .efh-brandmark{width:34px;height:34px;flex-basis:34px;border-radius:10px}",
+      "#efh-panel .efh-brandcopy small{display:none}#efh-panel .efh-meta{font-size:9px}#efh-panel #efh-body{padding:14px!important}",
+      "#efh-panel .efh-summary-card{padding:14px}#efh-panel .efh-actions>button{flex:1 1 130px}#efh-panel .efh-actions #efh-status{flex-basis:100%}}",
+      "@media(prefers-reduced-motion:reduce){#efh-panel *,#efh-panel *::before,#efh-panel *::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}"
+    ].join("");
     document.head.appendChild(fs);
   }
   // Mobile browsers cannot run a bookmarklet inside a page, so this is desktop-only. Say it in
@@ -510,12 +616,13 @@
     alert("A Fatura Boa s\u00f3 funciona no computador. Os navegadores de telem\u00f3vel n\u00e3o deixam correr "
         + "favoritos dentro da p\u00e1gina do e-Fatura. Abre isto num computador.");
   }
-  panel('<div style="background:#021c51;color:#fff;padding:10px 14px;font-weight:600;border-radius:8px 8px 0 0">' +
-    '<a href="https://faturas.diogoandrade.com" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.45)" title="Abrir faturas.diogoandrade.com">Fatura Boa</a> ' +
-    '<span style="font-weight:400;font-size:11px;opacity:.85">v' + FB_VERSION + ' \u00b7 <a href="https://faturas.diogoandrade.com/verificar" target="_blank" rel="noopener" style="color:#cfe0ff">verificar</a></span>' +
-    '<button type="button" aria-label="Fechar" style="float:right;cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
-    '<div style="background:#fdecec;border-bottom:2px solid #c8102e;padding:8px 12px;font-size:12px;line-height:1.45;color:#5a0000">'+'<b>Esta ferramenta nunca te pede a password.</b> Corre na sess\u00e3o que j\u00e1 abriste, s\u00f3 nesta p\u00e1gina. '+'Se algum site te pedir as credenciais das Finan\u00e7as, \u00e9 burla.</div>' +
-    '<div id="efh-body" style="padding:14px">A carregar...</div>');
+  panel('<div class="efh-shellbar">' +
+    '<a class="efh-brand" href="https://faturas.diogoandrade.com" target="_blank" rel="noopener" title="Abrir faturas.diogoandrade.com">' +
+    '<span class="efh-brandmark" aria-hidden="true">FB</span><span class="efh-brandcopy"><b>Fatura Boa</b><small>Assistente fiscal local</small></span></a>' +
+    '<span class="efh-meta">v' + FB_VERSION + ' \u00b7 <a href="https://faturas.diogoandrade.com/verificar" target="_blank" rel="noopener">verificar</a></span>' +
+    '<button type="button" class="efh-close" aria-label="Fechar" onclick="document.getElementById(\'efh-panel\').remove()">\u00d7</button></div>' +
+    '<div class="efh-safety"><span><b>Esta ferramenta nunca te pede a password.</b> Corre na sess\u00e3o que j\u00e1 abriste, s\u00f3 nesta p\u00e1gina. Se algum site te pedir as credenciais das Finan\u00e7as, \u00e9 burla.</span></div>' +
+    '<div id="efh-body">A carregar...</div>');
 
   /* CONSENT GATE. The panel does not touch the account until the user says yes. Two separate
    * things, and they are deliberately not bundled: agreeing to READ (local, required to do
@@ -573,20 +680,21 @@
 
   function gate() {
     document.getElementById("efh-body").innerHTML =
-      '<p style="margin:0 0 10px">Isto l\u00ea as tuas faturas de <b>' + year + '</b> directamente do e-Fatura, ' +
+      '<div class="efh-consent-head"><span class="efh-consent-kicker">Antes de come\u00e7ar</span>' +
+      '<h2>V\u00ea as tuas faturas de ' + year + '</h2>' +
+      '<p style="margin:0 0 10px">Isto l\u00ea as tuas faturas directamente do e-Fatura, ' +
       'na sess\u00e3o que j\u00e1 tens aberta, e faz as contas <b>no teu navegador</b>.</p>' +
-      '<ul style="margin:0 0 12px 18px;padding:0;line-height:1.5">' +
+      '</div><ul class="efh-checklist">' +
       '<li>N\u00e3o te pede, nem v\u00ea, a tua password.</li>' +
       '<li>As tuas faturas <b>n\u00e3o s\u00e3o enviadas para lado nenhum</b>.</li>' +
       '<li>A classifica\u00e7\u00e3o \u00e9 uma <b>declara\u00e7\u00e3o tua \u00e0 AT</b> - ser aceite n\u00e3o \u00e9 o mesmo que estar certo.</li>' +
       '</ul>' +
-      '<label style="display:block;background:#f4f6f9;border:1px solid #d5dae1;border-radius:6px;padding:9px;margin-bottom:12px;font-size:12px;line-height:1.45;cursor:pointer">' +
-      '<input type="checkbox" id="efh-share" style="margin-right:6px"> ' +
+      '<label class="efh-consent-option">' +
+      '<input type="checkbox" id="efh-share"> <span>' +
       'Opcional: partilhar <b>o NIF do comerciante e o setor escolhido</b> para melhorar as sugest\u00f5es. ' +
-      'Sem valores, sem datas, sem o teu NIF. Podes deixar desligado.' +
+      'Sem valores, sem datas, sem o teu NIF. Podes deixar desligado.</span>' +
       '</label>' +
-      '<button type="button" id="efh-go" style="cursor:pointer;background:#034ad8;color:#fff;border:0;' +
-      'border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">Concordo, ver resultado</button>';
+      '<button type="button" id="efh-go">Concordo, ver resultado</button>';
     document.getElementById("efh-go").onclick = function () {
       saveConsent(document.getElementById("efh-share").checked);
       document.getElementById("efh-body").innerHTML = "A ler as tuas faturas...";
@@ -1405,7 +1513,7 @@
   }
 
   function profOverlay(prof) {
-    var h = '<div style="font-size:14px;font-weight:700;margin:0 0 6px">Resumo da situa\u00e7\u00e3o</div>';
+    var h = '<div class="efh-profile-summary"><div style="font-size:14px;font-weight:700;margin:0 0 6px">Resumo da situa\u00e7\u00e3o</div>';
     if (prof.categorias.length) {
       h += '<div style="margin:0 0 8px">';
       prof.categorias.forEach(function (c) {
@@ -1465,20 +1573,21 @@
            (d.ss.estado ? ', situa\u00e7\u00e3o <b>' + esc(d.ss.estado) + '</b>' : '') +
            (d.ss.pagamentosCorrentes != null ? '. ' + esc(d.ss.pagamentosCorrentes) + ' pagamento(s) corrente(s)' : '') + '.</div>';
     }
-    return h;
+    return h + '</div>';
   }
 
   function profConsentGate() {
     document.getElementById("efh-body").innerHTML =
-      '<p style="margin:0 0 10px">Isto carrega a <b>tua situa\u00e7\u00e3o fiscal</b> a partir dos documentos ' +
+      '<div class="efh-consent-head"><span class="efh-consent-kicker">Vis\u00e3o fiscal</span>' +
+      '<h2>Carrega a tua situa\u00e7\u00e3o</h2>' +
+      '<p style="margin:0 0 10px">Isto carrega a partir dos documentos ' +
       'oficiais das Finan\u00e7as, na sess\u00e3o que j\u00e1 tens aberta. L\u00eas uma p\u00e1gina de cada vez.</p>' +
-      '<ul style="margin:0 0 12px 18px;padding:0;line-height:1.5">' +
+      '</div><ul class="efh-checklist">' +
       '<li>N\u00e3o te pede, nem v\u00ea, a password.</li>' +
       '<li>Os dados <b>ficam s\u00f3 neste navegador</b> - nada \u00e9 enviado.</li>' +
       '<li>S\u00f3 leitura: nada \u00e9 submetido \u00e0s Finan\u00e7as.</li>' +
       '</ul>' +
-      '<button type="button" id="fb-prof-go" style="cursor:pointer;background:#034ad8;color:#fff;border:0;' +
-      'border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">Concordo, carregar</button>';
+      '<button type="button" id="fb-prof-go">Concordo, carregar</button>';
     document.getElementById("fb-prof-go").onclick = function () {
       try { localStorage.setItem(PROF_CONSENT, JSON.stringify({ ok: true, ts: Date.now() })); } catch (e) {}
       var p = profLoad(); if (!p.consentedAt) { p.consentedAt = new Date().toISOString(); profSave(p); }
@@ -1510,7 +1619,7 @@
              : (res.data.inscrito ? "inscrito na Seg. Social"
              : (res.data.declaracoes != null ? ("atividade " + (res.data.cessada === true ? "cessada" : res.data.cessada === false ? "aberta" : "?")) : "lido"))))))));
       document.getElementById("efh-body").innerHTML =
-        '<div style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
+        '<div class="efh-read-success" style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
         '.<br>A abrir a tua situa\u00e7\u00e3o...</div>';
       setTimeout(function () { location.href = handoffUrl(cur.id, res.data, _shapes); }, 700);
     }).catch(function (e) {
@@ -1520,7 +1629,7 @@
       profSave(s);
       // Loud, on-screen failure - no console needed. Say exactly what went wrong and what to do.
       document.getElementById("efh-body").innerHTML =
-        '<div style="background:#fdecec;border:1px solid #c8102e;border-radius:6px;padding:12px;font-size:13px;color:#5a0000">' +
+        '<div class="efh-read-error" style="background:#fdecec;border:1px solid #c8102e;border-radius:6px;padding:12px;font-size:13px;color:#5a0000">' +
         '<b>N\u00e3o consegui ler ' + esc(cur.label) + '.</b><br>Motivo: ' + esc(msg) + '.<br><br>' +
         'Confirma que est\u00e1s <b>autenticado nesta mesma p\u00e1gina</b> (' + esc(location.host) + ') e tenta de novo. ' +
         'Se mudaste de conta, faz de novo o login aqui.</div>' +
@@ -1534,13 +1643,13 @@
     var store = profLoad(), cur = currentPartition();
     var done = PARTITIONS.filter(function (p) { return store.partitions[p.id] && store.partitions[p.id].status === "done"; });
 
-    var h = '<div style="font-size:15px;font-weight:700;margin:0 0 8px">A tua situa\u00e7\u00e3o fiscal ' +
+    var h = '<div class="efh-profile-head" style="font-size:15px;font-weight:700;margin:0 0 8px">A tua situa\u00e7\u00e3o fiscal ' +
             '<span style="font-weight:400;color:#555">(' + done.length + '/' + PARTITIONS.length + ')</span></div>' +
-            '<div style="margin:0 0 12px">';
+            '<div class="efh-profile-list" style="margin:0 0 12px">';
     PARTITIONS.forEach(function (p) {
       var st = store.partitions[p.id], ok = st && st.status === "done", here = cur && cur.id === p.id;
-      h += '<div style="display:flex;gap:8px;align-items:baseline;padding:6px 0;border-top:1px solid #eef">' +
-        '<span style="font-size:14px">' + (ok ? '\u2705' : '\u2b1c') + '</span>' +
+      h += '<div class="efh-profile-step' + (ok ? ' is-done' : '') + (here ? ' is-current' : '') + '" style="display:flex;gap:8px;align-items:baseline;padding:6px 0;border-top:1px solid #eef">' +
+        '<span class="efh-profile-check" style="font-size:14px">' + (ok ? '\u2705' : '\u2b1c') + '</span>' +
         '<div style="flex:1"><div style="font-weight:600">' + esc(p.label) +
           (here ? ' <span style="color:#034ad8;font-size:11px">(est\u00e1s aqui)</span>' : '') + '</div>' +
           '<div style="color:#666;font-size:12px">' + esc(p.why) + '</div>' +
@@ -1561,17 +1670,17 @@
       // so the profile assembles across origins. This is the only way to combine partitions.
       if (isDone)
         h += ' <a href="' + handoffUrl(cur.id, store.partitions[cur.id].data, store.partitions[cur.id].shape) + '" ' +
-          'style="display:inline-block;cursor:pointer;background:#128a3a;color:#fff;text-decoration:none;' +
+          'class="efh-save-profile" style="display:inline-block;cursor:pointer;background:#128a3a;color:#fff;text-decoration:none;' +
           'border-radius:6px;padding:9px 16px;font-weight:600">Guardar a minha situa\u00e7\u00e3o \u2192</a>';
     } else {
       h += '<div style="color:#666;font-size:12px">Esta p\u00e1gina n\u00e3o \u00e9 uma das que lemos. Abre uma da lista acima.</div>';
     }
 
     if (done.length)
-      h += '<div style="margin-top:14px;border-top:2px solid #021c51;padding-top:10px">' + profOverlay(assembleProfile(store)) + '</div>';
+      h += '<div class="efh-profile-overlay" style="margin-top:14px;border-top:2px solid #021c51;padding-top:10px">' + profOverlay(assembleProfile(store)) + '</div>';
     if (done.length === PARTITIONS.length)
       h += '<div style="margin-top:8px;color:#128a3a;font-weight:600">Situa\u00e7\u00e3o carregada. Fica guardada neste navegador.</div>';
-    h += '<div style="margin-top:12px"><a href="#" id="fb-reset" style="font-size:11px;color:#888">Apagar a situa\u00e7\u00e3o deste navegador</a></div>';
+    h += '<div class="efh-profile-reset" style="margin-top:12px"><a href="#" id="fb-reset" style="font-size:11px;color:#888">Apagar a situa\u00e7\u00e3o deste navegador</a></div>';
 
     document.getElementById("efh-body").innerHTML = h;
 
@@ -1864,8 +1973,8 @@
           var ghost = over ? "#b00" : "#7fc79b";
           var wu = Math.min(100, pu);
           var wa = Math.min(100 - wu, pa);
-          return '<div style="margin:5px 0" role="group" aria-label="' + esc(label) + '">' +
-            '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">' +
+          return '<div class="efh-meter" style="margin:5px 0" role="group" aria-label="' + esc(label) + '">' +
+            '<div class="efh-meter-label" style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">' +
             "<span>" + esc(label) + "</span>" +
             '<span style="color:' + (over ? "#b00" : col) + '"><b>' + Math.round(total) + "%</b>  |  \u20ac" +
             (usedV + addV).toFixed(0) + " / \u20ac" + cap.toFixed(0) +
@@ -1874,7 +1983,7 @@
             '<div role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' +
             Math.round(total) + '" aria-valuetext="' + Math.round(total) + '% de ' + esc(label) +
             (over ? ', excede o limite' : '') + '"' +
-            ' style="height:7px;background:#E1E4EA;border-radius:4px;overflow:hidden;display:flex">' +
+            ' class="efh-meter-track" style="height:7px;background:#E1E4EA;border-radius:4px;overflow:hidden;display:flex">' +
             '<div style="height:100%;width:' + wu.toFixed(1) + "%;background:" + col + '"></div>' +
             '<div style="height:100%;width:' + wa.toFixed(1) + "%;background:" + ghost +
             ';opacity:.75"></div></div></div>';
@@ -1936,7 +2045,7 @@
           var wasOpen = box.querySelector("details");
           wasOpen = wasOpen ? wasOpen.open : over.length > 0;
           box.innerHTML =
-            '<details' + (wasOpen ? " open" : "") + ' style="border:1px solid #d5dae1;border-radius:2px;background:#f4f6f9">' +
+            '<details class="efh-ceilings"' + (wasOpen ? " open" : "") + ' style="border:1px solid #d5dae1;border-radius:2px;background:#f4f6f9">' +
             '<summary style="cursor:pointer;padding:7px 9px;font-size:12px;list-style:revert">' +
             "Tetos do IRS - " + sum + "</summary>" +
             '<div style="padding:2px 9px 9px">' + html + "</div></details>";
@@ -1951,10 +2060,10 @@
            * everything that was here before. Tabs toggle display only - #efh-bars and #efh-opt must
            * stay IN the DOM, because renderBars() and the optimiser write into them by id and would
            * silently no-op against a detached node. */
-          '<div role="tablist" style="display:flex;gap:4px;margin:0 0 10px;border-bottom:2px solid #d5dae1">' +
-          '<button type="button" role="tab" id="efh-tab-r" aria-selected="true" style="cursor:pointer;border:0;' +
+          '<div class="efh-tabs" role="tablist" style="display:flex;gap:4px;margin:0 0 10px;border-bottom:2px solid #d5dae1">' +
+          '<button class="efh-tab" type="button" role="tab" id="efh-tab-r" aria-selected="true" style="cursor:pointer;border:0;' +
           'background:none;font:inherit;font-weight:700;color:#034ad8;padding:6px 12px;border-bottom:3px solid #034ad8;margin-bottom:-2px">Resumo</button>' +
-          '<button type="button" role="tab" id="efh-tab-d" aria-selected="false" style="cursor:pointer;border:0;' +
+          '<button class="efh-tab" type="button" role="tab" id="efh-tab-d" aria-selected="false" style="cursor:pointer;border:0;' +
           'background:none;font:inherit;font-weight:600;color:#6b7780;padding:6px 12px;border-bottom:3px solid transparent;margin-bottom:-2px">Detalhe</button>' +
           '</div>' +
           '<div id="efh-pane-r"><div id="efh-resumo">A calcular...</div>' + sponsor + '</div>' +
@@ -1963,7 +2072,7 @@
           (movR.length ? ' + <b>' + movR.length + ' por corrigir</b> (j\u00e1 classificadas, mas rendem mais noutro setor)' : '') +
           ' em ' + year +
           '. Duas sugest\u00f5es por fatura: <b>Prov\u00e1vel</b> (a atividade principal do comerciante, ou o que j\u00e1 usaste antes) e <b>Otimizada</b> (mais dedu\u00e7\u00e3o, com espa\u00e7o no teto). Vem selecionada a <b>Otimizada</b>. S\u00f3 aparecem setores em que o comerciante est\u00e1 mesmo registado, mas <b>ser aceite n\u00e3o \u00e9 o mesmo que estar certo</b>: a classifica\u00e7\u00e3o \u00e9 uma declara\u00e7\u00e3o tua \u00e0 AT.</p>' +
-          '<div style="background:#f4f6f9;border:1px solid #d5dae1;border-radius:2px;padding:9px;margin-bottom:10px;font-size:12px">' +
+          '<div class="efh-settings" style="background:#f4f6f9;border:1px solid #d5dae1;border-radius:2px;padding:9px;margin-bottom:10px;font-size:12px">' +
           '<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center">' +
           '<label style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap">' +
           '<input type="checkbox" id="efh-joint"' + (prof.joint ? " checked" : "") + '> Tributa\u00e7\u00e3o conjunta</label>' +
@@ -1977,21 +2086,21 @@
           'value="" style="width:170px"></label> ' +
           '<button type="button" id="efh-join" style="cursor:pointer">Ligar</button>' +
           '<div id="efh-hh" style="margin-top:4px;color:#666"></div></div>' +
-          '<div style="margin:0 0 8px;padding:6px 8px;background:#fdf8ec;border-left:3px solid #8a6100;' +
+          '<div class="efh-notice-warning" style="margin:0 0 8px;padding:6px 8px;background:#fdf8ec;border-left:3px solid #8a6100;' +
           'font-size:11px;color:#5a4600"><b>Vers\u00e3o de teste.</b> Esta ferramenta <b>n\u00e3o submete nada</b> ' +
           '\u00e0 AT - s\u00f3 analisa e mostra o plano. Aplicas tu no e-Fatura. Estamos a recolher feedback ' +
           'antes de permitir submiss\u00e3o autom\u00e1tica.</div>' +
           '<div id="efh-bars" style="margin-top:8px"></div>' +
           '<div id="efh-opt" style="margin-top:8px"></div>' +
-          '<div style="margin-top:6px;padding:5px 7px;background:#fdf8ec;border-left:3px solid #8a6100;color:#5a4600">' +
+          '<div class="efh-notice-warning" style="margin-top:6px;padding:5px 7px;background:#fdf8ec;border-left:3px solid #8a6100;color:#5a4600">' +
           '<b>Aten\u00e7\u00e3o:</b> isto v\u00ea as faturas <b>desta conta</b>. Se entregas o IRS ' +
           '<b>em conjunto</b>, os tetos s\u00e3o do agregado e o que falta \u00e9 <b>menos</b> do que aqui aparece - ' +
           'usa a partilha abaixo. Se entregas <b>em separado</b>, os tetos s\u00e3o s\u00f3 teus e estes n\u00fameros ' +
           'j\u00e1 est\u00e3o certos.</div></div>' +
-          '<div style="max-height:52vh;overflow:auto"><table style="width:100%;border-collapse:collapse">' +
+          '<div class="efh-table-wrap" style="max-height:52vh;overflow:auto"><table class="efh-table" style="width:100%;border-collapse:collapse">' +
           '<thead><tr style="background:#f4f6f9"><th></th><th>Data</th><th>Emitente</th><th>Valor</th><th title="O setor que a compra provavelmente foi: o teu hist\u00f3rico, ou a atividade principal do comerciante">Prov\u00e1vel</th><th title="O setor que d\u00e1 mais dedu\u00e7\u00e3o e ainda tem espa\u00e7o no teto">Otimizada</th><th>Setor</th></tr></thead>' +
           '<tbody>' + trs + '</tbody></table></div>' +
-          '<div style="margin-top:12px;display:flex;gap:8px;align-items:center">' +
+          '<div class="efh-actions" style="margin-top:12px;display:flex;gap:8px;align-items:center">' +
           // #efh-apply is rendered ONLY when DRAFT is off. While DRAFT is on the tool writes nothing,
           // and the page copy at faturas.diogoandrade.com promises exactly that - so this button and
           // those promises flip together, never one without the other.

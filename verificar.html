@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
 <meta charset="utf-8">
@@ -32,32 +32,41 @@
   .mast .nm{font-weight:600;color:var(--ink)} .mast a{margin-left:auto;color:var(--pri);font-weight:600;text-decoration:none}
   ol{line-height:1.6} .step{font-weight:600}
 </style>
+<link rel="stylesheet" href="/assets/site.css?v=2">
 <meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem faturas.diogoandrade.com; ref fb-lic-734da84007">
     <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
     <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538"></script>
 </head>
-<body>
+<body class="page-verify">
+<a class="skip-link" href="#conteudo">Saltar para o conteúdo</a>
 <!-- Fatura Boa (c) 2026 Diogo Andrade. Licenca PolyForm Noncommercial 1.0.0
      (https://polyformproject.org/licenses/noncommercial/1.0.0). Uso nao-comercial apenas.
      Copia, redistribuicao ou uso comercial sem autorizacao viola a licenca e pode ser objecto
      de accao legal. Origem oficial: faturas.diogoandrade.com | ref fb-lic-734da84007 -->
 <div hidden aria-hidden="true" data-fb-lic="PolyForm-Noncommercial-1.0.0" data-fb-ref="fb-lic-734da84007" data-fb-origem="faturas.diogoandrade.com">Codigo protegido por direitos de autor. Licenca PolyForm Noncommercial 1.0.0: uso comercial ou redistribuicao sem autorizacao proibidos.</div>
 <a href="/hp/registo-734da84007" hidden aria-hidden="true" rel="nofollow noindex" tabindex="-1">.</a>
-<div class="mast"><div class="wrap"><div class="nm">Fatura Boa</div><a href="/">Início</a></div></div>
+<div class="mast"><div class="wrap">
+  <a class="mark" href="/" aria-label="Fatura Boa, início"><img src="/icon.svg" width="46" height="46" alt=""></a>
+  <div class="nm">Fatura Boa<span>Privacidade comprovável, não apenas prometida</span></div>
+  <nav class="nav" aria-label="Navegação principal">
+    <a class="mastnav" href="/perfil">A minha situação</a>
+    <a class="mastnav" href="/consulta">Consultar NIF</a>
+  </nav>
+</div></div>
 <header><div class="wrap">
   <h1>Verificar a ferramenta</h1>
   <p>O Fatura Boa corre no teu próprio navegador, na tua sessão. Aqui podes confirmar que o código
      que corre é exatamente o código publicado e auditável. Como um casino provably fair, mas para
      software: não precisas de confiar, podes verificar.</p>
 </div></header>
-<main class="wrap">
+<main class="wrap" id="conteudo">
 
   <div class="card">
     <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">1. Verificação automática</div>
     <p class="kv">Isto vai buscar o ficheiro que serve a ferramenta (<code>/tool.js</code>), calcula
        a sua impressão digital (SHA-384) no teu navegador, e compara com a que está publicada em
        <code>/versions.json</code>. Se baterem certo, o que corre é o que foi publicado.</p>
-    <button class="btn" id="run">Verificar agora</button>
+    <button class="btn" id="run" type="button">Verificar agora</button>
     <div id="result"></div>
   </div>
 
