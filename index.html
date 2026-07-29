@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
 <meta charset="utf-8">
@@ -287,12 +287,14 @@
     @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   }
 </style>
+<link rel="stylesheet" href="/assets/site.css?v=2">
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem faturas.diogoandrade.com; ref fb-lic-e1ec0c96c9">
     <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
     <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538"></script>
 </head>
-<body>
+<body class="page-home">
+<a class="skip-link" href="#conteudo">Saltar para o conteúdo</a>
 <!-- Fatura Boa (c) 2026 Diogo Andrade. Licenca PolyForm Noncommercial 1.0.0
      (https://polyformproject.org/licenses/noncommercial/1.0.0). Uso nao-comercial apenas.
      Copia, redistribuicao ou uso comercial sem autorizacao viola a licenca e pode ser objecto
@@ -300,11 +302,11 @@
 <div hidden aria-hidden="true" data-fb-lic="PolyForm-Noncommercial-1.0.0" data-fb-ref="fb-lic-e1ec0c96c9" data-fb-origem="faturas.diogoandrade.com">Codigo protegido por direitos de autor. Licenca PolyForm Noncommercial 1.0.0: uso comercial ou redistribuicao sem autorizacao proibidos.</div>
 <a href="/hp/registo-e1ec0c96c9" hidden aria-hidden="true" rel="nofollow noindex" tabindex="-1">.</a>
 <details class="alertbar">
-  <summary><div class="wrap">
-    <p class="big">A tua password das Finanças só se escreve em páginas cujo endereço
-      <b>termina</b> em <code>.gov.pt</code>. Aqui, nunca.</p>
+  <summary><span class="wrap">
+    <span class="big">A tua password das Finanças só se escreve em páginas cujo endereço
+      <b>termina</b> em <code>.gov.pt</code>. Aqui, nunca.</span>
     <span class="why">Porquê</span>
-  </div></summary>
+  </span></summary>
   <div class="wrap ab-body">
     <p class="small">Esta ferramenta <b>não te pede a password</b> e <b>não consegue vê-la</b>.
       Funciona como uma extensão do navegador: só corre quando <b>tu</b> clicas, só dentro da página
@@ -339,15 +341,18 @@
       </svg>
     </a>
     <div class="nm">Fatura Boa<span>A tua situação fiscal, das fontes oficiais</span></div>
-    <nav class="nav">
+    <nav class="nav" aria-label="Navegação principal">
       <a class="mastnav primary" href="/perfil">A minha situação</a>
       <a class="mastnav" href="/consulta">Consultar NIF</a>
     </nav>
   </div>
 </div>
 
-<header>
+<main id="conteudo" class="site-main">
+<header class="hero">
  <div class="wrap">
+  <div class="hero-grid">
+  <div class="hero-copy">
   <!-- The keyword line lives INSIDE the <h1>. "Fontes oficiais, em vez de palpites" is the right
        thing to say to a human and worthless to a search engine - nobody types that. The eyebrow
        was already sitting here saying "e-Fatura / IRS"; making it a full phrase and moving it
@@ -385,10 +390,59 @@
     <span class="badge">código <b>verificável</b></span>
     <span class="badge"><b>grátis</b>, sem contas</span>
   </div>
+  </div>
+
+  <aside class="product-preview" aria-label="Pré-visualização da área fiscal">
+    <div class="preview-window">
+      <div class="preview-toolbar" aria-hidden="true"><i></i><i></i><i></i><span>Exemplo visual</span></div>
+      <div class="preview-body">
+        <div class="preview-heading">
+          <div>
+            <span class="preview-eyebrow">A tua visão fiscal</span>
+            <strong>Informação reunida, decisão tua.</strong>
+          </div>
+          <span class="preview-status">Só leitura</span>
+        </div>
+        <div class="preview-score">
+          <div class="preview-ring" aria-hidden="true"><b>78%</b></div>
+          <div class="preview-copy">
+            <b>Visão quase completa</b>
+            <p>Vês o que já está carregado, o que falta e onde deves confirmar antes de agir.</p>
+          </div>
+        </div>
+        <div class="preview-metrics" aria-hidden="true">
+          <div class="preview-metric"><span>Faturas a rever</span><b>3</b><em>prioridade agora</em></div>
+          <div class="preview-metric"><span>Dedução estimada</span><b>€ 92</b><em>valor indicativo</em></div>
+          <div class="preview-metric"><span>Próximos prazos</span><b>2</b><em>com contexto</em></div>
+          <div class="preview-metric"><span>Alertas críticos</span><b>0</b><em>sem bloqueios</em></div>
+        </div>
+        <div class="preview-privacy">Processado localmente no teu navegador</div>
+      </div>
+    </div>
+  </aside>
+  </div>
 </div>
 </header>
 
-<div class="wrap">
+<nav class="wrap intent-grid" aria-label="O que queres fazer">
+  <a class="intent-card" href="/perfil">
+    <span class="intent-kicker">Visão completa</span>
+    <strong>Perceber a minha situação</strong>
+    <p>Reúne os teus dados oficiais e mostra o que está feito, pendente e por confirmar.</p>
+  </a>
+  <a class="intent-card" href="#instalar">
+    <span class="intent-kicker">e-Fatura</span>
+    <strong>Rever faturas pendentes</strong>
+    <p>Instala o favorito, recebe sugestões e mantém a decisão final contigo.</p>
+  </a>
+  <a class="intent-card" href="/consulta">
+    <span class="intent-kicker">Dados públicos</span>
+    <strong>Consultar uma empresa</strong>
+    <p>Pesquisa um NIF ou nome e vê CAE, morada e setores possíveis.</p>
+  </a>
+</nav>
+
+<div class="wrap site-content">
 
 <div class="box draft">
   <b>Só lê. Não submete nada.</b>
@@ -483,7 +537,7 @@
   </p>
 </div></section>
 
-<section>
+<section id="como">
   <h2>Como classificar as faturas pendentes do e-Fatura</h2>
   <div class="steps">
     <div class="step"><div class="n" aria-hidden="true">01</div><div>Faz <b>login normal</b> no <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a>, como sempre fazes.</div></div>
@@ -548,7 +602,7 @@
   <p class="warn"><b>Atenção:</b> nunca introduzas o teu NIF e password das Finanças numa página cujo endereço não termine em <code>.gov.pt</code>. Esta ferramenta nunca to pede, e é essa a diferença.</p>
 </section>
 
-<section>
+<section id="instalar">
   <h2>Instalar <span class="note">(só funciona no computador)</span></h2>
   <p class="warn"><b>Isto é para computador, não para telemóvel.</b> A ferramenta é um favorito que
     corre dentro da página do e-Fatura, e os navegadores de telemóvel não deixam fazer isso. Não é
@@ -747,6 +801,7 @@
 </section>
 
 </div>
+</main>
 
 <footer class="wrap">
   <p>Ferramenta comunitária e independente. <b>Não</b> afiliada à Autoridade Tributária. Sem garantias, confirma sempre nas Finanças.</p>
