@@ -13,6 +13,7 @@
       "code_location": "tool.js: CEIL.C01 (pot iva78F) + POT_CAP",
       "article": "78.º-F",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
+      "source_id": "cirs-78f",
       "source_expect": [
         "78.º-F",
         "15 %",
@@ -32,6 +33,7 @@
       "code_location": "tool.js: CEIL.C02 (pot iva78F) + POT_CAP",
       "article": "78.º-F",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
+      "source_id": "cirs-78f",
       "source_expect": [
         "78.º-F",
         "15 %",
@@ -51,6 +53,7 @@
       "code_location": "tool.js: CEIL.C03 (pot iva78F) + POT_CAP",
       "article": "78.º-F",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
+      "source_id": "cirs-78f",
       "source_expect": [
         "78.º-F",
         "15 %",
@@ -70,6 +73,7 @@
       "code_location": "tool.js: CEIL.C04 (pot iva78F) + POT_CAP",
       "article": "78.º-F",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
+      "source_id": "cirs-78f",
       "source_expect": [
         "78.º-F",
         "15 %",
@@ -89,6 +93,7 @@
       "code_location": "tool.js: CEIL.C05",
       "article": "78.º-C",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821426",
+      "source_id": "cirs-78c",
       "source_expect": [
         "78.º-C",
         "15 %",
@@ -112,6 +117,7 @@
       "code_location": "tool.js: CEIL.C06",
       "article": "78.º-D",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-185585815",
+      "source_id": "cirs-78d",
       "source_expect": [
         "78.º-D",
         "30 %",
@@ -135,6 +141,7 @@
       "code_location": "tool.js: CEIL.C07 + RENDAS_CAP_ANO",
       "article": "78.º-E",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1124882175",
+      "source_id": "cirs-78e",
       "source_expect": [
         "78.º-E",
         "15 %",
@@ -158,6 +165,7 @@
       "code_location": "tool.js: CEIL.C08",
       "article": "84.º",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821428",
+      "source_id": "cirs-84",
       "source_expect": [
         "84.º",
         "25 %",
@@ -181,6 +189,7 @@
       "code_location": "tool.js: CEIL.C09 (pot iva78F) + POT_CAP",
       "article": "78.º-F",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
+      "source_id": "cirs-78f",
       "source_expect": [
         "78.º-F",
         "15 %",
@@ -200,6 +209,7 @@
       "code_location": "tool.js: CEIL.C10 (pot iva78F) + POT_CAP",
       "article": "78.º-F",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
+      "source_id": "cirs-78f",
       "source_expect": [
         "78.º-F",
         "15 %",
@@ -219,6 +229,7 @@
       "code_location": "tool.js: CEIL.C11 (pot iva78F) + POT_CAP",
       "article": "78.º-F",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
+      "source_id": "cirs-78f",
       "source_expect": [
         "78.º-F",
         "15 %",
@@ -238,6 +249,7 @@
       "code_location": "tool.js: CEIL.C12 (pot iva78F) + POT_CAP",
       "article": "78.º-F",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
+      "source_id": "cirs-78f",
       "source_expect": [
         "78.º-F",
         "15 %",
@@ -257,6 +269,7 @@
       "code_location": "tool.js: CEIL.C13 (pot iva78F) + POT_CAP",
       "article": "78.º-F",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
+      "source_id": "cirs-78f",
       "source_expect": [
         "78.º-F",
         "15 %",
@@ -276,6 +289,7 @@
       "code_location": "tool.js: CEIL.C14 (pot iva78F) + POT_CAP",
       "article": "78.º-F",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
+      "source_id": "cirs-78f",
       "source_expect": [
         "78.º-F",
         "15 %",
@@ -295,6 +309,7 @@
       "code_location": "tool.js: CEIL.C15 (pot iva78F) + POT_CAP",
       "article": "78.º-F n.º 1 k) e l)",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
+      "source_id": null,
       "source_expect": null,
       "verified": null,
       "effective_years": null,
@@ -310,6 +325,7 @@
       "code_location": "tool.js: CEIL.C99",
       "article": "78.º-B",
       "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821425",
+      "source_id": "cirs-78b",
       "source_expect": [
         "78.º-B",
         "35 %",

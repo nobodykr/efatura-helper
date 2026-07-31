@@ -1,0 +1,74 @@
+{
+  "_checked": "2026-07-31",
+  "_method": "render + verificacao de conteudo dos expect[] (nao apenas HTTP 200): confirma que o artigo, a taxa e o teto continuam na pagina oficial.",
+  "sources": [
+    {
+      "id": "cirs-78b",
+      "status": "OK"
+    },
+    {
+      "id": "cirs-78c",
+      "status": "OK"
+    },
+    {
+      "id": "cirs-78d",
+      "status": "OK"
+    },
+    {
+      "id": "cirs-78e",
+      "status": "OK"
+    },
+    {
+      "id": "cirs-78f",
+      "status": "OK"
+    },
+    {
+      "id": "cirs-84",
+      "status": "OK"
+    },
+    {
+      "id": "cppt-59",
+      "status": "OK"
+    },
+    {
+      "id": "cppt-70",
+      "status": "OK"
+    },
+    {
+      "id": "cirs-8",
+      "status": "OK"
+    },
+    {
+      "id": "cc-1076",
+      "status": "OK"
+    },
+    {
+      "id": "lgt-78",
+      "status": "OK"
+    },
+    {
+      "id": "dl-381-2007",
+      "status": "OK"
+    },
+    {
+      "id": "dl-9-2025",
+      "status": "OK"
+    },
+    {
+      "id": "ine-cae-rev3",
+      "status": "SKIP"
+    },
+    {
+      "id": "sicae",
+      "status": "SKIP"
+    },
+    {
+      "id": "ebf-21",
+      "status": "OK"
+    },
+    {
+      "id": "ebf-63",
+      "status": "OK"
+    }
+  ]
+}

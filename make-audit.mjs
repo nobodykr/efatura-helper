@@ -97,6 +97,7 @@ for (const code of Object.keys(ceil).sort()) {
     code_location: code === "C07" ? "tool.js: CEIL.C07 + RENDAS_CAP_ANO" : isPot ? "tool.js: CEIL." + code + " (pot iva78F) + POT_CAP" : "tool.js: CEIL." + code,
     article,
     source_url: sourceUrl,
+    source_id: (src && src.id) || null,
     source_expect: (src && src.expect) || null,
     verified: sn ? Object.values(sn).some((v) => v.verified) : null,
     effective_years: sn ? Object.keys(sn) : null,

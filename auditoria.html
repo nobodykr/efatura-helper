@@ -25,6 +25,8 @@
   .box{border-radius:var(--r);padding:12px 14px;margin:14px 0;font-size:.95rem}
   .box.ok{background:#eaf5ee;border:1px solid #b9dcc6;color:var(--green)}
   .box.bad{background:#fdecec;border:1px solid #f2b8b8;color:#8a1c1c}
+  .fok{color:var(--green);font-weight:600} .fbad{color:#8a1c1c;font-weight:700}
+  .badge{display:inline-block;background:var(--bg2);border:1px solid var(--rule);border-radius:2px;padding:3px 8px;font-size:.8rem;color:var(--ink2);margin:0 0 8px}
   .tablewrap{overflow-x:auto;border:1px solid var(--rule);border-radius:var(--r);margin:10px 0}
   table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:720px}
   th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
@@ -68,32 +70,44 @@
 
   <h2>Matriz de deduções</h2>
   <p>Fonte: <code>audit-manifest.json</code> (versão do <code>tool.js</code> <span id="ver">-</span>), gerado por <code>make-audit.mjs</code> a partir de <code>deducoes.html</code>, <code>tool.js</code>, <code>year_snapshots.json</code> e <code>legal_sources.json</code>.</p>
+  <p><span class="badge" id="fresh-when">A confirmar as fontes na lei...</span></p>
   <div class="tablewrap">
     <table>
       <thead><tr>
-        <th>Cód.</th><th>Setor</th><th>Taxa</th><th>Teto</th><th>Onde no código</th><th>Artigo / fonte (DRE)</th><th>Verif.</th><th>Anos</th>
+        <th>Cód.</th><th>Setor</th><th>Taxa</th><th>Teto</th><th>Onde no código</th><th>Artigo / fonte (DRE)</th><th>Fonte hoje</th><th>Verif.</th><th>Anos</th>
       </tr></thead>
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <p class="mono">Verif. = valor confirmado contra o diploma no DRE (year_snapshots). O teto do C07 (rendas) varia por ano; os setores marcados "% do IVA" partilham um teto conjunto de 250 EUR (art. 78.º-F).</p>
+  <p class="mono">Verif. = valor confirmado contra o diploma no DRE. "Fonte hoje" = um robô nosso foi à lei confirmar que o artigo, a taxa e o teto ainda lá estão (não só que a página abre). O teto do C07 (rendas) varia por ano; os setores marcados "% do IVA" partilham um teto conjunto de 250 EUR (art. 78.º-F).</p>
 
-  <h2>Como se audita isto</h2>
-  <p>Não precisas de um perfil nem do bookmarklet: a auditoria é sobre as <b>regras</b> e o <b>código</b>, não sobre os dados de ninguém. Um auditor independente não precisa de acesso nenhum da nossa parte. Há três coisas a confirmar:</p>
+  <h2>Como saber que isto está certo (sem confiar em nós)</h2>
+  <p>Imagina uma máquina de fazer as contas do teu IRS. Quase todas te dão só um número e tens de acreditar. Esta mostra as contas todas à vista, como um trabalho de casa. Qualquer pessoa - sem conta, sem nos pedir nada, sem o teu perfil e sem o bookmarklet - pode confirmar três coisas:</p>
   <ol>
-    <li><b>As regras estão certas?</b> Segue cada linha da tabela acima até ao Diário da República e confirma a taxa e o teto contra a lei. Revisão de secretária, contra a fonte primária. Não confies no nosso resumo.</li>
-    <li><b>O código que corre é o revisto?</b> Em <a href="/verificar">/verificar</a>, a impressão (SHA-384) do <code>tool.js</code> servido é a publicada em <code>versions.json</code>, que aponta para a <i>tag</i> exata em <a href="https://github.com/nobodykr/efatura-helper" target="_blank" rel="noopener">GitHub</a>. A coluna "onde no código" diz o sítio exato de cada valor.</li>
-    <li><b>O código calcula bem?</b> Os testes (<code>test-*.js</code>) dão ao código <b>faturas de exemplo com resultados conhecidos</b> e verificam a saída, sem precisar de uma conta real do e-Fatura. Corre <code>npm install &amp;&amp; npm test</code> e vês a ferramenta a dar os valores certos para entradas conhecidas.</li>
+    <li><b>De onde vem cada número.</b> Cada linha em cima tem um link para a lei oficial. Carregas, e vês a mesma taxa e o mesmo limite escritos na lei. É como uma receita de bolo que diz de onde veio cada ingrediente: podes ir à loja confirmar.</li>
+    <li><b>Que a máquina é mesmo esta.</b> Em <a href="/verificar">/verificar</a>, o teu telemóvel tira uma "impressão digital" ao programa e compara com a que publicámos. Se forem iguais, ninguém trocou o programa às escondidas. É como o selo de uma garrafa: se está intacto, ninguém lhe mexeu.</li>
+    <li><b>Que a máquina faz bem as contas.</b> Damos-lhe faturas de mentira, de que já se sabe o resultado, e ela tem de acertar. Corre <code>npm install &amp;&amp; npm test</code> e vês a máquina a dar a resposta certa. É como pôr uma balança à prova com um peso que já sabes quanto pesa: se marca certo, é de confiança. (São faturas de teste, não precisas de nenhuma conta real.)</li>
   </ol>
-  <p>Para reproduzir esta tabela do zero: clona a <i>tag</i> desta versão em <code>github.com/nobodykr/efatura-helper</code>, corre <code>node make-versions.mjs</code> (recalcula a impressão) e <code>node make-audit.mjs</code> (recria esta tabela). Têm de dar exatamente o mesmo.</p>
+  <p>E porque as leis mudam, um robô nosso vai à lei de vez em quando confirmar que os números não ficaram velhos: é a coluna <b>"Fonte hoje"</b> na tabela. Se algo mudar, fica a vermelho.</p>
+  <p class="mono">Para o rigor técnico: clona a <i>tag</i> desta versão em github.com/nobodykr/efatura-helper, corre <code>node make-versions.mjs</code> (a impressão) e <code>node make-audit.mjs</code> (esta tabela) - têm de dar exatamente o mesmo.</p>
   <p>Ver também: <a href="/deducoes">as deduções explicadas</a> · <a href="/verificar">verificação da integridade</a> · <a href="https://github.com/nobodykr/efatura-helper" target="_blank" rel="noopener">código-fonte</a>.</p>
 </main>
 <footer class="wrap"><a href="/">Fatura Boa</a> &middot; <a href="/privacidade">Privacidade</a> &middot; <a href="/termos">Termos</a> &middot; <a href="/verificar">Verificar</a></footer>
 <script>
 (function(){
   function esc(s){ return String(s==null?"":s).replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c];}); }
-  fetch("/audit-manifest.json",{cache:"no-store"}).then(function(x){return x.json();}).then(function(m){
+  var LBL = { OK:"sim", MUDOU:"MUDOU", REVOGADO:"REVOGADO", INACESSIVEL:"?", SKIP:"-" };
+  Promise.all([
+    fetch("/audit-manifest.json",{cache:"no-store"}).then(function(x){return x.json();}),
+    fetch("/audit-freshness.json",{cache:"no-store"}).then(function(x){return x.json();}).catch(function(){return null;})
+  ]).then(function(a){
+    var m=a[0], f=a[1], fmap={};
     document.getElementById("ver").textContent = m.tool_version || "?";
+    if(f && f.sources) f.sources.forEach(function(s){ fmap[s.id]=s.status; });
+    var fw=document.getElementById("fresh-when");
+    if(f && f._checked){ var chg=(f.sources||[]).filter(function(s){return s.status!=="OK"&&s.status!=="SKIP";}).length;
+      fw.textContent = "Fontes confirmadas na lei em "+f._checked+(chg?" - "+chg+" precisam de revisão":" - todas a bater."); }
+    else { fw.textContent="Frescura das fontes: ainda não confirmada."; }
     var tb = document.getElementById("tbody");
     (m.rows||[]).forEach(function(r){
       var tr = document.createElement("tr");
@@ -104,6 +118,8 @@
       td(r.ceiling_eur!=null ? esc(r.ceiling_eur)+" &euro;" : "-");
       td("<code>"+esc(r.code_location)+"</code>");
       td(r.source_url ? '<a href="'+esc(r.source_url)+'" target="_blank" rel="noopener">'+esc(r.article||"fonte")+"</a>" : esc(r.article||"-"));
+      var st=fmap[r.source_id]; var cls = st==="OK"?"fok":((!st||st==="SKIP")?"":"fbad");
+      td('<span class="'+cls+'">'+esc(st?(LBL[st]||st):"-")+"</span>");
       td(r.verified===true?"sim":(r.verified===false?"nao":"-"));
       td(r.effective_years ? esc(r.effective_years.join(", ")) : "-");
       tb.appendChild(tr);
