@@ -45,7 +45,7 @@
   var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.07.31a";
+  var FB_VERSION = "2026.07.31b";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -134,7 +134,7 @@
     // coletavel <= 1.o escalao, formula ate 30.000) - nao modelado; 800 e o piso, logo conservador.
     // Historico: 900 (original) nao era o valor de nenhum ano; 502 (fix de ontem) era o texto
     // DESATUALIZADO do render do diploma-pai - o valor por ano vive em RENDAS_CAP_ANO abaixo.
-    C07: { rate: 0.15, base: "total", cap: 800 },
+    C07: { rate: 0.15, base: "total", cap: 900 },
     C08: { rate: 0.25, base: "total", cap: 403.75 },
     C99: { rate: 0.35, base: "total", cap: 250, perTaxpayer: true },
     C01: { rate: 0.15, base: "iva", pot: POT }, C02: { rate: 0.15, base: "iva", pot: POT },
@@ -269,7 +269,7 @@
    * still free - i.e. deduction that MIGHT be recoverable via a declaracao de substituicao (within
    * the CPPT/LGT windows). Only the rendas ceiling (C07) moved across years; the rest held. Values
    * are DRE/AT-verified in year_snapshots.json. Indicators only - never a submission. */
-  var RENDAS_CAP_ANO = { 2023: 502, 2024: 600, 2025: 600, 2026: 800 };   // C07 base per income year (2026: Lei 73-A/2025 OE-2026, DRE em vigor)
+  var RENDAS_CAP_ANO = { 2023: 502, 2024: 600, 2025: 700, 2026: 900 };   // C07 base per income year. 2025: Lei 36/2024 (transitoria 50% do aumento 600->800). 2026: DL 97/2026, art. 78-E n.10 + norma transitoria (900 em 2026, 1000 em 2027) - lido do PDF do DR 2026-07-31.
   /* obterDocumentosAdquirente CAPS at 300 rows and returns the MOST RECENT first, so summing an
    * unfiltered year silently misses invoices on a busy year. But it accepts ambitoAquisicaoFilter
    * (a sector code), and a single sector is always well under 300 - so we fetch PER SECTOR to get
