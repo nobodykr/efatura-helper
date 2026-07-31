@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="/favicon.ico" sizes="48x48" type="image/x-icon">
+<link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png">
+<title>Auditoria | Fatura Boa - cada número, a sua fonte legal</title>
+<meta name="description" content="Cada dedução que a ferramenta calcula, o valor que usa, onde no código, e a fonte legal oficial (DRE). Gerado automaticamente do código, não escrito à mão - para qualquer auditor confirmar.">
+<link rel="canonical" href="https://faturas.diogoandrade.com/auditoria">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--pri:#034ad8;--pri-dark:#021c51;--ink:#2B363C;--ink2:#4a5a63;--mute:#6b7780;--bg:#fff;--bg2:#f4f6f9;--rule:#d5dae1;--green:#1E5A3A;--focus:#ff7a00;--r:6px;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.65 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:0 24px}
+  a{color:var(--pri);text-underline-offset:3px} a:hover{color:var(--pri-dark)}
+  a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+  header{background:var(--pri-dark);color:#fff;padding:28px 0}
+  header h1{margin:0 0 8px;font-size:1.55rem} header p{margin:0;color:#cfd9ef;max-width:66ch}
+  main{padding:28px 0 60px}
+  h2{font-size:1.15rem;margin:26px 0 8px;color:var(--pri-dark)}
+  code{font-family:'IBM Plex Mono',monospace;font-size:.85em;background:var(--bg2);border:1px solid var(--rule);border-radius:3px;padding:1px 4px}
+  .box{border-radius:var(--r);padding:12px 14px;margin:14px 0;font-size:.95rem}
+  .box.ok{background:#eaf5ee;border:1px solid #b9dcc6;color:var(--green)}
+  .box.bad{background:#fdecec;border:1px solid #f2b8b8;color:#8a1c1c}
+  .tablewrap{overflow-x:auto;border:1px solid var(--rule);border-radius:var(--r);margin:10px 0}
+  table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:720px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{background:var(--bg2);color:var(--pri-dark);font-weight:600;white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  ol{padding-left:20px} ol li{margin:4px 0}
+  .mono{font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--ink2)}
+  .mast{border-bottom:3px solid var(--pri);background:#fff}
+  .mast .wrap{display:flex;align-items:center;gap:12px;min-height:64px}
+  .mast .mark{width:40px;height:40px;flex:none} .mast .mark svg{width:100%;height:100%;display:block}
+  .mast .mark .plate,.mast .mark .cut{fill:var(--pri)}
+  .mast .nm{font-weight:600;color:var(--ink)} .mast a.home{margin-left:auto;color:var(--pri);font-weight:600;text-decoration:none}
+  footer{border-top:1px solid var(--rule);padding:22px 0;color:var(--mute);font-size:.85rem}
+</style>
+<meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem faturas.diogoandrade.com; ref fb-lic-2d5ffcb188">
+    <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
+    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538"></script>
+</head>
+<body>
+<!-- Fatura Boa (c) 2026 Diogo Andrade. Licenca PolyForm Noncommercial 1.0.0
+     (https://polyformproject.org/licenses/noncommercial/1.0.0). Uso nao-comercial apenas.
+     Copia, redistribuicao ou uso comercial sem autorizacao viola a licenca e pode ser objecto
+     de accao legal. Origem oficial: faturas.diogoandrade.com | ref fb-lic-2d5ffcb188 -->
+<div hidden aria-hidden="true" data-fb-lic="PolyForm-Noncommercial-1.0.0" data-fb-ref="fb-lic-2d5ffcb188" data-fb-origem="faturas.diogoandrade.com">Codigo protegido por direitos de autor. Licenca PolyForm Noncommercial 1.0.0: uso comercial ou redistribuicao sem autorizacao proibidos.</div>
+<a href="/hp/registo-2d5ffcb188" hidden aria-hidden="true" rel="nofollow noindex" tabindex="-1">.</a>
+<div class="mast"><div class="wrap">
+  <a class="mark" href="/" aria-label="Fatura Boa, início">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect class="plate" width="32" height="32" rx="7"/>
+      <path fill="#fff" d="M6.75 6.5 H13.375 C18.875 6.5 22.75 10.3125 22.75 16 C22.75 21.6875 18.875 25.5 13.375 25.5 H6.75 Z M10 9.5 V22.5 H13.1875 C16.8125 22.5 19.5 20 19.5 16 C19.5 12 16.8125 9.5 13.1875 9.5 H10 Z"/>
+      <path fill="#fff" d="M18.25 25.5 L23.875 6.5 H26.375 L20.75 25.5 Z"/><path fill="#fff" d="M25.25 6.5 H27.75 L22.125 25.5 H19.625 Z"/>
+      <rect class="cut" x="20.875" y="16.375" width="4.875" height="2.25" rx="0.5"/><path class="cut" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/></svg>
+  </a>
+  <div class="nm">Fatura Boa</div><a class="home" href="/">Início</a>
+</div></div>
+<header><div class="wrap">
+  <h1>Auditoria</h1>
+  <p>Cada dedução que a ferramenta calcula, o valor que usa, onde no código, e a fonte legal oficial. Esta tabela é <b>gerada automaticamente do código e das fontes</b>, não escrita à mão - por isso não pode ser escolhida a dedo nem ficar por atualizar. Qualquer pessoa, sem nos pedir nada, pode confirmar cada linha na fonte primária (Diário da República), correr os testes, e verificar que o código que corre é o que está publicado.</p>
+</div></header>
+<main class="wrap">
+  <div id="drift" class="box">A carregar...</div>
+
+  <h2>Matriz de deduções</h2>
+  <p>Fonte: <code>audit-manifest.json</code> (versão do <code>tool.js</code> <span id="ver">-</span>), gerado por <code>make-audit.mjs</code> a partir de <code>deducoes.html</code>, <code>tool.js</code>, <code>year_snapshots.json</code> e <code>legal_sources.json</code>.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr>
+        <th>Cód.</th><th>Setor</th><th>Taxa</th><th>Teto</th><th>Onde no código</th><th>Artigo / fonte (DRE)</th><th>Verif.</th><th>Anos</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <p class="mono">Verif. = valor confirmado contra o diploma no DRE (year_snapshots). O teto do C07 (rendas) varia por ano; os setores marcados "% do IVA" partilham um teto conjunto de 250 EUR (art. 78.º-F).</p>
+
+  <h2>Verificar por ti - sem depender de nós</h2>
+  <p>Tudo o que é preciso é público. Um auditor independente não precisa de acesso nenhum da nossa parte:</p>
+  <ol>
+    <li><b>O código que corre é o publicado.</b> Em <a href="/verificar">/verificar</a> a impressão (SHA-384) do <code>tool.js</code> servido é comparada com a publicada em <code>versions.json</code>, que aponta para a <i>tag</i> exata no GitHub.</li>
+    <li><b>Reproduz do zero.</b> Clona a <i>tag</i> desta versão em <code>github.com/nobodykr/efatura-helper</code>, corre <code>node make-versions.mjs</code> (recalcula a impressão) e <code>node make-audit.mjs</code> (recria esta tabela) - têm de dar o mesmo.</li>
+    <li><b>Corre os testes.</b> <code>npm install &amp;&amp; npm test</code> corre as verificações de correção (incluindo <code>test-deducoes-sync.js</code>, que garante que a página, o código e os valores verificados concordam).</li>
+    <li><b>Segue cada linha à lei.</b> Cada linha da tabela liga ao artigo no Diário da República. Confirma lá o valor - não confies no nosso resumo.</li>
+  </ol>
+  <p>Ver também: <a href="/deducoes">as deduções explicadas</a> · <a href="/verificar">verificação da integridade</a> · <a href="https://github.com/nobodykr/efatura-helper" target="_blank" rel="noopener">código-fonte</a>.</p>
+</main>
+<footer class="wrap"><a href="/">Fatura Boa</a> &middot; <a href="/privacidade">Privacidade</a> &middot; <a href="/termos">Termos</a> &middot; <a href="/verificar">Verificar</a></footer>
+<script>
+(function(){
+  function esc(s){ return String(s==null?"":s).replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c];}); }
+  fetch("/audit-manifest.json",{cache:"no-store"}).then(function(x){return x.json();}).then(function(m){
+    document.getElementById("ver").textContent = m.tool_version || "?";
+    var tb = document.getElementById("tbody");
+    (m.rows||[]).forEach(function(r){
+      var tr = document.createElement("tr");
+      function td(html){ var d=document.createElement("td"); d.innerHTML=html; tr.appendChild(d); }
+      td("<code>"+esc(r.code)+"</code>");
+      td(esc(r.sector));
+      td(esc(r.rate));
+      td(r.ceiling_eur!=null ? esc(r.ceiling_eur)+" &euro;" : "-");
+      td("<code>"+esc(r.code_location)+"</code>");
+      td(r.source_url ? '<a href="'+esc(r.source_url)+'" target="_blank" rel="noopener">'+esc(r.article||"fonte")+"</a>" : esc(r.article||"-"));
+      td(r.verified===true?"sim":(r.verified===false?"nao":"-"));
+      td(r.effective_years ? esc(r.effective_years.join(", ")) : "-");
+      tb.appendChild(tr);
+    });
+    var d = document.getElementById("drift");
+    if(m.drift && m.drift.length){
+      d.className="box bad";
+      d.innerHTML="<b>Inconsistencias detetadas ("+m.drift.length+"):</b><ul>"+m.drift.map(function(x){return "<li>"+esc(x)+"</li>";}).join("")+"</ul>";
+    } else {
+      d.className="box ok";
+      d.textContent="Sem inconsistencias: a pagina, o codigo, os valores verificados e as fontes legais concordam.";
+    }
+  }).catch(function(e){
+    document.getElementById("drift").className="box bad";
+    document.getElementById("drift").textContent="Nao consegui carregar audit-manifest.json: "+(e&&e.message||e);
+  });
+})();
+</script>
+</body>
+</html>

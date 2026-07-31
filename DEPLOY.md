@@ -44,4 +44,4 @@ of this note said both reads were 401-gated; that was true on 2026-07-21 and sup
 later - verified live 2026-07-28.
 
 ## Provably-fair releases
-Before every deploy: bump `FB_VERSION` in tool.js if the code changed, then `node make-versions.mjs` (regenerates versions.json, the published hash). Deploy. Verify at /verificar. Tag the release: `git tag vYYYY.MM.DD && git push --tags` - the tag is the public timestamped commitment.
+Before every deploy: bump `FB_VERSION` in tool.js if the code changed, then `node make-versions.mjs` (regenerates versions.json, the published hash + the release tag/source) and `node make-audit.mjs` (regenerates audit-manifest.json for /auditoria; fails loud via test-audit-sync.js if it drifts). Deploy. Verify at /verificar. Tag the release: `git tag vYYYY.MM.DD && git push --tags` - the tag is the public timestamped commitment.

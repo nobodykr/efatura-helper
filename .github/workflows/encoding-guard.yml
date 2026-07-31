@@ -20,3 +20,7 @@ jobs:
         # the three places a ceiling lives; both real bugs of 2026-07-28 (C07 cap 900, passes at
         # 15% instead of 100%) would have been a red X here instead of a two-DRE-pass archaeology.
         run: node test-deducoes-sync.js
+      - name: audit-manifest must be in sync with tool.js and drift-free
+        # the /auditoria page is generated from the code; this fails if tool.js changed a rate/ceiling
+        # without re-running make-audit.mjs, so the public audit surface can never quietly go stale.
+        run: node test-audit-sync.js

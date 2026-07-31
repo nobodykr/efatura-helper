@@ -51,7 +51,7 @@
     },
     {
       "id": "cirs-78e",
-      "governs": "C07 imoveis / rendas - 15% ate 502 EUR",
+      "governs": "C07 imoveis / rendas - 15%; teto POR ANO (78.º-E n.1 a) base 800; efetivo 900 em 2026 via norma transitoria do DL 97/2026 - ver year_snapshots)",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
       "type": "artigo",
       "critical": true,
@@ -59,7 +59,7 @@
       "expect": [
         "78.º-E",
         "15 %",
-        "502"
+        "800"
       ],
       "source_note": "DRE consolidada CIRS; portaldasfinancas pages are pointers"
     },
