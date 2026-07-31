@@ -130,7 +130,7 @@
 
 </style>
     <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
-    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="faturas.diogoandrade.com"></script>
+    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="faturas.diogoandrade.com" data-exclude-search="true"></script>
 </head>
 <body>
 
@@ -361,7 +361,7 @@
           + '</div>';
         Array.prototype.forEach.call(out.querySelectorAll(".res"), function(el){
           el.onclick = function(){ var n = el.getAttribute("data-nif");
-            q.value = n; history.replaceState(null,"","?q="+n); lookup(n); };
+            q.value = n; lookup(n); }; // NIF stays out of the URL (privacy: it was leaking into analytics)
         });
       })
       .catch(function(){ out.innerHTML = '<div class="err">Falha de rede. Tente novamente.</div>'; });
@@ -380,7 +380,8 @@
   document.getElementById("f").onsubmit = function(e){
     e.preventDefault();
     try { if (window.umami) umami.track("consulta-submeteu"); } catch (err) {}
-    history.replaceState(null,"","?q="+encodeURIComponent(q.value.trim()));
+    // deliberately do NOT put the NIF in the URL - Umami auto-tracks replaceState and it leaked
+    // searched NIFs into url_query (Taiga #12).
     go(q.value);
   };
 
