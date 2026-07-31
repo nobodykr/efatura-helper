@@ -45,7 +45,7 @@
   var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.07.28d";
+  var FB_VERSION = "2026.07.31a";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -56,8 +56,23 @@
   var DEFAULT_OFFERS = { message: "Isto e gratuito e continua a ser. Se te poupou trabalho e quiseres retribuir, abrir conta pelo link acima da-me uma pequena comissao, e a ti nao te custa nada.",
     offers: [ { style: "revolut", url: "https://revolut.com/referral/?referral-code=nobodykr!JUL2-26-AR-L1&geo-redirect", label: "Abrir conta Revolut" },
               { style: "coffee", url: "https://buymeacoffee.com/diogoandrade", label: "Buy me a coffee" } ] };
+  /* Do NOT fetch the feed at this level. This file runs entirely on the bookmarklet click, so a
+   * fetch here fires BEFORE the consent gate - and the page promises, literally, that before
+   * consent there is not a single network request, not even the public map. A request just to load
+   * an ad was the worst possible exception to that. loadOffers() is called from start(), reached
+   * only after consent(); until then the strip uses DEFAULT_OFFERS (already in the audited code).
+   * renderOffers() always draws with whatever exists at the time, so a late or failed feed just
+   * leaves the default - no waiting state, no layout shift. */
   var _offers = null;
-  try { fetch(OFFERS_URL, { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (o) { if (o && o.offers) _offers = o; }).catch(function () {}); } catch (e) {}
+  function loadOffers() {
+    if (_offers !== null) return;
+    try {
+      fetch(OFFERS_URL, { cache: "no-store" })
+        .then(function (r) { return r.json(); })
+        .then(function (o) { if (o && o.offers) _offers = o; })
+        .catch(function () {});
+    } catch (e) {}
+  }
 
   var REVOLUT_SVG = '<span style="background:#0075eb;border-radius:3px;padding:2px;display:inline-flex">' +
     '<svg aria-hidden="true" style="width:14px;height:14px;display:block" viewBox="0 0 800 800"><path fill="#fff" d="M628.623,285.554c0-87.043-70.882-157.86-158.011-157.86H209.051v87.603h249.125c39.43,0,72.093,30.978,72.814,69.051 c0.361,19.064-6.794,37.056-20.146,50.66c-13.357,13.61-31.204,21.109-50.251,21.109h-97.046c-3.446,0-6.25,2.8-6.25,6.245v77.859 c0,1.324,0.409,2.59,1.179,3.656l164.655,228.43h120.53L478.623,443.253C561.736,439.08,628.623,369.248,628.623,285.554z"/></svg></span>';
@@ -566,6 +581,9 @@
   }
 
   function start() {
+    // Consent exists by the time we reach start() (gate accept, or the returning-user path that
+    // guards on consent()). Only now is any network request allowed - including the sponsor feed.
+    loadOffers();
     // faturas FIRST, then only the map slices they need. Order matters: it cannot know which
     // buckets to ask for until it knows your merchants.
     run();
