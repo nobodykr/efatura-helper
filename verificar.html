@@ -34,7 +34,7 @@
 </style>
 <meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem faturas.diogoandrade.com; ref fb-lic-734da84007">
     <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
-    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538"></script>
+    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="faturas.diogoandrade.com"></script>
 </head>
 <body>
 <!-- Fatura Boa (c) 2026 Diogo Andrade. Licenca PolyForm Noncommercial 1.0.0
@@ -109,6 +109,7 @@
         var ver = a[1].current || "?";
         var src = a[1].source || "";
         var match = got === pub;
+        try { if (window.umami) umami.track(match ? "verificar-correu-ok" : "verificar-correu-falhou"); } catch (e) {}
         r.innerHTML = '<div class="box '+(match?"ok":"bad")+'">'+
           (match ? '<b>Corresponde.</b> O código que corre é a versão publicada v'+ver+'.'+
                    (src ? ' <a href="'+src+'" target="_blank" rel="noopener">Ver o código exato desta versão no GitHub</a> (tag v'+ver+').' : '') :
