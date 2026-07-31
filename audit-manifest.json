@@ -307,10 +307,14 @@
       "ceiling_eur": 250,
       "ceiling_note": "teto CONJUNTO de 250 EUR (art. 78.º-F) partilhado por C01-C04, C09-C15",
       "code_location": "tool.js: CEIL.C15 (pot iva78F) + POT_CAP",
-      "article": "78.º-F n.º 1 k) e l)",
-      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
-      "source_id": null,
-      "source_expect": null,
+      "article": "78.º-F",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
+      "source_id": "cirs-78f",
+      "source_expect": [
+        "78.º-F",
+        "15 %",
+        "250"
+      ],
       "verified": null,
       "effective_years": null,
       "source_law": null
