@@ -107,11 +107,13 @@
         var got = "sha384-" + b64(h);
         var pub = (a[1].files && a[1].files["tool.js"] && a[1].files["tool.js"].integrity) || "";
         var ver = a[1].current || "?";
+        var src = a[1].source || "";
         var match = got === pub;
         r.innerHTML = '<div class="box '+(match?"ok":"bad")+'">'+
-          (match ? '<b>Corresponde.</b> O código que corre é a versao publicada v'+ver+'.' :
-                   '<b>NÃO corresponde.</b> A impressao do ficheiro servido nao bate com a publicada. Nao uses ate perceberes porque.')+
-          '<div class="mono" style="margin-top:8px;font-size:.8rem">servido:  '+got+'<br>publicado: '+(pub||"(nao encontrado)")+'</div></div>';
+          (match ? '<b>Corresponde.</b> O código que corre é a versão publicada v'+ver+'.'+
+                   (src ? ' <a href="'+src+'" target="_blank" rel="noopener">Ver o código exato desta versão no GitHub</a> (tag v'+ver+').' : '') :
+                   '<b>NÃO corresponde.</b> A impressão do ficheiro servido não bate com a publicada. Não uses até perceberes porquê.')+
+          '<div class="mono" style="margin-top:8px;font-size:.8rem">servido:  '+got+'<br>publicado: '+(pub||"(não encontrado)")+'</div></div>';
       });
     }).catch(function(e){
       r.innerHTML = '<div class="box bad">Erro na verificacao: '+(e&&e.message||e)+'</div>';
