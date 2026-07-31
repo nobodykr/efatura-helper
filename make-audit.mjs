@@ -42,6 +42,15 @@ const rendasAno = {};
 const raM = tool.match(/RENDAS_CAP_ANO = \{([^}]*)\}/);
 if (raM) for (const [, y, v] of raM[1].matchAll(/(\d{4}): (\d+)/g)) rendasAno[y] = Number(v);
 const potCap = Number((tool.match(/POT_CAP = (\d+)/) || [])[1]);
+// Sector names come from tool.js SECTORS (properly accented via \u escapes), not the accent-less
+// deducoes.html cells, so the public /auditoria page reads correctly in Portuguese.
+const sectors = {};
+const secBlock = (tool.match(/var SECTORS = \{([\s\S]*?)\};/) || [])[1] || "";
+for (const [, code, name] of secBlock.matchAll(/(C\d+):\s*"([^"]*)"/g)) {
+  try { sectors[code] = JSON.parse('"' + name + '"'); } catch { sectors[code] = name; }
+}
+// Last-resort source: the consolidated CIRS, so EVERY row links to an official page (never a dead cell).
+const CIRS_CONSOLIDATED = "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167";
 
 // ---- legal_sources: map each deduction code to its source entry (by the codes named in `governs`) ----
 const srcByCode = {};
@@ -74,11 +83,11 @@ for (const code of Object.keys(ceil).sort()) {
   const ceilingNow = code === "C07" ? rendasAno[Object.keys(rendasAno).sort().pop()] : isPot ? potCap : c.cap;
   const article = (src && src.expect && src.expect[0]) || p.artigo || null;
   // Prefer the article-specific DRE page (article_pages) over the generic consolidated-law URL.
-  const sourceUrl = (article && snap.article_pages && snap.article_pages[article]) || (src && src.url) || null;
+  const sourceUrl = (article && snap.article_pages && snap.article_pages[article]) || (src && src.url) || CIRS_CONSOLIDATED;
 
   const row = {
     code,
-    sector: p.nome || code,
+    sector: sectors[code] || p.nome || code,
     rate: Math.round(c.rate * 100) + "%",
     base: isPot ? "% do IVA" : "% do valor",
     ceiling_eur: ceilingNow ?? null,
@@ -107,8 +116,8 @@ for (const code of Object.keys(ceil).sort()) {
 }
 
 const manifest = {
-  _generated: `make-audit.mjs a partir de deducoes.html + tool.js + year_snapshots.json + legal_sources.json (versao tool.js ${fbVersion})`,
-  _disclaimer: "GERADO automaticamente do codigo e das fontes, nao curado. Cada linha e verificavel: siga a fonte legal (DRE) e confirme o valor. Correr test-audit-sync.js garante que este ficheiro nao desviou do codigo.",
+  _generated: `make-audit.mjs a partir de deducoes.html + tool.js + year_snapshots.json + legal_sources.json (versão do tool.js ${fbVersion})`,
+  _disclaimer: "GERADO automaticamente do código e das fontes, não curado. Cada linha é verificável: siga a fonte legal (DRE) e confirme o valor. Correr test-audit-sync.js garante que este ficheiro não desviou do código.",
   tool_version: fbVersion,
   rows: out,
   drift,

@@ -78,14 +78,14 @@
   </div>
   <p class="mono">Verif. = valor confirmado contra o diploma no DRE (year_snapshots). O teto do C07 (rendas) varia por ano; os setores marcados "% do IVA" partilham um teto conjunto de 250 EUR (art. 78.º-F).</p>
 
-  <h2>Verificar por ti - sem depender de nós</h2>
-  <p>Tudo o que é preciso é público. Um auditor independente não precisa de acesso nenhum da nossa parte:</p>
+  <h2>Como se audita isto</h2>
+  <p>Não precisas de um perfil nem do bookmarklet: a auditoria é sobre as <b>regras</b> e o <b>código</b>, não sobre os dados de ninguém. Um auditor independente não precisa de acesso nenhum da nossa parte. Há três coisas a confirmar:</p>
   <ol>
-    <li><b>O código que corre é o publicado.</b> Em <a href="/verificar">/verificar</a> a impressão (SHA-384) do <code>tool.js</code> servido é comparada com a publicada em <code>versions.json</code>, que aponta para a <i>tag</i> exata no GitHub.</li>
-    <li><b>Reproduz do zero.</b> Clona a <i>tag</i> desta versão em <code>github.com/nobodykr/efatura-helper</code>, corre <code>node make-versions.mjs</code> (recalcula a impressão) e <code>node make-audit.mjs</code> (recria esta tabela) - têm de dar o mesmo.</li>
-    <li><b>Corre os testes.</b> <code>npm install &amp;&amp; npm test</code> corre as verificações de correção (incluindo <code>test-deducoes-sync.js</code>, que garante que a página, o código e os valores verificados concordam).</li>
-    <li><b>Segue cada linha à lei.</b> Cada linha da tabela liga ao artigo no Diário da República. Confirma lá o valor - não confies no nosso resumo.</li>
+    <li><b>As regras estão certas?</b> Segue cada linha da tabela acima até ao Diário da República e confirma a taxa e o teto contra a lei. Revisão de secretária, contra a fonte primária. Não confies no nosso resumo.</li>
+    <li><b>O código que corre é o revisto?</b> Em <a href="/verificar">/verificar</a>, a impressão (SHA-384) do <code>tool.js</code> servido é a publicada em <code>versions.json</code>, que aponta para a <i>tag</i> exata em <a href="https://github.com/nobodykr/efatura-helper" target="_blank" rel="noopener">GitHub</a>. A coluna "onde no código" diz o sítio exato de cada valor.</li>
+    <li><b>O código calcula bem?</b> Os testes (<code>test-*.js</code>) dão ao código <b>faturas de exemplo com resultados conhecidos</b> e verificam a saída, sem precisar de uma conta real do e-Fatura. Corre <code>npm install &amp;&amp; npm test</code> e vês a ferramenta a dar os valores certos para entradas conhecidas.</li>
   </ol>
+  <p>Para reproduzir esta tabela do zero: clona a <i>tag</i> desta versão em <code>github.com/nobodykr/efatura-helper</code>, corre <code>node make-versions.mjs</code> (recalcula a impressão) e <code>node make-audit.mjs</code> (recria esta tabela). Têm de dar exatamente o mesmo.</p>
   <p>Ver também: <a href="/deducoes">as deduções explicadas</a> · <a href="/verificar">verificação da integridade</a> · <a href="https://github.com/nobodykr/efatura-helper" target="_blank" rel="noopener">código-fonte</a>.</p>
 </main>
 <footer class="wrap"><a href="/">Fatura Boa</a> &middot; <a href="/privacidade">Privacidade</a> &middot; <a href="/termos">Termos</a> &middot; <a href="/verificar">Verificar</a></footer>
@@ -111,14 +111,14 @@
     var d = document.getElementById("drift");
     if(m.drift && m.drift.length){
       d.className="box bad";
-      d.innerHTML="<b>Inconsistencias detetadas ("+m.drift.length+"):</b><ul>"+m.drift.map(function(x){return "<li>"+esc(x)+"</li>";}).join("")+"</ul>";
+      d.innerHTML="<b>Inconsistências detetadas ("+m.drift.length+"):</b><ul>"+m.drift.map(function(x){return "<li>"+esc(x)+"</li>";}).join("")+"</ul>";
     } else {
       d.className="box ok";
-      d.textContent="Sem inconsistencias: a pagina, o codigo, os valores verificados e as fontes legais concordam.";
+      d.textContent="Sem inconsistências: a página, o código, os valores verificados e as fontes legais concordam.";
     }
   }).catch(function(e){
     document.getElementById("drift").className="box bad";
-    document.getElementById("drift").textContent="Nao consegui carregar audit-manifest.json: "+(e&&e.message||e);
+    document.getElementById("drift").textContent="Não consegui carregar audit-manifest.json: "+(e&&e.message||e);
   });
 })();
 </script>

@@ -1,11 +1,11 @@
 {
-  "_generated": "make-audit.mjs a partir de deducoes.html + tool.js + year_snapshots.json + legal_sources.json (versao tool.js 2026.07.31b)",
-  "_disclaimer": "GERADO automaticamente do codigo e das fontes, nao curado. Cada linha e verificavel: siga a fonte legal (DRE) e confirme o valor. Correr test-audit-sync.js garante que este ficheiro nao desviou do codigo.",
+  "_generated": "make-audit.mjs a partir de deducoes.html + tool.js + year_snapshots.json + legal_sources.json (versão do tool.js 2026.07.31b)",
+  "_disclaimer": "GERADO automaticamente do código e das fontes, não curado. Cada linha é verificável: siga a fonte legal (DRE) e confirme o valor. Correr test-audit-sync.js garante que este ficheiro não desviou do código.",
   "tool_version": "2026.07.31b",
   "rows": [
     {
       "code": "C01",
-      "sector": "Reparacao de automoveis",
+      "sector": "Reparação automóveis",
       "rate": "15%",
       "base": "% do IVA",
       "ceiling_eur": 250,
@@ -24,7 +24,7 @@
     },
     {
       "code": "C02",
-      "sector": "Reparacao de motociclos",
+      "sector": "Reparação motociclos",
       "rate": "15%",
       "base": "% do IVA",
       "ceiling_eur": 250,
@@ -43,7 +43,7 @@
     },
     {
       "code": "C03",
-      "sector": "Restauracao e alojamento",
+      "sector": "Alojamento / restauração",
       "rate": "15%",
       "base": "% do IVA",
       "ceiling_eur": 250,
@@ -62,7 +62,7 @@
     },
     {
       "code": "C04",
-      "sector": "Cabeleireiros e institutos de beleza",
+      "sector": "Cabeleireiros / beleza",
       "rate": "15%",
       "base": "% do IVA",
       "ceiling_eur": 250,
@@ -81,7 +81,7 @@
     },
     {
       "code": "C05",
-      "sector": "Saude",
+      "sector": "Saúde",
       "rate": "15%",
       "base": "% do valor",
       "ceiling_eur": 1000,
@@ -104,7 +104,7 @@
     },
     {
       "code": "C06",
-      "sector": "Educacao",
+      "sector": "Educação",
       "rate": "30%",
       "base": "% do valor",
       "ceiling_eur": 800,
@@ -127,7 +127,7 @@
     },
     {
       "code": "C07",
-      "sector": "Imoveis (rendas)",
+      "sector": "Imóveis / habitação",
       "rate": "15%",
       "base": "% do valor",
       "ceiling_eur": 900,
@@ -173,7 +173,7 @@
     },
     {
       "code": "C09",
-      "sector": "Veterinario",
+      "sector": "Veterinárias",
       "rate": "15%",
       "base": "% do IVA",
       "ceiling_eur": 250,
@@ -192,7 +192,7 @@
     },
     {
       "code": "C10",
-      "sector": "Passes de transporte publico",
+      "sector": "Transportes públicos",
       "rate": "100%",
       "base": "% do IVA",
       "ceiling_eur": 250,
@@ -211,7 +211,7 @@
     },
     {
       "code": "C11",
-      "sector": "Ginasios e clubes desportivos",
+      "sector": "Ginásios",
       "rate": "30%",
       "base": "% do IVA",
       "ceiling_eur": 250,
@@ -230,7 +230,7 @@
     },
     {
       "code": "C12",
-      "sector": "Jornais e revistas",
+      "sector": "Jornais / revistas",
       "rate": "100%",
       "base": "% do IVA",
       "ceiling_eur": 250,
@@ -268,7 +268,7 @@
     },
     {
       "code": "C14",
-      "sector": "Cultura (teatro, musica, espetaculos, bibliotecas)",
+      "sector": "Artísticas",
       "rate": "15%",
       "base": "% do IVA",
       "ceiling_eur": 250,
@@ -287,14 +287,14 @@
     },
     {
       "code": "C15",
-      "sector": "Museus e monumentos",
+      "sector": "Museus / monumentos",
       "rate": "15%",
       "base": "% do IVA",
       "ceiling_eur": 250,
       "ceiling_note": "teto CONJUNTO de 250 EUR (art. 78.º-F) partilhado por C01-C04, C09-C15",
       "code_location": "tool.js: CEIL.C15 (pot iva78F) + POT_CAP",
       "article": "78.º-F n.º 1 k) e l)",
-      "source_url": null,
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
       "source_expect": null,
       "verified": null,
       "effective_years": null,
@@ -302,7 +302,7 @@
     },
     {
       "code": "C99",
-      "sector": "Despesas gerais familiares",
+      "sector": "Outros",
       "rate": "35%",
       "base": "% do valor",
       "ceiling_eur": 250,
