@@ -58,7 +58,15 @@ for (const s of legal.sources)
   for (const code of (s.governs || "").match(/C\d+/g) || []) if (!srcByCode[code]) srcByCode[code] = s;
 
 // ---- year_snapshots: which rule key + which years an article is verified in ----
+// The 78.º-F "% do IVA" family shares one per-year verification recorded under iva_conjunto
+// (article 78.º-F, base rate 15%, shared 250 EUR cap - verified 2023-2025). Only the sectors that
+// ACTUALLY apply that base 15% rate are mapped here. C10 (transportes 100%), C11 (ginasios 30%) and
+// C12 (jornais 100%) apply a SPECIAL rate that neither iva_conjunto (pct 15) nor cirs-78f.expect
+// ("15 %") confirms, so they are deliberately left unmapped (Verif/Anos stay "-") until that
+// specific rate is documentally verified - see Taiga #79. Greening them would be green-but-wrong.
+const IVA78F_BASE = ["C01", "C02", "C03", "C04", "C09", "C13", "C14", "C15"];
 const SNAP_KEY = { C05: "saude", C06: "educacao", C08: "lares", C99: "despesas_gerais", C07: "imoveis_rendas" };
+for (const c of IVA78F_BASE) SNAP_KEY[c] = "iva_conjunto";
 const years = Object.keys(snap.years).sort();
 function snapFor(code) {
   const key = SNAP_KEY[code];
