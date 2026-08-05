@@ -10,10 +10,41 @@
 //   2. Honeypot field a human never sees and never fills.
 //   3. Minimum dwell time: a real person cannot read the form and submit in under 3 seconds.
 //   4. Hard length caps, so a pass through the gate still cannot post a novel.
+//   5. Content sanitising: code/HTML rejected, control and zero-width characters stripped.
+//      Ported from recibo-certo's feedback-sanitize.ts - see the block below.
 // Network-level rate limiting is a WAF rule on this path, not application code.
 
 const MAX = { message: 4000, email: 200, context: 300 };
 const MIN_DWELL_MS = 3000;
+
+/* ---- 5. content sanitising, ported from recibo-certo/src/lib/feedback-sanitize.ts --------------
+ * The four gates above stop bots. These two stop CONTENT: a human who passes Turnstile can still
+ * paste a <script> or hide zero-width characters in the message, and that text is later rendered
+ * as HTML in an email client.
+ *
+ * The same two functions exist client-side in index.html so the person gets told immediately
+ * instead of after a round trip. THIS copy is the authoritative one - the client's is a courtesy
+ * and can be bypassed by anyone posting straight to the endpoint. If one changes, change both.
+ *
+ * The first alternative requires `<` to be followed by a letter, `!` or `/` - a real tag - so an
+ * arithmetic comparison like "dedução < 250 > 0" is not flagged as code. */
+const DANGEROUS =
+  /<\/?[a-z!][^>]*>|<\s*script|javascript:|vbscript:|on[a-z]+\s*=|data:text\/html|srcdoc\s*=|\{\{[\s\S]*\}\}|<%[\s\S]*%>/i;
+
+const hasCode = (s) => DANGEROUS.test(s);
+
+/** Strips tags, control characters, and the zero-width/BOM set used to hide payloads. */
+function sanitise(s) {
+  let out = "";
+  for (const ch of String(s).replace(/<\/?[a-z!][^>]*>/gi, "")) {
+    const c = ch.codePointAt(0) ?? 0;
+    if (c < 0x20 && c !== 0x09 && c !== 0x0a && c !== 0x0d) continue;   // control, keep tab/newline
+    if (c === 0x7f) continue;                                            // DEL
+    if (c === 0x200b || c === 0x200c || c === 0x200d || c === 0x2060 || c === 0xfeff) continue;
+    out += ch;
+  }
+  return out.trim();
+}
 
 const bad = (msg, code = 400) =>
   new Response(JSON.stringify({ ok: false, error: msg }), {
@@ -34,12 +65,23 @@ export async function onRequestPost({ request, env }) {
   const dwell = Number(body.elapsed);
   if (!Number.isFinite(dwell) || dwell < MIN_DWELL_MS) return bad("Demasiado rapido. Tenta outra vez.");
 
-  const message = String(body.message || "").trim();
-  const email   = String(body.email || "").trim();
-  const context = String(body.context || "").trim();
-  if (!message) return bad("Escreve a mensagem.");
-  for (const [k, v] of Object.entries({ message, email, context }))
+  // Length is checked on the RAW input, before sanitising: otherwise a 40.000-character payload of
+  // zero-width characters passes the cap by collapsing to nothing after cleaning.
+  const raw = { message: String(body.message || ""), email: String(body.email || ""),
+                context: String(body.context || "") };
+  for (const [k, v] of Object.entries(raw))
     if (v.length > MAX[k]) return bad("Mensagem demasiado longa.");
+
+  // 5a. reject code outright rather than silently stripping it - a person pasting a snippet should
+  //     be told, not have their message quietly altered
+  if (hasCode(raw.message) || hasCode(raw.context))
+    return bad("A mensagem parece conter codigo ou HTML. Tira-o e tenta outra vez.");
+
+  // 5b. sanitise what is left
+  const message = sanitise(raw.message);
+  const email   = sanitise(raw.email);
+  const context = sanitise(raw.context);
+  if (!message) return bad("Escreve a mensagem.");
   if (email && !/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(email)) return bad("Email invalido.");
 
   // 1. Turnstile, server-side

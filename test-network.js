@@ -46,13 +46,21 @@ const rows = [{ estadoBeneficio: "P", nifEmitente: "500000009", nomeEmitente: "P
   // NIF> slices its own merchants fall into, so there are now MANY off-site requests instead of
   // one. What must still hold, and is what the page publishes, is that every one of them is a
   // GET for a map slice and that nothing is POSTed off-site by default.
-  const okCount = offsite.length >= 1;
+  // Besides the map slices there is exactly ONE other allowed off-site GET: the sponsor feed
+  // (offers.json). It is inert data - the pinned core validates every URL is https and escapes
+  // every string - and it carries nothing of the user's. It is allowed HERE and nowhere else,
+  // and step 1b of the published list on index.html has to keep saying so.
+  const ALLOWED_NON_MAP = /^GET https:\/\/faturas\.diogoandrade\.com\/offers\.json$/;
+  const mapSlices = offsite.filter(r => /\/bucket\/\d{3}\b/.test(r));
+  const others = offsite.filter(r => !/\/bucket\/\d{3}\b/.test(r));
+  const okCount = mapSlices.length >= 1;
   const okGet = offsite.every(r => r.startsWith("GET "));
-  const okMap = offsite.every(r => /\/bucket\/\d{3}\b/.test(r));
+  const okMap = others.every(r => ALLOWED_NON_MAP.test(r));
   const okNoPost = !uniq.some(r => r.startsWith("POST"));
-  console.log("  off-site requests (map slices):", offsite.length);
+  console.log("  off-site requests (map slices):", mapSlices.length);
+  console.log("  off-site requests (other):", others.length, others.join(", ") || "(none)");
   console.log("  every one is a GET:", okGet);
-  console.log("  every one is /bucket/<3 digits>:", okMap);
+  console.log("  every non-slice is the disclosed offers feed:", okMap);
   console.log("  no POST anywhere:", okNoPost);
   await b.close();
   if (!(okSilent && okCount && okGet && okMap && okNoPost)) {
