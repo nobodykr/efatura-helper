@@ -112,7 +112,7 @@
         try { if (window.umami) umami.track(match ? "verificar-correu-ok" : "verificar-correu-falhou"); } catch (e) {}
         r.innerHTML = '<div class="box '+(match?"ok":"bad")+'">'+
           (match ? '<b>Corresponde.</b> O código que corre é a versão publicada v'+ver+'.'+
-                   (src ? ' <a href="'+src+'" target="_blank" rel="noopener">Ver o código exato desta versão no GitHub</a> (tag v'+ver+').' : '') :
+                   (src ? ' <a href="'+src+'" target="_blank" rel="noopener">Ver o código exato desta versão no GitHub</a> (commit imutável).' : '') :
                    '<b>NÃO corresponde.</b> A impressão do ficheiro servido não bate com a publicada. Não uses até perceberes porquê.')+
           '<div class="mono" style="margin-top:8px;font-size:.8rem">servido:  '+got+'<br>publicado: '+(pub||"(não encontrado)")+'</div></div>';
       });
