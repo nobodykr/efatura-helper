@@ -44,4 +44,20 @@ of this note said both reads were 401-gated; that was true on 2026-07-21 and sup
 later - verified live 2026-07-28.
 
 ## Provably-fair releases
-Before every deploy: bump `FB_VERSION` in tool.js if the code changed, then `node make-versions.mjs` (regenerates versions.json, the published hash + the release tag/source) and `node make-audit.mjs` (regenerates audit-manifest.json for /auditoria; fails loud via test-audit-sync.js if it drifts). Deploy. Verify at /verificar. Tag the release: `git tag vYYYY.MM.DD && git push --tags` - the tag is the public timestamped commitment.
+Provenance is a `source_commit` (the immutable Git commit that last changed tool.js), NOT a release tag.
+So the order matters - commit tool.js BEFORE generating the manifest:
+1. Bump `FB_VERSION` in tool.js if the code changed, and `node escape-tool.js` (keep pure ASCII).
+2. COMMIT tool.js. `make-versions.mjs` refuses to publish a manifest while tool.js is dirty vs HEAD, so
+   the hash always corresponds to a committed file.
+3. `node make-versions.mjs` - regenerates versions.json: the published sha384 + `source_commit` (resolved
+   from `git log -1 -- tool.js`) + the `source` blob URL on nobodykr. `node make-audit.mjs` - regenerates
+   audit-manifest.json for /auditoria (fails loud via test-audit-sync.js if it drifts).
+4. Commit versions.json + audit-manifest.json, then `git push` to nobodykr - the push is what makes
+   `source_commit` resolve on GitHub (no separate `git push --tags` step to forget).
+5. Deploy (`npx wrangler pages deploy . --project-name=efatura-helper --branch=main`, from a clean tree -
+   node_modules is not deployable). Verify at /verificar (served tool.js must hash to the published
+   integrity) and that versions.json `repo` is nobodykr, not a fork.
+
+The commit hash in versions.json is the public commitment: content-addressed, so it can't be moved or
+point at different code the way a tag can. A `git tag vYYYY.MM.DD` is still fine as a human-readable
+marker, but it is no longer the provenance anchor.
