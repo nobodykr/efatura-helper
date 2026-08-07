@@ -251,7 +251,6 @@
   /* notices: coloured left rule, never colour alone */
   .box{border:1px solid var(--rule);border-left:4px solid var(--pri);border-radius:var(--r);
        padding:16px 18px;margin:0 0 20px;background:var(--bg2)}
-  .box.draft{border-left-color:var(--amber);background:#fdf8ec}
   .box.give{border-left-color:var(--green);background:#f1f7f3}
   .box h2{margin-top:0}
   header + .wrap, section + .wrap{padding-top:34px}
@@ -300,10 +299,6 @@
          border:1px solid var(--rule);border-radius:2px;padding:5px 10px;background:#fff}
   .badge b{color:var(--pri);font-weight:600}
   @media (max-width:560px){ header{padding:34px 0 28px} }
-  @media (prefers-reduced-motion:no-preference){
-    .box.draft{animation:rise .45s cubic-bezier(.2,.7,.3,1) both}
-    @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  }
 
   /* icon system: 2px-stroke currentColor line icons, drawn as a <symbol> sprite so every
      instance is a one-line <use>. Sized to sit next to 16px body text without dominating it. */
@@ -569,16 +564,6 @@
 
 <div class="wrap">
 
-<div class="box draft">
-  <b>Só lê. Não submete nada.</b>
-  <p style="margin:6px 0 0">
-    A ferramenta lê o teu registo e mostra a tua situação, mas <b>não altera nada</b> nas Finanças.
-    Qualquer submissão ou classificação fá-la <b>tu</b>, com o plano à frente. Os números são
-    <b>indicadores para confirmares</b>, não aconselhamento fiscal. Se algo estiver errado,
-    <a id="ghissues2" href="#" target="_blank" rel="noopener">diz-me</a>.
-  </p>
-</div>
-
 <section id="faz">
   <h2>O que faz por ti</h2>
   <div class="cards">
@@ -776,7 +761,6 @@
   var HOST = location.origin;              // where tool.js is served (this site)
   document.getElementById("gh").href = GH;
   document.getElementById("gh2").href = GH;
-  document.getElementById("ghissues2").href = GH + "/issues";
   // Copy the bookmarklet source. No browser lets a page create a bookmark - the APIs that used to
   // (window.sidebar.addPanel, window.external.AddFavorite) were removed precisely because silently
   // installing a javascript: bookmark is an attack. So the best we can do is remove the typing.
