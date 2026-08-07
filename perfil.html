@@ -1221,7 +1221,8 @@
     h += '<details class="frow" id="fontes" data-acc="fontes"'+(ACC.fontes?' open':'')+'><summary>'+
       '<span class="flabel">'+ico('i-doc')+'As nove fontes</span>'+
       '<span class="fdesc">'+done.length+' de '+PARTITIONS.length+' reunidas · abre cada página oficial</span>'+chev()+
-      '</summary><div class="fbody">';
+      '</summary><div class="fbody">'+
+      '<div class="w" style="margin:14px 0 4px">Ao guardar o favorito, dá-lhe o nome <b>Fatura Boa</b> - é esse o nome que estas instruções usam.</div>';
     PARTITIONS.forEach(function(p){
       var ok = store.partitions[p.id] && store.partitions[p.id].status==="done";
       h += '<div class="step"><div class="ic">'+ico(ok?'i-check-circle':meta(p.id).icon)+'</div><div class="bd">'+
@@ -1274,7 +1275,14 @@
     // THE GATE: confirming "Outras situações" is what unlocks the fiscal result. Editing the
     // deductions afterwards does NOT un-confirm; only "Apagar os meus dados" clears the flag.
     var cf = document.getElementById("confirmextras");
-    if (cf) cf.onclick = function(){ setConfirmed(true); ACC.extras = false; render(); };
+    if (cf) cf.onclick = function(){
+      setConfirmed(true);
+      // Collapse in the DOM BEFORE re-rendering: render() snapshots the live open-state into ACC,
+      // so setting ACC here would just be overwritten by the panel we are standing in.
+      var dx = document.querySelector('#out details[data-acc="extras"]');
+      if (dx) dx.open = false;
+      render();
+    };
     function openFontes(ev){
       ev.preventDefault();
       var f = document.getElementById("fontes");
