@@ -287,6 +287,31 @@
     .ftcol:first-child{border-top:0;padding-top:0}
   }
   @media (prefers-reduced-motion:no-preference){ .fchev{transition:transform .18s ease} }
+
+  /* A lista acionavel por comerciante dentro de cada painel da revisao por ano. Linhas finas,
+     separadas por hairline, para caber muita informacao sem virar tabela numa coluna estreita. */
+  .mlist{margin-top:9px}
+  .mtit{font-weight:600;margin-bottom:2px}
+  .mrow{padding:5px 0;border-top:1px solid var(--hair)}
+  .mmore{margin-top:2px}
+  .mmore summary{cursor:pointer;color:var(--pri);padding:5px 0;font-size:.9rem}
+  .mfoot{margin-top:5px}
+  /* Fallback do relatorio quando o browser bloqueia a janela nova: a mesma vista, aqui dentro. */
+  #fbreport:empty{display:none}
+  .repwrap{border:1px solid var(--rule);border-radius:12px;overflow:hidden;margin:18px 0}
+  .repbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;background:var(--bg2);border-bottom:1px solid var(--rule)}
+  #fbrepframe{display:block;width:100%;height:70vh;border:0;background:#fff}
+  /* Ctrl+P na propria pagina: imprime o conteudo util, nao a navegacao nem os botoes. E o
+     <details> fechado nao imprime o que esconde, por isso abrem-se todos antes de imprimir
+     (ver onbeforeprint) - CSS sozinho nao consegue abrir um <details>. */
+  @media print{
+    .mast,.acts,.actframe,.btn,.btn-small,.btn-outline,.fbtab,.noprint,footer,.repbar{display:none !important}
+    body{background:#fff}
+    .wrap{max-width:none;padding:0}
+    details{page-break-inside:avoid}
+    .mrow,.step{page-break-inside:avoid}
+    a[href]:after{content:""}
+  }
 </style>
 <meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem faturas.diogoandrade.com; ref fb-lic-63e7b7c353">
     <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
@@ -611,7 +636,30 @@
   function demoStore(){
     var ano = new Date().getFullYear() - 1;
     return { demo:true, partitions:{
-      efatura:{ status:"done", fetchedAt:new Date().toISOString(), data:{ ano:ano+1, totalFaturas:247, porClassificar:12, atividades:{}, reAudit:[] } },
+      // O reAudit do exemplo TEM de usar ano = ano corrente - 1: sem liquidacoes detetadas
+      // (irs.porAno vazio) a lista de anos cai no intervalo nowY-1..nowY-4, e um ano fora dele
+      // faria a seccao aparecer vazia - a funcionalidade pareceria estar avariada. Comerciantes
+      // e NIFs claramente ficticios, e mais de 8 linhas para se ver a lista a recolher.
+      efatura:{ status:"done", fetchedAt:new Date().toISOString(), data:{ ano:ano+1, totalFaturas:247, porClassificar:12, atividades:{},
+        reAudit:[{ ano:ano, recuperavel:651.40, nMover:153, porSetor:{ "Saúde":74, "Educação":31, "Ginásios":18 },
+                   recuperavelAconselhado:214.80, nMoverAconselhado:46, porSetorAconselhado:{ "Saúde":31, "Educação":15 },
+                   nDeGerais:88, totalFaturas:247,
+                   porComerciante:[
+                     { nome:"Farmácia Exemplo Central", nif:"500000001", n:23, valor:118.42, de:"Outros", para:"Saúde" },
+                     { nome:"Clínica Dentária Fictícia", nif:"500000002", n:9, valor:96.10, de:"Outros", para:"Saúde" },
+                     { nome:"Colégio Modelo (exemplo)", nif:"500000003", n:11, valor:74.55, de:"Outros", para:"Educação" },
+                     { nome:"Ginásio Demonstração", nif:"500000004", n:12, valor:61.20, de:"Outros", para:"Ginásios" },
+                     { nome:"Ótica Exemplo", nif:"500000005", n:6, valor:52.80, de:"Outros", para:"Saúde" },
+                     { nome:"Livraria de Amostra", nif:"500000006", n:14, valor:44.35, de:"Outros", para:"Livros" },
+                     { nome:"Explicações Exemplo Lda", nif:"500000007", n:8, valor:38.90, de:"Outros", para:"Educação" },
+                     { nome:"Veterinário Fictício", nif:"500000008", n:7, valor:33.15, de:"Outros", para:"Veterinárias" },
+                     { nome:"Cabeleireiro de Amostra", nif:"500000009", n:10, valor:29.60, de:"Outros", para:"Cabeleireiros / beleza" },
+                     { nome:"Oficina Exemplo", nif:"500000010", n:5, valor:24.05, de:"Outros", para:"Reparação automóveis" },
+                     { nome:"Restaurante Demonstração", nif:"500000011", n:16, valor:21.70, de:"Outros", para:"Alojamento / restauração" },
+                     { nome:"Museu de Amostra", nif:"500000012", n:4, valor:16.58, de:"Outros", para:"Museus / monumentos" }],
+                   porComercianteAconselhado:[
+                     { nome:"Farmácia Exemplo Central", nif:"500000001", n:23, valor:118.42, de:"Outros", para:"Saúde" },
+                     { nome:"Clínica Dentária Fictícia", nif:"500000002", n:9, valor:96.10, de:"Outros", para:"Saúde" }] }] } },
       rendas:{ status:"done", data:{ contratos:0, activos:0, recibos:0 } },
       situacao:{ status:"done", data:{ dividas:{n:0}, coimas:{n:0}, agenda:{ n:2, proximos:[
         { data:"25/02", desc:"Validar faturas no e-Fatura" }, { data:"30/06", desc:"Entregar a declaração de IRS" } ] } } },
@@ -999,6 +1047,136 @@
       '</select>'+ico('i-chevron')+'</div>';
   }
 
+  /* RELATÓRIO DE CORREÇÃO, EM PDF, SEM SERVIDOR E SEM BIBLIOTECA.
+   *
+   * Tudo o que aqui entra já está no browser (o perfil montado a partir do localStorage). O
+   * relatório é uma vista HTML própria, aberta numa janela nova, com CSS de impressão a sério
+   * (A4, cabeçalho de tabela repetido via thead, regras de quebra de página); depois chama-se
+   * window.print() e é o "guardar como PDF" nativo do browser que produz o ficheiro. Nenhum
+   * pedido de rede, nenhum email, nenhum mailto, nenhuma dependência: a superfície auditável
+   * desta ferramenta é o argumento dela, e uma biblioteca de PDF seria o maior bloco de código
+   * do projeto inteiro a fazer o que o browser já faz.
+   *
+   * Se o browser bloquear a janela (bloqueador de popups), a mesma vista é montada NA PRÓPRIA
+   * página com um botão de imprimir - o utilizador nunca fica sem o relatório. */
+  function reportHtml(yy, ra, wnd, geradoEm){
+    var money = function(v){ return '&euro;'+esc((Number(v)||0).toFixed(2).replace('.',',')); };
+    var tabela = function(titulo, lista){
+      if (!lista || !lista.length) return '';
+      return '<h3>'+esc(titulo)+'</h3><table><thead><tr>'+
+        '<th>Comerciante</th><th>NIF</th><th class="n">Faturas</th><th class="n">Em jogo</th>'+
+        '<th>Setor atual</th><th>Setor sugerido</th></tr></thead><tbody>'+
+        lista.map(function(m){
+          return '<tr><td>'+esc(m.nome||'(sem nome)')+'</td><td>'+esc(m.nif||'?')+'</td>'+
+            '<td class="n">'+esc(m.n)+'</td><td class="n">'+money(m.valor)+'</td>'+
+            '<td>'+esc(m.de||'?')+'</td><td>'+esc(m.para||'?')+'</td></tr>';
+        }).join('')+'</tbody></table>';
+    };
+    var semDetalhe = !ra.porComerciante && !ra.porComercianteAconselhado;
+    return '<!doctype html><html lang="pt-PT"><head><meta charset="utf-8">'+
+      '<title>Relatório de correção IRS '+esc(yy)+' - Fatura Boa</title><style>'+
+      '@page{size:A4;margin:16mm 14mm}'+
+      'body{font:13px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#14213d;margin:0;padding:24px;max-width:900px}'+
+      'header{border-bottom:3px solid #1b5cff;padding-bottom:10px;margin-bottom:18px}'+
+      '.brand{font-size:1.35rem;font-weight:700;color:#1b5cff;letter-spacing:-.02em}'+
+      'h1{font-size:1.15rem;margin:8px 0 2px}h2{font-size:1rem;margin:20px 0 6px}'+
+      'h3{font-size:.92rem;margin:16px 0 5px}'+
+      '.meta{color:#5b6478;font-size:.82rem}'+
+      'table{border-collapse:collapse;width:100%;font-size:.82rem;margin:4px 0 10px}'+
+      'th,td{border:1px solid #d7dbe4;padding:5px 7px;text-align:left;vertical-align:top}'+
+      'th{background:#eef2fb;font-weight:600}td.n,th.n{text-align:right;white-space:nowrap}'+
+      'tr{page-break-inside:avoid}'+
+      '.sum{background:#f5f7fc;border:1px solid #d7dbe4;border-radius:6px;padding:10px 12px;margin:8px 0}'+
+      '.warn{border-left:3px solid #b5730a;background:#fdf6e9;padding:8px 11px;margin:8px 0;font-size:.85rem}'+
+      '.priv{border-left:3px solid #1b5cff;background:#eef2fb;padding:8px 11px;margin:14px 0;font-size:.82rem}'+
+      'footer{margin-top:22px;border-top:1px solid #d7dbe4;padding-top:9px;color:#5b6478;font-size:.76rem}'+
+      '.noprint{margin:0 0 16px}'+
+      '@media print{.noprint{display:none}body{padding:0;max-width:none}'+
+      'thead{display:table-header-group}h2,h3{page-break-after:avoid}}'+
+      '</style></head><body>'+
+      '<div class="noprint"><button type="button" onclick="window.print()" '+
+        'style="font:inherit;padding:8px 16px;border:1px solid #1b5cff;background:#1b5cff;color:#fff;border-radius:8px;cursor:pointer">'+
+        'Imprimir / Guardar PDF</button></div>'+
+      '<header><div class="brand">Fatura Boa</div>'+
+        '<h1>Relatório de correção - IRS '+esc(yy)+'</h1>'+
+        '<div class="meta">Gerado em '+esc(geradoEm)+' &middot; faturas.diogoandrade.com &middot; '+
+        'prazo estimado para corrigir a teu favor: <b>'+esc(wnd.recover.deadline)+'</b> ('+
+        (wnd.recover.open ? 'janela ABERTA' : 'janela fechada')+')</div></header>'+
+      '<h2>Resumo</h2>'+
+      '<div class="sum"><b>Máximo teórico:</b> '+money(ra.recuperavel)+' em '+esc(ra.nMover||0)+' fatura(s).<br>'+
+        '<b>Aconselhado:</b> '+money(ra.recuperavelAconselhado)+' em '+esc(ra.nMoverAconselhado||0)+' fatura(s).'+
+        (ra.nDeGerais ? '<br>'+esc(ra.nDeGerais)+' fatura(s) vinham de Despesas Gerais.' : '')+'</div>'+
+      '<div class="warn">Este é o <b>máximo teórico</b>: inclui setores <b>secundários</b> do comerciante. '+
+        'Não é uma recomendação - só conta se a compra pertencer mesmo a esse setor. Estar registado num setor '+
+        'não transforma um jantar em despesa de saúde.</div>'+
+      '<div class="warn">Só faturas cujo setor sugerido <b>é a atividade principal</b> de quem as emitiu são '+
+        'as mais fáceis de defender.</div>'+
+      '<div class="warn"><b>Classificar mal só para deduzir mais é ilegal e pode levar a inspeção</b> - otimizar '+
+        'não é o mesmo que declarar bem. Isto não é aconselhamento fiscal.</div>'+
+      '<h2>Como corrigir</h2>'+
+      '<p>'+(wnd.recover.open
+        ? 'e-Fatura &rarr; Alterar &rarr; escolhe o setor &rarr; Guardar, e entrega uma declaração de substituição. Ainda estás no prazo.'
+        : 'O prazo para corrigir '+esc(yy)+' já fechou - este relatório fica como referência do que a ferramenta deteta.')+'</p>'+
+      '<h2>Detalhe por comerciante</h2>'+
+      (semDetalhe
+        ? '<p>Este perfil foi guardado por uma versão anterior do leitor e não tem o detalhe por comerciante. '+
+          'Relê o e-Fatura com o favorito para o obteres.</p>'
+        : tabela('Cenário otimizado (máximo teórico)', ra.porComerciante)+
+          tabela('Cenário aconselhado (setor principal do comerciante)', ra.porComercianteAconselhado))+
+      '<div class="priv"><b>Este documento contém dados fiscais pessoais.</b> Foi gerado inteiramente no teu '+
+        'navegador, a partir dos dados guardados neste dispositivo. Nada disto foi enviado para nenhum servidor. '+
+        'Guarda-o e partilha-o com o mesmo cuidado que terias com uma declaração de IRS.</div>'+
+      '<footer>Fatura Boa - ferramenta comunitária e independente. <b>Não</b> afiliada à Autoridade Tributária. '+
+        'Sem garantias, confirma sempre nas Finanças. Prazos estimados pelo calendário do IRS; confirma a data da '+
+        'tua liquidação. Base legal: CPPT art. 59.º e 70.º, LGT art. 78.º.</footer>'+
+      '</body></html>';
+  }
+  function openReport(yy, ra, wnd){
+    var geradoEm = new Date().toLocaleDateString('pt-PT', { day:'2-digit', month:'2-digit', year:'numeric' });
+    var html = reportHtml(yy, ra, wnd, geradoEm);
+    var w = null;
+    try { w = window.open('', '_blank'); } catch(e){ w = null; }
+    if (w && w.document){
+      w.document.open(); w.document.write(html); w.document.close();
+      // O print tem de esperar pelo layout, senão sai uma folha em branco em alguns browsers.
+      try { w.onload = function(){ try { w.print(); } catch(e){} };
+            setTimeout(function(){ try { w.focus(); w.print(); } catch(e){} }, 350); } catch(e){}
+      return true;
+    }
+    // FALLBACK (popup bloqueado): a mesma vista, na própria página, com botão de imprimir.
+    var host = document.getElementById('fbreport');
+    if (!host){
+      host = document.createElement('div'); host.id = 'fbreport';
+      document.body.appendChild(host);
+    }
+    host.innerHTML = '<div class="repwrap"><div class="repbar noprint">'+
+      '<button type="button" class="btn-small" id="fbrepprint">Imprimir / Guardar PDF</button> '+
+      '<button type="button" class="btn-small ghost" id="fbrepclose">Fechar</button>'+
+      '<span class="w"> A janela nova foi bloqueada pelo navegador, por isso o relatório abriu aqui.</span></div>'+
+      '<iframe id="fbrepframe" title="Relatório de correção"></iframe></div>';
+    var fr = document.getElementById('fbrepframe');
+    var d = fr.contentWindow.document; d.open(); d.write(html); d.close();
+    document.getElementById('fbrepprint').onclick = function(){ try { fr.contentWindow.focus(); fr.contentWindow.print(); } catch(e){} };
+    document.getElementById('fbrepclose').onclick = function(){ host.innerHTML = ''; };
+    host.scrollIntoView({ block:'start' });
+    return false;
+  }
+
+  /* Ctrl+P na propria pagina. CSS nao consegue abrir um <details> fechado, por isso um Ctrl+P
+   * imprimia a pagina com tudo recolhido - folhas de titulos sem conteudo nenhum. Abrem-se todos
+   * antes de imprimir e repoe-se o estado exato a seguir. */
+  var _printOpened = [];
+  window.onbeforeprint = function(){
+    _printOpened = [];
+    Array.prototype.forEach.call(document.querySelectorAll("details"), function(d){
+      if (!d.open){ _printOpened.push(d); d.open = true; }
+    });
+  };
+  window.onafterprint = function(){
+    _printOpened.forEach(function(d){ d.open = false; });
+    _printOpened = [];
+  };
+
   // Accordions must survive a re-render (a checkbox change rebuilds #out); without this the
   // "Outras situacoes" details snapped shut on every click. Read the live open-state before rebuild.
   var ACC = {};
@@ -1173,17 +1351,50 @@
           var aberta = wnd.recover.open;
           var cor = aberta ? 'var(--green)' : 'var(--amber)';
 
+          // A LISTA ACIONÁVEL. Os agregados dizem QUANTO; isto diz ONDE. Vem do tool.js já ordenada
+          // por valor e limitada aos 40 maiores grupos - renderiza-se pela ordem entregue, sem
+          // reordenar. Fica SEMPRE depois das guardas de honestidade do painel: quem chega à lista
+          // já leu o aviso de que aquilo é um máximo teórico, e não o contrário.
+          var merchRow = function(m){
+            return '<div class="mrow"><div><b>'+esc(m.nome||'(sem nome)')+'</b> <span class="w">('+esc(m.nif||'?')+')</span>'+
+              ' - '+esc(m.n)+' fatura(s) - <b>~&euro;'+esc((Number(m.valor)||0).toFixed(2).replace('.',','))+'</b></div>'+
+              '<div class="w">de <b>'+esc(m.de||'?')+'</b> para <b>'+esc(m.para||'?')+'</b></div></div>';
+          };
+          var merchList = function(list, headline){
+            if (!list || !list.length) return '';
+            var h = '<div class="mlist"><div class="mtit">Onde mexer, comerciante a comerciante</div>'+
+              list.slice(0,8).map(merchRow).join('');
+            var rest = list.slice(8);
+            if (rest.length) h += '<details class="mmore"><summary>Ver mais '+rest.length+' comerciante(s)</summary>'+
+              rest.map(merchRow).join('')+'</details>';
+            // A lista está limitada aos maiores. Dizer o que ela soma face ao total evita a leitura
+            // errada de que estes comerciantes são tudo o que há.
+            var soma = list.reduce(function(a,m){ return a + (Number(m.valor)||0); }, 0);
+            h += '<div class="w mfoot">Estes '+list.length+' comerciantes somam <b>~&euro;'+esc(Math.round(soma))+'</b>'+
+              (headline && soma < headline - 0.5
+                 ? ' dos ~&euro;'+esc(Math.round(headline))+' acima - a lista mostra só os que valem mais.'
+                 : '.')+'</div></div>';
+            return h;
+          };
+          // Perfis guardados ANTES desta versão do leitor não trazem o detalhe. Mostram-se os
+          // agregados na mesma e diz-se o que fazer para o obter - nunca uma lista vazia.
+          var semDetalhe = !ra.porComerciante && !ra.porComercianteAconselhado;
+          var avisoDetalhe = semDetalhe
+            ? '<div class="w mfoot">Relê o e-Fatura com o favorito para veres o detalhe por comerciante.</div>' : '';
+
           var paneOtim = '<div class="w"><b style="color:'+cor+'">~&euro;'+esc(Math.round(otim))+'</b> em '+esc(ra.nMover)+' fatura(s)'+
             (Object.keys(ra.porSetor||{}).length?' - '+fmtSet(ra.porSetor):'')+'.'+
             (ra.nDeGerais ? ' <span class="w">('+esc(ra.nDeGerais)+' vinham de Despesas Gerais.)</span>' : '')+
             '<div style="margin-top:3px;color:var(--amber)">Este é o <b>máximo teórico</b>: inclui setores <b>secundários</b> do comerciante. '+
-            'Não é uma recomendação - só conta se a compra pertencer mesmo a esse setor. Estar registado num setor não transforma um jantar em despesa de saúde.</div></div>';
+            'Não é uma recomendação - só conta se a compra pertencer mesmo a esse setor. Estar registado num setor não transforma um jantar em despesa de saúde.</div>'+
+            merchList(ra.porComerciante, otim)+avisoDetalhe+'</div>';
 
           var paneAcon = '<div class="w">'+
             (acon > 0.5
               ? '<b style="color:'+cor+'">~&euro;'+esc(Math.round(acon))+'</b> em '+esc(ra.nMoverAconselhado||0)+' fatura(s)'+
                 (Object.keys(ra.porSetorAconselhado||{}).length?' - '+fmtSet(ra.porSetorAconselhado):'')+'.'+
-                '<div style="margin-top:3px">Só faturas cujo setor sugerido <b>é a atividade principal</b> de quem as emitiu - as mais fáceis de defender.</div>'
+                '<div style="margin-top:3px">Só faturas cujo setor sugerido <b>é a atividade principal</b> de quem as emitiu - as mais fáceis de defender.</div>'+
+                merchList(ra.porComercianteAconselhado, acon)+avisoDetalhe
               : 'Nada a mover com segurança: as faturas já estão no setor principal do comerciante.')+
             '</div>';
 
@@ -1199,7 +1410,12 @@
           raHtml += '<div class="w" style="margin-top:4px">'+
             (aberta ? 'Para corrigir: e-Fatura &rarr; Alterar &rarr; escolhe o setor &rarr; Guardar, e entrega uma declaração de substituição. Ainda estás no prazo.'
                     : '<span style="color:var(--amber)">O prazo para corrigir '+yy+' já fechou - fica como referência do que a ferramenta deteta.</span>')+'</div>'+
-            '<div class="w" style="margin-top:3px;color:var(--amber);font-size:.82rem">Classificar mal só para deduzir mais é ilegal e pode levar a inspeção - otimizar não é o mesmo que declarar bem. Isto não é aconselhamento fiscal.</div>';
+            '<div class="w" style="margin-top:3px;color:var(--amber);font-size:.82rem">Classificar mal só para deduzir mais é ilegal e pode levar a inspeção - otimizar não é o mesmo que declarar bem. Isto não é aconselhamento fiscal.</div>'+
+            // O relatório é construído no browser a partir do que já está em memória: abre uma
+            // vista própria e chama window.print(), e é o "guardar como PDF" nativo do browser que
+            // faz o ficheiro. Sem biblioteca de PDF (mantém a superfície auditável pequena), sem
+            // envio de nada para lado nenhum.
+            '<div style="margin-top:7px"><button type="button" class="btn-small fbpdf" data-ano="'+yy+'">Descarregar PDF</button></div>';
         } else if (ra){
           raHtml = '<div class="w" style="margin-top:4px">Nada por reclassificar em '+yy+' - as faturas já estão no melhor setor possível.</div>';
         }
@@ -1348,6 +1564,18 @@
     var vr = document.getElementById("verrelatorio");
     if (vr) vr.onclick = function(ev){ ev.preventDefault(); ev.stopPropagation();
       var a = document.getElementById("anos"); if (a){ a.open = true; ACC.anos = true; a.scrollIntoView({ block:"start" }); } };
+    // "Descarregar PDF" por ano. O ano vem do data-attribute e os dados relem-se do perfil montado,
+    // por isso o botao continua correto depois de qualquer re-render.
+    Array.prototype.forEach.call(document.querySelectorAll(".fbpdf"), function(btn){
+      btn.onclick = function(ev){
+        ev.preventDefault(); ev.stopPropagation();
+        var yy = +btn.getAttribute("data-ano");
+        var list = (prof.detalhes.efatura && prof.detalhes.efatura.reAudit) || [];
+        var ra = list.filter(function(x){ return x.ano === yy; })[0];
+        if (!ra) return;
+        openReport(yy, ra, resubmissionWindows(yy));
+      };
+    });
     var cs = document.getElementById("copyshape");
     if (cs) cs.onclick = function(ev){
       ev.preventDefault();

@@ -39,6 +39,22 @@ const PROFILES = {
     irs: { status: "done", data: { liquidacoes: 3, porAno: [{ ano: anoPassado }] } },
     patrimonio: { status: "done", data: { imoveis: 1 } },
   } },
+  // COM o detalhe por comerciante (porComerciante), que e o que reAuditAno passou a devolver. Mais
+  // de 8 grupos para exercitar o caminho do <details> "Ver mais N", e uma linha SEM `de` para o
+  // caso de um perfil parcialmente preenchido. Os fixtures acima ficam de proposito SEM
+  // porComerciante: sao a cobertura do caminho de ausencia (perfis guardados por versoes antigas).
+  "com detalhe por comerciante": { partitions: {
+    efatura: { status: "done", data: { ano: anoPassado + 1, totalFaturas: 300, porClassificar: 0, atividades: {},
+      reAudit: [{ ano: anoPassado, recuperavel: 651.4, nMover: 153, porSetor: { "Saúde": 74 },
+        recuperavelAconselhado: 214.8, nMoverAconselhado: 46, porSetorAconselhado: { "Saúde": 31 },
+        nDeGerais: 88, totalFaturas: 300,
+        porComerciante: Array.from({ length: 11 }, (_, i) => ({
+          nome: "Comerciante " + i, nif: String(500000001 + i), n: 11 - i,
+          valor: +(120 - i * 9.5).toFixed(2), de: i === 3 ? "" : "Outros", para: "Saúde" })),
+        porComercianteAconselhado: [
+          { nome: "Farmácia Teste", nif: "500000001", n: 9, valor: 118.42, de: "Outros", para: "Saúde" }] }] } },
+    irs: { status: "done", data: { liquidacoes: 2, porAno: [{ ano: anoPassado }] } },
+  } },
   // sem rendas, mas com declaracoes: garante que o bloco das rendas nao rebenta quando nao ha Cat F
   "sem rendas, com IRS": { partitions: {
     efatura: { status: "done", data: { ano: anoPassado + 1, totalFaturas: 10, porClassificar: 0, atividades: {}, reAudit: [
