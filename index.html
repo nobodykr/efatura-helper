@@ -171,8 +171,13 @@
   .selwrap select{flex:1;min-width:0;border:0;background:transparent;font:400 1.06rem 'IBM Plex Sans',sans-serif;
                   color:var(--ink);padding:14px 0;appearance:none;-webkit-appearance:none;cursor:pointer}
 
-  /* The boxed 3-cell action frame, shared with /perfil: one bordered box, 1px dividers. */
-  .aframe{display:grid;grid-template-columns:1fr 1.05fr 1.05fr;align-items:center;
+  /* The boxed 3-cell action frame, shared with /perfil: one bordered box, 1px dividers.
+     align-items:start (not center): every acell's content starts at the row's top edge, so the
+     three CONTROLS (button/select/button) sit on one line regardless of how many lines of label
+     or caption sit above/below them in each cell. Cell 3 has no visible label, so the markup
+     below gives it an invisible .atitle spacer of the same height to keep the controls aligned -
+     hand-synced with the equivalent fix in perfil.html. */
+  .aframe{display:grid;grid-template-columns:1fr 1.05fr 1.05fr;align-items:start;
           border:1px solid #e2e8f3;border-radius:16px;background:#fff;padding:22px 10px;margin:26px 0 0;text-align:center}
   .aframe[hidden]{display:none}   /* [hidden] alone loses to the display:grid above at equal specificity */
   .acell{padding:0 26px;border-left:1px solid #e2e8f3}
@@ -515,7 +520,8 @@
         <div class="selwrap"><svg class="icon" aria-hidden="true"><use href="#i-doc"/></svg>
           <select id="sit-srcsel" aria-label="Fonte a abrir a seguir"></select>
           <svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg></div></div>
-      <div class="acell"><a class="btn-primary" id="sit-opensrc" target="_blank" rel="noopener" href="https://faturas.portaldasfinancas.gov.pt">
+      <div class="acell"><div class="atitle" style="visibility:hidden" aria-hidden="true">&nbsp;</div>
+        <a class="btn-primary" id="sit-opensrc" target="_blank" rel="noopener" href="https://faturas.portaldasfinancas.gov.pt">
         <svg class="icon" aria-hidden="true"><use href="#i-external"/></svg><span id="sit-opensrclabel">Abrir e-Fatura</span></a></div>
     </div>
     <p class="framecap" id="sit-emptycap" hidden>Na página oficial, clica no favorito Fatura Boa. Os dados aparecem em
