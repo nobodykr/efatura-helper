@@ -69,6 +69,9 @@
     --red:#c8102e; --green:#1E5A3A; --amber:#8a6100;
     --focus:#ff7a00;   /* amber focus ring: high contrast on both white and dark-blue, no neon shock */
     --r:6px;
+    /* Aliases so the situação-module CSS below (copied from perfil.html, which names its own
+       tokens differently) can be pasted close to verbatim instead of hand-translated. */
+    --hair-strong:#c7d2e6;
   }
   *{box-sizing:border-box}
   .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -150,9 +153,28 @@
     .brand .nm{font-size:1.25rem}
   }
 
+  /* Segmented progress + the boxed 3-cell action frame that drive the situação module below -
+     hand-synced with the equivalent block in perfil.html (two files, two origins, no shared
+     module; keep them matching by hand when either changes). */
+  .sitmodule{margin:26px 0 0}
+  .prog{margin:0 auto;max-width:860px}
+  .plabel{text-align:center;font-weight:700;font-size:1.12rem;color:var(--pri-dark);margin-bottom:11px}
+  .segbar{display:grid;grid-template-columns:repeat(9,1fr);gap:5px}
+  .seg{height:27px;border:1px solid var(--hair-strong);border-radius:5px;background:#fff;
+       display:flex;align-items:center;justify-content:center}
+  .seg.on{background:var(--pri);border-color:var(--pri)}
+  .seg .icon{width:15px;height:15px;color:#fff;stroke-width:3}
+  .pcap{text-align:center;color:var(--mute);font-size:.96rem;margin-top:11px}
+  .selwrap{display:flex;align-items:center;gap:12px;border:1px solid var(--hair-strong);
+           border-radius:10px;padding:0 14px;background:#fff;min-height:60px}
+  .selwrap .icon{color:var(--pri-dark)}
+  .selwrap select{flex:1;min-width:0;border:0;background:transparent;font:400 1.06rem 'IBM Plex Sans',sans-serif;
+                  color:var(--ink);padding:14px 0;appearance:none;-webkit-appearance:none;cursor:pointer}
+
   /* The boxed 3-cell action frame, shared with /perfil: one bordered box, 1px dividers. */
   .aframe{display:grid;grid-template-columns:1fr 1.05fr 1.05fr;align-items:center;
           border:1px solid #e2e8f3;border-radius:16px;background:#fff;padding:22px 10px;margin:26px 0 0;text-align:center}
+  .aframe[hidden]{display:none}   /* [hidden] alone loses to the display:grid above at equal specificity */
   .acell{padding:0 26px;border-left:1px solid #e2e8f3}
   .acell:first-child{border-left:0}
   .atitle{font-weight:600;font-size:1.02rem;color:var(--pri-dark);margin-bottom:13px}
@@ -305,6 +327,7 @@
     h1{animation:hero-rise .55s cubic-bezier(.2,.7,.3,1) .08s both}
     header .sub{animation:hero-rise .55s cubic-bezier(.2,.7,.3,1) .16s both}
     .cta-row{animation:hero-rise .55s cubic-bezier(.2,.7,.3,1) .24s both}
+    .sitmodule{animation:hero-rise .55s cubic-bezier(.2,.7,.3,1) .32s both}
     @keyframes hero-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   }
 
@@ -390,6 +413,13 @@
   <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="12" rx="2"/><path d="M9 20.5h6M12 16.5v4"/></symbol>
   <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 6.5 12 6.5 21.5 12 21.5 12 18 17.5 12 17.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.6"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.4l3.4 2"/></symbol>
+  <!-- The following four + chevron are hand-synced with perfil.html's sprite: needed by the
+       situação module's select/icons below. -->
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.6L12 4l8 6.6"/><path d="M6 10v10h12V10"/><path d="M10 20v-5h4v5"/></symbol>
+  <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3.5 9.5L12 4l8.5 5.5"/><path d="M5.5 10v8M10 10v8M14 10v8M18.5 10v8"/><path d="M3 20.5h18"/></symbol>
+  <symbol id="i-hands" viewBox="0 0 24 24"><path d="M12 3.5l6 2.4v4.6c0 3.6-2.4 6.4-6 7.6-3.6-1.2-6-4-6-7.6V5.9z"/><path d="M4 15.5c1.6 2.4 4.4 4.3 8 5.2 3.6-.9 6.4-2.8 8-5.2"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></symbol>
 </svg>
 <details class="alertbar">
   <summary><div class="wrap">
@@ -464,27 +494,48 @@
      e na Segurança Social, lê o que o Estado já sabe sobre ti, e diz-te o que fazer: faturas
      pendentes, rendas, dívidas e prazos, património e IRS. Tudo <b>no teu navegador</b>.</p>
 
-  <!-- The 3-cell action frame, the same component the /perfil screens use: prepare, open the
-       official page, then read the situation. One primary action, two supporting cells. -->
-  <div class="aframe">
-    <div class="acell"><div class="atitle">1. Preparar</div>
-      <a class="btn-outline" id="bookmarklet2" href="#"><svg class="icon" aria-hidden="true"><use href="#i-bookmark"/></svg>Instalar favorito</a>
-      <div class="acap">Só uma vez</div></div>
-    <div class="acell"><div class="atitle">2. Abrir o e-Fatura</div>
-      <a class="btn-outline" style="cursor:pointer" href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg>Abrir e-Fatura</a>
-      <div class="acap">Na tua sessão, com o teu login</div></div>
-    <div class="acell"><a class="btn-primary" href="/perfil"><svg class="icon" aria-hidden="true"><use href="#i-user"/></svg>Ver a minha situação</a></div>
-  </div>
-  <p class="framecap">Na página oficial, clica no favorito Fatura Boa. Os dados aparecem em
-    <a href="/perfil">A minha situação</a>, só neste navegador.</p>
-
-  <div class="cta-row">
-    <a class="cta-alt" href="/perfil?exemplo=1">Ver um exemplo</a>
-    <a class="cta-alt" href="#como">Como funciona</a>
+  <div class="badges">
+    <span class="badge">corre <b>na tua sessão</b></span>
+    <span class="badge"><b>grátis</b>, sem contas</span>
   </div>
 
-  <!-- the security story is the product, so it gets icons and room right under the hero
-       actions instead of waiting for the reader to scroll to "porque é seguro". -->
+  <!-- SITUAÇÃO module: a live, read-only mirror of /perfil's progress bar + 3-cell action frame,
+       same visual classes as perfil.html (segmented progress: .prog/.plabel/.segbar/.seg/.pcap;
+       action frame: .aframe/.acell/.selwrap) - hand-synced with that file, two origins, no shared
+       module. It only reads fb-profile-v1 from localStorage (same origin as /perfil) and never
+       writes to it. Empty state shows the full 3-cell frame; once at least one source is in, it
+       collapses to just the progress bar and a single CTA into /perfil, where the full flow lives. -->
+  <div class="sitmodule" id="sitmodule">
+    <div class="prog">
+      <div class="plabel" id="sit-plabel">0 de 9 fontes reunidas</div>
+      <div class="segbar" id="sit-segbar" role="img" aria-label="0 de 9 fontes reunidas"></div>
+      <div class="pcap" id="sit-pcap">Os dados ficam neste navegador até ao fim do dia.</div>
+    </div>
+
+    <div class="aframe" id="sit-empty" hidden>
+      <div class="acell"><div class="atitle">1. Preparar</div>
+        <a class="btn-outline" id="bookmarklet2" href="#"><svg class="icon" aria-hidden="true"><use href="#i-bookmark"/></svg>Instalar favorito</a>
+        <div class="acap">Só uma vez</div></div>
+      <div class="acell"><div class="atitle">2. Começar por</div>
+        <div class="selwrap"><svg class="icon" aria-hidden="true"><use href="#i-doc"/></svg>
+          <select id="sit-srcsel" aria-label="Fonte a abrir a seguir"></select>
+          <svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg></div></div>
+      <div class="acell"><a class="btn-primary" id="sit-opensrc" target="_blank" rel="noopener" href="https://faturas.portaldasfinancas.gov.pt">
+        <svg class="icon" aria-hidden="true"><use href="#i-external"/></svg><span id="sit-opensrclabel">Abrir e-Fatura</span></a></div>
+    </div>
+    <p class="framecap" id="sit-emptycap" hidden>Na página oficial, clica no favorito Fatura Boa. Os dados aparecem em
+      <a href="/perfil">A minha situação</a>, só neste navegador.</p>
+
+    <div id="sit-cta" hidden style="text-align:center;margin-top:22px">
+      <a class="btn-primary" id="sit-continue" href="/perfil" style="max-width:420px">
+        <svg class="icon" aria-hidden="true"><use href="#i-user"/></svg>Continuar em A minha situação</a>
+    </div>
+
+    <p style="text-align:center;margin-top:14px"><a class="cta-alt" href="/perfil?exemplo=1">Ver um exemplo</a></p>
+  </div>
+
+  <!-- the security story is the product, so it gets icons and room right under the situação
+       module instead of waiting for the reader to scroll to "porque é seguro". -->
   <div class="trust-row">
     <div class="trust-item"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
       <span><b>Nunca</b> pede a tua password</span></div>
@@ -492,6 +543,10 @@
       <span>As faturas <b>não saem</b> do navegador</span></div>
     <div class="trust-item"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
       <span>Código <b>aberto e verificável</b></span></div>
+  </div>
+
+  <div class="cta-row">
+    <a class="cta-alt" href="#como">Como funciona</a>
   </div>
 
   <!-- Recovered-euro counter. Hidden until there is a real, non-zero number (no fake social proof).
@@ -509,11 +564,6 @@
     }).catch(function(){});
   })();
   </script>
-
-  <div class="badges">
-    <span class="badge">corre <b>na tua sessão</b></span>
-    <span class="badge"><b>grátis</b>, sem contas</span>
-  </div>
 </div>
 </header>
 
@@ -793,6 +843,85 @@
       });
     }
   } catch (e) { /* leave everything visible */ }
+
+  // SITUAÇÃO module (read-only mirror of /perfil). PARTITIONS/SHORT below are a hand-kept mirror
+  // of perfil.html's own copy (itself a mirror of tool.js) - three files, two origins, no shared
+  // module. This block only READS fb-profile-v1 from localStorage; it never writes to it and never
+  // touches location.hash, so /perfil stays the only place a bookmarklet payload gets ingested.
+  (function(){
+    var PKEY = "fb-profile-v1";
+    var PARTITIONS = [
+      { id:"efatura", label:"e-Fatura", open:"https://faturas.portaldasfinancas.gov.pt/consultarDocumentosAdquirente.action" },
+      { id:"rendas", label:"Rendas (Imóveis)", open:"https://imoveis.portaldasfinancas.gov.pt/arrendamento/consultarContratos/locador" },
+      { id:"situacao", label:"Situação fiscal (dívidas e prazos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/geral/dashboard" },
+      { id:"atividade", label:"Atividade (cadastro e IVA)", open:"https://sitfiscal.portaldasfinancas.gov.pt/atividade/atividade/consultardeclaracoes" },
+      { id:"patrimonio", label:"Património predial (IMI)", open:"https://imoveis.portaldasfinancas.gov.pt/matrizesinter/web/consultar-patrimonio-predial" },
+      { id:"irs", label:"IRS (liquidações e reembolsos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/inffin/entrada.html" },
+      { id:"movfin", label:"Movimentos financeiros", open:"https://sitfiscal.portaldasfinancas.gov.pt/movfin/resumoCobranca" },
+      { id:"recibos", label:"Recibos verdes (atividade)", open:"https://irs.portaldasfinancas.gov.pt/recibos/portal/consultar" },
+      { id:"ss", label:"Segurança Social", open:"https://www.seg-social.pt/ptss/pssd/home" }
+    ];
+    var SHORT = { efatura:"e-Fatura", rendas:"Rendas", situacao:"Situação fiscal", atividade:"Atividade",
+      patrimonio:"Património", irs:"IRS", movfin:"Movimentos financeiros", recibos:"Recibos verdes", ss:"Segurança Social" };
+
+    function loadStore(){
+      try {
+        var s = JSON.parse(localStorage.getItem(PKEY));
+        if (!s) return { partitions:{} };
+        if (s.expiresAt && Date.now() >= s.expiresAt) return { partitions:{} };   // read-only: never deletes
+        return s;
+      } catch(e){ return { partitions:{} }; }
+    }
+
+    function renderSit(){
+      var mod = document.getElementById("sitmodule");
+      if (!mod) return;
+      var store = loadStore();
+      var done = PARTITIONS.filter(function(p){ return store.partitions[p.id] && store.partitions[p.id].status === "done"; });
+      var missing = PARTITIONS.filter(function(p){ return !(store.partitions[p.id] && store.partitions[p.id].status === "done"); });
+      var n = done.length, total = PARTITIONS.length;
+
+      var lbl = n + " de " + total + " fontes reunidas";
+      document.getElementById("sit-plabel").textContent = lbl;
+      var bar = document.getElementById("sit-segbar");
+      bar.setAttribute("aria-label", lbl);
+      bar.innerHTML = "";
+      for (var i = 0; i < total; i++){
+        var seg = document.createElement("span");
+        seg.className = "seg" + (i < n ? " on" : "");
+        if (i < n) seg.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>';
+        bar.appendChild(seg);
+      }
+      document.getElementById("sit-pcap").textContent = n
+        ? "Podes parar e continuar até ao fim do dia."
+        : "Os dados ficam neste navegador até ao fim do dia.";
+
+      var empty = document.getElementById("sit-empty"), emptycap = document.getElementById("sit-emptycap"),
+          cta = document.getElementById("sit-cta");
+      if (n === 0){
+        empty.hidden = false; emptycap.hidden = false; cta.hidden = true;
+        var sel = document.getElementById("sit-srcsel");
+        sel.innerHTML = missing.map(function(p){ return '<option value="' + p.id + '">' + (SHORT[p.id] || p.label) + '</option>'; }).join("");
+        var openBtn = document.getElementById("sit-opensrc"), openLbl = document.getElementById("sit-opensrclabel");
+        var applySel = function(){
+          var p = PARTITIONS.filter(function(z){ return z.id === sel.value; })[0];
+          if (!p) return;
+          openBtn.setAttribute("href", p.open);
+          openLbl.textContent = "Abrir " + (SHORT[p.id] || p.label);
+        };
+        sel.onchange = applySel;
+        applySel();
+      } else {
+        empty.hidden = true; emptycap.hidden = true; cta.hidden = false;
+      }
+    }
+    renderSit();
+    // Re-render if the bookmarklet lands in another tab, or when this tab regains focus - so the
+    // module never sits stale at 0/9 while the data is actually already saved.
+    window.addEventListener("storage", function(e){ if (e.key === PKEY) renderSit(); });
+    document.addEventListener("visibilitychange", function(){ if (!document.hidden) renderSit(); });
+    window.addEventListener("focus", renderSit);
+  })();
 </script>
 </body>
 </html>
