@@ -94,6 +94,48 @@
       margin-left:0;width:100%;justify-content:center;margin-top:8px}
   }
 
+  /* --- shared shell (same contract as index.html and perfil.html) ------------------------- */
+  svg[hidden]{display:none}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .icon{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:2;
+        stroke-linecap:round;stroke-linejoin:round}
+  .alertbar{background:var(--pri-dark);color:#fff}
+  .alertbar .wrap{display:flex;align-items:center;gap:18px;padding-top:14px;padding-bottom:14px;max-width:1180px}
+  .alertbar p{flex:1;display:flex;align-items:center;justify-content:center;gap:12px;margin:0;
+              font-size:1rem;font-weight:600;line-height:1.35;text-align:center}
+  .alertbar .icon{color:#fff}
+  .alertbar a{flex:none;display:inline-flex;align-items:center;gap:7px;color:#dbe4fa;
+              font-size:.94rem;text-underline-offset:3px}
+  .mast{border-bottom:1px solid var(--rule);background:#fff}
+  .mast .wrap{display:flex;align-items:center;gap:16px;min-height:88px;max-width:1180px}
+  .brand{display:flex;align-items:center;gap:15px;text-decoration:none}
+  .brand .markbox{width:46px;height:46px;flex:none;border-radius:10px;overflow:hidden}
+  .brand svg.mark{width:100%;height:100%;display:block}
+  .brand .plate,.brand .cut{fill:var(--pri)}
+  .brand .nm{font-weight:700;font-size:1.5rem;letter-spacing:-.02em;color:var(--pri-dark);white-space:nowrap}
+  .mainnav{margin-left:auto;display:flex;align-items:center;gap:4px}
+  .navlink{display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:12px 14px;
+           color:var(--ink2);font-size:.98rem;font-weight:500;text-decoration:none;
+           border-bottom:3px solid transparent}
+  .navlink span{white-space:nowrap}
+  .navlink .icon{width:25px;height:25px}
+  .navlink:hover{color:var(--pri)}
+  .navlink[aria-current="page"]{color:var(--pri);font-weight:600;border-bottom-color:var(--pri)}
+  .navsep{width:1px;align-self:stretch;background:var(--rule);margin:18px 8px}
+  .navmenu{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;
+           border:1px solid var(--rule);border-radius:10px;background:#fff;color:var(--ink2);cursor:pointer}
+  .navmenu:hover{color:var(--pri);border-color:var(--pri)}
+  #site-menu{display:none;border-top:1px solid var(--rule);background:var(--bg2)}
+  #site-menu.open{display:block}
+  #site-menu .wrap{display:flex;flex-wrap:wrap;gap:6px 26px;padding-top:14px;padding-bottom:14px;max-width:1180px}
+  #site-menu a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink2);
+               text-decoration:none;font-size:.95rem}
+  #site-menu a:hover{color:var(--pri)}
+  @media (max-width:900px){
+    .mast .wrap{min-height:72px}
+    .mainnav .navlink,.navsep{display:none}
+    .brand .nm{font-size:1.25rem}
+  }
 </style>
     <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
     <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="faturas.diogoandrade.com" data-exclude-search="true"></script>
@@ -102,27 +144,47 @@
 <body>
 
 
-<div class="mast">
-  <div class="wrap">
-    <a class="mark" href="/" aria-label="Fatura Boa, início">
-      <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-        <rect class="plate" width="32" height="32" rx="7"/>
-        <path fill="#fff" d="M6.75 6.5 H13.375 C18.875 6.5 22.75 10.3125 22.75 16
-                             C22.75 21.6875 18.875 25.5 13.375 25.5 H6.75 Z
-                             M10 9.5 V22.5 H13.1875 C16.8125 22.5 19.5 20 19.5 16
-                             C19.5 12 16.8125 9.5 13.1875 9.5 H10 Z"/>
-        <path fill="#fff" d="M18.25 25.5 L23.875 6.5 H26.375 L20.75 25.5 Z"/>
-        <path fill="#fff" d="M25.25 6.5 H27.75 L22.125 25.5 H19.625 Z"/>
-        <rect class="cut" x="20.875" y="16.375" width="4.875" height="2.25" rx="0.5"/>
-        <!-- diagonal is LOAD-BEARING: without it the A's left stroke fuses into the D -->
-        <path class="cut" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/>
-      </svg>
-    </a>
-    <div class="nm">Fatura Boa<span>Classificar faturas pendentes do e-Fatura, por setor, para o IRS</span></div>
-    <a class="mastnav" href="/deducoes" aria-current="page">Deduções</a>
-    <a class="mastnav" href="/consulta">Consultar NIF</a>
-  </div>
-</div>
+<svg hidden aria-hidden="true">
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5.5c0 4.3-2.9 7.6-7 9-4.1-1.4-7-4.7-7-9V6z"/><path d="M9 12.2l2.1 2.1L15 10"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20.5c0-3.9 3.2-6.6 7.2-6.6s7.2 2.7 7.2 6.6"/></symbol>
+  <symbol id="i-receipt-euro" viewBox="0 0 24 24"><path d="M5 3h9v18l-2.2-1.6L9.6 21l-2.3-1.6L5 21z"/><path d="M8 8h3M8 11.5h3"/><path d="M20.5 8.8a3.2 3.2 0 0 0-4.9 4.6 3.2 3.2 0 0 0 4.9.4"/><path d="M15 10.6h3.4M15 12.4h3"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M3 5.2c2.6-1 5.4-1 8 .6v13c-2.6-1.6-5.4-1.6-8-.6z"/><path d="M21 5.2c-2.6-1-5.4-1-8 .6v13c2.6-1.6 5.4-1.6 8-.6z"/><path d="M11 5.8L14.6 3M14.6 3l3.4 5.6M14.6 3L11.2 8.6"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.5"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M11 13L20 4"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></symbol>
+</svg>
+<div class="alertbar"><div class="wrap">
+  <p><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+    A password das Finanças só se escreve em .gov.pt. Aqui, nunca.</p>
+  <a href="/privacidade#password">Porquê?<svg class="icon" style="width:16px;height:16px" aria-hidden="true"><use href="#i-external"/></svg></a>
+</div></div>
+<div class="mast"><div class="wrap">
+  <a class="brand" href="/" aria-label="Fatura Boa, início">
+    <span class="markbox"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect class="plate" width="32" height="32" rx="7"/>
+      <path fill="#fff" d="M6.75 6.5 H13.375 C18.875 6.5 22.75 10.3125 22.75 16 C22.75 21.6875 18.875 25.5 13.375 25.5 H6.75 Z M10 9.5 V22.5 H13.1875 C16.8125 22.5 19.5 20 19.5 16 C19.5 12 16.8125 9.5 13.1875 9.5 H10 Z"/>
+      <path fill="#fff" d="M18.25 25.5 L23.875 6.5 H26.375 L20.75 25.5 Z"/><path fill="#fff" d="M25.25 6.5 H27.75 L22.125 25.5 H19.625 Z"/>
+      <rect class="cut" x="20.875" y="16.375" width="4.875" height="2.25" rx="0.5"/><path class="cut" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/></svg></span>
+    <span class="nm">Fatura Boa</span>
+  </a>
+  <nav class="mainnav" aria-label="Principal">
+    <a class="navlink" href="/perfil" data-mode-link="situacao"><svg class="icon" aria-hidden="true"><use href="#i-user"/></svg><span>A minha situação</span></a>
+    <a class="navlink" href="/deducoes" data-mode-link="deducoes" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#i-receipt-euro"/></svg><span>Deduções</span></a>
+    <a class="navlink" href="/auditoria" data-mode-link="legal"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg><span>Base legal e fiscal</span></a>
+    <a class="navlink" href="/sobre" data-mode-link="ajuda"><svg class="icon" aria-hidden="true"><use href="#i-help"/></svg><span>Ajuda</span></a>
+    <span class="navsep" aria-hidden="true"></span>
+    <button class="navmenu" type="button" id="menubtn" aria-expanded="false" aria-controls="site-menu">
+      <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg><span class="sr">Menu</span></button>
+  </nav>
+</div></div>
+<div id="site-menu"><div class="wrap">
+  <a href="/perfil">A minha situação</a>
+  <a href="/deducoes">Deduções</a>
+  <a href="/auditoria">Base legal e fiscal</a>
+  <a href="/sobre">Ajuda</a>
+  <a href="/verificar">Verificar o código</a>
+  <a href="/privacidade">Privacidade</a>
+  <a href="/termos">Termos</a>
+</div></div>
 <header>
   <div class="wrap">
     <h1>Deducoes do IRS por setor: taxas, tetos e base legal</h1>
@@ -188,8 +250,7 @@
   <p>Os CAE secundarios sao a parte que decide o resultado, e quase nenhum servico os mostra. Um
      hipermercado e comercio a retalho, mas tambem pode ter CAE de farmacia, de livraria e de
      restauracao. Sem os secundarios, uma compra de farmacia feita num hipermercado so poderia ser
-     despesa geral. Pode ver as atividades de qualquer comerciante em
-     <a href="/consulta">Consulta de NIF</a>.</p>
+     despesa geral. A ferramenta le esses secundarios na atividade oficial de cada comerciante.</p>
 
   <h2>Casos em que a lei nao decide por nos</h2>
   <ul>
@@ -237,11 +298,28 @@
 
 <footer class="wrap">
   <a href="/">Fatura Boa</a> &middot;
-  <a href="/consulta">Consulta de NIF</a> &middot;
+  <a href="/perfil">A minha situacao</a> &middot;
   <a href="https://github.com/nobodykr/efatura-helper" rel="noopener" target="_blank">Codigo</a> &middot;
   <a href="/auditoria">Auditoria</a>
   &middot; Nao afiliado a Autoridade Tributaria
 </footer>
 
+
+<script>
+  // Masthead menu (no framework): a plain toggle with aria-expanded, Escape closes.
+  (function(){
+    var mb = document.getElementById("menubtn"), menu = document.getElementById("site-menu");
+    if (!mb || !menu) return;
+    mb.addEventListener("click", function(){
+      var open = menu.classList.toggle("open");
+      mb.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    document.addEventListener("keydown", function(e){
+      if (e.key === "Escape" && menu.classList.contains("open")){
+        menu.classList.remove("open"); mb.setAttribute("aria-expanded","false"); mb.focus();
+      }
+    });
+  })();
+</script>
 </body>
 </html>
