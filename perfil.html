@@ -397,11 +397,20 @@
   // shareOn/confirm all short-circuit to MEM below, ingestHash is skipped and nothing - not one key -
   // is read from or written to localStorage while it is on.
   var DEMO = /(^|[?&])exemplo=1(&|$)/.test(location.search);
+  // MEM.confirmed defaults true: the example profile is pre-confirmed, so a first-time visitor
+  // to ?exemplo=1 sees the result frames plus the COLLAPSED "Outras situacoes" row, never the
+  // open gate prompt - there is nothing left to confirm in a fictitious profile. isConfirmed()/
+  // setConfirmed() are the ONLY place that decides the gate, for both flows: no other line in
+  // this file may read fb-profile-extra-confirmed from localStorage or MEM.confirmed directly.
+  // That is what keeps demo and real from ever disagreeing about the gate state.
   var MEM = { store:null, extra:{}, confirmed:true };
   function shareOn(){ if (DEMO) return false; try { return localStorage.getItem(SHARE_KEY) === "1"; } catch(e){ return false; } }
-  function isConfirmed(){ if (DEMO) return MEM.confirmed; try { return localStorage.getItem(CONFIRM_KEY) === "1"; } catch(e){ return false; } }
-  function setConfirmed(v){ if (DEMO){ MEM.confirmed = !!v; return; }
-    try { if (v) localStorage.setItem(CONFIRM_KEY, "1"); else localStorage.removeItem(CONFIRM_KEY); } catch(e){} }
+  function isConfirmed(){ return DEMO ? MEM.confirmed : realConfirmed(); }
+  function realConfirmed(){ try { return localStorage.getItem(CONFIRM_KEY) === "1"; } catch(e){ return false; } }
+  function setConfirmed(v){
+    if (DEMO){ MEM.confirmed = !!v; return; }
+    try { if (v) localStorage.setItem(CONFIRM_KEY, "1"); else localStorage.removeItem(CONFIRM_KEY); } catch(e){}
+  }
 
   // OPT-IN, STRUCTURE-ONLY contribution. Sends the SHAPE skeletons of the AT/Seg-Social responses
   // (field names + types, e.g. {aaData:[{...keys}], iTotalRecords:"number"}) so we can pin the schema
