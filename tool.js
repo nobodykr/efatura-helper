@@ -45,7 +45,7 @@
   var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.07.31b";
+  var FB_VERSION = "2026.08.07";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -343,7 +343,12 @@
       }
     });
     // Greedy por teto. `only` limita o conjunto (usado para o cenario ACONSELHADO).
-    var greedy = function (set) {
+    // `out`, quando dado, recebe {m, g} por cada fatura que REALMENTE recebeu ganho - ou seja, a
+    // mesma alocacao que produz o total devolvido. E de proposito que a lista por comerciante se
+    // constroi daqui e nao de dedu() cru: dedu() ignora o teto, por isso a soma das linhas ficaria
+    // ACIMA do numero grande que /perfil mostra por cima delas. Numa pagina cujo unico argumento e
+    // nao exagerar, as partes teem de somar o todo.
+    var greedy = function (set, out) {
       var pots = {}, total = 0;
       set.slice().sort(function (a, b) { return dedu(b.x, b.to) - dedu(a.x, a.to); }).forEach(function (m) {
         var c = CEIL[m.to], k = c.pot || m.to;
@@ -352,13 +357,51 @@
         var g = Math.min(dedu(m.x, m.to), roomLeft);
         if (g <= 0.01) return;
         pots[k] = (pots[k] || 0) + g; total += g;
+        if (out) out.push({ m: m, g: g });
       });
       return +total.toFixed(2);
     };
     var movA = movR.filter(function (m) { return m.aconselhado; });
-    return { movR: movR, recoverable: greedy(movR),
-             movA: movA, recoverableAconselhado: greedy(movA),
+    var allocR = [], allocA = [];
+    return { movR: movR, recoverable: greedy(movR, allocR),
+             movA: movA, recoverableAconselhado: greedy(movA, allocA),
+             allocR: allocR, allocA: allocA,
              nDeGerais: movR.filter(function (m) { return m.deGerais; }).length };
+  }
+  /* A LISTA ACIONAVEL. Os agregados dizem "651 EUR em 153 faturas"; nunca disseram QUAIS - e sem
+   * isso nao ha nada a fazer com o numero. Isto agrupa a alocacao do greedy por comerciante, para
+   * /perfil poder mostrar onde exatamente ir mexer no e-Fatura.
+   *
+   * A CHAVE E nif + setor atual + setor candidato, e nao so o NIF: as faturas do mesmo comerciante
+   * podem estar em setores atuais diferentes e receber candidatos diferentes, e uma linha unica
+   * teria de escolher um par "de/para" que seria FALSO para parte do grupo. Assim um comerciante
+   * misturado da duas linhas, ambas verdadeiras.
+   *
+   * Etiquetas via SECTORS, exatamente como porSetor logo acima - a lista aparece ao lado da
+   * contagem por setor, e dois nomes para o mesmo codigo na mesma caixa seria pior do que qualquer
+   * um deles isolado.
+   *
+   * CAP: isto viaja no fragmento do URL de handoff (browser -> /perfil, nunca pela rede) e fica
+   * guardado no localStorage. O fragmento tem de continuar pequeno, por isso ficam so os TOP 40
+   * grupos por valor, por ano e por lista. Quem tem 200 comerciantes nao vai agir em 200; age nos
+   * que valem dinheiro. */
+  var GRUPOS_MAX = 40;
+  function groupByMerchant(alloc) {
+    var by = {}, keys = [];
+    (alloc || []).forEach(function (a) {
+      var x = a.m.x;
+      var de = (x.actividadeEmitente && CEIL[x.actividadeEmitente]) ? x.actividadeEmitente : "C99";
+      var k = (x.nifEmitente || "") + "|" + de + "|" + a.m.to;
+      if (!by[k]) {
+        by[k] = { nome: name34(x), nif: String(x.nifEmitente || ""), n: 0, valor: 0,
+                  de: SECTORS[de] || de, para: SECTORS[a.m.to] || a.m.to };
+        keys.push(k);
+      }
+      by[k].n++; by[k].valor += a.g;
+    });
+    return keys.map(function (k) { by[k].valor = +by[k].valor.toFixed(2); return by[k]; })
+               .sort(function (p, q) { return q.valor - p.valor; })
+               .slice(0, GRUPOS_MAX);
   }
   /* Past-year re-audit = the optimiser above, run over EVERY invoice of a year (all sectors, fetched
    * completely via the recursive splitter), cross-referenced NIF-by-NIF against cae-db. Reports how
@@ -375,7 +418,12 @@
                  porSetor: byTarget, totalFaturas: rows.length,
                  // cenario ACONSELHADO: so movimentos para o setor do CAE PRINCIPAL do emitente
                  recuperavelAconselhado: mr.recoverableAconselhado, nMoverAconselhado: (mr.movA || []).length,
-                 porSetorAconselhado: byTargetA, nDeGerais: mr.nDeGerais };
+                 porSetorAconselhado: byTargetA, nDeGerais: mr.nDeGerais,
+                 // O detalhe acionavel: uma lista por PAINEL, porque os dois paineis de /perfil
+                 // mostram cenarios diferentes. Uma lista unica debaixo do painel "Aconselhado"
+                 // estaria a incluir setores secundarios sob um titulo que promete so o principal.
+                 porComerciante: groupByMerchant(mr.allocR),
+                 porComercianteAconselhado: groupByMerchant(mr.allocA) };
       });
     });
   }
