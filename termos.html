@@ -27,7 +27,35 @@
   .mast .mark{width:40px;height:40px;flex:none} .mast .mark svg{width:100%;height:100%;display:block}
   .mast .mark .plate,.mast .mark .cut{fill:var(--pri)}
   .mast .nm{font-weight:600;color:var(--ink)} .mast a.home{margin-left:auto;color:var(--pri);font-weight:600;text-decoration:none}
-  footer{border-top:1px solid var(--rule);padding:22px 0;color:var(--mute);font-size:.85rem}
+  /* FOOTER - hand-synced across every page that carries it (index.html, perfil.html, sobre.html,
+     deducoes.html, auditoria.html, privacidade.html, termos.html, verificar.html): same markup,
+     same CSS. Edit here first, then copy verbatim to the others - static files, no shared
+     include. Soft bg2 band; brand + one-line pitch on the left; three link columns with a small
+     mono uppercase title (same typographic language as the masthead eyebrow); a hairline; then a
+     muted bottom bar with the independence disclaimer and the licence line. */
+  footer{background:var(--bg2);border-top:1px solid var(--rule);color:var(--ink2);font-size:.87rem}
+  .ft-top{display:grid;grid-template-columns:minmax(180px,260px) 1fr;gap:40px;padding:48px 0 30px;align-items:start}
+  .ft-brand .brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none}
+  .ft-brand .markbox{width:34px;height:34px;flex:none;border-radius:8px;overflow:hidden}
+  .ft-brand .markbox svg{width:100%;height:100%;display:block}
+  .ft-brand .plate,.ft-brand .cut{fill:var(--pri)}
+  .ft-brand .nm{font-weight:700;font-size:1.1rem;letter-spacing:-.02em;color:var(--pri-dark)}
+  .ft-pitch{margin:14px 0 0;color:var(--ink2);font-size:.92rem;line-height:1.6;max-width:30ch}
+  .ftgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .ftcol h3{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;letter-spacing:.11em;
+            text-transform:uppercase;color:var(--pri);margin:0 0 8px;font-weight:600}
+  .ftcol a{display:flex;align-items:center;min-height:44px;color:var(--ink2);text-decoration:none;font-size:.92rem}
+  .ftcol a:hover{color:var(--pri)}
+  .ftbottom{border-top:1px solid var(--rule);padding:20px 0 28px;color:var(--mute);font-size:.85rem}
+  .ftbottom p{margin:0 0 6px}
+  .ftbottom p:last-child{margin-bottom:0}
+  @media (max-width:720px){
+    .ft-top{grid-template-columns:1fr;gap:30px;padding:36px 0 20px}
+    .ft-pitch{max-width:44ch}
+    .ftgrid{grid-template-columns:1fr;gap:0}
+    .ftcol{border-top:1px solid var(--rule);padding:16px 0}
+    .ftcol:first-child{border-top:0;padding-top:0}
+  }
   .upd{color:var(--mute);font-size:.85rem}
 
   /* --- shared shell (same contract as index.html and perfil.html) ------------------------- */
@@ -146,7 +174,48 @@
 
   <p class="upd">Última atualização: 24 de julho de 2026.</p>
 </main>
-<footer class="wrap"><a href="/">Fatura Boa</a> &middot; <a href="/privacidade">Privacidade</a> &middot; <a href="/sobre">Sobre</a></footer>
+<!-- FOOTER: hand-synced across index.html, perfil.html, sobre.html, deducoes.html, auditoria.html,
+     privacidade.html, termos.html, verificar.html - same markup everywhere (static files, no
+     shared include). -->
+<footer><div class="wrap">
+  <div class="ft-top">
+    <div class="ft-brand">
+      <a class="brand" href="/" aria-label="Fatura Boa, início">
+        <span class="markbox"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <rect class="plate" width="32" height="32" rx="7"/>
+          <path fill="#fff" d="M6.75 6.5 H13.375 C18.875 6.5 22.75 10.3125 22.75 16 C22.75 21.6875 18.875 25.5 13.375 25.5 H6.75 Z M10 9.5 V22.5 H13.1875 C16.8125 22.5 19.5 20 19.5 16 C19.5 12 16.8125 9.5 13.1875 9.5 H10 Z"/>
+          <path fill="#fff" d="M18.25 25.5 L23.875 6.5 H26.375 L20.75 25.5 Z"/><path fill="#fff" d="M25.25 6.5 H27.75 L22.125 25.5 H19.625 Z"/>
+          <rect class="cut" x="20.875" y="16.375" width="4.875" height="2.25" rx="0.5"/><path class="cut" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/>
+        </svg></span>
+        <span class="nm">Fatura Boa</span>
+      </a>
+      <p class="ft-pitch">A tua situação fiscal, das fontes oficiais das Finanças e da Segurança Social. Grátis, sem contas, no teu navegador.</p>
+    </div>
+    <div class="ftgrid">
+      <div class="ftcol">
+        <h3>Usar</h3>
+        <a href="/perfil">A minha situação</a>
+        <a href="/deducoes">Deduções</a>
+        <a href="/auditoria">Base legal e fiscal</a>
+      </div>
+      <div class="ftcol">
+        <h3>Confiar</h3>
+        <a href="/sobre">Sobre e ajuda</a>
+        <a href="/verificar">Verificar o código</a>
+        <a href="https://github.com/nobodykr/efatura-helper" target="_blank" rel="noopener">Código no GitHub</a>
+      </div>
+      <div class="ftcol">
+        <h3>Legal</h3>
+        <a href="/privacidade">Privacidade</a>
+        <a href="/termos">Termos</a>
+      </div>
+    </div>
+  </div>
+  <div class="ftbottom">
+    <p>Ferramenta comunitária e independente. <b>Não</b> afiliada à Autoridade Tributária. Sem garantias, confirma sempre nas Finanças.</p>
+    <p class="note"><a href="https://polyformproject.org/licenses/noncommercial/1.0.0" target="_blank" rel="noopener">PolyForm Noncommercial 1.0.0</a> - livre para uso pessoal, proibido monetizar. Feito por <a href="https://diogoandrade.com" target="_blank" rel="noopener">Diogo Andrade</a>.</p>
+  </div>
+</div></footer>
 
 <script>
   // Masthead menu (no framework): a plain toggle with aria-expanded, Escape closes.
