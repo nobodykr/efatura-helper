@@ -7,32 +7,70 @@
 <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png">
 <title>Sobre | Fatura Boa - a tua situação fiscal, das fontes oficiais</title>
-<meta name="description" content="O Fatura Boa é uma ferramenta gratuita e verificável que lê o teu próprio registo fiscal, na tua sessão, sem password. A missão, porque existe, e o que a torna diferente.">
+<meta name="description" content="O Fatura Boa é uma ferramenta gratuita e verificável que lê o teu próprio registo fiscal, na tua sessão, sem password. A missão, o modelo de segurança completo, e o que a torna diferente.">
 <link rel="canonical" href="https://faturas.diogoandrade.com/sobre">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{--pri:#034ad8;--pri-dark:#021c51;--ink:#2B363C;--ink2:#4a5a63;--mute:#6b7780;--bg:#fff;--bg2:#f4f6f9;--rule:#d5dae1;--green:#1E5A3A;--focus:#ff7a00;--r:6px;}
+  :root{--pri:#034ad8;--pri-dark:#021c51;--ink:#2B363C;--ink2:#4a5a63;--mute:#6b7780;--bg:#fff;--bg2:#f4f6f9;--rule:#d5dae1;--green:#1E5A3A;--amber:#8a6100;--focus:#ff7a00;--r:6px;}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.65 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   .wrap{max-width:760px;margin:0 auto;padding:0 24px}
   a{color:var(--pri);text-underline-offset:3px} a:hover{color:var(--pri-dark)}
-  a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+  a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
   header{background:var(--pri-dark);color:#fff;padding:28px 0}
   header h1{margin:0 0 8px;font-size:1.55rem} header p{margin:0;color:#cfd9ef;max-width:60ch}
   main{padding:28px 0 60px}
-  h2{font-size:1.15rem;margin:26px 0 8px;color:var(--pri-dark)}
+  h2{font-size:1.15rem;margin:34px 0 8px;color:var(--pri-dark);padding-top:18px;border-top:1px solid var(--rule)}
+  h2:first-of-type{padding-top:0;border-top:0;margin-top:0}
+  h3{font-size:1rem;margin:18px 0 6px;color:var(--ink)}
+  .note{color:var(--mute);font-size:.88rem}
+  code{font-family:'IBM Plex Mono',monospace;font-size:.85em;background:var(--bg2);border:1px solid var(--rule);border-radius:3px;padding:1px 4px}
   .pills{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}
   .pill{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--ink2);border:1px solid var(--rule);border-radius:2px;padding:5px 10px}
   .pill b{color:var(--pri)}
   .cta{display:inline-block;background:var(--pri);color:#fff;text-decoration:none;font-weight:600;padding:11px 22px;border-radius:var(--r);margin-top:8px}
   .cta:hover{background:var(--pri-dark);color:#fff}
-  .mast{border-bottom:3px solid var(--pri);background:#fff}
-  .mast .wrap{display:flex;align-items:center;gap:12px;min-height:64px}
-  .mast .mark{width:40px;height:40px;flex:none} .mast .mark svg{width:100%;height:100%;display:block}
+  .mast{border-bottom:1px solid var(--rule);background:#fff}
+  .mast .wrap{display:flex;align-items:center;gap:12px;min-height:60px}
+  .mast .mark{width:36px;height:36px;flex:none} .mast .mark svg{width:100%;height:100%;display:block}
   .mast .mark .plate,.mast .mark .cut{fill:var(--pri)}
-  .mast .nm{font-weight:600;color:var(--ink)} .mast a.home{margin-left:auto;color:var(--pri);font-weight:600;text-decoration:none}
+  .mast .nm{font-weight:600;color:var(--ink)} .mast a.home{margin-left:auto;color:var(--ink2);font-weight:500;text-decoration:none;font-size:.9rem}
+  .mast a.home:hover{color:var(--pri)}
   footer{border-top:1px solid var(--rule);padding:22px 0;color:var(--mute);font-size:.85rem}
+  .safe{list-style:none;padding:0;margin:0}
+  .safe li{padding:11px 0 11px 22px;border-bottom:1px solid var(--rule);position:relative}
+  .safe li:last-child{border-bottom:0}
+  .safe li::before{content:"";position:absolute;left:0;top:20px;width:10px;height:2px;background:var(--pri)}
+  .warn{border-left:4px solid var(--amber);padding:8px 0 8px 14px;color:#5A4600;background:transparent;margin:14px 0}
+  .steps{list-style:none;padding:0;margin:0;counter-reset:step}
+  .steps li{padding:10px 0 10px 34px;border-bottom:1px solid var(--rule);position:relative;counter-increment:step}
+  .steps li:last-child{border-bottom:0}
+  .steps li::before{content:counter(step);position:absolute;left:0;top:10px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:600;color:#fff;background:var(--pri);border-radius:2px;padding:2px 7px;line-height:1.5}
+  .ready{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;margin:8px 0 0}
+  @media (max-width:560px){ .ready{grid-template-columns:1fr} }
+  .r-item{display:flex;gap:8px;align-items:flex-start;font-size:.92rem;line-height:1.5}
+  .r-item .dot{flex:none;width:10px;height:10px;border-radius:50%;margin-top:6px}
+  .dot.ok{background:var(--green)} .dot.dev{background:var(--amber)}
+  /* feedback form, ported unchanged from index (same classes, same JS behaviour) */
+  .form{margin:6px 0 18px;max-width:620px}
+  .field{margin:0 0 16px}
+  .field label{display:block;font-weight:600;font-size:.92rem;margin:0 0 6px}
+  .field input,.field textarea{width:100%;font:inherit;color:var(--ink);background:#fff;
+    border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px;min-height:44px}
+  .field textarea{min-height:110px;resize:vertical}
+  .field input:focus,.field textarea:focus{outline:3px solid var(--focus);outline-offset:1px;border-color:var(--pri)}
+  .field .note{margin:6px 0 0}
+  .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+  #fb-status:empty{display:none}
+  #fb-status.err{color:#c8102e;font-weight:600}
+  #fb-status.ok{color:var(--green);font-weight:600}
+  .cf-turnstile{margin:0 0 14px}
+  .bm{display:inline-flex;align-items:center;min-height:44px;background:var(--pri);color:#fff;
+      text-decoration:none;font-weight:600;padding:11px 22px;border-radius:var(--r);border:0;font:inherit;cursor:pointer}
+  .bm:hover{background:var(--pri-dark);color:#fff}
+  .box{border:1px solid var(--rule);border-left:4px solid var(--pri);border-radius:var(--r);padding:14px 16px;margin:14px 0}
 </style>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem faturas.diogoandrade.com; ref fb-lic-2d5ffcb188">
     <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
     <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="faturas.diogoandrade.com" data-exclude-search="true"></script>
@@ -63,7 +101,90 @@
   <p>A informação fiscal em Portugal é pública mas difícil de usar. Está espalhada por vários portais, e a maioria das pessoas trata dela a adivinhar, ou paga a alguém para o fazer às escuras. O Fatura Boa parte de uma ideia simples: <b>tu já tens acesso aos teus dados</b> nas Finanças e na Segurança Social - o que falta é uma ferramenta que os leia por ti, com clareza, e te diga o que fazer. Gratuita, para toda a gente, e feita de forma a que <b>não precises de confiar</b>: podes verificar.</p>
 
   <h2>Porque existe</h2>
-  <p>Comecei fartado de classificar faturas do e-Fatura uma a uma sem saber se estava a acertar, e sem vontade de entregar as minhas credenciais a um site qualquer para ele o fazer por mim. A partir daí cresceu: se dá para ler as faturas na minha própria sessão, também dá para ler as rendas, a situação fiscal, o património, o histórico de IRS. É essa a situação que a ferramenta mostra hoje.</p>
+  <p>Sempre tive problemas com isto. Todos os anos a mesma coisa: dezenas de faturas pendentes à
+    espera de serem classificadas, uma a uma, num menu que não ajuda nada. Deixava andar, esquecia-me,
+    e chegava a Fevereiro a perder deduções que eram minhas por direito, só porque não tive paciência
+    para clicar 200 vezes.</p>
+  <p>Mas não era só falta de paciência, e demorei a perceber isso. O que torna isto difícil não é a
+    complexidade: é a frequência. Quem trabalha em contabilidade faz isto todos os dias, e por isso é
+    rotina. Tu fazes uma vez por ano, num sítio onde nunca ganhas prática, com regras que mudam de ano
+    para ano. Ninguém fica bom numa coisa que faz de doze em doze meses. É aí que se perdem deduções, e
+    não por distração.</p>
+  <p>Se quiseres a versão curta do que isto é: <b>é como teres alguém ao teu lado a passar as faturas
+    contigo</b>. Alguém que faz isto todos os dias, que já sabe onde estão as armadilhas, e que faz num
+    par de segundos o que te levaria uma tarde. A diferença é que não decide nada por ti. Mostra-te o
+    que sabe, explica-te porquê, e a escolha continua a ser tua.</p>
+  <p>O que me irritava mais não era o trabalho. Era perceber que a informação toda já existe. As
+    Finanças sabem qual é a atividade de cada comerciante, e essa atividade determina o setor. Uma
+    farmácia é saúde. Um restaurante é restauração. Isso está registado no SICAE, o registo oficial do
+    Estado, e é público. Mesmo assim, cabe a ti adivinhar, fatura a fatura.</p>
+  <p>Então construí isto. Lê as tuas faturas pendentes, vai buscar a atividade real de cada comerciante,
+    e sugere o setor certo. Onde um comerciante tem várias atividades (um hipermercado com farmácia,
+    livraria e restaurante dentro, o que é mais comum do que parece), escolhe a que te dá mais dedução e
+    que ainda tem espaço no teto anual. Tu revês e aprovas. Nada é submetido sem o teu clique.</p>
+  <p>É de graça e vai continuar a ser. Não vendo nada, não há conta para criar, não recolho nada teu.
+    Se te poupar uma tarde e algum dinheiro no IRS, já valeu a pena.</p>
+
+  <h2>O que já cobre</h2>
+  <div class="ready">
+    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Faturas do e-Fatura</b> - o setor certo para cada fatura pendente e quanto já usaste de cada teto de dedução.</div></div>
+    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Rendas</b> - os teus contratos de arrendamento e recibos (categoria F).</div></div>
+    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Situação fiscal</b> - dívidas, coimas e os próximos prazos da agenda fiscal.</div></div>
+    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Património e IMI</b> - os imóveis que tens e o respetivo VPT.</div></div>
+    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Histórico de IRS</b> - as liquidações e reembolsos de todos os anos.</div></div>
+    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Consultar NIF</b> - a atividade oficial de qualquer empresa, em <a href="/consulta">página à parte</a>, sem instalar nada e sem login.</div></div>
+  </div>
+  <p style="margin:14px 0 0"><b>Ainda em construção:</b> atividade e recibos verdes (categoria B) e
+    regime de IVA. Estes números podem estar incompletos, por isso aparecem marcados para confirmares.
+    Se quiseres ajudar a cobrir mais situações, o melhor feedback é experimentares e dizeres-me o que
+    está mal - há um formulário mais abaixo.</p>
+  <p><a class="cta" href="/perfil">Ver a minha situação</a></p>
+
+  <h2 id="seguranca">Modelo de segurança completo</h2>
+  <p class="note">Porque devias desconfiar de qualquer site que te peça a password das Finanças, e o
+    que torna este diferente.</p>
+  <ul class="safe">
+    <li>A ferramenta <b>corre dentro do teu navegador</b>, na página do e-Fatura onde <b>já estás autenticado</b>. Usa a sessão que já tens.</li>
+    <li><b>Nunca escreves a password</b> em nada nosso. Não há campo de password. Não a vemos, não a guardamos, não existe.</li>
+    <li><b>As tuas faturas nunca saem do teu navegador.</b> Os valores, as datas, o que compraste - nada disso é recebido, guardado ou enviado para lado nenhum nosso. A ferramenta lê apenas as fatias do mapa público onde os teus comerciantes caem, identificadas pelos últimos 3 dígitos do NIF, e não envia nada teu para as obter. <b>Uma exceção, opcional e desligada por omissão:</b> se ligares a partilha para melhorar as sugestões, ao aplicares enviamos por fatura <b>apenas o NIF do comerciante e o setor escolhido</b> (para corrigir esse mapa quando erra), <b>nunca valores, datas nem o teu NIF</b>. Se não a ligares, não sai nada.</li>
+    <li><b>Partilha de agregado, opcional e desligada por omissão.</b> Só faz sentido se entregarem o IRS em conjunto. Quem entrega em separado tem tetos próprios (cada pessoa tem o seu limite de 250 € em despesas gerais, por exemplo) e não deve ativar isto: os números já estão certos para ti. Se entregam em conjunto, a partilha junta os totais das duas contas: enviamos <b>apenas seis números</b> (quanto já usaste de cada teto), nunca faturas, comerciantes, datas ou valores. A chave é <b>gerada ao acaso no teu navegador</b> (256 bits): não é calculada a partir do teu NIF nem do teu email, que aqui nem sequer são lidos. Deixa a caixa vazia para criar um agregado, ou cola uma chave para te juntares a um. A chave é a senha: quem a tiver consegue ler e alterar esses números, por isso partilha-a só com o teu agregado.</li>
+    <li><b>Código 100% visível e auditável.</b> Podes ler exatamente o que faz, <a id="gh" href="#" target="_blank" rel="noopener">no GitHub</a>, ou pedir a alguém que perceba para confirmar. Podes também <a href="/verificar">verificar</a> que o código que corre é o publicado.</li>
+    <li><b>Nada é submetido, de todo.</b> Nesta versão a ferramenta só lê e analisa. Qualquer alteração à tua declaração é feita por ti, no e-Fatura.</li>
+  </ul>
+  <p class="warn"><b>Atenção:</b> nunca introduzas o teu NIF e password das Finanças numa página cujo endereço não termine em <code>.gov.pt</code>. Esta ferramenta nunca to pede, e é essa a diferença.</p>
+
+  <h3>O que acontece quando clicas <span class="note">(todos os pedidos de rede, por ordem)</span></h3>
+  <p class="note">Para quem quiser confirmar antes de correr: isto é a lista completa. Abre o
+    separador Rede do navegador e compara.</p>
+  <ol class="steps">
+    <li><b>Nada acontece até concordares.</b> Ao abrir, a ferramenta mostra primeiro um aviso e só lê
+      as tuas faturas depois de clicares. Antes disso <b>não há um único pedido de rede</b> - nem
+      sequer o mapa público. Há um teste automático que falha se isto deixar de ser verdade.</li>
+    <li><b>GET <code>cae-db.diogoandrade.com/bucket/&lt;3 dígitos&gt;</code></b> - um pedido por cada
+      grupo em que os teus comerciantes caem (tipicamente algumas dezenas, ~7 KB cada). <b>Não leva
+      nada teu.</b> Um grupo são os <b>últimos 3 dígitos</b> do NIF e traz cerca de 300 empresas de uma
+      vez. O servidor fica a saber que tens <b>algum</b> comerciante nesse grupo de 300, <b>nunca
+      qual</b>. É por isso que a ferramenta não pergunta "qual é o setor deste NIF?" - essa pergunta
+      diria ao servidor exactamente onde compras. Vê o teu IP, como qualquer servidor vê, e mais nada.
+      Além das fatias, há um único outro pedido opcional a este servidor: <b>GET offers.json</b>, a
+      lista de patrocinadores mostrada no painel - dados inertes, sem nada teu, sem cookies.</li>
+    <li><b>GET <code>obterDocumentosAdquirente</code></b>, no próprio e-Fatura, com a sessão que já
+      tinhas aberta. É o mesmo pedido que a página faz sozinha. As faturas ficam no teu navegador: não
+      passam por nenhum servidor meu.</li>
+    <li><b>Mais nada, a não ser que peças.</b> A partir daqui só há pedidos se <b>ativares</b> algo:
+      a partilha de agregado (opcional, envia seis números); a partilha para <b>melhorar as
+      sugestões</b> (opcional, desligada por omissão); ou o botão "Enviar anónimo" (quatro números).
+      Se não ativares nada, nada sai.</li>
+  </ol>
+  <p class="warn">Nesta versão <b>não existe nenhum pedido de escrita para a AT</b>. O código que
+    submeteria está no repositório, desligado, e há um teste automático que falha se alguma vez passar
+    a submeter.</p>
+  <p class="note"><b>E a página inicial, em que estavas antes?</b> A lista acima é o que a ferramenta
+    faz dentro do e-Fatura. A página inicial, por si só, carrega duas coisas de fora: os tipos de
+    letra do <b>Google Fonts</b> e o <b>Cloudflare Turnstile</b> (a verificação anti-spam do formulário
+    de feedback, mais abaixo). Ambos veem o teu IP e o teu navegador quando abres a página, como em
+    qualquer site que use estes serviços. Nenhum deles é carregado pela ferramenta, por isso nenhum
+    deles chega à página do e-Fatura onde ela corre.</p>
 
   <h2>O que a torna diferente</h2>
   <ul>
@@ -79,14 +200,99 @@
     <span class="pill">código <b>verificável</b></span>
   </div>
 
-  <h2>Ainda em construção</h2>
-  <p>Já dá para montar uma visão útil para muita gente. Faltam nuances (atividade aberta, recibos verdes, regime de IVA) que estão em desenvolvimento e aparecem marcadas para confirmares. Se quiseres ajudar a cobrir mais situações, o melhor feedback é experimentares e dizeres-me o que está mal.</p>
-
-  <p><a class="cta" href="/perfil">Ver a minha situação</a></p>
+  <h2>Obrigado, e diz-me o que está mal</h2>
+  <p>
+    Obrigado a quem já testou, reportou erros e partilhou chaves de API para construir o mapa de
+    atividades que esta ferramenta usa. Isso é o que a tornou possível.
+  </p>
+  <p>
+    <b>Se encontrares uma classificação errada, quero saber.</b> É a forma mais útil de ajudar: cada
+    correção fica no mapa partilhado e passa a beneficiar toda a gente que usar a ferramenta a seguir.
+    O mesmo para sugestões, dúvidas, ou se simplesmente não perceberes alguma coisa - se não se percebe,
+    é problema meu, não teu.
+  </p>
+  <form id="fb" class="form" method="post" action="/api/feedback" novalidate>
+    <div class="field">
+      <label for="fb-msg">O que correu mal, ou o que sugeres</label>
+      <textarea id="fb-msg" name="message" rows="5" maxlength="4000" required
+        placeholder="Ex: o Continente foi classificado como Saude e nao devia."></textarea>
+    </div>
+    <div class="field">
+      <label for="fb-ctx">Comerciante ou setor, se aplicavel <span class="note">(opcional)</span></label>
+      <input id="fb-ctx" name="context" type="text" maxlength="300" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="fb-mail">O teu email, se quiseres resposta <span class="note">(opcional)</span></label>
+      <input id="fb-mail" name="email" type="email" maxlength="200" autocomplete="email">
+      <p class="note">Uso-o so para te responder. Nada mais. Nao fica guardado em nenhuma base de dados: vai dentro do email que me e enviado, e fica na minha caixa de correio ate eu o apagar.</p>
+    </div>
+    <div class="hp" aria-hidden="true">
+      <label for="fb-web">Nao preencher</label>
+      <input id="fb-web" name="website" type="text" tabindex="-1" autocomplete="off">
+    </div>
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAAD4tEJIzRGNSghRB" data-callback="fbToken"
+         data-theme="light" data-size="flexible"></div>
+    <p><button type="submit" class="bm" id="fb-send">Enviar</button></p>
+    <p id="fb-status" role="status" aria-live="polite" class="note"></p>
+  </form>
+  <p id="fb-fallback" class="box" hidden>
+    O formulário está a ser preparado. Entretanto, o caminho mais rápido é o GitHub ou o email.
+  </p>
+  <p class="note">
+    Preferes o GitHub? Abre um <a id="ghissues" href="#" target="_blank" rel="noopener">issue</a>,
+    ou fala comigo em <a href="https://diogoandrade.com" target="_blank" rel="noopener">diogoandrade.com</a>.
+  </p>
 
   <h2>Quem fez</h2>
-  <p>Feito por <a href="https://diogoandrade.com" target="_blank" rel="noopener">Diogo Andrade</a>. Trabalho com automação, dados e infraestrutura.</p>
+  <p>Feito por <a href="https://diogoandrade.com" target="_blank" rel="noopener">Diogo Andrade</a>. Trabalho com automação, dados e infraestrutura, normalmente a resolver exatamente este tipo de chatice: coisas que deviam ser automáticas e não são, e coisas que só são difíceis porque as fazes uma vez por ano.</p>
 </main>
-<footer class="wrap"><a href="/">Fatura Boa</a> &middot; <a href="/auditoria">Auditoria</a> &middot; <a href="/verificar">Verificar</a> &middot; <a href="/privacidade">Privacidade</a> &middot; <a href="/termos">Termos</a></footer>
+<footer class="wrap">
+  <p style="margin:0 0 10px">
+    <a href="/">Início</a> &middot; <a href="/perfil">A minha situação</a> &middot; <a href="/consulta">Consultar NIF</a> &middot; <a href="/deducoes">Deduções</a> &middot; <a href="/auditoria">Auditoria</a> &middot; <a href="/verificar">Verificar</a> &middot; <a href="/privacidade">Privacidade</a> &middot; <a href="/termos">Termos</a> &middot; <a href="/contrato">Contrato</a>
+  </p>
+  <p class="note">PolyForm Noncommercial 1.0.0 - livre para uso pessoal, proibido monetizar. Não afiliado à Autoridade Tributária.</p>
+</footer>
+<script>
+  var GH = "https://github.com/nobodykr/efatura-helper";
+  document.getElementById("gh").href = GH;
+  document.getElementById("ghissues").href = GH + "/issues";
+
+  var FEEDBACK_ENABLED = true;
+  if (!FEEDBACK_ENABLED) {
+    document.getElementById("fb").hidden = true;
+    document.getElementById("fb-fallback").hidden = false;
+  }
+  var fbToken = "";
+  window.fbToken = function (t) { fbToken = t; };
+  var fbLoadedAt = Date.now();
+  var fbForm = document.getElementById("fb");
+  fbForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var st = document.getElementById("fb-status");
+    var btn = document.getElementById("fb-send");
+    var msg = document.getElementById("fb-msg").value.trim();
+    if (!msg) { st.className = "note err"; st.textContent = "Escreve a mensagem primeiro."; return; }
+    if (!fbToken) { st.className = "note err"; st.textContent = "Aguarda um segundo pela verificacao e tenta outra vez."; return; }
+    btn.disabled = true; st.className = "note"; st.textContent = "A enviar...";
+    fetch("/api/feedback", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        message: msg,
+        context: document.getElementById("fb-ctx").value.trim(),
+        email: document.getElementById("fb-mail").value.trim(),
+        website: document.getElementById("fb-web").value,
+        token: fbToken, elapsed: Date.now() - fbLoadedAt
+      })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.ok) { fbForm.reset(); st.className = "note ok"; st.textContent = "Enviado. Obrigado, leio tudo."; try { if (window.umami) umami.track("relato-enviou"); } catch (e) {} }
+      else { st.className = "note err"; st.textContent = d.error || "Nao consegui enviar."; btn.disabled = false; }
+      if (window.turnstile) { turnstile.reset(); fbToken = ""; }
+    }).catch(function () {
+      st.className = "note err";
+      st.textContent = "Falhou o envio. Tenta o GitHub, ou outra vez daqui a pouco.";
+      btn.disabled = false;
+    });
+  });
+</script>
 </body>
 </html>

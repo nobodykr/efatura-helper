@@ -46,19 +46,15 @@
 <!-- FAQPage schema. Every answer below is a condensed version of a section that ACTUALLY EXISTS
      on this page - that is the rule for this markup, and inventing answers here to farm rich
      results is both against Google's guidelines and the kind of thing this project should not do.
-     If a section is rewritten, rewrite its answer too or delete the entry. -->
+     If a section is rewritten, rewrite its answer too or delete the entry. The setor/table FAQs
+     that used to live here now describe /deducoes instead, so they moved out of this schema with
+     the table they summarised - see deducoes.html. -->
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"FAQPage","inLanguage":"pt-PT","mainEntity":[
- {"@type":"Question","name":"O que sao as faturas pendentes no e-Fatura?",
-  "acceptedAnswer":{"@type":"Answer","text":"Sao faturas que a Autoridade Tributaria recebeu mas que ainda nao estao atribuidas a um setor de despesa. Enquanto ficarem pendentes nao contam para nenhuma deducao do IRS. Cada uma tem de ser classificada num setor: saude, educacao, restauracao, despesas gerais familiares, e assim por diante."}},
- {"@type":"Question","name":"Que setor devo escolher para cada fatura?",
-  "acceptedAnswer":{"@type":"Answer","text":"Depende da atividade registada do comerciante. Um comerciante pode ter varios CAE - um hipermercado pode ter tambem CAE de farmacia - e por isso o e-Fatura aceita mais do que um setor. Ser aceite nao quer dizer que esteja certo: se comprou comida, a compra foi despesas gerais e nao saude. Quem declara e o contribuinte."}},
- {"@type":"Question","name":"As despesas gerais familiares valem menos do que um setor especifico?",
-  "acceptedAnswer":{"@type":"Answer","text":"Nem sempre. As despesas gerais familiares dao 35% ate 250 euros, a taxa mais alta de todas. Um setor especifico so compensa quando o seu proprio teto ainda tem espaco. Uma fatura de restaurante de 20 euros vale mais em despesas gerais do que em restauracao, que da 15% do IVA."}},
  {"@type":"Question","name":"E seguro? Pede a password das Financas?",
   "acceptedAnswer":{"@type":"Answer","text":"Nunca pede credenciais. A ferramenta corre no navegador, na pagina do e-Fatura onde o utilizador ja fez login, e reutiliza essa sessao. Se algum site pedir a password das Financas, e burla e deve ser fechado. O codigo e publico e auditavel."}},
  {"@type":"Question","name":"As minhas faturas sao enviadas para algum servidor?",
-  "acceptedAnswer":{"@type":"Answer","text":"Nao. As faturas sao lidas e classificadas dentro do navegador. A ferramenta descarrega apenas as fatias do mapa publico de comerciantes de que precisa, sem revelar quais os comerciantes, e nada e submetido sem confirmacao explicita."}}
+  "acceptedAnswer":{"@type":"Answer","text":"Nao. As faturas sao lidas e classificadas dentro do navegador. Nada do que la nelas e recebido, guardado ou enviado, excepto o que o proprio utilizador decidir partilhar, sempre sem valores nem datas."}}
 ]}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -110,71 +106,40 @@
                      border-top:1px solid rgba(255,255,255,.22)}
   .alertbar .tag{margin-right:8px;vertical-align:1px}
 
-  /* legacy strip styles, kept for the masthead tag */
   .tag{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.09em;
               text-transform:uppercase;border:1px solid rgba(255,255,255,.45);
               border-radius:2px;padding:2px 7px;white-space:nowrap}
 
-  /* masthead */
-  .mast{border-bottom:3px solid var(--pri);background:#fff}
-  .mast .wrap{display:flex;align-items:center;gap:14px;min-height:72px}
-  /* 44px, not 38: the monogram carries more detail than the two letters it replaced, and the
-     D's bowl and the A's crossbar close up below about 40px. Also hits the 44px touch target. */
-  .mark{width:44px;height:44px;flex:none;display:block;line-height:0;border-radius:var(--r)}
+  /* masthead: slim on purpose. A hairline, not a heavy rule - the page underneath carries the
+     weight now, the header just orients you. Text nav links only: no buttons, no search, nothing
+     that competes with the hero's own call to action right below. */
+  .mast{border-bottom:1px solid var(--rule);background:#fff}
+  .mast .wrap{display:flex;align-items:center;gap:14px;min-height:60px}
+  .mark{width:38px;height:38px;flex:none;display:block;line-height:0;border-radius:var(--r)}
   .mark svg{width:100%;height:100%;display:block}
   .mark .plate{fill:var(--pri)}
   .mark .cut{fill:var(--pri)}          /* counter-shapes match the plate, so they read as holes */
-  /* deepens to the dark blue on hover - the only motion is a colour change, so it stays quiet
-     next to a page whose whole point is not looking like a growth-hacked product */
   .mark .plate,.mark .cut{transition:fill .15s ease}
   .mark:hover .plate,.mark:hover .cut{fill:var(--pri-dark)}
   .mark:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
-  .mast .nm{font-weight:600;font-size:1.05rem;line-height:1.25;min-width:0}
-  .mast .nm span{display:block;font-weight:400;font-size:.8rem;color:var(--mute);
-                 white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  /* Nav sits in its own right-aligned group so the two buttons align to each other, not by margin
-     hacks. Primary (A minha situação) is filled, secondary is outlined: that hierarchy is the logic. */
-  .mast .nav{margin-left:auto;display:flex;align-items:center;gap:10px;flex:none}
-  .mast .mastnav{display:inline-flex;align-items:center;height:40px;
-                 padding:0 16px;border:1.5px solid var(--pri);border-radius:var(--r);
-                 color:var(--pri);font-weight:600;font-size:.92rem;text-decoration:none;white-space:nowrap}
-  .mast .mastnav:hover{background:var(--pri);color:#fff}
-  .mast .mastnav.primary{background:var(--pri);color:#fff}
-  .mast .mastnav.primary:hover{background:var(--pri-dark);border-color:var(--pri-dark)}
+  .mast .nm{font-weight:600;font-size:1rem;color:var(--ink)}
+  .mast .nav{margin-left:auto;display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+  .mast .nav a{color:var(--ink2);font-size:.9rem;font-weight:500;text-decoration:none}
+  .mast .nav a:hover{color:var(--pri)}
   @media (max-width:600px){
-    .mast .wrap{flex-wrap:wrap}
-    .mast .nm span{white-space:normal}
-    .mast .nav{width:100%;margin-left:0;margin-top:4px}
-    .mast .mastnav{flex:1;justify-content:center}
+    .mast .wrap{flex-wrap:wrap;padding-top:10px;padding-bottom:10px}
+    .mast .nav{width:100%;margin-left:0;gap:16px;justify-content:flex-start}
   }
 
   header{padding:52px 0 40px;background:var(--bg2);border-bottom:1px solid var(--rule)}
   header .wrap{text-align:center}
   .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.11em;
            text-transform:uppercase;color:var(--pri);font-weight:600}
-  /* it now lives inside the h1, so it needs to behave like the standalone div it replaced */
+  /* it lives inside the h1, so it needs to behave like the standalone div it replaced */
   h1 .eyebrow{display:block;line-height:1.4;margin-bottom:.5em}
   h1{font-weight:600;font-size:clamp(1.9rem,4.6vw,2.9rem);line-height:1.15;
      letter-spacing:-.015em;margin:.15em 0 .5em;color:var(--pri-dark)}
   .sub{color:var(--ink2);font-size:1.08rem;max-width:60ch;margin:0;line-height:1.6}
-
-  /* signature: a ceiling that keeps filling after it is full */
-  .thesis{margin:28px 0 10px;padding:20px 22px;background:#fff;
-          border:1px solid var(--rule);border-left:4px solid var(--pri);border-radius:var(--r)}
-  .thesis .line{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
-                font-family:'IBM Plex Mono',monospace;font-size:.95rem}
-  .thesis .line b{font-weight:600}
-  .dots{flex:1;border-bottom:1px dotted var(--rule);transform:translateY(-4px)}
-  .meter{margin-top:14px;height:18px;display:flex;border:1px solid var(--ink);
-         border-radius:2px;overflow:hidden;background:#fff}
-  .meter .used{background:var(--pri)}
-  .meter .void{flex:1;background:repeating-linear-gradient(135deg,var(--red) 0 5px,#fff 5px 10px)}
-  .meter-key{display:flex;gap:20px;margin-top:9px;font-size:.76rem;color:var(--ink2);flex-wrap:wrap;
-             font-family:'IBM Plex Mono',monospace}
-  .meter-key i{font-style:normal;display:inline-block;width:11px;height:11px;
-               vertical-align:-1px;margin-right:6px;border:1px solid var(--ink)}
-  .k-used{background:var(--pri)}
-  .k-void{background:repeating-linear-gradient(135deg,var(--red) 0 4px,#fff 4px 8px)}
 
   section{padding:38px 0;border-top:1px solid var(--rule)}
   section:first-of-type{border-top:0}
@@ -185,33 +150,18 @@
      browser load the right dictionary. Short runs (notes, list items, badges) stay ragged:
      justifying three words just spaces them out stupidly. */
   p{margin:0 0 .95em;text-align:justify;hyphens:auto;-webkit-hyphens:auto;text-wrap:pretty}
-  p.note,.badge,.meter-key,caption,.step .n{text-align:left;hyphens:manual}
+  p.note,.badge,caption,.step .n{text-align:left;hyphens:manual}
   .sub{text-align:left;hyphens:manual}          /* display type: justification looks broken */
   header .sub{text-align:center;margin-left:auto;margin-right:auto;hyphens:manual}
-  #faz .lead,#faz .r-item,#faz .r-item div{text-align:left;hyphens:manual}
-  .safe li,.step div{text-align:justify;hyphens:auto;-webkit-hyphens:auto}
+  .card p,.safe li,.step div{text-align:justify;hyphens:auto;-webkit-hyphens:auto}
   @media (max-width:640px){                      /* narrow columns river no matter what */
     p,.safe li,.step div{text-align:left;hyphens:auto}
   }
 
-  /* numbered steps: real sequence, so numbering carries meaning */
-  .steps{display:grid;gap:18px}
-  .step{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}
-  .step .n{font-family:'IBM Plex Mono',monospace;font-size:.8rem;font-weight:600;color:#fff;
-           background:var(--pri);border-radius:2px;padding:3px 8px;line-height:1.5}
   .safe{list-style:none;padding:0;margin:0}
   .safe li{padding:11px 0 11px 22px;border-bottom:1px solid var(--rule);position:relative}
   .safe li:last-child{border-bottom:0}
   .safe li::before{content:"";position:absolute;left:0;top:20px;width:10px;height:2px;background:var(--pri)}
-
-  table{width:100%;border-collapse:collapse;font-size:.9rem}
-  caption{text-align:left;padding-bottom:8px}
-  th,td{border-bottom:1px solid var(--rule);padding:11px 10px 11px 0;text-align:left;vertical-align:top}
-  thead th,tr:first-child th{background:var(--bg2);font-family:'IBM Plex Mono',monospace;
-     font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);
-     font-weight:600;padding-left:10px}
-  td:last-child{font-family:'IBM Plex Mono',monospace;white-space:nowrap;text-align:right}
-  .tscroll{overflow-x:auto}
 
   .bm{display:inline-flex;align-items:center;min-height:44px;background:var(--pri);color:#fff;
       text-decoration:none;font-weight:600;padding:11px 22px;border-radius:var(--r);cursor:grab}
@@ -227,10 +177,6 @@
   .box.draft{border-left-color:var(--amber);background:#fdf8ec}
   .box.give{border-left-color:var(--green);background:#f1f7f3}
   .box h2{margin-top:0}
-  /* Content in a bare .wrap between the header and the first <section> had NO top spacing:
-     .box is margin:0 0 20px, and unlike a <section> a bare wrap has no padding of its own, so
-     the draft notice was touching the header. Sections keep their own 38px padding; this only
-     targets a wrap that directly follows the header or a section. */
   header + .wrap, section + .wrap{padding-top:34px}
   .wrap > .box:first-child{margin-top:0}
   .warn{border-left:4px solid var(--amber);padding:8px 0 8px 14px;color:#5A4600;background:transparent}
@@ -245,25 +191,20 @@
   #copymsg{margin-left:10px}
   #copymsg.ok{color:var(--green);font-weight:600}
 
-  /* feedback form */
-  .form{margin:6px 0 18px;max-width:620px}
-  .field{margin:0 0 16px}
-  .field label{display:block;font-weight:600;font-size:.92rem;margin:0 0 6px}
-  .field input,.field textarea{width:100%;font:inherit;color:var(--ink);background:#fff;
-    border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px;min-height:44px}
-  .field textarea{min-height:110px;resize:vertical}
-  .field input:focus,.field textarea:focus{outline:3px solid var(--focus);outline-offset:1px;
-    border-color:var(--pri)}
-  .field .note{margin:6px 0 0}
-  .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
-  #fb-status:empty{display:none}
-  #fb-status.err{color:var(--red);font-weight:600}
-  #fb-status.ok{color:var(--green);font-weight:600}
-  .cf-turnstile{margin:0 0 14px}
-  footer{color:var(--ink2);font-size:.87rem;padding:34px 0 60px;background:var(--bg2);
-         border-top:3px solid var(--pri)}
-  #faz .lead{color:var(--ink2);margin:0 0 14px;max-width:70ch}
-  #faz .coming-head{margin:26px 0 10px;font-weight:600;color:var(--ink)}
+  /* footer: proper site footer now that the page underneath is short. Three columns of where to
+     go next, then the legal line. */
+  footer{color:var(--ink2);font-size:.87rem;padding:40px 0 32px;background:var(--bg2);
+         border-top:1px solid var(--rule)}
+  .ftgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:28px}
+  .ftcol h3{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.08em;
+            text-transform:uppercase;color:var(--mute);margin:0 0 10px;font-weight:600}
+  .ftcol a{display:block;color:var(--ink2);text-decoration:none;padding:4px 0;font-size:.9rem}
+  .ftcol a:hover{color:var(--pri)}
+  .ftbottom{border-top:1px solid var(--rule);padding-top:18px}
+  .ftbottom p{margin:0 0 6px;text-align:left;hyphens:manual}
+  @media (max-width:640px){ .ftgrid{grid-template-columns:1fr 1fr;gap:20px} }
+  @media (max-width:420px){ .ftgrid{grid-template-columns:1fr} }
+
   .ready{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px}
   @media (max-width:600px){ .ready{grid-template-columns:1fr} }
   .r-item{display:flex;gap:10px;align-items:flex-start;font-size:.95rem;line-height:1.5}
@@ -281,9 +222,9 @@
   .badge{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--ink2);
          border:1px solid var(--rule);border-radius:2px;padding:5px 10px;background:#fff}
   .badge b{color:var(--pri);font-weight:600}
-  @media (max-width:560px){ header{padding:34px 0 28px} .thesis .line{font-size:.8rem} }
+  @media (max-width:560px){ header{padding:34px 0 28px} }
   @media (prefers-reduced-motion:no-preference){
-    .thesis{animation:rise .45s cubic-bezier(.2,.7,.3,1) both}
+    .box.draft{animation:rise .45s cubic-bezier(.2,.7,.3,1) both}
     @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   }
 
@@ -312,6 +253,13 @@
     @keyframes hero-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   }
 
+  /* "o que faz por ti" card grid: icon + short lead + one line, nothing longer. */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:24px;margin-top:8px}
+  .card .ci{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .card .icon{color:var(--pri)}
+  .card h3{margin:0;font-size:1rem;font-weight:600;color:var(--ink)}
+  .card p{margin:0;font-size:.92rem;color:var(--ink2);text-align:left;hyphens:manual}
+
   /* "como funciona" step grid: mono number + icon + bold lead, hairline separators instead of
      the plain numbered list used elsewhere on the page. Left border on desktop columns, top
      border once it stacks - a rule between steps either way, just rotated with the layout. */
@@ -338,7 +286,6 @@
     .reveal.in{opacity:1;transform:none}
   }
 </style>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem faturas.diogoandrade.com; ref fb-lic-e1ec0c96c9">
     <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
     <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="faturas.diogoandrade.com" data-exclude-search="true"></script>
@@ -351,7 +298,7 @@
      de accao legal. Origem oficial: faturas.diogoandrade.com | ref fb-lic-e1ec0c96c9 -->
 <div hidden aria-hidden="true" data-fb-lic="PolyForm-Noncommercial-1.0.0" data-fb-ref="fb-lic-e1ec0c96c9" data-fb-origem="faturas.diogoandrade.com">Codigo protegido por direitos de autor. Licenca PolyForm Noncommercial 1.0.0: uso comercial ou redistribuicao sem autorizacao proibidos.</div>
 <a href="/hp/registo-e1ec0c96c9" hidden aria-hidden="true" rel="nofollow noindex" tabindex="-1">.</a>
-<!-- icon sprite: every inline icon on the page is a <use> against one of these four symbols,
+<!-- icon sprite: every inline icon on the page is a <use> against one of these symbols,
      drawn as simple 2px-stroke line icons so they inherit currentColor and never need a request. -->
 <svg hidden aria-hidden="true">
   <symbol id="i-lock" viewBox="0 0 24 24">
@@ -370,6 +317,12 @@
   <symbol id="i-arrow" viewBox="0 0 24 24">
     <path d="M4 12h15"/>
     <path d="M13 6l6 6-6 6"/>
+  </symbol>
+  <symbol id="i-users" viewBox="0 0 24 24">
+    <circle cx="9" cy="8" r="3.2"/>
+    <path d="M3.5 20c0-3.6 2.9-6 5.5-6s5.5 2.4 5.5 6"/>
+    <path d="M15.2 5.3c1.5.4 2.6 1.8 2.6 3.4 0 1.7-1.1 3-2.6 3.4"/>
+    <path d="M17 14.3c2.2.5 3.8 2.5 3.8 5.7"/>
   </symbol>
 </svg>
 <details class="alertbar">
@@ -411,25 +364,25 @@
         <path class="cut" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/>
       </svg>
     </a>
-    <div class="nm">Fatura Boa<span>A tua situação fiscal, das fontes oficiais</span></div>
+    <div class="nm">Fatura Boa</div>
     <nav class="nav">
-      <a class="mastnav primary" href="/perfil">A minha situação</a>
-      <a class="mastnav" href="/consulta">Consultar NIF</a>
+      <a href="#como">Como funciona</a>
+      <a href="/sobre">Sobre</a>
+      <a href="/auditoria">Auditoria</a>
+      <a href="/privacidade">Privacidade</a>
     </nav>
   </div>
 </div>
 
 <header>
  <div class="wrap">
-  <!-- The keyword line lives INSIDE the <h1>. "Fontes oficiais, em vez de palpites" is the right
-       thing to say to a human and worthless to a search engine - nobody types that. The eyebrow
-       was already sitting here saying "e-Fatura / IRS"; making it a full phrase and moving it
-       into the heading buys the search intent without changing what the page looks like. -->
-  <h1><span class="eyebrow">e-Fatura · IRS · Segurança Social</span>A tua situação fiscal,<br>das fontes oficiais.</h1>
+  <!-- The keyword line lives INSIDE the <h1>. "e-Fatura / IRS / Segurança Social" is the phrase
+       people actually search; putting it here buys that intent without turning the eyebrow into
+       a second headline. -->
+  <h1><span class="eyebrow">e-Fatura - IRS - Segurança Social</span>A tua situação fiscal, em ordem.</h1>
   <p class="sub">Não te pede a password. Corre na sessão que <b>já tens aberta</b> nas Finanças
-     e na Segurança Social, lê o que o Estado já sabe sobre ti, e mostra a tua situação: faturas,
-     rendas, situação fiscal, património e IRS. Tudo <b>no teu navegador</b>, e o código é
-     <a href="/verificar">verificável</a>.</p>
+     e na Segurança Social, lê o que o Estado já sabe sobre ti, e diz-te o que fazer: faturas
+     pendentes, rendas, dívidas e prazos, património e IRS. Tudo <b>no teu navegador</b>.</p>
 
   <div class="cta-row">
     <a class="bm cta-main" href="/perfil">Ver a minha situação
@@ -438,7 +391,7 @@
   </div>
 
   <!-- the security story is the product, so it gets icons and room right under the hero
-       actions instead of waiting until the "porque é seguro" section further down the page. -->
+       actions instead of waiting for the reader to scroll to "porque é seguro". -->
   <div class="trust-row">
     <div class="trust-item"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
       <span><b>Nunca</b> pede a tua password</span></div>
@@ -484,20 +437,93 @@
 </div>
 
 <section id="faz">
-  <h2>O que já faz por ti</h2>
-  <p class="lead">Para muita gente já dá para montar uma visão útil, a partir do que o Estado já sabe:</p>
-  <div class="ready">
-    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Faturas do e-Fatura</b> - o setor certo para cada fatura pendente e quanto já usaste de cada teto de dedução.</div></div>
-    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Rendas</b> - os teus contratos de arrendamento e recibos (categoria F).</div></div>
-    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Situação fiscal</b> - dívidas, coimas e os próximos prazos da agenda fiscal.</div></div>
-    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Património e IMI</b> - os imóveis que tens e o respetivo VPT.</div></div>
-    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Histórico de IRS</b> - as liquidações e reembolsos de todos os anos.</div></div>
-    <div class="r-item"><span class="dot ok" aria-hidden="true"></span><div><b>Consultar NIF</b> - a atividade oficial de qualquer empresa.</div></div>
+  <h2>O que faz por ti</h2>
+  <div class="cards">
+    <div class="card"><div class="ci"><svg class="icon" aria-hidden="true"><use href="#i-doc"/></svg><h3>Classifica as pendentes</h3></div>
+      <p>Sugere o setor certo para cada fatura pendente do e-Fatura, a partir da atividade oficial do comerciante.</p></div>
+    <div class="card"><div class="ci"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><h3>Deduções sem perder</h3></div>
+      <p>Mostra quanto já usaste de cada teto, para não encheres um setor à custa de outro que valia mais.</p></div>
+    <div class="card"><div class="ci"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg><h3>Agregado, se quiseres</h3></div>
+      <p>Casais que entregam o IRS em conjunto podem juntar os totais. Opcional, desligado por omissão.</p></div>
+    <div class="card"><div class="ci"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg><h3>Tudo no teu navegador</h3></div>
+      <p>Nada das tuas faturas sai do teu computador. A ferramenta lê e sugere; submetes tu.</p></div>
   </div>
-  <p class="lead coming-head">O que ainda não</p>
-  <div class="ready">
-    <div class="r-item"><span class="dot dev" aria-hidden="true"></span><div><b>Atividade e recibos verdes</b> (categoria B) e <b>regime de IVA</b> - em desenvolvimento. Estes números podem estar incompletos, por isso aparecem marcados para confirmares.</div></div>
+  <p class="note" style="margin-top:16px">Cobre também rendas, situação fiscal, património e IMI, e
+    o histórico de IRS. Detalhe completo, incluindo o que ainda está em desenvolvimento, em
+    <a href="/sobre">Sobre</a>.</p>
+</section>
+
+<section id="como">
+  <h2>Como classificar as faturas pendentes do e-Fatura</h2>
+  <div class="hgrid">
+    <div class="hstep"><div class="hn"><span class="num">01</span><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></div>
+      <p>Faz <b>login normal</b> no <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a>, como sempre fazes.</p></div>
+    <div class="hstep"><div class="hn"><span class="num">02</span><svg class="icon" aria-hidden="true"><use href="#i-doc"/></svg></div>
+      <p>Clica no favorito <b>Fatura Boa</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu histórico e na atividade oficial de cada comerciante</b>, já a saltar os setores cujo teto anual esteja cheio.</p></div>
+    <div class="hstep"><div class="hn"><span class="num">03</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></div>
+      <p><b>Revês</b> a tabela. Cada fatura traz duas sugestões: <b>Provável</b> (o que a compra
+      provavelmente foi) e <b>Otimizada</b> (o que dá mais dedução e ainda cabe no teto). Vem
+      selecionada a Provável; clicas na outra se a compra foi mesmo dessa natureza. Depois <b>copias o plano</b> (ou envias para o teu email) e aplicas no e-Fatura. <b>A ferramenta não submete nada.</b></p></div>
   </div>
+</section>
+
+<section id="seguro">
+  <h2>Porque é seguro</h2>
+  <ul class="safe">
+    <li>Corre <b>dentro do teu navegador</b>, na página do e-Fatura onde <b>já estás autenticado</b>.
+      Não há campo de password: não a vemos, não a guardamos, não existe.</li>
+    <li><b>As tuas faturas nunca saem do navegador.</b> Valores, datas, o que compraste - nada disso
+      é recebido nem enviado. Só sai o que ativares tu mesmo, e sempre sem valores nem datas.</li>
+    <li>Código <b>100% aberto e verificável</b>: podes ler exatamente o que faz
+      <a id="gh" href="#" target="_blank" rel="noopener">no GitHub</a>, ou confirmar que o que corre
+      é o código publicado.</li>
+  </ul>
+  <p>Nada disto devia pedir-te confiança às cegas. Há um registo passo a passo de cada pedido de
+    rede que a ferramenta faz, o que é opcional, e o que nunca acontece nesta versão.</p>
+  <p><a class="cta-alt" href="/sobre#seguranca">Ler o modelo de segurança completo -></a></p>
+</section>
+
+<section id="prova">
+  <h2>Prova e auditoria</h2>
+  <p>O código que corre é exatamente o publicado: <a href="/verificar"><b>Verificar</b></a> compara
+    o hash do que executaste contra o histórico assinado do repositório. E cada dedução que a
+    ferramenta calcula tem a sua fonte legal à vista, gerada automaticamente a partir do código, não
+    escrita à mão: <a href="/auditoria"><b>Auditoria</b></a>.</p>
+</section>
+
+<section>
+  <h2>Instalar <span class="note">(só funciona no computador)</span></h2>
+  <p class="warn"><b>Isto é para computador, não para telemóvel.</b> A ferramenta é um favorito que
+    corre dentro da página do e-Fatura, e os navegadores de telemóvel não deixam fazer isso. Não é
+    uma limitação que eu possa contornar: as alternativas seriam pedir-te a password, que nunca vou
+    fazer, ou ser uma aplicação oficial da AT, que isto não é nem tem como ser. Se andas no
+    telemóvel, guarda para quando estiveres ao computador.</p>
+  <p><b>Opção 1, a mais rápida:</b> arrasta este botão para a tua barra de favoritos.</p>
+  <p><a class="bm" id="bookmarklet" href="#"> Fatura Boa</a></p>
+
+  <p><b>Opção 2, se arrastar não der:</b> copia o código e cola-o num favorito novo.</p>
+  <p>
+    <button type="button" class="bm" id="copybm" style="border:0">Copiar o código</button>
+    <span id="copymsg" class="note" role="status" aria-live="polite"></span>
+  </p>
+  <details id="howto">
+    <summary>Como colar num favorito novo, por navegador</summary>
+    <div class="howto-body">
+      <p><b>Chrome / Edge / Brave:</b> Ctrl+Shift+O abre o gestor de favoritos. Botão direito na
+        barra, <i>Adicionar página</i>, dá-lhe o nome <i>Fatura Boa</i> e cola o código no campo URL.</p>
+      <p><b>Firefox:</b> Ctrl+Shift+O, depois <i>Organizar</i>, <i>Adicionar marcador</i>, e cola o
+        código no campo <i>Endereço</i>.</p>
+      <p><b>Safari:</b> adiciona qualquer página aos favoritos, depois <i>Editar favoritos</i>,
+        muda o nome e cola o código no endereço.</p>
+      <p class="note">Em todos: o código começa por <code>javascript:</code>. Se ao colares essa
+        parte desaparecer, estás a colar na barra de endereço em vez de no favorito. O navegador
+        remove-a de propósito, e num favorito isso não acontece.</p>
+    </div>
+  </details>
+  <p class="note" style="margin-top:14px">Depois abre o e-Fatura, faz login, e clica no favorito.
+    <b>Porque não instala sozinho:</b> os navegadores deixaram de permitir que uma página crie
+    favoritos - é a mesma razão que devia deixar-te descansado, porque assim é que se faria um
+    ataque. Tem de passar pelas tuas mãos.</p>
 </section>
 
 <section><div class="box give">
@@ -516,7 +542,7 @@
 	<path d="M3621.526,334.211V211.11h-147.019V50.611h-142.188v585.134c0,53.764,13.519,94.737,40.197,121.784
 		c26.662,27.07,68.208,40.793,123.493,40.793h125.516V675.221h-91.844c-19.981,0-34.316-4.391-42.613-13.065
 		c-7.622-7.936-12.563-27.987-12.563-51.074V334.211H3621.526z"/>
-	<polygon points="1651.305,211.094 1504.294,638.874 1357.284,211.094 1207.912,211.094 1420.136,793.287 1588.453,793.287 
+	<polygon points="1651.305,211.094 1504.294,638.874 1357.284,211.094 1207.912,211.094 1420.136,793.287 1588.453,793.287
 		1800.676,211.094 	"/>
 	<rect x="2470.098" width="142.188" height="793.28"/>
 	<path d="M3100.572,502.748c0,36.857-5.583,68.922-16.594,95.302c-10.931,26.239-26.584,46.353-46.533,59.77
@@ -566,278 +592,34 @@
   </p>
 </div></section>
 
-<section id="como">
-  <h2>Como classificar as faturas pendentes do e-Fatura</h2>
-  <div class="hgrid">
-    <div class="hstep"><div class="hn"><span class="num">01</span><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></div>
-      <p>Faz <b>login normal</b> no <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a>, como sempre fazes.</p></div>
-    <div class="hstep"><div class="hn"><span class="num">02</span><svg class="icon" aria-hidden="true"><use href="#i-doc"/></svg></div>
-      <p>Clica no favorito <b>Fatura Boa</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu histórico e na atividade oficial de cada comerciante</b>, já a saltar os setores cujo teto anual esteja cheio.</p></div>
-    <div class="hstep"><div class="hn"><span class="num">03</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></div>
-      <p><b>Revês</b> a tabela. Cada fatura traz duas sugestões: <b>Provável</b> (o que a compra
-      provavelmente foi) e <b>Otimizada</b> (o que dá mais dedução e ainda cabe no teto). Vem
-      selecionada a Provável; clicas na outra se a compra foi mesmo dessa natureza. Depois <b>copias o plano</b> (ou envias para o teu email) e aplicas no e-Fatura. <b>A ferramenta não submete nada.</b></p></div>
-  </div>
-</section>
-
-<section>
-  <h2>O que acontece quando clicas <span class="note">(todos os pedidos de rede, por ordem)</span></h2>
-  <p class="note">Para quem quiser confirmar antes de correr: isto é a lista completa. Abre o
-    separador Rede do navegador e compara.</p>
-  <ol class="steps" style="padding-left:0;list-style:none">
-    <li class="step"><div class="n" aria-hidden="true">0</div><div>
-      <b>Nada acontece até concordares.</b> Ao abrir, a ferramenta mostra primeiro um aviso e só lê
-      as tuas faturas depois de clicares. Antes disso <b>não há um único pedido de rede</b> - nem
-      sequer o mapa público. Há um teste automático que falha se isto deixar de ser verdade.</div></li>
-    <li class="step"><div class="n" aria-hidden="true">1</div><div>
-      <b>GET <code>cae-db.diogoandrade.com/bucket/&lt;3 dígitos&gt;</code></b> - um pedido por cada
-      grupo em que os teus comerciantes caem (tipicamente algumas dezenas, ~7 KB cada).
-      <b>Não leva nada teu.</b> Repara no detalhe: um grupo são os <b>últimos 3 dígitos</b> do NIF e
-      traz cerca de 300 empresas de uma vez. O servidor fica a saber que tens <b>algum</b>
-      comerciante nesse grupo de 300, <b>nunca qual</b>. É por isso que a ferramenta não pergunta
-      "qual é o setor deste NIF?" - essa pergunta diria ao servidor exactamente onde compras.
-      Antes descarregava o mapa inteiro pela mesma razão; agora faz o mesmo com uma fracção dos
-      dados. Vê o teu IP, como qualquer servidor vê, e mais nada.</div></li>
-    <li class="step"><div class="n" aria-hidden="true">2</div><div>
-      <b>GET <code>obterDocumentosAdquirente</code></b>, no próprio e-Fatura, com a sessão que já
-      tinhas aberta. É o mesmo pedido que a página faz sozinha. As faturas ficam no teu navegador:
-      não passam por nenhum servidor meu.</div></li>
-    <li class="step"><div class="n" aria-hidden="true">3</div><div>
-      <b>Mais nada, a não ser que peças.</b> A partir daqui só há pedidos se <b>ativares</b> algo:
-      a partilha de agregado (opcional, envia seis números); a partilha para <b>melhorar as
-      sugestões</b> (opcional, desligada por omissão - se a ligares, ao aplicares envia por fatura
-      <b>só o NIF do comerciante e o setor</b>, para corrigir o mapa de atividades, <b>nunca valores,
-      datas nem o teu NIF</b>); ou o botão "Enviar anónimo" (quatro números). Se não ativares nada,
-      nada sai.</div></li>
-  </ol>
-  <p class="warn">Nesta versão <b>não existe nenhum pedido de escrita para a AT</b>. O código que
-    submeteria está no repositório, desligado, e há um teste automático que falha se alguma vez
-    passar a submeter.</p>
-  <p class="note"><b>E esta página, em que estás agora?</b> A lista acima é o que a ferramenta faz
-    dentro do e-Fatura. <b>Esta</b> página, por si só, carrega duas coisas de fora: os tipos de letra
-    do <b>Google Fonts</b> e o <b>Cloudflare Turnstile</b> (a verificação anti-spam do formulário de
-    sugestões, mais abaixo). Ambos veem o teu IP e o teu navegador quando abres a página, como em
-    qualquer site que use estes serviços. Nenhum deles é carregado pela ferramenta, por isso nenhum
-    deles chega à página do e-Fatura onde ela corre.</p>
-</section>
-
-<section>
-  <h2>Porque é seguro <span class="note">(e porque devias desconfiar de qualquer site que te peça a password das Finanças)</span></h2>
-  <ul class="safe">
-    <li>A ferramenta <b>corre dentro do teu navegador</b>, na página do e-Fatura onde <b>já estás autenticado</b>. Usa a sessão que já tens.</li>
-    <li><b>Nunca escreves a password</b> em nada nosso. Não há campo de password. Não a vemos, não a guardamos, não existe.</li>
-    <li><b>As tuas faturas nunca saem do teu navegador.</b> Os valores, as datas, o que compraste - nada disso é recebido, guardado ou enviado para lado nenhum nosso. A ferramenta lê apenas as fatias do mapa público onde os teus comerciantes caem, identificadas pelos últimos 3 dígitos do NIF, e não envia nada teu para as obter. <b>Uma exceção, opcional e desligada por omissão:</b> se ligares a partilha para melhorar as sugestões, ao aplicares enviamos por fatura <b>apenas o NIF do comerciante e o setor escolhido</b> (para corrigir esse mapa quando erra), <b>nunca valores, datas nem o teu NIF</b>. Se não a ligares, não sai nada.</li>
-    <li><b>Partilha de agregado, opcional e desligada por omissão.</b> <b>Só faz sentido se entregarem o IRS em conjunto.</b> Quem entrega em separado tem tetos próprios (cada pessoa tem o seu limite de 250 € em despesas gerais, por exemplo) e <b>não deve ativar isto</b>: os números desta página já estão certos para ti. Se entregam em conjunto, a partilha junta os totais das duas contas: enviamos <b>apenas seis números</b> (quanto já usaste de cada teto), nunca faturas, comerciantes, datas ou valores. A chave é <b>gerada ao acaso no teu navegador</b> (256 bits): não é calculada a partir do teu NIF nem do teu email, que aqui nem sequer são lidos. Deixa a caixa vazia para criar um agregado, ou cola uma chave para te juntares a um. <b>A chave é a senha</b>: quem a tiver consegue ler e alterar esses números, por isso partilha-a só com o teu agregado. Se não ativares, nada é enviado.</li>
-    <li><b>Código 100% visível e auditável.</b> Podes ler exatamente o que faz, <a id="gh" href="#" target="_blank" rel="noopener">no GitHub</a>, ou pedir a alguém que perceba para confirmar.</li>
-    <li><b>Nada é submetido, de todo.</b> Nesta versão a ferramenta só lê e analisa. Qualquer alteração à tua declaração é feita por ti, no e-Fatura.</li>
-  </ul>
-  <p class="warn"><b>Atenção:</b> nunca introduzas o teu NIF e password das Finanças numa página cujo endereço não termine em <code>.gov.pt</code>. Esta ferramenta nunca to pede, e é essa a diferença.</p>
-</section>
-
-<section>
-  <h2>Instalar <span class="note">(só funciona no computador)</span></h2>
-  <p class="warn"><b>Isto é para computador, não para telemóvel.</b> A ferramenta é um favorito que
-    corre dentro da página do e-Fatura, e os navegadores de telemóvel não deixam fazer isso. Não é
-    uma limitação que eu possa contornar: as alternativas seriam pedir-te a password, que nunca vou
-    fazer, ou ser uma aplicação oficial da AT, que isto não é nem tem como ser. Se andas no
-    telemóvel, guarda para quando estiveres ao computador.</p>
-  <p><b>Opção 1, a mais rápida:</b> arrasta este botão para a tua barra de favoritos.</p>
-  <p><a class="bm" id="bookmarklet" href="#"> Fatura Boa</a></p>
-
-  <p><b>Opção 2, se arrastar não der:</b> copia o código e cola-o num favorito novo.</p>
-  <p>
-    <button type="button" class="bm" id="copybm" style="border:0">Copiar o código</button>
-    <span id="copymsg" class="note" role="status" aria-live="polite"></span>
-  </p>
-  <details id="howto">
-    <summary>Como colar num favorito novo, por navegador</summary>
-    <div class="howto-body">
-      <p><b>Chrome / Edge / Brave:</b> Ctrl+Shift+O abre o gestor de favoritos. Botão direito na
-        barra, <i>Adicionar página</i>, dá-lhe o nome <i>Fatura Boa</i> e cola o código no campo URL.</p>
-      <p><b>Firefox:</b> Ctrl+Shift+O, depois <i>Organizar</i>, <i>Adicionar marcador</i>, e cola o
-        código no campo <i>Endereço</i>.</p>
-      <p><b>Safari:</b> adiciona qualquer página aos favoritos, depois <i>Editar favoritos</i>,
-        muda o nome e cola o código no endereço.</p>
-      <p class="note">Em todos: o código começa por <code>javascript:</code>. Se ao colares essa
-        parte desaparecer, estás a colar na barra de endereço em vez de no favorito. O navegador
-        remove-a de propósito, e num favorito isso não acontece.</p>
-    </div>
-  </details>
-  <p class="note" style="margin-top:14px">Depois abre o e-Fatura, faz login, e clica no favorito.</p>
-  <p class="note"><b>Porque não há um botão que instale isto sozinho:</b> os navegadores deixaram
-    de permitir que uma página crie favoritos. A razão é exatamente a que devia deixar-te
-    descansado: se um site pudesse instalar um favorito <code>javascript:</code> sem tu veres,
-    era assim que se faria um ataque. Tem de passar pelas tuas mãos, e ainda bem.</p>
-</section>
-
-<section>
-  <h2>Que setor escolher para cada fatura <span class="note">(ano de rendimentos 2026)</span></h2>
-  <div class="tscroll"><table>
-    <caption class="note" style="text-align:left;padding-bottom:6px">Resumo dos setores de dedução e respetivos limites</caption>
-    <tr><th scope="col">Setor</th><th scope="col">O que inclui</th><th scope="col">Benefício</th></tr>
-    <tr><td>Saúde</td><td>Consultas, farmácia, dentista, óculos, fisio, psicologia/terapia. IVA 23% só conta com receita médica associada.</td><td>15%, máx €1.000</td></tr>
-    <tr><td>Educação</td><td>Propinas, creche, colégio, explicações, manuais, formação certificada.</td><td>30%, máx €800</td></tr>
-    <tr><td>Habitação</td><td>Rendas de habitação própria, ou juros de crédito à habitação (contratos até 2011).</td><td>15%, máx €900 <span class="note">(800 € em 2025, 1000 € a partir de 2027)</span></td></tr>
-    <tr><td>Lares</td><td>Lares e apoio domiciliário (próprio ou ascendentes).</td><td>25%, máx €403,75</td></tr>
-    <tr><td>Restauração, cabeleireiro, ginásio, veterinário, oficina, transportes, jornais, livros...</td><td>Cada fatura no setor correto do <i>comerciante</i>. Ex: ginásio->Ginásios, restaurante->Restauração.</td><td>15% do IVA, pool partilhada máx €250</td></tr>
-    <tr><td>Despesas Gerais Familiares</td><td>Tudo o resto com NIF (supermercado, roupa, combustível, telecom...).</td><td>35%, máx €250</td></tr>
-  </table></div>
-  <p class="warn">A ferramenta só te propõe setores para os quais o comerciante <b>está mesmo
-    registado</b>. Por isso o e-Fatura aceita-os todos, e é aí que está a confusão: <b>ser aceite
-    não quer dizer que esteja certo</b>. Um hipermercado tem CAE de farmácia, mas se compraste
-    comida, a compra foi despesas gerais e não saúde. Por isso há duas colunas: a
-    <b>Provável</b>, que é a atividade principal do comerciante ou o que tu já usaste antes, e a
-    <b>Otimizada</b>, que é o setor que dá mais dedução e ainda tem espaço. Vem pré-selecionada a
-    Provável. A Otimizada só é tua para usar se a compra <b>foi mesmo</b> dessa natureza. Quem
-    declara és tu.</p>
-</section>
-
-<section>
-  <h2>Ver a atividade de um comerciante <span class="note">(sem instalar nada)</span></h2>
-  <p>Se só queres perceber <b>o que é</b> um NIF que te apareceu numa fatura, ou em que setores as
-     compras nesse comerciante podem entrar, há uma página à parte:
-     <a href="/consulta"><b>Consultar NIF</b></a>.</p>
-  <p>Procura por NIF ou por nome e mostra o nome oficial, a morada, e as atividades registadas no
-     SICAE &mdash; <b>a principal e as secundárias</b>. As secundárias são a parte que quase nenhum
-     site mostra, e são precisamente as que decidem em que setores as faturas desse comerciante
-     podem entrar. É também onde se percebe porque é que um hipermercado aparece com CAE de
-     farmácia.</p>
-  <p class="note">Funciona no telemóvel, ao contrário do bookmarklet. Não precisa de login em lado
-     nenhum e não toca na tua conta das Finanças &mdash; só lê registos públicos de empresas.
-     Ao contrário do bookmarklet, faz um pedido por consulta, por isso o servidor vê o NIF que
-     pesquisaste; a página diz isso lá.</p>
-  <!-- NOT .bm: that class is cursor:grab because it is the drag-to-bookmarks-bar bookmarklet.
-       Using it on an ordinary link invites people to drag a page they should just click. -->
-  <p><a class="btn" href="/consulta">Consultar um NIF</a></p>
-</section>
-
-<section>
-  <h2>Porque é que a Fatura Boa existe</h2>
-  <p>
-    Sempre tive problemas com isto. Todos os anos a mesma coisa: dezenas de faturas pendentes à espera
-    de serem classificadas, uma a uma, num menu que não ajuda nada. Deixava andar, esquecia-me, e
-    chegava a Fevereiro a perder deduções que eram minhas por direito, só porque não tive paciência
-    para clicar 200 vezes.
-  </p>
-  <p>
-    Mas não era só falta de paciência, e demorei a perceber isso. O que torna isto difícil não é a
-    complexidade: é a frequência. Quem trabalha em contabilidade faz isto todos os dias, e por isso
-    é rotina. Tu fazes uma vez por ano, num sítio onde nunca ganhas prática, com regras que mudam
-    de ano para ano. Ninguém fica bom numa coisa que faz de doze em doze meses. É aí que se perdem
-    deduções, e não por distração.
-  </p>
-  <p>
-    Se quiseres a versão curta do que isto é: <b>é como teres alguém ao teu lado a passar as
-    faturas contigo</b>. Alguém que faz isto todos os dias, que já sabe onde estão as armadilhas, e
-    que faz num par de segundos o que te levaria uma tarde. A diferença é que não decide nada por ti.
-    Mostra-te o que sabe, explica-te porquê, e a escolha continua a ser tua. É basicamente o que eu
-    faria se estivesse aí sentado, só que muito mais rápido e sem me chateares outra vez para o ano.
-  </p>
-  <p>
-    O que me irritava mais não era o trabalho. Era perceber que a informação toda já existe. As Finanças
-    sabem qual é a atividade de cada comerciante, e essa atividade determina o setor. Uma farmácia é
-    saúde. Um restaurante é restauração. Isso está registado no SICAE, o registo oficial do Estado, e
-    é público. Mesmo assim, cabe a ti adivinhar, fatura a fatura.
-  </p>
-  <p>
-    Então construí isto. Lê as tuas faturas pendentes, vai buscar a atividade real de cada comerciante,
-    e sugere o setor certo. Onde um comerciante tem várias atividades (um hipermercado com farmácia,
-    livraria e restaurante dentro, o que é mais comum do que parece), escolhe a que te dá mais dedução
-    e que ainda tem espaço no teto anual. Tu revês e aprovas. Nada é submetido sem o teu clique.
-  </p>
-  <p>
-    É de graça e vai continuar a ser. Não vendo nada, não há conta para criar, não recolho nada teu.
-    Se te poupar uma tarde e algum dinheiro no IRS, já valeu a pena.
-  </p>
-</section>
-
-<section>
-  <h2>Obrigado, e diz-me o que está mal</h2>
-  <p>
-    Obrigado a quem já testou, reportou erros e partilhou chaves de API para construir o mapa de
-    atividades que esta ferramenta usa. Isso é o que a tornou possível.
-  </p>
-  <p>
-    <b>Se encontrares uma classificação errada, quero saber.</b> É a forma mais útil de ajudar: cada
-    correção fica no mapa partilhado e passa a beneficiar toda a gente que usar a ferramenta a seguir.
-    O mesmo para sugestões, dúvidas, ou se simplesmente não perceberes alguma coisa - se não se percebe,
-    é problema meu, não teu.
-  </p>
-  <form id="fb" class="form" method="post" action="/api/feedback" novalidate>
-    <div class="field">
-      <label for="fb-msg">O que correu mal, ou o que sugeres</label>
-      <textarea id="fb-msg" name="message" rows="5" maxlength="4000" required
-        placeholder="Ex: o Continente foi classificado como Saude e nao devia."></textarea>
-    </div>
-    <div class="field">
-      <label for="fb-ctx">Comerciante ou setor, se aplicavel <span class="note">(opcional)</span></label>
-      <input id="fb-ctx" name="context" type="text" maxlength="300" autocomplete="off">
-    </div>
-    <div class="field">
-      <label for="fb-mail">O teu email, se quiseres resposta <span class="note">(opcional)</span></label>
-      <input id="fb-mail" name="email" type="email" maxlength="200" autocomplete="email">
-      <p class="note">Uso-o so para te responder. Nada mais. Nao fica guardado em nenhuma base de dados: vai dentro do email que me e enviado, e fica na minha caixa de correio ate eu o apagar.</p>
-    </div>
-    <div class="hp" aria-hidden="true">
-      <label for="fb-web">Nao preencher</label>
-      <input id="fb-web" name="website" type="text" tabindex="-1" autocomplete="off">
-    </div>
-    <div class="cf-turnstile" data-sitekey="0x4AAAAAAD4tEJIzRGNSghRB" data-callback="fbToken"
-         data-theme="light" data-size="flexible"></div>
-    <p><button type="submit" class="bm" id="fb-send">Enviar</button></p>
-    <p id="fb-status" role="status" aria-live="polite" class="note"></p>
-  </form>
-  <p id="fb-fallback" class="box" hidden>
-    O formulário está a ser preparado. Entretanto, o caminho mais rápido é o GitHub ou o email.
-  </p>
-  <p class="note">
-    Preferes o GitHub? Abre um <a id="ghissues" href="#" target="_blank" rel="noopener">issue</a>,
-    ou fala comigo em <a href="https://diogoandrade.com" target="_blank" rel="noopener">diogoandrade.com</a>.
-  </p>
-</section>
-
-<section>
-  <h2>Quem fez isto</h2>
-  <p>
-    Sou o <b>Diogo Andrade</b>. Trabalho com automação, dados e infraestrutura, normalmente a resolver
-    exatamente este tipo de chatice: coisas que deviam ser automáticas e não são, e coisas que só são
-    difíceis porque as fazes uma vez por ano.
-  </p>
-  <p>
-    Se quiseres ver outros projetos, ou falar sobre algum trabalho,
-    <a href="https://diogoandrade.com" target="_blank" rel="noopener"><b>diogoandrade.com</b></a>.
-  </p>
-</section>
-
-<section>
-  <h2>Fontes</h2>
-  <p class="note">
-    Isto mexe com uma declaração fiscal, por isso as regras usadas aqui vêm de fontes oficiais e ficam
-    à vista para poderes confirmar. Se achares que interpretei alguma coisa mal, diz.
-  </p>
-  <ul class="safe">
-    <li><b>Atividades dos comerciantes (NIF para CAE):</b>
-      <a href="http://www.sicae.pt/Consulta.aspx" target="_blank" rel="noopener">SICAE</a>,
-      o registo oficial do Estado. Inclui as atividades secundárias, que é o que permite escolher o
-      melhor setor em vez de mandar tudo para despesas gerais.</li>
-    <li><b>CAE para setor de dedução:</b> Código do IRS, artigos
-      <a href="https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78c.aspx" target="_blank" rel="noopener">78.º-C</a> (saúde),
-      78.º-D (educação), 78.º-E (imóveis),
-      <a href="https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs78f.aspx" target="_blank" rel="noopener">78.º-F</a> (exigência de fatura)
-      e 84.º (lares).</li>
-    <li><b>Lista de códigos CAE:</b> CAE Rev.3 (INE / Decreto-Lei n.º 381/2007). Nota: o Estado está a
-      migrar para a CAE Rev.4 (Decreto-Lei n.º 9/2025) - a ferramenta reconhece as duas e revalida os
-      comerciantes periodicamente.</li>
-    <li><b>Tetos e percentagens:</b> ano de rendimentos 2026 (Lei n.º 73-A/2025). O teto das rendas para 2026 é €900.</li>
-  </ul>
-</section>
-
 </div>
 
 <footer class="wrap">
-  <p>Ferramenta comunitária e independente. <b>Não</b> afiliada à Autoridade Tributária. Sem garantias, confirma sempre nas Finanças.</p>
-  <p><a href="/perfil">A minha situação</a> | <a href="/consulta">Consultar NIF</a> | <a href="/verificar">Verificar</a> | <a href="/sobre">Sobre</a> | <a href="/privacidade">Privacidade</a> | <a href="/termos">Termos</a> | <a id="gh2" href="#" target="_blank" rel="noopener">Código no GitHub</a></p>
-  <p class="note"><a href="https://polyformproject.org/licenses/noncommercial/1.0.0" target="_blank" rel="noopener">PolyForm Noncommercial 1.0.0</a> - livre para uso pessoal, proibido monetizar. Feito por <a href="https://diogoandrade.com" target="_blank" rel="noopener">Diogo Andrade</a>.</p>
+  <div class="ftgrid">
+    <div class="ftcol">
+      <h3>Ferramenta</h3>
+      <a href="/perfil">A minha situação</a>
+      <a href="/consulta">Consultar NIF</a>
+      <a href="/deducoes">Deduções</a>
+    </div>
+    <div class="ftcol">
+      <h3>Confiança</h3>
+      <a href="/sobre">Sobre</a>
+      <a href="/auditoria">Auditoria</a>
+      <a href="/verificar">Verificar</a>
+      <a id="gh2" href="#" target="_blank" rel="noopener">Código no GitHub</a>
+    </div>
+    <div class="ftcol">
+      <h3>Legal</h3>
+      <a href="/privacidade">Privacidade</a>
+      <a href="/termos">Termos</a>
+      <a href="/contrato">Contrato</a>
+    </div>
+  </div>
+  <div class="ftbottom">
+    <p>Ferramenta comunitária e independente. <b>Não</b> afiliada à Autoridade Tributária. Sem garantias, confirma sempre nas Finanças.</p>
+    <p class="note"><a href="https://polyformproject.org/licenses/noncommercial/1.0.0" target="_blank" rel="noopener">PolyForm Noncommercial 1.0.0</a> - livre para uso pessoal, proibido monetizar. Feito por <a href="https://diogoandrade.com" target="_blank" rel="noopener">Diogo Andrade</a>.</p>
+  </div>
 </footer>
 
 <script>
@@ -845,9 +627,8 @@
   var GH  = "https://github.com/nobodykr/efatura-helper";
   var HOST = location.origin;              // where tool.js is served (this site)
   document.getElementById("gh").href = GH;
-  document.getElementById("ghissues").href = GH + "/issues";
-  document.getElementById("ghissues2").href = GH + "/issues";
   document.getElementById("gh2").href = GH;
+  document.getElementById("ghissues2").href = GH + "/issues";
   // Copy the bookmarklet source. No browser lets a page create a bookmark - the APIs that used to
   // (window.sidebar.addPanel, window.external.AddFavorite) were removed precisely because silently
   // installing a javascript: bookmark is an attack. So the best we can do is remove the typing.
@@ -870,47 +651,6 @@
     catch (e) { msg.className = "note err"; msg.textContent = "Nao consegui copiar. Clica com o botao direito no botao acima e copia o endereco."; }
     document.body.removeChild(ta);
   }
-
-  // Feedback form. Turnstile fills the token; the server re-verifies it, so this is only plumbing.
-  // Flip to true once FORMS_TURNSTILE_SECRET, RESEND_API_KEY and FEEDBACK_TO are set on the
-  // Pages project. Until then the form would render, accept input and always fail, so it stays
-  // hidden and the GitHub route below it does the job.
-  var FEEDBACK_ENABLED = true;
-  if (!FEEDBACK_ENABLED) {
-    document.getElementById("fb").hidden = true;
-    document.getElementById("fb-fallback").hidden = false;
-  }
-  var fbToken = "";
-  window.fbToken = function (t) { fbToken = t; };
-  var fbLoadedAt = Date.now();
-  var fbForm = document.getElementById("fb");
-  fbForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-    var st = document.getElementById("fb-status");
-    var btn = document.getElementById("fb-send");
-    var msg = document.getElementById("fb-msg").value.trim();
-    if (!msg) { st.className = "note err"; st.textContent = "Escreve a mensagem primeiro."; return; }
-    if (!fbToken) { st.className = "note err"; st.textContent = "Aguarda um segundo pela verificacao e tenta outra vez."; return; }
-    btn.disabled = true; st.className = "note"; st.textContent = "A enviar...";
-    fetch("/api/feedback", {
-      method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        message: msg,
-        context: document.getElementById("fb-ctx").value.trim(),
-        email: document.getElementById("fb-mail").value.trim(),
-        website: document.getElementById("fb-web").value,
-        token: fbToken, elapsed: Date.now() - fbLoadedAt
-      })
-    }).then(function (r) { return r.json(); }).then(function (d) {
-      if (d.ok) { fbForm.reset(); st.className = "note ok"; st.textContent = "Enviado. Obrigado, leio tudo."; try { if (window.umami) umami.track("relato-enviou"); } catch (e) {} }
-      else { st.className = "note err"; st.textContent = d.error || "Nao consegui enviar."; btn.disabled = false; }
-      if (window.turnstile) { turnstile.reset(); fbToken = ""; }
-    }).catch(function () {
-      st.className = "note err";
-      st.textContent = "Falhou o envio. Tenta o GitHub, ou outra vez daqui a pouco.";
-      btn.disabled = false;
-    });
-  });
 
   // Loader bookmarklet: injects the open-source tool.js from this site into the e-Fatura page.
   // Profile is public now: the loader allows all Financas + Seguranca Social hosts and sets the
