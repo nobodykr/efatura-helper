@@ -286,6 +286,57 @@
     .thesis{animation:rise .45s cubic-bezier(.2,.7,.3,1) both}
     @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   }
+
+  /* icon system: 2px-stroke currentColor line icons, drawn as a <symbol> sprite so every
+     instance is a one-line <use>. Sized to sit next to 16px body text without dominating it. */
+  .icon{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:2;
+        stroke-linecap:round;stroke-linejoin:round}
+
+  /* trust row: the three facts that matter most (no password, nothing leaves the browser,
+     open source), pulled out of the small text badges and given icons + room to breathe,
+     right under the hero actions where the security story should land first. */
+  .trust-row{display:flex;flex-wrap:wrap;justify-content:center;gap:28px;margin:26px 0 4px}
+  .trust-item{display:flex;align-items:center;gap:10px;font-size:.92rem;color:var(--ink2);
+             max-width:220px;text-align:left}
+  .trust-item .icon{color:var(--pri)}
+  .trust-item b{color:var(--ink);font-weight:600}
+
+  /* staged hero entrance: eyebrow, h1, sub, cta-row rise+fade one after another. Entirely
+     inside the no-preference query, and fill-mode:both lives only in here too - outside it
+     (or if the animation never runs) everything is just visible, full stop. */
+  @media (prefers-reduced-motion:no-preference){
+    h1 .eyebrow{animation:hero-rise .55s cubic-bezier(.2,.7,.3,1) both}
+    h1{animation:hero-rise .55s cubic-bezier(.2,.7,.3,1) .08s both}
+    header .sub{animation:hero-rise .55s cubic-bezier(.2,.7,.3,1) .16s both}
+    .cta-row{animation:hero-rise .55s cubic-bezier(.2,.7,.3,1) .24s both}
+    @keyframes hero-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  }
+
+  /* "como funciona" step grid: mono number + icon + bold lead, hairline separators instead of
+     the plain numbered list used elsewhere on the page. Left border on desktop columns, top
+     border once it stacks - a rule between steps either way, just rotated with the layout. */
+  .hgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0 28px;margin-top:8px}
+  .hstep{padding:18px 0 18px 22px;border-left:1px solid var(--rule)}
+  .hstep:first-child{padding-left:22px}
+  .hstep .hn{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .hstep .hn .num{font-family:'IBM Plex Mono',monospace;font-size:.78rem;font-weight:600;color:var(--pri)}
+  .hstep .hn .icon{color:var(--pri)}
+  .hstep p{margin:0;text-align:left;hyphens:manual}
+  @media (max-width:760px){
+    .hgrid{grid-template-columns:1fr;gap:0}
+    .hstep{border-left:0;border-top:1px solid var(--rule);padding:18px 0}
+    .hstep:first-child{border-top:0;padding-top:0;padding-left:0}
+  }
+
+  /* scroll reveal for below-fold sections. Defensive by construction: the .reveal class only
+     ever gets attached by JS, and only when IntersectionObserver exists AND the user has not
+     asked for reduced motion - so "JS didn't run" and "reduced motion" both fall through to
+     the plain, always-visible section with no class at all. */
+  @media (prefers-reduced-motion:no-preference){
+    .reveal{opacity:0;transform:translateY(16px);transition:opacity .5s cubic-bezier(.2,.7,.3,1),
+            transform .5s cubic-bezier(.2,.7,.3,1)}
+    .reveal.in{opacity:1;transform:none}
+  }
 </style>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem faturas.diogoandrade.com; ref fb-lic-e1ec0c96c9">
@@ -300,6 +351,27 @@
      de accao legal. Origem oficial: faturas.diogoandrade.com | ref fb-lic-e1ec0c96c9 -->
 <div hidden aria-hidden="true" data-fb-lic="PolyForm-Noncommercial-1.0.0" data-fb-ref="fb-lic-e1ec0c96c9" data-fb-origem="faturas.diogoandrade.com">Codigo protegido por direitos de autor. Licenca PolyForm Noncommercial 1.0.0: uso comercial ou redistribuicao sem autorizacao proibidos.</div>
 <a href="/hp/registo-e1ec0c96c9" hidden aria-hidden="true" rel="nofollow noindex" tabindex="-1">.</a>
+<!-- icon sprite: every inline icon on the page is a <use> against one of these four symbols,
+     drawn as simple 2px-stroke line icons so they inherit currentColor and never need a request. -->
+<svg hidden aria-hidden="true">
+  <symbol id="i-lock" viewBox="0 0 24 24">
+    <rect x="5" y="11" width="14" height="10" rx="2"/>
+    <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+  </symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24">
+    <path d="M7 3h7l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/>
+    <path d="M14 3v4h4"/>
+    <path d="M9 13h6M9 17h6"/>
+  </symbol>
+  <symbol id="i-check" viewBox="0 0 24 24">
+    <rect x="3" y="3" width="18" height="18" rx="4"/>
+    <path d="M7.5 12.5l3 3 6-6.5"/>
+  </symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24">
+    <path d="M4 12h15"/>
+    <path d="M13 6l6 6-6 6"/>
+  </symbol>
+</svg>
 <details class="alertbar">
   <summary><div class="wrap">
     <p class="big">A tua password das Finanças só se escreve em páginas cujo endereço
@@ -360,9 +432,22 @@
      <a href="/verificar">verificável</a>.</p>
 
   <div class="cta-row">
-    <a class="bm cta-main" href="/perfil">Ver a minha situação</a>
+    <a class="bm cta-main" href="/perfil">Ver a minha situação
+      <svg class="icon" style="width:16px;height:16px;margin-left:8px" aria-hidden="true"><use href="#i-arrow"/></svg></a>
     <a class="cta-alt" href="#como">Como funciona</a>
   </div>
+
+  <!-- the security story is the product, so it gets icons and room right under the hero
+       actions instead of waiting until the "porque é seguro" section further down the page. -->
+  <div class="trust-row">
+    <div class="trust-item"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+      <span><b>Nunca</b> pede a tua password</span></div>
+    <div class="trust-item"><svg class="icon" aria-hidden="true"><use href="#i-doc"/></svg>
+      <span>As faturas <b>não saem</b> do navegador</span></div>
+    <div class="trust-item"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+      <span>Código <b>aberto e verificável</b></span></div>
+  </div>
+
   <!-- Recovered-euro counter. Hidden until there is a real, non-zero number (no fake social proof).
        Fed by opt-in, deduplicated per user server-side (cae-db /counter/total). -->
   <p id="fb-counter" style="display:none;margin:10px 0 0;font-size:1rem;color:#0a7d33;font-weight:600"></p>
@@ -380,10 +465,7 @@
   </script>
 
   <div class="badges">
-    <span class="badge"><b>nunca</b> pede password</span>
     <span class="badge">corre <b>na tua sessão</b></span>
-    <span class="badge">os dados <b>não saem</b> do navegador</span>
-    <span class="badge">código <b>verificável</b></span>
     <span class="badge"><b>grátis</b>, sem contas</span>
   </div>
 </div>
@@ -484,14 +566,17 @@
   </p>
 </div></section>
 
-<section>
+<section id="como">
   <h2>Como classificar as faturas pendentes do e-Fatura</h2>
-  <div class="steps">
-    <div class="step"><div class="n" aria-hidden="true">01</div><div>Faz <b>login normal</b> no <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a>, como sempre fazes.</div></div>
-    <div class="step"><div class="n" aria-hidden="true">02</div><div>Clica no favorito <b>Fatura Boa</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu histórico e na atividade oficial de cada comerciante</b>, já a saltar os setores cujo teto anual esteja cheio.</div></div>
-    <div class="step"><div class="n" aria-hidden="true">03</div><div><b>Revês</b> a tabela. Cada fatura traz duas sugestões: <b>Provável</b> (o que a compra
+  <div class="hgrid">
+    <div class="hstep"><div class="hn"><span class="num">01</span><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></div>
+      <p>Faz <b>login normal</b> no <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a>, como sempre fazes.</p></div>
+    <div class="hstep"><div class="hn"><span class="num">02</span><svg class="icon" aria-hidden="true"><use href="#i-doc"/></svg></div>
+      <p>Clica no favorito <b>Fatura Boa</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu histórico e na atividade oficial de cada comerciante</b>, já a saltar os setores cujo teto anual esteja cheio.</p></div>
+    <div class="hstep"><div class="hn"><span class="num">03</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></div>
+      <p><b>Revês</b> a tabela. Cada fatura traz duas sugestões: <b>Provável</b> (o que a compra
       provavelmente foi) e <b>Otimizada</b> (o que dá mais dedução e ainda cabe no teto). Vem
-      selecionada a Provável; clicas na outra se a compra foi mesmo dessa natureza. Depois <b>copias o plano</b> (ou envias para o teu email) e aplicas no e-Fatura. <b>A ferramenta não submete nada.</b></div></div>
+      selecionada a Provável; clicas na outra se a compra foi mesmo dessa natureza. Depois <b>copias o plano</b> (ou envias para o teu email) e aplicas no e-Fatura. <b>A ferramenta não submete nada.</b></p></div>
   </div>
 </section>
 
@@ -833,6 +918,27 @@
   // faturas page.) The SRI-pinned "verified" variant lives on /verificar.
   var loader = "javascript:(function(){if(!/(portaldasfinancas\\.gov\\.pt|seg-social\\.pt)$/.test(location.host)){alert('Abre uma pagina das Financas ou da Seguranca Social e faz login primeiro.');return;}window.__FB_PROFILE=1;var s=document.createElement('script');s.charset='utf-8';s.src='" + HOST + "/tool.js?v='+Date.now();document.body.appendChild(s);})();";
   document.getElementById("bookmarklet").setAttribute("href", loader);
+
+  // Scroll reveal for below-fold sections. Defensive on purpose: the "reveal" class (which is
+  // what makes an element start at opacity:0 - see the CSS, itself gated behind
+  // prefers-reduced-motion:no-preference) is only ever added right here, immediately before the
+  // element is handed to a working IntersectionObserver. No browser support, a thrown error, or
+  // a reduced-motion preference and this whole block is a no-op - sections just render visible,
+  // which is the same as if this script had never run at all.
+  try {
+    if (window.IntersectionObserver && window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: no-preference)").matches) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) { entry.target.classList.add("in"); io.unobserve(entry.target); }
+        });
+      }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+      document.querySelectorAll(".wrap > section").forEach(function (el) {
+        el.classList.add("reveal");
+        io.observe(el);
+      });
+    }
+  } catch (e) { /* leave everything visible */ }
 </script>
 </body>
 </html>
