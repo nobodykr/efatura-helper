@@ -120,7 +120,12 @@
 
   /* The boxed action frame: one bordered box, three cells, 1px dividers between them. */
   .frame{border:1px solid var(--hair);border-radius:16px;background:#fff}
-  .aframe{display:grid;grid-template-columns:1fr 1.05fr 1.05fr;align-items:center;padding:22px 10px;margin-top:24px}
+  /* align-items:start (not center): every acell's content starts at the row's top edge, so the
+     three CONTROLS (button/select/button) sit on one line regardless of how many lines of label
+     or caption sit above/below them in each cell. Cell 3 has no visible label, so render()
+     gives it an invisible .atitle spacer of the same height to keep the three controls aligned -
+     see the comment at that markup in perfil.html/index.html. */
+  .aframe{display:grid;grid-template-columns:1fr 1.05fr 1.05fr;align-items:start;padding:22px 10px;margin-top:24px}
   .acell{padding:0 26px;text-align:center;border-left:1px solid var(--hair)}
   .acell:first-child{border-left:0}
   .atitle{font-weight:600;font-size:1.02rem;color:var(--pri-dark);margin-bottom:13px}
@@ -1003,7 +1008,8 @@
         '</div>'+
         '<div class="acell"><div class="atitle">'+(done.length?'Próxima fonte':'2. Começar por')+'</div>'+
           srcSelect(missing)+'</div>'+
-        '<div class="acell"><a class="btn-primary" id="opensrc" target="_blank" rel="noopener" href="'+missing[0].open+'">'+
+        '<div class="acell"><div class="atitle" style="visibility:hidden" aria-hidden="true">&nbsp;</div>'+
+          '<a class="btn-primary" id="opensrc" target="_blank" rel="noopener" href="'+missing[0].open+'">'+
           ico('i-external')+'<span id="opensrclabel">'+(done.length?'Abrir e continuar':'Abrir '+esc(meta(missing[0].id).short))+'</span></a></div>'+
       '</div>';
       if (!done.length)
