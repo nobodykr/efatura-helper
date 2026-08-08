@@ -34,5 +34,6 @@ await browser.close();
 
 const version = JSON.parse(readFileSync(here('manifest.json'), 'utf8')).version;
 mkdirSync(root('dist'), { recursive: true });
-execSync(`cd ${here('')} && zip -qr ../dist/fatura-boa-extension-${version}.zip . -x build.mjs`, { stdio: 'inherit' });
+// Ship ONLY runtime files - dev scripts (build.mjs, shots.mjs) must not go to the Web Store.
+execSync(`cd ${here('')} && rm -f ../dist/fatura-boa-extension-${version}.zip && zip -qr ../dist/fatura-boa-extension-${version}.zip . -x build.mjs shots.mjs`, { stdio: 'inherit' });
 console.log(`dist/fatura-boa-extension-${version}.zip written`);
