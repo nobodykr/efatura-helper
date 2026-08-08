@@ -35,30 +35,48 @@
   var ON_EFATURA = /^faturas\.portaldasfinancas\.gov\.pt$/.test(location.host);
   var YEAR = new Date().getFullYear();
 
+  // Real brand type on the portal: same self-hosted IBM Plex files the site serves (static
+  // downloads, identical for everybody, send nothing). Masthead idiom: white, hairline rule.
+  if (!document.getElementById("fb-ext-fonts")) {
+    var FH = "https://faturas.diogoandrade.com/fonts/";
+    var fst = document.createElement("style");
+    fst.id = "fb-ext-fonts";
+    fst.textContent =
+      ["ibm-plex-sans-400-latin:IBM Plex Sans:400", "ibm-plex-sans-600-latin:IBM Plex Sans:600",
+       "ibm-plex-mono-600-latin:IBM Plex Mono:600"].map(function (s) {
+        var p = s.split(":");
+        return "@font-face{font-family:'" + p[1] + "';font-style:normal;font-weight:" + p[2] +
+          ";font-display:swap;src:url(" + FH + p[0] + ".woff2) format('woff2')}";
+      }).join("");
+    document.documentElement.appendChild(fst);
+  }
+
   var bar = document.createElement("div");
   bar.id = "fb-ext-bar";
   bar.setAttribute("style",
     "position:fixed;top:0;left:0;right:0;z-index:2147483646;height:44px;display:flex;align-items:center;gap:14px;" +
     "padding:0 16px;background:#ffffff;color:#2B363C;border-bottom:1px solid #d5dae1;" +
-    "font:14px/1.2 system-ui,'Segoe UI',Roboto,sans-serif;box-shadow:0 1px 4px rgba(2,28,81,.06)");
+    "font:400 14px/1.2 'IBM Plex Sans',system-ui,'Segoe UI',Roboto,sans-serif");
 
   var brand = document.createElement("span");
   brand.textContent = "FATURA BOA";
   brand.setAttribute("style",
     "font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;letter-spacing:.11em;" +
-    "font-weight:700;color:#034ad8");
+    "font-weight:600;color:#034ad8;text-transform:uppercase");
 
   var summary = document.createElement("span");
   summary.id = "fb-ext-summary";
-  summary.setAttribute("style", "color:#6b7780;font-size:12.5px;flex:1;min-width:0;overflow:hidden;" +
+  summary.setAttribute("style", "color:#6b7780;font-size:.88rem;flex:1;min-width:0;overflow:hidden;" +
     "text-overflow:ellipsis;white-space:nowrap");
   summary.textContent = ON_EFATURA ? "a ler o teu ano..." : "100% no teu navegador - nada sai dele";
 
   var run = document.createElement("button");
   run.textContent = ON_EFATURA ? "Analisar faturas" : "Abrir e-Fatura";
   run.setAttribute("style",
-    "background:#034ad8;border:0;color:#fff;padding:8px 14px;border-radius:6px;" +
-    "font:inherit;font-size:13px;font-weight:600;cursor:pointer");
+    "background:#034ad8;border:0;color:#fff;padding:6px 16px;min-height:32px;border-radius:6px;" +
+    "font:600 .9rem 'IBM Plex Sans',sans-serif;cursor:pointer");
+  run.addEventListener("mouseenter", function () { run.style.background = "#021c51"; });
+  run.addEventListener("mouseleave", function () { run.style.background = "#034ad8"; });
   run.addEventListener("click", function () {
     if (ON_EFATURA) { chrome.runtime.sendMessage({ type: "fb-run" }); collapse(); }
     else location.href = "https://faturas.portaldasfinancas.gov.pt/";

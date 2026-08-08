@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Fatura Boa",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "O teu e-Fatura, organizado. Análise e classificação das faturas, 100% no teu navegador - nada sai dele.",
   "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" },
   "permissions": ["scripting", "storage"],
