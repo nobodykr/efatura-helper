@@ -4,8 +4,10 @@
 /* Fatura Boa - runs 100% in the user's own browser, on their own e-Fatura session.
  * It never sees a password: it reuses the login already in the browser (same-origin cookies).
  *
- * Network calls (audit them yourself - there are exactly two kinds):
+ * Network calls (audit them yourself - there are exactly three kinds):
  *   - same-origin to faturas.portaldasfinancas.gov.pt  (read your faturas, submit classifications)
+ *   - static BRAND ASSETS from faturas.diogoandrade.com (the IBM Plex font files and the
+ *     offers.json sponsor feed - plain downloads, the same files for everybody, send nothing)
  *   - ONE read-only GET of the PUBLIC map at cae-db.diogoandrade.com/sectors.json
  *     (public business-registry data: NIF -> ranked deductible sectors, built from SICAE, the
  *     state's own CAE registry. It is a plain download and SENDS NOTHING of yours - not your NIF,
@@ -45,7 +47,7 @@
   var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.08.09";
+  var FB_VERSION = "2026.08.10";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -471,7 +473,7 @@
       if (movCount > 0) parts.push(movCount + ' por corrigir');
       h += '<div style="text-align:center;padding:8px 0 4px">' +
            '<div style="color:#6b7780;font-size:12px">Podes recuperar em dedu\u00e7\u00e3o no IRS</div>' +
-           '<div class="efh-num" style="font-size:34px;font-weight:800;color:#1E5A3A;line-height:1.1">\u20ac' +
+           '<div class="efh-num" style="font-size:34px;font-weight:600;letter-spacing:-.015em;color:var(--green);line-height:1.15">\u20ac' +
            total.toFixed(2) + '</div>' +
            '<div style="color:#6b7780;font-size:12px">' + parts.join(' \u00b7 ') + '</div></div>';
     } else if (nPend > 0) {
@@ -556,49 +558,105 @@
   var WIDE_KEY = "efh-wide";
   function isWide() { try { return localStorage.getItem(WIDE_KEY) === "1"; } catch (e) { return false; } }
   if (!document.getElementById('efh-style')) {
+    var FONT_HOST = "https://faturas.diogoandrade.com/fonts/";
+    // Real brand type on AT's page: the portal serves no CSP (verified 2026-08-08), so the
+    // panel loads the SAME self-hosted IBM Plex files the site serves. Plain static downloads,
+    // identical for everybody, nothing sent - declared in the network-calls list up top.
+    var face = function (fam, w, slug) {
+      return "@font-face{font-family:'" + fam + "';font-style:normal;font-weight:" + w +
+        ";font-display:swap;src:url(" + FONT_HOST + slug + ".woff2) format('woff2')}";
+    };
     var fs = document.createElement('style'); fs.id = 'efh-style';
     fs.textContent =
-      '#efh-panel{--pri:#034ad8;--pri-dark:#021c51;--ink:#2B363C;--ink2:#4a5a63;--mute:#6b7780;' +
-        '--bg:#fff;--bg2:#f4f6f9;--rule:#d5dae1;--red:#c8102e;--red-bg:#fdecec;--red-ink:#5a0000;' +
-        '--green:#1E5A3A;--green-bg:#eef7f0;--green-rule:#bfe0c8;--amber:#8a6100;--amber-bg:#fdf8ec;' +
+      face("IBM Plex Sans", 400, "ibm-plex-sans-400-latin") +
+      face("IBM Plex Sans", 500, "ibm-plex-sans-500-latin") +
+      face("IBM Plex Sans", 600, "ibm-plex-sans-600-latin") +
+      face("IBM Plex Sans", 700, "ibm-plex-sans-700-latin") +
+      face("IBM Plex Mono", 400, "ibm-plex-mono-400-latin") +
+      face("IBM Plex Mono", 600, "ibm-plex-mono-600-latin") +
+      /* tokens = index.html :root, verbatim */
+      '#efh-panel{--pri:#034ad8;--pri-dark:#021c51;--pri-mid:#1b4dab;--pri-soft:#eaf1ff;' +
+        '--ink:#2B363C;--ink2:#4a5a63;--mute:#6b7780;' +
+        '--bg:#fff;--bg2:#f4f6f9;--bg3:#E1E4EA;--rule:#d5dae1;--hair:#e2e8f3;' +
+        '--red:#c8102e;--red-bg:#fdecec;--red-ink:#5a0000;' +
+        '--green:#1E5A3A;--green-bg:#f1f7f3;--green-rule:#bfe0c8;--amber:#8a6100;--amber-bg:#fdf8ec;' +
         '--amber-ink:#5a4600;--focus:#ff7a00;--r:6px;' +
         'position:fixed;top:12px;right:12px;width:min(680px,95vw);max-height:90vh;overflow:auto;' +
         'background:var(--bg);border:1px solid var(--pri-dark);border-radius:var(--r);' +
         'box-shadow:0 8px 40px rgba(2,28,81,.28);z-index:2147483647;color:var(--ink);' +
-        "font:13px/1.45 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}" +
+        "font:400 14px/1.55 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;" +
+        '-webkit-font-smoothing:antialiased}' +
       '#efh-panel.efh-wide{top:2vh;right:auto;left:50%;transform:translateX(-50%);' +
-        'width:min(1200px,96vw);max-height:96vh}' +
+        'width:min(1200px,96vw);max-height:96vh;font-size:15px}' +
+      /* focus ring = site universal rule */
       '#efh-panel a:focus-visible,#efh-panel button:focus-visible,#efh-panel select:focus-visible,' +
         '#efh-panel input:focus-visible,#efh-panel summary:focus-visible' +
         '{outline:3px solid var(--focus);outline-offset:2px;border-radius:2px}' +
+      '#efh-panel a{color:var(--pri);text-underline-offset:3px;text-decoration-thickness:1px}' +
+      '#efh-panel a:hover{color:var(--pri-dark)}' +
       "#efh-panel .efh-num,#efh-panel .efh-nif{font-family:'IBM Plex Mono',ui-monospace,monospace;" +
         'font-variant-numeric:tabular-nums}' +
+      /* .eyebrow = site spec exactly (weight 600, not 700) */
       "#efh-panel .efh-eyebrow{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;" +
-        'letter-spacing:.11em;text-transform:uppercase;color:var(--pri);font-weight:700;' +
-        'margin:16px 0 6px}' +
-      '#efh-panel .efh-head{background:var(--pri-dark);color:#fff;padding:10px 14px;font-weight:600;' +
-        'border-radius:var(--r) var(--r) 0 0;display:flex;align-items:center;gap:8px}' +
+        'letter-spacing:.11em;text-transform:uppercase;color:var(--pri);font-weight:600;' +
+        'margin:20px 0 8px}' +
+      /* header = navy alertbar idiom; version chip = .tag idiom */
+      '#efh-panel .efh-head{background:var(--pri-dark);color:#fff;padding:11px 16px;' +
+        'font-weight:600;font-size:1rem;line-height:1.35;' +
+        'border-radius:var(--r) var(--r) 0 0;display:flex;align-items:center;gap:12px}' +
       '#efh-panel .efh-head a{color:#fff}' +
+      '#efh-panel .efh-head .efh-sub,#efh-panel .efh-head .efh-sub a{color:#dbe4fa;font-weight:400;font-size:.82rem}' +
+      "#efh-panel .efh-tag{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;" +
+        'letter-spacing:.09em;text-transform:uppercase;border:1px solid rgba(255,255,255,.45);' +
+        'border-radius:2px;padding:2px 7px;white-space:nowrap;font-weight:400}' +
       '#efh-panel .efh-alert{background:var(--red-bg);border-bottom:2px solid var(--red);' +
-        'padding:8px 12px;font-size:12px;line-height:1.45;color:var(--red-ink)}' +
-      '#efh-panel .efh-btn{cursor:pointer;background:var(--pri);color:#fff;border:0;' +
-        'border-radius:var(--r);padding:10px 16px;min-height:44px;font:inherit;font-weight:600}' +
-      '#efh-panel .efh-btn-green{background:var(--green);font-weight:700}' +
-      '#efh-panel .efh-btn-ghost{background:var(--bg);color:var(--pri);border:1px solid var(--pri)}' +
+        'padding:9px 16px;font-size:.86rem;line-height:1.5;color:var(--red-ink)}' +
+      /* buttons = site .btn / .btn-outline (1.5px) specs */
+      '#efh-panel .efh-btn{cursor:pointer;display:inline-flex;align-items:center;justify-content:center;' +
+        'background:var(--pri);color:#fff;border:0;border-radius:var(--r);padding:11px 22px;' +
+        "min-height:44px;font:600 .95rem 'IBM Plex Sans',sans-serif}" +
+      '#efh-panel .efh-btn:hover{background:var(--pri-dark)}' +
+      '#efh-panel .efh-btn-green{background:var(--green)}' +
+      '#efh-panel .efh-btn-green:hover{background:#154430}' +
+      '#efh-panel .efh-btn-ghost{background:var(--bg);color:var(--pri);border:1.5px solid var(--pri)}' +
+      '#efh-panel .efh-btn-ghost:hover{background:var(--pri-soft);color:var(--pri-dark)}' +
       '#efh-panel .efh-btn-mini{cursor:pointer;background:var(--bg);color:var(--pri);' +
-        'border:1px solid var(--pri);border-radius:var(--r);padding:2px 7px;font:inherit;font-size:11px}' +
+        'border:1.5px solid var(--pri);border-radius:var(--r);padding:2px 8px;font:inherit;font-size:.78rem}' +
+      '#efh-panel .efh-btn-mini:hover{background:var(--pri-soft)}' +
       '#efh-panel .efh-btn-mini.efh-green{color:var(--green);border-color:var(--green)}' +
-      '#efh-panel .efh-box{border:1px solid var(--rule);border-radius:var(--r);padding:9px;' +
-        'background:var(--bg2);font-size:12px;line-height:1.45}' +
-      '#efh-panel .efh-warn{background:var(--amber-bg);border:0;border-left:3px solid var(--amber);' +
-        'border-radius:0;color:var(--amber-ink);padding:6px 8px;font-size:11px;line-height:1.45}' +
-      '#efh-panel .efh-ok{background:var(--green-bg);border:1px solid var(--green-rule);' +
-        'border-radius:var(--r);padding:7px;font-size:12px}' +
-      '#efh-panel table{width:100%;border-collapse:collapse}' +
-      '#efh-panel thead tr{background:var(--bg2)}' +
-      '#efh-panel th{text-align:left;padding:5px 6px;font-size:11px;color:var(--ink2)}' +
-      '#efh-panel td{padding:4px 6px;border-top:1px solid var(--rule);vertical-align:middle}' +
+      /* boxes = site .box idiom: 1px rule + 4px left accent, bg2 */
+      '#efh-panel .efh-box{border:1px solid var(--rule);border-left:4px solid var(--pri);' +
+        'border-radius:var(--r);padding:12px 14px;background:var(--bg2);font-size:.88rem;line-height:1.5}' +
+      '#efh-panel .efh-warn{border:1px solid var(--rule);border-left:4px solid var(--amber);' +
+        'border-radius:var(--r);background:var(--amber-bg);color:var(--amber-ink);' +
+        'padding:10px 14px;font-size:.85rem;line-height:1.5}' +
+      '#efh-panel .efh-ok{border:1px solid var(--green-rule);border-left:4px solid var(--green);' +
+        'border-radius:var(--r);background:var(--green-bg);padding:10px 14px;font-size:.88rem}' +
+      /* situacoes gate = perfil .gate idiom */
+      '#efh-panel .efh-gate{border:1px solid var(--pri-soft);background:var(--pri-soft);' +
+        'border-radius:11px;padding:15px 18px;margin:0 0 14px;border-left:0}' +
+      '#efh-panel .efh-gate .efh-gt{font-weight:600;color:var(--pri-dark)}' +
+      '#efh-panel .efh-gate label{display:block;padding:6px 0;border-top:1px solid var(--hair);' +
+        'font-size:.9rem;cursor:pointer}' +
+      '#efh-panel .efh-gate label:first-of-type{border-top:0}' +
+      '#efh-panel .efh-w{color:var(--mute);font-size:.9rem}' +
+      /* table = deducoes spec: uppercase mute headers, no thead bg, hairline rows */
+      '#efh-panel table{width:100%;border-collapse:collapse;font-size:.9rem}' +
+      '#efh-panel th{text-align:left;padding:8px 8px;border-bottom:1px solid var(--bg3);' +
+        'font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);font-weight:600}' +
+      '#efh-panel td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--bg3);vertical-align:middle}' +
+      "#efh-panel td.efh-val{font-family:'IBM Plex Mono',ui-monospace,monospace;" +
+        'font-variant-numeric:tabular-nums;font-weight:600;color:var(--pri-dark);white-space:nowrap}' +
+      '#efh-panel select,#efh-panel input[type=text]{border:1.5px solid var(--rule);' +
+        'border-radius:var(--r);padding:6px 8px;font:inherit;font-size:.9rem;background:#fff}' +
       '#efh-panel .efh-mute{color:var(--mute)}' +
+      /* tabs = .navlink idiom */
+      '#efh-panel .efh-tabs{display:flex;gap:4px;margin:0 0 12px;border-bottom:2px solid var(--rule)}' +
+      '#efh-panel .efh-tab{cursor:pointer;border:0;background:none;font:500 .98rem inherit;' +
+        "font-family:'IBM Plex Sans',sans-serif;color:var(--mute);padding:8px 14px;" +
+        'border-bottom:3px solid transparent;margin-bottom:-2px}' +
+      '#efh-panel .efh-tab[aria-selected=true]{color:var(--pri);font-weight:600;' +
+        'border-bottom-color:var(--pri)}' +
       '#efh-panel .efh-scroll{max-height:52vh;overflow:auto}' +
       '#efh-panel.efh-wide .efh-scroll{max-height:70vh}' +
       '#efh-panel.efh-wide .efh-name{max-width:none}' +
@@ -621,11 +679,12 @@
   }
   panel('<div class="efh-head">' +
     '<a href="https://faturas.diogoandrade.com" target="_blank" rel="noopener" style="text-decoration:none;border-bottom:1px solid rgba(255,255,255,.45)" title="Abrir faturas.diogoandrade.com">Fatura Boa</a>' +
-    '<span style="font-weight:400;font-size:11px;opacity:.85">v' + FB_VERSION + ' \u00b7 <a href="https://faturas.diogoandrade.com/verificar" target="_blank" rel="noopener" style="color:#cfe0ff">verificar</a></span>' +
+    '<span class="efh-tag">v' + FB_VERSION + '</span>' +
+    '<span class="efh-sub"><a href="https://faturas.diogoandrade.com/verificar" target="_blank" rel="noopener">verificar</a></span>' +
     '<button type="button" id="efh-expand" style="margin-left:auto;cursor:pointer;background:none;border:1px solid rgba(255,255,255,.45);border-radius:6px;color:#fff;font:inherit;font-size:11px;font-weight:400;padding:2px 8px"></button>' +
     '<button type="button" aria-label="Fechar" style="cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
     '<div class="efh-alert"><b>Esta ferramenta nunca te pede a password.</b> Corre na sess\u00e3o que j\u00e1 abriste, s\u00f3 nesta p\u00e1gina. Se algum site te pedir as credenciais das Finan\u00e7as, \u00e9 burla.</div>' +
-    '<div id="efh-body" style="padding:14px">A carregar...</div>');
+    '<div id="efh-body" style="padding:16px">A carregar...</div>');
   // Expandir/Encolher: wide mode is a class flip persisted per-origin; every view survives the
   // toggle because it is pure CSS (no re-render, so ticked plans and edits are untouched).
   (function () {
@@ -703,15 +762,16 @@
      * later runs, and the same answers prefil /perfil (first answer on any surface wins;
      * the extension bridges them across origins, bookmarklet users answer once per surface). */
     var sitHtml = prof0.sitOk ? "" :
-      '<div class="efh-eyebrow" style="margin-top:0">A tua situacao</div>' +
-      '<div class="efh-box" style="margin-bottom:12px">' +
-      '<div style="margin-bottom:6px">Entregas o IRS <b>em conjunto</b> (casado/unido de facto)?' +
-      ' <label style="margin-left:8px"><input type="radio" name="efh-sit-joint" value="1"' + (prof0.joint ? " checked" : "") + '> Sim</label>' +
-      ' <label style="margin-left:8px"><input type="radio" name="efh-sit-joint" value="0"' + (prof0.joint ? "" : " checked") + '> Nao</label></div>' +
-      '<label style="display:block"><input type="checkbox" id="efh-sit-mono"' + (prof0.mono ? " checked" : "") + '> ' +
+      '<div class="efh-gate">' +
+      '<div class="efh-gt">A tua situacao</div>' +
+      '<div class="efh-w" style="margin-top:3px">Isto muda os tetos de deducao do agregado. Podes alterar depois em Detalhe.</div>' +
+      '<div style="margin-top:8px">' +
+      '<label>Entregas o IRS <b>em conjunto</b> (casado/unido de facto)?' +
+      ' <span style="margin-left:8px;white-space:nowrap"><input type="radio" name="efh-sit-joint" value="1"' + (prof0.joint ? " checked" : "") + '> Sim' +
+      ' <input type="radio" name="efh-sit-joint" value="0" style="margin-left:10px"' + (prof0.joint ? "" : " checked") + '> Nao</span></label>' +
+      '<label><input type="checkbox" id="efh-sit-mono" style="margin-right:6px"' + (prof0.mono ? " checked" : "") + '>' +
       'Familia <b>monoparental</b></label>' +
-      '<div class="efh-mute" style="margin-top:6px;font-size:11px">Isto muda os tetos de deducao do agregado. Podes alterar depois em Detalhe.</div>' +
-      '</div>';
+      '</div></div>';
     document.getElementById("efh-body").innerHTML =
       '<p style="margin:0 0 10px">Isto l\u00ea as tuas faturas de <b>' + year + '</b> directamente do e-Fatura, ' +
       'na sess\u00e3o que j\u00e1 tens aberta, e faz as contas <b>no teu navegador</b>.</p>' +
@@ -1940,7 +2000,7 @@
             '<td class="efh-nif" style="font-size:11px"><a href="#" class="efh-copynif" data-nif="' +
               esc(String(x.nifEmitente || "")) + '" title="Copiar NIF" style="color:var(--ink2);text-decoration:none;border-bottom:1px dotted var(--mute)">' +
               esc(String(x.nifEmitente || "")) + '</a></td>' +
-            '<td class="efh-num" style="text-align:right">\u20ac' + eur(x.valorTotal) + '</td>' +
+            '<td class="efh-val" style="text-align:right">\u20ac' + eur(x.valorTotal) + '</td>' +
             '<td style="font-size:11px;white-space:nowrap">' + cell(pv, i, "pv") + "</td>" +
             '<td style="font-size:11px;white-space:nowrap">' +
               (same ? '<span class="efh-mute">igual</span>' : cell(s, i, "op")) + "</td>" +
@@ -2116,11 +2176,9 @@
            * everything that was here before. Tabs toggle display only - #efh-bars and #efh-opt must
            * stay IN the DOM, because renderBars() and the optimiser write into them by id and would
            * silently no-op against a detached node. */
-          '<div role="tablist" style="display:flex;gap:4px;margin:0 0 10px;border-bottom:2px solid #d5dae1">' +
-          '<button type="button" role="tab" id="efh-tab-r" aria-selected="true" style="cursor:pointer;border:0;' +
-          'background:none;font:inherit;font-weight:700;color:#034ad8;padding:6px 12px;border-bottom:3px solid #034ad8;margin-bottom:-2px">Resumo</button>' +
-          '<button type="button" role="tab" id="efh-tab-d" aria-selected="false" style="cursor:pointer;border:0;' +
-          'background:none;font:inherit;font-weight:600;color:#6b7780;padding:6px 12px;border-bottom:3px solid transparent;margin-bottom:-2px">Detalhe</button>' +
+          '<div role="tablist" class="efh-tabs">' +
+          '<button type="button" role="tab" id="efh-tab-r" class="efh-tab" aria-selected="true">Resumo</button>' +
+          '<button type="button" role="tab" id="efh-tab-d" class="efh-tab" aria-selected="false">Detalhe</button>' +
           '</div>' +
           '<div id="efh-pane-r"><div id="efh-resumo">A calcular...</div>' + sponsor + '</div>' +
           '<div id="efh-pane-d" style="display:none">' +
@@ -2178,14 +2236,9 @@
           function show(res) {
             pr.style.display = res ? "" : "none";
             pd.style.display = res ? "none" : "";
+            // aria-selected drives the .efh-tab[aria-selected=true] styling - no inline mutation
             tr.setAttribute("aria-selected", res ? "true" : "false");
             td.setAttribute("aria-selected", res ? "false" : "true");
-            tr.style.color = res ? "#034ad8" : "#6b7780";
-            td.style.color = res ? "#6b7780" : "#034ad8";
-            tr.style.borderBottomColor = res ? "#034ad8" : "transparent";
-            td.style.borderBottomColor = res ? "transparent" : "#034ad8";
-            tr.style.fontWeight = res ? "700" : "600";
-            td.style.fontWeight = res ? "600" : "700";
           }
           tr.onclick = function () { show(true); };
           td.onclick = function () { show(false); };
