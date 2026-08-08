@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Fatura Boa | A tua situação fiscal, das fontes oficiais (grátis, sem password)</title>
-<meta name="description" content="Ferramenta gratuita e verificável que lê o teu próprio registo nas Finanças e na Segurança Social, na tua sessão, sem password, e mostra a tua situação fiscal: faturas do e-Fatura por setor e teto de dedução, rendas, situação fiscal e prazos, património e IMI, e histórico de IRS. Corre no teu navegador, nada sai de lá.">
-<link rel="canonical" href="https://faturas.diogoandrade.com/">
+<title>Extensão Fatura Boa para Chrome | e-Fatura mais fácil</title>
+<meta name="description" content="A extensão Fatura Boa põe uma barra no topo do e-Fatura: analisa as tuas faturas, sugere o melhor setor de dedução e mostra os tetos do IRS. Corre no teu navegador, sem password. Grátis.">
+<link rel="canonical" href="https://faturas.diogoandrade.com/extensao">
 <!-- Diogo's DA monogram, same mark as diogoandrade.com. There was no favicon at all before, so
      every tab showed the browser default and /favicon.ico returned 404. Regenerate the raster
      versions from icon.svg with: node make-icons.mjs -->
@@ -17,8 +17,8 @@
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_PT">
 <meta property="og:site_name" content="Fatura Boa">
-<meta property="og:url" content="https://faturas.diogoandrade.com/">
-<meta property="og:title" content="Fatura Boa | A tua situação fiscal, das fontes oficiais">
+<meta property="og:url" content="https://faturas.diogoandrade.com/extensao">
+<meta property="og:title" content="Extensão Fatura Boa para Chrome">
 <meta property="og:description" content="Lê o teu próprio registo nas Finanças e na Segurança Social, na tua sessão, sem password, e mostra a tua situação fiscal: faturas, rendas, situação fiscal, IMI e IRS. Grátis, no teu navegador, verificável.">
 <meta property="og:image" content="https://faturas.diogoandrade.com/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -499,269 +499,71 @@
   <a href="/termos">Termos</a>
 </div></div>
 
+<main>
+
 <header>
- <div class="wrap">
-  <!-- The keyword line lives INSIDE the <h1>. "e-Fatura / IRS / Segurança Social" is the phrase
-       people actually search; putting it here buys that intent without turning the eyebrow into
-       a second headline. -->
-  <h1><span class="eyebrow">e-Fatura - IRS - Segurança Social</span>A tua situação fiscal, em ordem.</h1>
-  <p class="sub">Não te pede a password. Corre na sessão que <b>já tens aberta</b> nas Finanças
-     e na Segurança Social, lê o que o Estado já sabe sobre ti, e diz-te o que fazer: faturas
-     pendentes, rendas, dívidas e prazos, património e IRS. Tudo <b>no teu navegador</b>.</p>
-
-  <div class="badges">
-    <span class="badge">corre <b>na tua sessão</b></span>
-    <span class="badge"><b>grátis</b>, sem contas</span>
-  </div>
-
-  <!-- SITUAÇÃO module: a live, read-only mirror of /perfil's progress bar + 3-cell action frame,
-       same visual classes as perfil.html (segmented progress: .prog/.plabel/.segbar/.seg/.pcap;
-       action frame: .aframe/.acell/.selwrap) - hand-synced with that file, two origins, no shared
-       module. It only reads fb-profile-v1 from localStorage (same origin as /perfil) and never
-       writes to it. Empty state shows the full 3-cell frame; once at least one source is in, it
-       collapses to just the progress bar and a single CTA into /perfil, where the full flow lives. -->
-  <div class="sitmodule" id="sitmodule">
-    <div class="prog">
-      <div class="plabel" id="sit-plabel">0 de 9 fontes reunidas</div>
-      <div class="segbar" id="sit-segbar" role="img" aria-label="0 de 9 fontes reunidas"></div>
-      <div class="pcap" id="sit-pcap">Os dados ficam neste navegador até ao fim do dia.</div>
+  <div class="wrap">
+    <h1><span class="eyebrow">Extensão para Chrome</span>O e-Fatura, num clique.</h1>
+    <p class="sub">A extensão Fatura Boa põe uma barra no topo do e-Fatura com o resumo do teu ano e um botão para analisar as faturas. Corre na tua sessão, <b>sem password</b>, e nada sai do navegador. É o mesmo motor do favorito, agora sempre à mão.</p>
+    <div class="cta-row">
+      <a class="cta-main" id="cta-chrome" href="https://chromewebstore.google.com/detail/epaillcckgnnimpepilnkphmkjbggjoi" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg>Adicionar ao Chrome</a>
+      <a class="cta-alt" href="/#instalar">ou usa o favorito (sem instalar)</a>
     </div>
-
-    <div class="aframe" id="sit-empty" hidden>
-      <div class="acell"><div class="atitle">1. Preparar</div>
-        <a class="btn-primary" href="/extensao"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg>Adicionar ao Chrome</a>
-        <div class="acap">recomendado &middot; ou <a id="bookmarklet2" href="#">instalar o favorito</a></div></div>
-      <div class="acell"><div class="atitle">2. Começar por</div>
-        <div class="selwrap"><svg class="icon" aria-hidden="true"><use href="#i-doc"/></svg>
-          <select id="sit-srcsel" aria-label="Fonte a abrir a seguir"></select>
-          <svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg></div></div>
-      <div class="acell"><div class="atitle" style="visibility:hidden" aria-hidden="true">&nbsp;</div>
-        <a class="btn-primary" id="sit-opensrc" target="_blank" rel="noopener" href="https://faturas.portaldasfinancas.gov.pt">
-        <svg class="icon" aria-hidden="true"><use href="#i-external"/></svg><span id="sit-opensrclabel">Abrir e-Fatura</span></a></div>
+    <div class="trust-row" style="margin-top:22px">
+      <div class="trust-item"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg><span>Nunca pede a password</span></div>
+      <div class="trust-item"><svg class="icon" aria-hidden="true"><use href="#i-doc"/></svg><span>As faturas não saem do navegador</span></div>
+      <div class="trust-item"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span>Código público e <a href="/verificar">verificável</a></span></div>
     </div>
-    <p class="framecap" id="sit-emptycap" hidden>Na página oficial, clica no favorito Fatura Boa. Os dados aparecem em
-      <a href="/perfil">A minha situação</a>, só neste navegador.</p>
-
-    <div id="sit-cta" hidden style="text-align:center;margin-top:22px">
-      <a class="btn-primary" id="sit-continue" href="/perfil" style="max-width:420px">
-        <svg class="icon" aria-hidden="true"><use href="#i-user"/></svg>Continuar em A minha situação</a>
-    </div>
-
-    <p style="text-align:center;margin-top:14px"><a class="cta-alt" href="/perfil?exemplo=1">Ver um exemplo</a></p>
   </div>
-
-  <!-- the security story is the product, so it gets icons and room right under the situação
-       module instead of waiting for the reader to scroll to "porque é seguro". -->
-  <div class="trust-row">
-    <div class="trust-item"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
-      <span><b>Nunca</b> pede a tua password</span></div>
-    <div class="trust-item"><svg class="icon" aria-hidden="true"><use href="#i-doc"/></svg>
-      <span>As faturas <b>não saem</b> do navegador</span></div>
-    <div class="trust-item"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
-      <span>Código <b>aberto e verificável</b></span></div>
-  </div>
-
-  <div class="cta-row">
-    <a class="cta-alt" href="#como">Como funciona</a>
-  </div>
-
-  <!-- Recovered-euro counter. Hidden until there is a real, non-zero number (no fake social proof).
-       Fed by opt-in, deduplicated per user server-side (cae-db /counter/total). -->
-  <p id="fb-counter" style="display:none;margin:10px 0 0;font-size:1rem;color:#0a7d33;font-weight:600"></p>
-  <script>
-  (function(){
-    fetch("https://cae-db.diogoandrade.com/counter/total").then(function(r){return r.json();}).then(function(d){
-      if(!d || !(d.recuperado>0)) return;
-      var el=document.getElementById("fb-counter"); if(!el) return;
-      var eur=Math.round(d.recuperado), users=d.users||0, cur=0, step=Math.max(1,Math.round(eur/40));
-      el.style.display="block";
-      var t=setInterval(function(){ cur+=step; if(cur>=eur){cur=eur;clearInterval(t);}
-        el.innerHTML='<b>€'+cur.toLocaleString("pt-PT")+'</b> já encontrados para recuperar'+(users>1?' por '+users+' pessoas':'')+'.'; },25);
-    }).catch(function(){});
-  })();
-  </script>
-</div>
 </header>
 
-<div class="wrap">
-
-<section id="faz">
-  <h2>O que faz por ti</h2>
-  <div class="cards">
-    <div class="card"><div class="ci"><svg class="icon" aria-hidden="true"><use href="#i-doc"/></svg><h3>Classifica as pendentes</h3></div>
-      <p>Sugere o setor certo para cada fatura pendente do e-Fatura, a partir da atividade oficial do comerciante.</p></div>
-    <div class="card"><div class="ci"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><h3>Deduções sem perder</h3></div>
-      <p>Mostra quanto já usaste de cada teto, para não encheres um setor à custa de outro que valia mais.</p></div>
-    <div class="card"><div class="ci"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg><h3>Agregado, se quiseres</h3></div>
-      <p>Casais que entregam o IRS em conjunto podem juntar os totais. Opcional, desligado por omissão.</p></div>
-    <div class="card"><div class="ci"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg><h3>Tudo no teu navegador</h3></div>
-      <p>Nada das tuas faturas sai do teu computador. A ferramenta lê e sugere; submetes tu.</p></div>
-  </div>
-  <p class="note" style="margin-top:16px">Cobre também rendas, situação fiscal, património e IMI, e
-    o histórico de IRS. Detalhe completo, incluindo o que ainda está em desenvolvimento, em
-    <a href="/sobre">Sobre</a>.</p>
-</section>
-
-<section id="como">
-  <h2>Como classificar as faturas pendentes do e-Fatura</h2>
-  <div class="hgrid">
-    <div class="hstep"><div class="hn"><span class="num">01</span><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></div>
-      <p>Faz <b>login normal</b> no <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a>, como sempre fazes.</p></div>
-    <div class="hstep"><div class="hn"><span class="num">02</span><svg class="icon" aria-hidden="true"><use href="#i-doc"/></svg></div>
-      <p>Clica no favorito <b>Fatura Boa</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu histórico e na atividade oficial de cada comerciante</b>, já a saltar os setores cujo teto anual esteja cheio.</p></div>
-    <div class="hstep"><div class="hn"><span class="num">03</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></div>
-      <p><b>Revês</b> a tabela. Cada fatura traz duas sugestões: <b>Provável</b> (o que a compra
-      provavelmente foi) e <b>Otimizada</b> (o que dá mais dedução e ainda cabe no teto). Vem
-      selecionada a Provável; clicas na outra se a compra foi mesmo dessa natureza. Depois <b>copias o plano</b> (ou envias para o teu email) e aplicas no e-Fatura. <b>A ferramenta não submete nada.</b></p></div>
-  </div>
-</section>
-
-<section id="seguro">
-  <h2>Porque é seguro</h2>
-  <ul class="safe">
-    <li>Corre <b>dentro do teu navegador</b>, na página do e-Fatura onde <b>já estás autenticado</b>.
-      Não há campo de password: não a vemos, não a guardamos, não existe.</li>
-    <li><b>As tuas faturas nunca saem do navegador.</b> Valores, datas, o que compraste - nada disso
-      é recebido nem enviado. Só sai o que ativares tu mesmo, e sempre sem valores nem datas.</li>
-    <li>Código <b>100% aberto e verificável</b>: podes ler exatamente o que faz
-      <a id="gh" href="#" target="_blank" rel="noopener">no GitHub</a>, ou confirmar que o que corre
-      é o código publicado.</li>
-  </ul>
-  <p>Nada disto devia pedir-te confiança às cegas. Há um registo passo a passo de cada pedido de
-    rede que a ferramenta faz, o que é opcional, e o que nunca acontece nesta versão.</p>
-  <p><a class="cta-alt" href="/sobre#seguranca">Ler o modelo de segurança completo -></a></p>
-</section>
-
-<section id="prova">
-  <h2>Prova e auditoria</h2>
-  <p>O código que corre é exatamente o publicado: <a href="/verificar"><b>Verificar</b></a> compara
-    o hash do que executaste contra o histórico assinado do repositório. E cada dedução que a
-    ferramenta calcula tem a sua fonte legal à vista, gerada automaticamente a partir do código, não
-    escrita à mão: <a href="/auditoria"><b>Auditoria</b></a>.</p>
-</section>
-
-<section id="instalar">
-  <h2>Instalar <span class="note">(só funciona no computador)</span></h2>
-  <p class="warn"><b>Isto é para computador, não para telemóvel.</b> A ferramenta corre dentro da
-    página do e-Fatura, e os navegadores de telemóvel não deixam fazer isso. Não é uma limitação
-    que eu possa contornar: as alternativas seriam pedir-te a password, que nunca vou fazer, ou ser
-    uma aplicação oficial da AT, que isto não é nem tem como ser. Se andas no telemóvel, guarda para
-    quando estiveres ao computador.</p>
-
-  <div class="box give">
-    <p style="margin:0 0 8px"><b>Opção recomendada: a extensão.</b> Uma barra sempre à mão no
-      e-Fatura, um clique para analisar. Por agora só Chrome.</p>
-    <p style="margin:0"><a class="btn" href="/extensao"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg>Ver e adicionar ao Chrome</a></p>
-  </div>
-
-  <p style="margin-top:22px"><b>Alternativa: o favorito (bookmarklet).</b> Não instala nada e
-    funciona em qualquer navegador. Arrasta este botão para a tua barra de favoritos.</p>
-  <p><a class="bm" id="bookmarklet" href="#"> Fatura Boa</a></p>
-
-  <p><b>Se arrastar não der:</b> copia o código e cola-o num favorito novo.</p>
-  <p>
-    <button type="button" class="bm" id="copybm" style="border:0">Copiar o código</button>
-    <span id="copymsg" class="note" role="status" aria-live="polite"></span>
-  </p>
-  <details id="howto">
-    <summary>Como colar num favorito novo, por navegador</summary>
-    <div class="howto-body">
-      <p><b>Chrome / Edge / Brave:</b> Ctrl+Shift+O abre o gestor de favoritos. Botão direito na
-        barra, <i>Adicionar página</i>, dá-lhe o nome <i>Fatura Boa</i> e cola o código no campo URL.</p>
-      <p><b>Firefox:</b> Ctrl+Shift+O, depois <i>Organizar</i>, <i>Adicionar marcador</i>, e cola o
-        código no campo <i>Endereço</i>.</p>
-      <p><b>Safari:</b> adiciona qualquer página aos favoritos, depois <i>Editar favoritos</i>,
-        muda o nome e cola o código no endereço.</p>
-      <p class="note">Em todos: o código começa por <code>javascript:</code>. Se ao colares essa
-        parte desaparecer, estás a colar na barra de endereço em vez de no favorito. O navegador
-        remove-a de propósito, e num favorito isso não acontece.</p>
+<section>
+  <div class="wrap">
+    <h2>O que faz por ti</h2>
+    <div class="cards">
+      <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-monitor"/></svg><h3>Sempre à mão</h3><p>Uma barra no topo do e-Fatura, com o resumo do ano e o botão de analisar. Sem procurar favoritos.</p></div>
+      <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-receipt-euro"/></svg><h3>Melhor setor de dedução</h3><p>Para cada fatura por classificar, sugere o setor que mais deduz e ainda tem espaço no teto - e mostra também o provável.</p></div>
+      <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-user"/></svg><h3>Lembra a tua situação</h3><p>Respondes uma vez se entregas o IRS em conjunto ou separado. Fica guardado no teu navegador, não volta a perguntar.</p></div>
+      <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-check"/></svg><h3>Mesmo código aberto</h3><p>A extensão corre exactamente o mesmo código publicado e <a href="/verificar">verificável</a>. Nada de diferente escondido.</p></div>
     </div>
-  </details>
-  <p class="note" style="margin-top:14px">Depois abre o e-Fatura, faz login, e clica no favorito.
-    <b>Porque não instala sozinho:</b> os navegadores deixaram de permitir que uma página crie
-    favoritos - é a mesma razão que devia deixar-te descansado, porque assim é que se faria um
-    ataque. Tem de passar pelas tuas mãos.</p>
+  </div>
 </section>
 
-<section><div class="box give">
-  <h2>Apoia esta ferramenta <span class="note">(sem custo nenhum para ti)</span></h2>
-  <p>
-    Isto é gratuito e vai continuar a ser: sem contas, sem subscrições, sem anúncios, e as tuas
-    faturas nunca saem do teu navegador. Se te poupou tempo ou dinheiro e quiseres retribuir, abrir
-    uma conta Revolut pelo link abaixo dá-me uma pequena comissão.
-  </p>
-  <p>
-    <a class="bm" style="background:#0075eb;display:inline-flex;align-items:center;gap:10px"
-       href="https://revolut.com/referral/?referral-code=nobodykr!JUL2-26-AR-L1&amp;geo-redirect"
-       target="_blank" rel="noopener sponsored nofollow">
-      <span style="color:#fff;display:inline-flex"><svg role="img" aria-label="Revolut" style="height:22px;width:auto;fill:currentColor;vertical-align:middle" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 3621.526 800" enable-background="new 0 0 3621.526 800" xml:space="preserve">
-<g>
-	<path d="M3621.526,334.211V211.11h-147.019V50.611h-142.188v585.134c0,53.764,13.519,94.737,40.197,121.784
-		c26.662,27.07,68.208,40.793,123.493,40.793h125.516V675.221h-91.844c-19.981,0-34.316-4.391-42.613-13.065
-		c-7.622-7.936-12.563-27.987-12.563-51.074V334.211H3621.526z"/>
-	<polygon points="1651.305,211.094 1504.294,638.874 1357.284,211.094 1207.912,211.094 1420.136,793.287 1588.453,793.287
-		1800.676,211.094 	"/>
-	<rect x="2470.098" width="142.188" height="793.28"/>
-	<path d="M3100.572,502.748c0,36.857-5.583,68.922-16.594,95.302c-10.931,26.239-26.584,46.353-46.533,59.77
-		c-19.95,13.417-44.479,20.224-72.882,20.224c-40.652,0-71.329-13.362-91.169-39.695c-20.044-26.615-30.207-66.954-30.207-119.886
-		V211.11h-142.188v323.068c0,50.305,6.289,92.973,18.711,126.802c12.421,33.932,29.485,61.535,50.721,82.026
-		c21.22,20.467,46,35.249,73.65,43.953c27.509,8.657,57.089,13.041,87.938,13.041c44.463,0,81.257-8.061,109.331-23.965
-		c25.612-14.547,47.067-31.555,63.88-50.627l12.735,67.871h124.795V211.11h-142.188V502.748z"/>
-	<path d="M2252.748,241.811c-44.808-24.843-98.015-37.429-158.123-37.429c-59.371,0-112.381,12.586-157.558,37.421
-		c-45.232,24.898-80.771,60.061-105.637,104.508c-24.827,44.408-37.413,97.043-37.413,156.437
-		c0,58.665,12.586,110.931,37.413,155.339c24.851,44.432,60.398,79.587,105.637,104.484c45.177,24.835,98.188,37.421,157.558,37.421
-		c60.107,0,113.314-12.586,158.123-37.429c44.855-24.882,80.206-60.037,105.065-104.477c24.835-44.432,37.429-96.698,37.429-155.339
-		c0-59.371-12.594-112.005-37.429-156.437C2332.939,301.856,2297.595,266.693,2252.748,241.811z M2177.631,657.788
-		c-22.906,14.915-50.831,22.483-82.998,22.483c-31.43,0-59.175-7.567-82.465-22.49c-23.329-14.939-41.625-36.025-54.391-62.68
-		c-12.821-26.678-19.33-57.747-19.33-92.353c0-35.32,6.501-66.569,19.33-92.886c12.759-26.294,31.069-47.388,54.422-62.703
-		c23.282-15.299,51.019-23.055,82.433-23.055c32.151,0,60.061,7.756,82.974,23.039c22.977,15.323,41.107,36.425,53.897,62.727
-		c12.813,26.38,19.314,57.63,19.314,92.879c0,34.528-6.501,65.605-19.314,92.353C2218.715,621.763,2200.592,642.85,2177.631,657.788
-		z"/>
-	<rect x="0" y="195.779" width="147.764" height="597.508"/>
-	<path d="M611.145,229.946c0-126.787-103.246-229.938-230.158-229.938H0V127.61h362.873c57.434,0,105.01,45.122,106.061,100.579
-		c0.525,27.768-9.896,53.975-29.344,73.792c-19.456,19.824-45.451,30.748-73.196,30.748H225.037c-5.019,0-9.104,4.078-9.104,9.097
-		v113.409c0,1.929,0.596,3.772,1.717,5.325l239.835,332.729h175.563L392.656,459.649
-		C513.718,453.571,611.145,351.855,611.145,229.946z"/>
-	<path d="M1065.507,238.423c-42.565-22.592-93.106-34.041-150.218-34.041c-57.183,0-108.311,12.594-151.967,37.445
-		c-43.726,24.874-78.128,60.045-102.242,104.516c-24.09,44.369-36.3,97.372-36.3,157.542c0,58.641,12.398,110.891,36.864,155.307
-		c24.521,44.518,59.888,79.493,105.104,103.951C811.878,787.602,866.011,800,927.632,800c48.886,0,92.785-9.159,130.48-27.235
-		c37.703-18.122,68.483-42.801,91.491-73.352c21.855-29.038,36.598-61.88,43.812-97.607l0.776-3.811h-141.396l-0.667,2.29
-		c-7.787,26.647-22.89,47.702-44.91,62.594c-23.635,16.013-52.666,24.137-86.299,24.137c-28.505,0-54.25-6.109-76.513-18.154
-		c-22.153-11.974-39.476-29.101-51.474-50.917c-12.045-21.894-18.899-48.235-20.365-78.136v-4.674h427.105l0.478-2.611
-		c1.49-8.195,2.447-16.64,2.862-25.133c0.353-8.273,0.557-16.538,0.557-24.882c-0.761-56.406-13.37-106.022-37.468-147.481
-		C1141.91,293.52,1108.064,261.015,1065.507,238.423z M1013.696,348.06c24.294,20.444,39.405,49.498,44.949,86.409H777.476
-		c3.215-23.949,11.167-44.691,23.659-61.707c13.104-17.848,29.893-31.869,49.905-41.679c20.036-9.841,42.032-14.837,65.37-14.837
-		C955.862,316.245,988.594,326.949,1013.696,348.06z"/>
-</g>
-</svg></span>
-      <span>Abrir conta</span>
-    </a>
-      <a class="bm" id="bmc" style="background:#ffdd00;color:#000;display:inline-flex;align-items:center;gap:8px;margin-left:8px"
-         href="https://buymeacoffee.com/diogoandrade" target="_blank" rel="noopener sponsored nofollow">
-        <span aria-hidden="true" style="font-size:1.1em">&#9749;</span>
-        <span>Buy me a coffee</span>
-      </a>
-  </p>
-  <p class="note">
-    <b>Link de referência.</b> Não sou afiliado nem parceiro da Revolut, e não partilho nada teu com
-    eles - o link é só um link. Não precisas de clicar para usar a ferramenta, que funciona
-    exatamente igual de qualquer maneira.
-  </p>
-</div></section>
+<section>
+  <div class="wrap">
+    <h2>Instalar é rápido</h2>
+    <div class="hgrid">
+      <div class="hstep"><span class="hn"><span class="num">01</span></span><div><h3>Adicionar ao Chrome</h3><p>Um clique na loja do Chrome. A extensão só actua no portal das Finanças - em mais lado nenhum.</p><p><a class="btn" href="https://chromewebstore.google.com/detail/epaillcckgnnimpepilnkphmkjbggjoi" target="_blank" rel="noopener">Adicionar ao Chrome</a></p></div></div>
+      <div class="hstep"><span class="hn"><span class="num">02</span></span><div><h3>Abre o e-Fatura e faz login</h3><p>Na tua sessão normal das Finanças. A extensão nunca vê nem pede a password.</p></div></div>
+      <div class="hstep"><span class="hn"><span class="num">03</span></span><div><h3>Clica em Analisar</h3><p>Na barra da Fatura Boa. Vês o resumo do ano e o plano de classificação, e aplicas tu no e-Fatura.</p></div></div>
+    </div>
+  </div>
+</section>
 
-<div class="trust">
-  <div class="titem"><svg class="icon" aria-hidden="true"><use href="#i-monitor"/></svg><span>Só no computador</span></div>
-  <div class="titem"><svg class="icon" aria-hidden="true"><use href="#i-eye"/></svg><span>Só lê; não altera</span></div>
-  <div class="titem"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg><span>Dados no navegador</span></div>
-  <div class="titem"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg><span>Apagados ao fim do dia</span></div>
-</div>
+<section>
+  <div class="wrap">
+    <h2>Como fica</h2>
+    <div style="display:grid;gap:26px;margin-top:8px">
+      <figure style="margin:0"><img src="/img/extensao/detalhe.png" width="1280" height="800" alt="Painel da Fatura Boa no e-Fatura: faturas por setor, com ligacao directa a cada fatura" loading="lazy" style="width:100%;height:auto;border:1px solid var(--rule);border-radius:10px"><figcaption class="note" style="margin-top:8px">O plano por fatura, com ligação directa a cada uma no e-Fatura.</figcaption></figure>
+      <figure style="margin:0"><img src="/img/extensao/resumo.png" width="1280" height="800" alt="Resumo do ano da Fatura Boa" loading="lazy" style="width:100%;height:auto;border:1px solid var(--rule);border-radius:10px"><figcaption class="note" style="margin-top:8px">O resumo do ano, logo ao abrir.</figcaption></figure>
+    </div>
+  </div>
+</section>
 
-</div>
+<section>
+  <div class="wrap">
+    <h2>Extensão ou favorito?</h2>
+    <p class="sub">Fazem o mesmo e correm o mesmo código. A diferença é só o conforto.</p>
+    <div class="box">
+      <p><b>Extensão</b> (recomendada): a barra está sempre lá quando abres o e-Fatura, guarda a tua situação, e é um clique. Precisa de instalar, e por agora só Chrome.</p>
+      <p style="margin-bottom:0"><b>Favorito</b> (bookmarklet): não instala nada e funciona em qualquer navegador. Tens de o clicar cada vez, na página do e-Fatura. <a href="/#instalar">Ver como instalar o favorito</a>.</p>
+    </div>
+    <p class="note" style="margin-top:14px">Firefox brevemente.</p>
+  </div>
+</section>
 
-<!-- FOOTER: hand-synced across index.html, perfil.html, sobre.html, deducoes.html, auditoria.html,
-     privacidade.html, termos.html, verificar.html - same markup everywhere (static files, no
-     shared include). index.html keeps id="gh2" for its existing JS-set href below; the hardcoded
-     href here is the same URL, so it works identically before and after that script runs. -->
+</main>
+
 <footer><div class="wrap">
   <div class="ft-top">
     <div class="ft-brand">
@@ -801,45 +603,8 @@
     <p class="note"><a href="https://polyformproject.org/licenses/noncommercial/1.0.0" target="_blank" rel="noopener">PolyForm Noncommercial 1.0.0</a> - livre para uso pessoal, proibido monetizar. Feito por <a href="https://diogoandrade.com" target="_blank" rel="noopener">Diogo Andrade</a>.</p>
   </div>
 </div></footer>
-
 <script>
-  // Set these two constants at deploy time.
-  var GH  = "https://github.com/nobodykr/efatura-helper";
-  var HOST = location.origin;              // where tool.js is served (this site)
-  document.getElementById("gh").href = GH;
-  document.getElementById("gh2").href = GH;
-  // Copy the bookmarklet source. No browser lets a page create a bookmark - the APIs that used to
-  // (window.sidebar.addPanel, window.external.AddFavorite) were removed precisely because silently
-  // installing a javascript: bookmark is an attack. So the best we can do is remove the typing.
-  document.getElementById("copybm").addEventListener("click", function () {
-    var msg = document.getElementById("copymsg");
-    var code = document.getElementById("bookmarklet").getAttribute("href");
-    var done = function () {
-      msg.className = "note ok"; msg.textContent = "Copiado. Agora cola num favorito novo.";
-      document.getElementById("howto").open = true;
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(code).then(done, function () { fallback(code, msg, done); });
-    } else { fallback(code, msg, done); }
-  });
-  function fallback(code, msg, done) {
-    var ta = document.createElement("textarea");
-    ta.value = code; ta.style.position = "fixed"; ta.style.opacity = "0";
-    document.body.appendChild(ta); ta.select();
-    try { document.execCommand("copy"); done(); }
-    catch (e) { msg.className = "note err"; msg.textContent = "Nao consegui copiar. Clica com o botao direito no botao acima e copia o endereco."; }
-    document.body.removeChild(ta);
-  }
-
-  // Loader bookmarklet: injects the open-source tool.js from this site into the e-Fatura page.
-  // Profile is public now: the loader allows all Financas + Seguranca Social hosts and sets the
-  // __FB_PROFILE flag that unlocks the profile flow. (The e-Fatura classifier still runs on the
-  // faturas page.) The SRI-pinned "verified" variant lives on /verificar.
-  var loader = "javascript:(function(){if(!/(portaldasfinancas\\.gov\\.pt|seg-social\\.pt)$/.test(location.host)){alert('Abre uma pagina das Financas ou da Seguranca Social e faz login primeiro.');return;}window.__FB_PROFILE=1;var s=document.createElement('script');s.charset='utf-8';s.src='" + HOST + "/tool.js?v='+Date.now();document.body.appendChild(s);})();";
-  document.getElementById("bookmarklet").setAttribute("href", loader);
-  document.getElementById("bookmarklet2").setAttribute("href", loader);
-
-  // Masthead menu (no framework): a plain toggle with aria-expanded, Escape closes.
+// Masthead menu (no framework): a plain toggle with aria-expanded, Escape closes.
   (function(){
     var mb = document.getElementById("menubtn"), menu = document.getElementById("site-menu");
     if (!mb || !menu) return;
@@ -852,106 +617,6 @@
         menu.classList.remove("open"); mb.setAttribute("aria-expanded","false"); mb.focus();
       }
     });
-  })();
-
-  // Scroll reveal for below-fold sections. Defensive on purpose: the "reveal" class (which is
-  // what makes an element start at opacity:0 - see the CSS, itself gated behind
-  // prefers-reduced-motion:no-preference) is only ever added right here, immediately before the
-  // element is handed to a working IntersectionObserver. No browser support, a thrown error, or
-  // a reduced-motion preference and this whole block is a no-op - sections just render visible,
-  // which is the same as if this script had never run at all.
-  try {
-    if (window.IntersectionObserver && window.matchMedia &&
-        window.matchMedia("(prefers-reduced-motion: no-preference)").matches) {
-      var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) { entry.target.classList.add("in"); io.unobserve(entry.target); }
-        });
-      }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
-      document.querySelectorAll(".wrap > section").forEach(function (el) {
-        el.classList.add("reveal");
-        io.observe(el);
-      });
-    }
-  } catch (e) { /* leave everything visible */ }
-
-  // SITUAÇÃO module (read-only mirror of /perfil). PARTITIONS/SHORT below are a hand-kept mirror
-  // of perfil.html's own copy (itself a mirror of tool.js) - three files, two origins, no shared
-  // module. This block only READS fb-profile-v1 from localStorage; it never writes to it and never
-  // touches location.hash, so /perfil stays the only place a bookmarklet payload gets ingested.
-  (function(){
-    var PKEY = "fb-profile-v1";
-    var PARTITIONS = [
-      { id:"efatura", label:"e-Fatura", open:"https://faturas.portaldasfinancas.gov.pt/consultarDocumentosAdquirente.action" },
-      { id:"rendas", label:"Rendas (Imóveis)", open:"https://imoveis.portaldasfinancas.gov.pt/arrendamento/consultarContratos/locador" },
-      { id:"situacao", label:"Situação fiscal (dívidas e prazos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/geral/dashboard" },
-      { id:"atividade", label:"Atividade (cadastro e IVA)", open:"https://sitfiscal.portaldasfinancas.gov.pt/atividade/atividade/consultardeclaracoes" },
-      { id:"patrimonio", label:"Património predial (IMI)", open:"https://imoveis.portaldasfinancas.gov.pt/matrizesinter/web/consultar-patrimonio-predial" },
-      { id:"irs", label:"IRS (liquidações e reembolsos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/inffin/entrada.html" },
-      { id:"movfin", label:"Movimentos financeiros", open:"https://sitfiscal.portaldasfinancas.gov.pt/movfin/resumoCobranca" },
-      { id:"recibos", label:"Recibos verdes (atividade)", open:"https://irs.portaldasfinancas.gov.pt/recibos/portal/consultar" },
-      { id:"ss", label:"Segurança Social", open:"https://www.seg-social.pt/ptss/pssd/home" }
-    ];
-    var SHORT = { efatura:"e-Fatura", rendas:"Rendas", situacao:"Situação fiscal", atividade:"Atividade",
-      patrimonio:"Património", irs:"IRS", movfin:"Movimentos financeiros", recibos:"Recibos verdes", ss:"Segurança Social" };
-
-    function loadStore(){
-      try {
-        var s = JSON.parse(localStorage.getItem(PKEY));
-        if (!s) return { partitions:{} };
-        if (s.expiresAt && Date.now() >= s.expiresAt) return { partitions:{} };   // read-only: never deletes
-        return s;
-      } catch(e){ return { partitions:{} }; }
-    }
-
-    function renderSit(){
-      var mod = document.getElementById("sitmodule");
-      if (!mod) return;
-      var store = loadStore();
-      var done = PARTITIONS.filter(function(p){ return store.partitions[p.id] && store.partitions[p.id].status === "done"; });
-      var missing = PARTITIONS.filter(function(p){ return !(store.partitions[p.id] && store.partitions[p.id].status === "done"); });
-      var n = done.length, total = PARTITIONS.length;
-
-      var lbl = n + " de " + total + " fontes reunidas";
-      document.getElementById("sit-plabel").textContent = lbl;
-      var bar = document.getElementById("sit-segbar");
-      bar.setAttribute("aria-label", lbl);
-      bar.innerHTML = "";
-      for (var i = 0; i < total; i++){
-        var seg = document.createElement("span");
-        seg.className = "seg" + (i < n ? " on" : "");
-        if (i < n) seg.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>';
-        bar.appendChild(seg);
-      }
-      document.getElementById("sit-pcap").textContent = n
-        ? "Podes parar e continuar até ao fim do dia."
-        : "Os dados ficam neste navegador até ao fim do dia.";
-
-      var empty = document.getElementById("sit-empty"), emptycap = document.getElementById("sit-emptycap"),
-          cta = document.getElementById("sit-cta");
-      if (n === 0){
-        empty.hidden = false; emptycap.hidden = false; cta.hidden = true;
-        var sel = document.getElementById("sit-srcsel");
-        sel.innerHTML = missing.map(function(p){ return '<option value="' + p.id + '">' + (SHORT[p.id] || p.label) + '</option>'; }).join("");
-        var openBtn = document.getElementById("sit-opensrc"), openLbl = document.getElementById("sit-opensrclabel");
-        var applySel = function(){
-          var p = PARTITIONS.filter(function(z){ return z.id === sel.value; })[0];
-          if (!p) return;
-          openBtn.setAttribute("href", p.open);
-          openLbl.textContent = "Abrir " + (SHORT[p.id] || p.label);
-        };
-        sel.onchange = applySel;
-        applySel();
-      } else {
-        empty.hidden = true; emptycap.hidden = true; cta.hidden = false;
-      }
-    }
-    renderSit();
-    // Re-render if the bookmarklet lands in another tab, or when this tab regains focus - so the
-    // module never sits stale at 0/9 while the data is actually already saved.
-    window.addEventListener("storage", function(e){ if (e.key === PKEY) renderSit(); });
-    document.addEventListener("visibilitychange", function(){ if (!document.hidden) renderSit(); });
-    window.addEventListener("focus", renderSit);
   })();
 </script>
 </body>
