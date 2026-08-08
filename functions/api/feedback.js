@@ -94,8 +94,7 @@ export async function onRequestPost({ request, env }) {
   if (!message) return bad("Escreve a mensagem.");
   if (email && !/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(email)) return bad("Email invalido.");
 
-  // 1. Turnstile, server-side
-  const ip = request.headers.get("CF-Connecting-IP") || "";
+  // 1. Turnstile, server-side (reuses `ip` captured for the rate-limit gate above)
   const form = new FormData();
   form.append("secret", env.FORMS_TURNSTILE_SECRET);
   form.append("response", String(body.token || ""));
