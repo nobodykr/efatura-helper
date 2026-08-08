@@ -548,24 +548,70 @@
     });
   }
 
+  /* Panel stylesheet - mirrors the faturas.diogoandrade.com design tokens (index.html :root).
+   * One source of visual truth: every color in the panel is a token below; radius is 6px
+   * everywhere; type is IBM Plex Sans (falls back to system-ui on machines without it - the
+   * portal's CSP is not ours to test, so no font download is attempted) with IBM Plex Mono
+   * reserved for numbers, NIFs and the eyebrow section titles, exactly like the site. */
+  var WIDE_KEY = "efh-wide";
+  function isWide() { try { return localStorage.getItem(WIDE_KEY) === "1"; } catch (e) { return false; } }
+  if (!document.getElementById('efh-style')) {
+    var fs = document.createElement('style'); fs.id = 'efh-style';
+    fs.textContent =
+      '#efh-panel{--pri:#034ad8;--pri-dark:#021c51;--ink:#2B363C;--ink2:#4a5a63;--mute:#6b7780;' +
+        '--bg:#fff;--bg2:#f4f6f9;--rule:#d5dae1;--red:#c8102e;--red-bg:#fdecec;--red-ink:#5a0000;' +
+        '--green:#1E5A3A;--green-bg:#eef7f0;--green-rule:#bfe0c8;--amber:#8a6100;--amber-bg:#fdf8ec;' +
+        '--amber-ink:#5a4600;--focus:#ff7a00;--r:6px;' +
+        'position:fixed;top:12px;right:12px;width:min(680px,95vw);max-height:90vh;overflow:auto;' +
+        'background:var(--bg);border:1px solid var(--pri-dark);border-radius:var(--r);' +
+        'box-shadow:0 8px 40px rgba(2,28,81,.28);z-index:2147483647;color:var(--ink);' +
+        "font:13px/1.45 'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}" +
+      '#efh-panel.efh-wide{top:2vh;right:auto;left:50%;transform:translateX(-50%);' +
+        'width:min(1200px,96vw);max-height:96vh}' +
+      '#efh-panel a:focus-visible,#efh-panel button:focus-visible,#efh-panel select:focus-visible,' +
+        '#efh-panel input:focus-visible,#efh-panel summary:focus-visible' +
+        '{outline:3px solid var(--focus);outline-offset:2px;border-radius:2px}' +
+      "#efh-panel .efh-num,#efh-panel .efh-nif{font-family:'IBM Plex Mono',ui-monospace,monospace;" +
+        'font-variant-numeric:tabular-nums}' +
+      "#efh-panel .efh-eyebrow{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;" +
+        'letter-spacing:.11em;text-transform:uppercase;color:var(--pri);font-weight:700;' +
+        'margin:16px 0 6px}' +
+      '#efh-panel .efh-head{background:var(--pri-dark);color:#fff;padding:10px 14px;font-weight:600;' +
+        'border-radius:var(--r) var(--r) 0 0;display:flex;align-items:center;gap:8px}' +
+      '#efh-panel .efh-head a{color:#fff}' +
+      '#efh-panel .efh-alert{background:var(--red-bg);border-bottom:2px solid var(--red);' +
+        'padding:8px 12px;font-size:12px;line-height:1.45;color:var(--red-ink)}' +
+      '#efh-panel .efh-btn{cursor:pointer;background:var(--pri);color:#fff;border:0;' +
+        'border-radius:var(--r);padding:10px 16px;min-height:44px;font:inherit;font-weight:600}' +
+      '#efh-panel .efh-btn-green{background:var(--green);font-weight:700}' +
+      '#efh-panel .efh-btn-ghost{background:var(--bg);color:var(--pri);border:1px solid var(--pri)}' +
+      '#efh-panel .efh-btn-mini{cursor:pointer;background:var(--bg);color:var(--pri);' +
+        'border:1px solid var(--pri);border-radius:var(--r);padding:2px 7px;font:inherit;font-size:11px}' +
+      '#efh-panel .efh-btn-mini.efh-green{color:var(--green);border-color:var(--green)}' +
+      '#efh-panel .efh-box{border:1px solid var(--rule);border-radius:var(--r);padding:9px;' +
+        'background:var(--bg2);font-size:12px;line-height:1.45}' +
+      '#efh-panel .efh-warn{background:var(--amber-bg);border:0;border-left:3px solid var(--amber);' +
+        'border-radius:0;color:var(--amber-ink);padding:6px 8px;font-size:11px;line-height:1.45}' +
+      '#efh-panel .efh-ok{background:var(--green-bg);border:1px solid var(--green-rule);' +
+        'border-radius:var(--r);padding:7px;font-size:12px}' +
+      '#efh-panel table{width:100%;border-collapse:collapse}' +
+      '#efh-panel thead tr{background:var(--bg2)}' +
+      '#efh-panel th{text-align:left;padding:5px 6px;font-size:11px;color:var(--ink2)}' +
+      '#efh-panel td{padding:4px 6px;border-top:1px solid var(--rule);vertical-align:middle}' +
+      '#efh-panel .efh-mute{color:var(--mute)}' +
+      '#efh-panel .efh-scroll{max-height:52vh;overflow:auto}' +
+      '#efh-panel.efh-wide .efh-scroll{max-height:70vh}' +
+      '#efh-panel.efh-wide .efh-name{max-width:none}' +
+      '#efh-panel .efh-name{max-width:24ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:bottom}';
+    document.head.appendChild(fs);
+  }
   function panel(html) {
     var d = document.createElement("div"); d.id = "efh-panel";
     d.setAttribute("role", "dialog");
     d.setAttribute("aria-label", "Fatura Boa");
     d.setAttribute("aria-modal", "false");
-    d.style.cssText = "position:fixed;top:12px;right:12px;width:min(680px,95vw);max-height:90vh;overflow:auto;" +
-      "background:#fff;border:1px solid #021c51;border-radius:8px;font-family:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 8px 40px rgba(0,0,0,.35);" +
-      "z-index:2147483647;font:13px/1.4 system-ui,sans-serif;color:#111";
+    if (isWide()) d.className = "efh-wide";
     d.innerHTML = html; document.body.appendChild(d); return d;
-  }
-  // gov-style focus ring: magenta so it can never blend into AT's own blues
-  if(!document.getElementById('efh-focus-style')){
-    var fs=document.createElement('style'); fs.id='efh-focus-style';
-    fs.textContent='#efh-panel a:focus-visible,#efh-panel button:focus-visible,'+
-      '#efh-panel select:focus-visible,#efh-panel input:focus-visible,#efh-panel summary:focus-visible'+
-      '{outline:3px solid #f408fc;outline-offset:2px;border-radius:2px}'+
-      '#efh-panel .efh-num{font-family:\'IBM Plex Mono\',ui-monospace,monospace;font-variant-numeric:tabular-nums}';
-    document.head.appendChild(fs);
   }
   // Mobile browsers cannot run a bookmarklet inside a page, so this is desktop-only. Say it in
   // the panel too rather than leaving a half-working screen.
@@ -573,12 +619,25 @@
     alert("A Fatura Boa s\u00f3 funciona no computador. Os navegadores de telem\u00f3vel n\u00e3o deixam correr "
         + "favoritos dentro da p\u00e1gina do e-Fatura. Abre isto num computador.");
   }
-  panel('<div style="background:#021c51;color:#fff;padding:10px 14px;font-weight:600;border-radius:8px 8px 0 0">' +
-    '<a href="https://faturas.diogoandrade.com" target="_blank" rel="noopener" style="color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.45)" title="Abrir faturas.diogoandrade.com">Fatura Boa</a> ' +
+  panel('<div class="efh-head">' +
+    '<a href="https://faturas.diogoandrade.com" target="_blank" rel="noopener" style="text-decoration:none;border-bottom:1px solid rgba(255,255,255,.45)" title="Abrir faturas.diogoandrade.com">Fatura Boa</a>' +
     '<span style="font-weight:400;font-size:11px;opacity:.85">v' + FB_VERSION + ' \u00b7 <a href="https://faturas.diogoandrade.com/verificar" target="_blank" rel="noopener" style="color:#cfe0ff">verificar</a></span>' +
-    '<button type="button" aria-label="Fechar" style="float:right;cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
-    '<div style="background:#fdecec;border-bottom:2px solid #c8102e;padding:8px 12px;font-size:12px;line-height:1.45;color:#5a0000">'+'<b>Esta ferramenta nunca te pede a password.</b> Corre na sess\u00e3o que j\u00e1 abriste, s\u00f3 nesta p\u00e1gina. '+'Se algum site te pedir as credenciais das Finan\u00e7as, \u00e9 burla.</div>' +
+    '<button type="button" id="efh-expand" style="margin-left:auto;cursor:pointer;background:none;border:1px solid rgba(255,255,255,.45);border-radius:6px;color:#fff;font:inherit;font-size:11px;font-weight:400;padding:2px 8px"></button>' +
+    '<button type="button" aria-label="Fechar" style="cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
+    '<div class="efh-alert"><b>Esta ferramenta nunca te pede a password.</b> Corre na sess\u00e3o que j\u00e1 abriste, s\u00f3 nesta p\u00e1gina. Se algum site te pedir as credenciais das Finan\u00e7as, \u00e9 burla.</div>' +
     '<div id="efh-body" style="padding:14px">A carregar...</div>');
+  // Expandir/Encolher: wide mode is a class flip persisted per-origin; every view survives the
+  // toggle because it is pure CSS (no re-render, so ticked plans and edits are untouched).
+  (function () {
+    var b = document.getElementById("efh-expand"), p = document.getElementById("efh-panel");
+    var label = function () { b.textContent = p.className === "efh-wide" ? "Encolher" : "Expandir"; };
+    b.onclick = function () {
+      p.className = p.className === "efh-wide" ? "" : "efh-wide";
+      try { localStorage.setItem(WIDE_KEY, p.className === "efh-wide" ? "1" : "0"); } catch (e) {}
+      label();
+    };
+    label();
+  })();
 
   /* CONSENT GATE. The panel does not touch the account until the user says yes. Two separate
    * things, and they are deliberately not bundled: agreeing to READ (local, required to do
@@ -638,6 +697,21 @@
   }
 
   function gate() {
+    var prof0 = loadProfile();
+    /* Situacoes on the consent screen: only the questions that CHANGE the faturas math
+     * (household ceilings via capFor/c99Rate). Asked once - prof.sitOk skips the section on
+     * later runs, and the same answers prefil /perfil (first answer on any surface wins;
+     * the extension bridges them across origins, bookmarklet users answer once per surface). */
+    var sitHtml = prof0.sitOk ? "" :
+      '<div class="efh-eyebrow" style="margin-top:0">A tua situacao</div>' +
+      '<div class="efh-box" style="margin-bottom:12px">' +
+      '<div style="margin-bottom:6px">Entregas o IRS <b>em conjunto</b> (casado/unido de facto)?' +
+      ' <label style="margin-left:8px"><input type="radio" name="efh-sit-joint" value="1"' + (prof0.joint ? " checked" : "") + '> Sim</label>' +
+      ' <label style="margin-left:8px"><input type="radio" name="efh-sit-joint" value="0"' + (prof0.joint ? "" : " checked") + '> Nao</label></div>' +
+      '<label style="display:block"><input type="checkbox" id="efh-sit-mono"' + (prof0.mono ? " checked" : "") + '> ' +
+      'Familia <b>monoparental</b></label>' +
+      '<div class="efh-mute" style="margin-top:6px;font-size:11px">Isto muda os tetos de deducao do agregado. Podes alterar depois em Detalhe.</div>' +
+      '</div>';
     document.getElementById("efh-body").innerHTML =
       '<p style="margin:0 0 10px">Isto l\u00ea as tuas faturas de <b>' + year + '</b> directamente do e-Fatura, ' +
       'na sess\u00e3o que j\u00e1 tens aberta, e faz as contas <b>no teu navegador</b>.</p>' +
@@ -645,16 +719,23 @@
       '<li>N\u00e3o te pede, nem v\u00ea, a tua password.</li>' +
       '<li>As tuas faturas <b>n\u00e3o s\u00e3o enviadas para lado nenhum</b>.</li>' +
       '<li>A classifica\u00e7\u00e3o \u00e9 uma <b>declara\u00e7\u00e3o tua \u00e0 AT</b> - ser aceite n\u00e3o \u00e9 o mesmo que estar certo.</li>' +
-      '</ul>' +
-      '<label style="display:block;background:#f4f6f9;border:1px solid #d5dae1;border-radius:6px;padding:9px;margin-bottom:12px;font-size:12px;line-height:1.45;cursor:pointer">' +
+      '</ul>' + sitHtml +
+      '<label class="efh-box" style="display:block;margin-bottom:12px;cursor:pointer">' +
       '<input type="checkbox" id="efh-share" style="margin-right:6px"> ' +
       'Opcional: partilhar <b>o NIF do comerciante e o setor escolhido</b> para melhorar as sugest\u00f5es. ' +
       'Sem valores, sem datas, sem o teu NIF. Podes deixar desligado.' +
       '</label>' +
-      '<button type="button" id="efh-go" style="cursor:pointer;background:#034ad8;color:#fff;border:0;' +
-      'border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">Concordo, ver resultado</button>';
+      '<button type="button" id="efh-go" class="efh-btn">Concordo, ver resultado</button>';
     document.getElementById("efh-go").onclick = function () {
       saveConsent(document.getElementById("efh-share").checked);
+      if (!prof0.sitOk) {
+        var jr = document.querySelector('input[name="efh-sit-joint"]:checked');
+        var p = loadProfile();
+        p.joint = !!(jr && jr.value === "1");
+        p.mono = !!(document.getElementById("efh-sit-mono") || {}).checked;
+        p.sitOk = true;
+        saveProfile(p);
+      }
       document.getElementById("efh-body").innerHTML = "A ler as tuas faturas...";
       start();
     };
@@ -1840,20 +1921,29 @@
            *     can see exactly what that choice costs.
            * Where the purchase genuinely was in the better sector the two agree anyway. */
           var cell = function (sec, i2, kind) {
-            return '<button type="button" class="efh-pick" data-i="' + i2 + '" data-sec="' + sec + '" ' +
+            return '<button type="button" class="efh-pick efh-btn-mini' + (kind === "pv" ? "" : " efh-green") +
+              '" data-i="' + i2 + '" data-sec="' + sec + '" ' +
               'title="Usar ' + sec + ' - ' + esc(SECTORS[sec] || sec) + '" ' +
-              'style="cursor:pointer;font:inherit;font-size:11px;border:1px solid ' +
-              (kind === "pv" ? "#034ad8;color:#034ad8" : "#128a3a;color:#128a3a") +
-              ';background:#fff;border-radius:3px;padding:2px 6px;min-height:24px">' + sec + '</button>';
+              'style="min-height:24px">' + sec + '</button>';
           };
           var same = (pv === s);
-          var badge = isR ? ' <span style="font-size:9px;background:#eef7f0;color:#1E5A3A;border:1px solid #bfe0c8;border-radius:3px;padding:0 3px" title="Ja classificada - isto corrige o setor">corrigir</span>' : "";
+          var badge = isR ? ' <span class="efh-ok" style="font-size:9px;padding:0 3px;border-radius:3px;color:var(--green)" title="Ja classificada - isto corrige o setor">corrigir</span>' : "";
+          // Deep link straight to THIS invoice on e-Fatura (same-origin detail page the portal
+          // itself uses) - amending is: click, Alterar, Guardar. New tab so the plan survives.
+          var link = "/detalheDocumentoAdquirente.action?idDocumento=" + encodeURIComponent(x.idDocumento) +
+            "&dataEmissaoDocumento=" + encodeURIComponent(x.dataEmissaoDocumento);
           return '<tr><td style="text-align:center"><input type="checkbox" class="efh-ck" data-i="' + i + '" checked></td>' +
-            '<td>' + esc(x.dataEmissaoDocumento) + '</td><td>' + esc(name34(x)) + badge + '</td>' +
-            '<td style="text-align:right">\u20ac' + eur(x.valorTotal) + '</td>' +
+            '<td class="efh-num" style="font-size:11px">' + esc(x.dataEmissaoDocumento) + '</td>' +
+            '<td><a href="' + link + '" target="_blank" rel="noopener" class="efh-name" ' +
+              'title="Abrir esta fatura no e-Fatura (novo separador)" style="color:var(--pri)">' +
+              esc(deent(x.nomeEmitente || "").trim()) + '</a>' + badge + '</td>' +
+            '<td class="efh-nif" style="font-size:11px"><a href="#" class="efh-copynif" data-nif="' +
+              esc(String(x.nifEmitente || "")) + '" title="Copiar NIF" style="color:var(--ink2);text-decoration:none;border-bottom:1px dotted var(--mute)">' +
+              esc(String(x.nifEmitente || "")) + '</a></td>' +
+            '<td class="efh-num" style="text-align:right">\u20ac' + eur(x.valorTotal) + '</td>' +
             '<td style="font-size:11px;white-space:nowrap">' + cell(pv, i, "pv") + "</td>" +
             '<td style="font-size:11px;white-space:nowrap">' +
-              (same ? '<span style="color:#999">igual</span>' : cell(s, i, "op")) + "</td>" +
+              (same ? '<span class="efh-mute">igual</span>' : cell(s, i, "op")) + "</td>" +
             '<td><select class="efh-sec" data-i="' + i + '" style="max-width:190px" aria-label="Setor para ' +
             esc(name34(x)) + '">' +
             opts.replace('value="' + s + '"', 'value="' + s + '" selected') + '</select></td></tr>';
@@ -2034,47 +2124,52 @@
           '</div>' +
           '<div id="efh-pane-r"><div id="efh-resumo">A calcular...</div>' + sponsor + '</div>' +
           '<div id="efh-pane-d" style="display:none">' +
-          '<p style="margin:0 0 8px"><b>' + pend.length + ' por classificar</b>' +
-          (movR.length ? ' + <b>' + movR.length + ' por corrigir</b> (j\u00e1 classificadas, mas rendem mais noutro setor)' : '') +
-          ' em ' + year +
-          '. Duas sugest\u00f5es por fatura: <b>Prov\u00e1vel</b> (a atividade principal do comerciante, ou o que j\u00e1 usaste antes) e <b>Otimizada</b> (mais dedu\u00e7\u00e3o, com espa\u00e7o no teto). Vem selecionada a <b>Otimizada</b>. S\u00f3 aparecem setores em que o comerciante est\u00e1 mesmo registado, mas <b>ser aceite n\u00e3o \u00e9 o mesmo que estar certo</b>: a classifica\u00e7\u00e3o \u00e9 uma declara\u00e7\u00e3o tua \u00e0 AT.</p>' +
-          '<div style="background:#f4f6f9;border:1px solid #d5dae1;border-radius:2px;padding:9px;margin-bottom:10px;font-size:12px">' +
-          '<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center">' +
-          '<label style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap">' +
+
+          '<div class="efh-eyebrow" style="margin-top:0">A tua situacao</div>' +
+          '<div class="efh-box" style="margin-bottom:10px">' +
+          '<div>IRS ' + (prof.joint ? '<b>em conjunto</b> (tetos do agregado - o que falta e MENOS do que aparece aqui, usa a partilha)' : '<b>em separado</b> (tetos so teus)') +
+          (prof.mono ? ' \u00b7 familia <b>monoparental</b>' : '') +
+          ' <a href="#" id="efh-sit-edit" style="color:var(--pri);font-size:11px">alterar</a></div>' +
+          '<div id="efh-sit-controls" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid var(--rule)">' +
+          '<label style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap;margin-right:14px">' +
           '<input type="checkbox" id="efh-joint"' + (prof.joint ? " checked" : "") + '> Tributa\u00e7\u00e3o conjunta</label>' +
           '<label style="display:inline-flex;align-items:center;gap:5px;white-space:nowrap">' +
           '<input type="checkbox" id="efh-mono"' + (prof.mono ? " checked" : "") +
           '> Fam\u00edlia monoparental</label></div>' +
-          '<div style="margin-top:6px;padding-top:6px;border-top:1px solid #dde5ee">' +
+          '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--rule)">' +
           '<label title="Opcional. Os tetos do IRS s\u00e3o do agregado, mas esta p\u00e1gina s\u00f3 v\u00ea esta conta.">' +
           'Partilhar tetos do agregado (opcional): <input type="text" id="efh-room" ' +
           'placeholder="cola a chave, ou deixa vazio" autocomplete="off" spellcheck="false" ' +
           'value="" style="width:170px"></label> ' +
-          '<button type="button" id="efh-join" style="cursor:pointer">Ligar</button>' +
-          '<div id="efh-hh" style="margin-top:4px;color:#666"></div></div>' +
-          '<div style="margin:0 0 8px;padding:6px 8px;background:#fdf8ec;border-left:3px solid #8a6100;' +
-          'font-size:11px;color:#5a4600"><b>Vers\u00e3o de teste.</b> Esta ferramenta <b>n\u00e3o submete nada</b> ' +
-          '\u00e0 AT - s\u00f3 analisa e mostra o plano. Aplicas tu no e-Fatura. Estamos a recolher feedback ' +
-          'antes de permitir submiss\u00e3o autom\u00e1tica.</div>' +
-          '<div id="efh-bars" style="margin-top:8px"></div>' +
-          '<div id="efh-opt" style="margin-top:8px"></div>' +
-          '<div style="margin-top:6px;padding:5px 7px;background:#fdf8ec;border-left:3px solid #8a6100;color:#5a4600">' +
-          '<b>Aten\u00e7\u00e3o:</b> isto v\u00ea as faturas <b>desta conta</b>. Se entregas o IRS ' +
-          '<b>em conjunto</b>, os tetos s\u00e3o do agregado e o que falta \u00e9 <b>menos</b> do que aqui aparece - ' +
-          'usa a partilha abaixo. Se entregas <b>em separado</b>, os tetos s\u00e3o s\u00f3 teus e estes n\u00fameros ' +
-          'j\u00e1 est\u00e3o certos.</div></div>' +
-          '<div style="max-height:52vh;overflow:auto"><table style="width:100%;border-collapse:collapse">' +
-          '<thead><tr style="background:#f4f6f9"><th></th><th>Data</th><th>Emitente</th><th>Valor</th><th title="O setor que a compra provavelmente foi: o teu hist\u00f3rico, ou a atividade principal do comerciante">Prov\u00e1vel</th><th title="O setor que d\u00e1 mais dedu\u00e7\u00e3o e ainda tem espa\u00e7o no teto">Otimizada</th><th>Setor</th></tr></thead>' +
+          '<button type="button" id="efh-join" class="efh-btn-mini">Ligar</button>' +
+          '<div id="efh-hh" style="margin-top:4px" class="efh-mute"></div></div></div>' +
+
+          '<div class="efh-warn" style="margin-bottom:10px"><b>Vers\u00e3o de teste.</b> Esta ferramenta <b>n\u00e3o submete nada</b> ' +
+          '\u00e0 AT - s\u00f3 analisa e mostra o plano. Aplicas tu no e-Fatura: clica no nome de uma fatura para a abrir l\u00e1.</div>' +
+
+          '<div class="efh-eyebrow">Tetos</div>' +
+          '<div id="efh-bars"></div>' +
+
+          '<div class="efh-eyebrow">Otimizacao</div>' +
+          '<div id="efh-opt"></div>' +
+
+          '<div class="efh-eyebrow">Faturas</div>' +
+          '<p style="margin:0 0 8px;font-size:12px"><b>' + pend.length + ' por classificar</b>' +
+          (movR.length ? ' + <b>' + movR.length + ' por corrigir</b> (j\u00e1 classificadas, mas rendem mais noutro setor)' : '') +
+          ' em ' + year +
+          '. <b>Prov\u00e1vel</b> = a atividade principal do comerciante ou o teu hist\u00f3rico; <b>Otimizada</b> = mais dedu\u00e7\u00e3o com espa\u00e7o no teto (vem selecionada). S\u00f3 aparecem setores em que o comerciante est\u00e1 registado, mas <b>ser aceite n\u00e3o \u00e9 o mesmo que estar certo</b>: a classifica\u00e7\u00e3o \u00e9 uma declara\u00e7\u00e3o tua \u00e0 AT.</p>' +
+          '<div class="efh-scroll"><table>' +
+          '<thead><tr><th></th><th>Data</th><th title="Clica no nome para abrir a fatura no e-Fatura">Emitente</th><th title="Clica para copiar">NIF</th><th>Valor</th><th title="O setor que a compra provavelmente foi: o teu hist\u00f3rico, ou a atividade principal do comerciante">Prov\u00e1vel</th><th title="O setor que d\u00e1 mais dedu\u00e7\u00e3o e ainda tem espa\u00e7o no teto">Otimizada</th><th>Setor</th></tr></thead>' +
           '<tbody>' + trs + '</tbody></table></div>' +
           '<div style="margin-top:12px;display:flex;gap:8px;align-items:center">' +
           // #efh-apply is rendered ONLY when DRAFT is off. While DRAFT is on the tool writes nothing,
           // and the page copy at faturas.diogoandrade.com promises exactly that - so this button and
           // those promises flip together, never one without the other.
           (DRAFT ? '' :
-            '<button id="efh-apply" style="background:#1E5A3A;color:#fff;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer;font-weight:700">Aplicar no e-Fatura</button> ') +
-          '<button id="efh-export" style="background:#034ad8;color:#fff;border:0;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer;font-weight:600">Copiar plano</button> ' +
-          '<button id="efh-mailto" style="background:#fff;color:#034ad8;border:1px solid #034ad8;border-radius:6px;padding:10px 16px;min-height:44px;cursor:pointer;font-weight:600">Enviar por email</button> ' +
-          '<span id="efh-status" role="status" aria-live="polite" style="color:#555"></span></div>' +
+            '<button id="efh-apply" class="efh-btn efh-btn-green">Aplicar no e-Fatura</button> ') +
+          '<button id="efh-export" class="efh-btn">Copiar plano</button> ' +
+          '<button id="efh-mailto" class="efh-btn efh-btn-ghost">Enviar por email</button> ' +
+          '<span id="efh-status" role="status" aria-live="polite" class="efh-mute"></span></div>' +
           '</div>';
 
         (function () {
@@ -2109,6 +2204,19 @@
             sel.dispatchEvent(new Event("change", { bubbles: true }));
           });
         });
+        // NIF click-to-copy: users who amend via e-Fatura's own search paste the NIF there.
+        document.querySelectorAll(".efh-copynif").forEach(function (a) {
+          a.addEventListener("click", function (ev) {
+            ev.preventDefault();
+            var nif = a.dataset.nif || "";
+            var done = function () {
+              var st = document.getElementById("efh-status");
+              if (st) st.textContent = "NIF " + nif + " copiado.";
+            };
+            if (navigator.clipboard) navigator.clipboard.writeText(nif).then(done, done);
+            else done();
+          });
+        });
 
         function planText() {
           var lines = ["Plano de classificacao e-Fatura - " + year, ""];
@@ -2116,8 +2224,11 @@
             if (!ck.checked) return;
             var i = +ck.dataset.i, x = actionable[i];
             var sec = document.querySelector('.efh-sec[data-i="' + i + '"]').value;
-            lines.push(x.dataEmissaoDocumento + "  " + name34(x) + "  EUR" + eur(x.valorTotal) +
-                       "  ->  " + sec + " (" + SECTORS[sec] + ")");
+            lines.push(x.dataEmissaoDocumento + "  " + name34(x) + "  NIF " + (x.nifEmitente || "?") +
+                       "  EUR" + eur(x.valorTotal) + "  ->  " + sec + " (" + SECTORS[sec] + ")");
+            lines.push("    https://faturas.portaldasfinancas.gov.pt/detalheDocumentoAdquirente.action?idDocumento=" +
+                       encodeURIComponent(x.idDocumento) + "&dataEmissaoDocumento=" +
+                       encodeURIComponent(x.dataEmissaoDocumento));
           });
           var o = window.__efhOpt || {};
           lines.push("");
@@ -2186,7 +2297,12 @@
             ev.preventDefault();
             more.outerHTML = '<div style="margin-top:6px;max-height:130px;overflow:auto">' +
               reg.slice(0, 40).map(function (m) {
-                return '<div>' + esc(m.x.dataEmissaoDocumento) + '  |  ' + esc(name34(m.x)) +
+                var lk = "/detalheDocumentoAdquirente.action?idDocumento=" + encodeURIComponent(m.x.idDocumento) +
+                         "&dataEmissaoDocumento=" + encodeURIComponent(m.x.dataEmissaoDocumento);
+                return '<div>' + esc(m.x.dataEmissaoDocumento) + '  |  ' +
+                       '<a href="' + lk + '" target="_blank" rel="noopener" style="color:var(--pri)" ' +
+                       'title="Abrir esta fatura no e-Fatura">' + esc(name34(m.x)) + '</a>' +
+                       '  |  <span class="efh-nif">' + esc(String(m.x.nifEmitente || "")) + '</span>' +
                        '  |  \u20ac' + eur(m.x.valorTotal) + ' - <b>' + (m.x.actividadeEmitente || "C99") + ' -> ' + m.to + '</b></div>';
               }).join("") + '</div>';
           };
@@ -2196,12 +2312,21 @@
         // changing the household re-runs the whole suggestion pass (ceilings move, so do sectors)
         var reprofile = function () {
           snapshotEdits(actionable);        // keep the user's corrections across the rebuild
-          saveProfile({ joint: document.getElementById("efh-joint").checked,
-                        mono: document.getElementById("efh-mono").checked });
+          saveProfile(Object.assign(loadProfile(),
+                      { joint: document.getElementById("efh-joint").checked,
+                        mono: document.getElementById("efh-mono").checked }));
           run(caemap);
         };
         document.getElementById("efh-joint").onchange = reprofile;
         document.getElementById("efh-mono").onchange = reprofile;
+        // "alterar" reveals the situacao checkboxes in place - same controls, same reprofile
+        // wiring, so the gate stays the single source of truth for what the answers MEAN.
+        var sitEdit = document.getElementById("efh-sit-edit");
+        if (sitEdit) sitEdit.onclick = function (ev) {
+          ev.preventDefault();
+          var c = document.getElementById("efh-sit-controls");
+          if (c) c.style.display = c.style.display === "none" ? "" : "none";
+        };
 
         var hhBox = document.getElementById("efh-hh");
         if (prof.room) { hhBox.innerHTML = 'Ligado. Chave: <code>' + esc(prof.room.slice(0, 16)) + '...</code>'; }
@@ -2225,7 +2350,7 @@
               .then(function (r) { return r.json(); })
               .then(function (d) {
                 // no email is stored any more - the room key is the only household state we keep
-                saveProfile({ joint: prof.joint, mono: prof.mono, room: room });
+                saveProfile(Object.assign(loadProfile(), { joint: prof.joint, mono: prof.mono, room: room }));
                 if (d && d.merged) {
                   Object.keys(d.merged).forEach(function (k) {
                     used[k === "POT" ? POT : k] = d.merged[k];
