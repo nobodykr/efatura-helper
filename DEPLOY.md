@@ -54,11 +54,25 @@ So the order matters - commit tool.js BEFORE generating the manifest:
    audit-manifest.json for /auditoria (fails loud via test-audit-sync.js if it drifts).
 4. Commit versions.json + audit-manifest.json, then `git push` to nobodykr - the push is what makes
    `source_commit` resolve on GitHub (no separate `git push --tags` step to forget).
-5. Deploy from a FILTERED copy - `extension/` and `dist/` must never reach the public site
-   (`rsync -a --exclude extension --exclude dist --exclude node_modules --exclude .git . /tmp/fb-deploy/`
-   then `npx wrangler pages deploy /tmp/fb-deploy --project-name=efatura-helper --branch=main`, from a clean tree -
-   node_modules is not deployable). Verify at /verificar (served tool.js must hash to the published
-   integrity) and that versions.json `repo` is nobodykr, not a fork.
+5. Deploy from a FILTERED copy. Two reasons to filter: `extension/`+`dist/` must never reach the
+   public site, AND the docs / tests / build scripts must not be publicly served (they leak the
+   architecture - the cae-db split, endpoint shapes, this very deploy command). Only runtime files
+   go up: tool.js, *.html, all data *.json, metrics.js, fonts, functions/, _headers, _routes.json,
+   robots/sitemap/icons. Exact command:
+   ```
+   rsync -a --delete \
+     --exclude extension --exclude dist --exclude node_modules --exclude .git \
+     --exclude .wrangler --exclude .github \
+     --exclude '*.md' --exclude docs --exclude 'test-*.js' --exclude 'make-*.mjs' \
+     --exclude run-tests.mjs --exclude check-functions.js --exclude escape-tool.js \
+     --exclude package.json --exclude package-lock.json \
+     . /tmp/fb-deploy/
+   npx wrangler pages deploy /tmp/fb-deploy --project-name=efatura-helper --branch=main
+   ```
+   NEVER drop a runtime data file from this list by adding a broad `*.json` exclude - versions.json,
+   audit-manifest.json, audit-freshness.json, offers.json, cae_sectors.json, legal_sources.json,
+   cirs_atividades.json and year_snapshots.json are all fetched live. Verify at /verificar (served
+   tool.js must hash to the published integrity) and that versions.json `repo` is nobodykr, not a fork.
 
 The commit hash in versions.json is the public commitment: content-addressed, so it can't be moved or
 point at different code the way a tag can. A `git tag vYYYY.MM.DD` is still fine as a human-readable

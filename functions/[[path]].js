@@ -14,12 +14,14 @@
 //   - Response is 100% static. Whatever later DISPLAYS these hits (admin panel) MUST escape
 //     ua/ref/path - they are attacker-controlled and a stored-XSS vector if rendered raw.
 
+import { allow } from "./_lib/ratelimit.js";
+
 const cap = (s, n) => String(s || "").slice(0, n);
 
 const BAIT = [
   /^\/wp-(login|admin|content|includes|json)/i,
   /^\/xmlrpc\.php/i,
-  /(^|\/)\.env(\.|$|\/)/i,
+  /(^|\/)\.env(\.|$|\/)/i,                       // .env, .env.production, .env.local, api/.env
   /^\/\.git(\/|$)/i,
   /^\/\.aws(\/|$)/i,
   /(phpmyadmin|^\/pma\/)/i,
@@ -30,6 +32,19 @@ const BAIT = [
   /^\/actuator(\/|$)/i,
   /\/vendor\/phpunit/i,
   /^\/(cgi-bin|solr|struts|jenkins|\.svn)(\/|$)/i,
+  // modern framework/appliance scanners seen in the wild
+  /^\/server-status(\/|$)/i,
+  /^\/telescope(\/|$)/i,                          // Laravel Telescope
+  /^\/_ignition\//i,                              // Laravel Ignition RCE probe
+  /^\/_profiler\//i,                              // Symfony profiler
+  /^\/wp-json\/wp\/v2\/users/i,                   // WP user enumeration
+  /^\/laravel\.log|\/storage\/logs\//i,
+  /^\/\.DS_Store/i,
+  /^\/autodiscover\/autodiscover\.xml/i,
+  /^\/owa(\/|$)/i,
+  /(^|\/)(credentials|id_rsa|\.htpasswd)(\?|$)/i,
+  /^\/(druid|hudson|zabbix|grafana|kibana)\//i,
+  /^\/\.well-known\/(?!security\.txt|change-password|assetlinks\.json|apple-app|acme-challenge)/i,
 ];
 
 function trapKind(path) {
@@ -61,11 +76,18 @@ async function record(request, env, ctx, kind) {
     colo: cap(cf.colo, 8),
     city: cap(cf.city, 60),
   };
-  console.log("FB_HONEYPOT " + JSON.stringify(hit));   // greppable in Cloudflare function logs
+  console.log("FB_HONEYPOT " + JSON.stringify(hit));   // greppable in Cloudflare function logs (always)
   // Persist to the private cae-db sink (env HONEYPOT_SINK, shared key HONEYPOT_KEY). Fire-and-forget
   // via waitUntil with a hard timeout: the scanner never waits on it, and a slow/blocked sink cannot
   // hold the worker. The sink URL/key are Pages secrets, never in this public source.
-  if (env && env.HONEYPOT_SINK) {
+  // Sink is CAPPED per IP (KV): a scanner hammering /hp cannot turn our own trap into a flood against
+  // the sink. console.log above is unconditional, so nothing is lost locally when the cap trips.
+  let sinkOk = true;
+  try {
+    const c = await allow(env, { key: "hp-sink", ip: hit.ip, limit: 20, windowSec: 3600 });
+    sinkOk = c.ok;
+  } catch { /* fail open */ }
+  if (sinkOk && env && env.HONEYPOT_SINK) {
     const p = fetch(env.HONEYPOT_SINK, {
       method: "POST",
       headers: { "content-type": "application/json", "x-fb-hp": env.HONEYPOT_KEY || "" },
@@ -82,6 +104,12 @@ export async function onRequest(context) {
   const kind = trapKind(path);
   if (!kind) return context.next();   // not a trap -> serve the real static site
   try { await record(request, context.env, context, kind); } catch { /* never fail loudly */ }
+  // Tarpit: hold the trap response a beat before the 404. Mass scanners are throughput machines;
+  // a few hundred ms per hit is invisible to us (idle wait, no CPU) but drags their sweep. The
+  // delay is DETERMINISTIC from the path (no Math.random - forbidden here) so it is not a timer
+  // oracle, and bounded so it can never approach the Functions wall-clock budget.
+  let d = 0; for (let i = 0; i < path.length; i++) d = (d + path.charCodeAt(i)) % 600;
+  await new Promise((r) => setTimeout(r, 300 + d));   // 300-899ms
   return new Response(
     JSON.stringify({ error: "not_found", notice: "Fatura Boa - conteudo protegido, PolyForm Noncommercial 1.0.0. Acesso registado. ref fb-trap-8be21f04" }),
     { status: 404, headers: { "content-type": "application/json", "x-robots-tag": "noindex" } }
