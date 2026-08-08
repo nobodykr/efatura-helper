@@ -12,10 +12,14 @@
 //   4. Hard length caps, so a pass through the gate still cannot post a novel.
 //   5. Content sanitising: code/HTML rejected, control and zero-width characters stripped.
 //      Ported from recibo-certo's feedback-sanitize.ts - see the block below.
-// Network-level rate limiting is a WAF rule on this path, not application code.
+//   6. Per-IP rate limit (KV, this file) + an edge WAF rate-limit rule on the same path. The KV
+//      layer is precise and global; the WAF rule blocks floods before they even reach this code.
+
+import { allow } from "../_lib/ratelimit.js";
 
 const MAX = { message: 4000, email: 200, context: 300 };
 const MIN_DWELL_MS = 3000;
+const RL = { limit: 5, windowSec: 900 };   // 5 submissions / 15 min / IP
 
 /* ---- 5. content sanitising, ported from recibo-certo/src/lib/feedback-sanitize.ts --------------
  * The four gates above stop bots. These two stop CONTENT: a human who passes Turnstile can still
@@ -52,6 +56,12 @@ const bad = (msg, code = 400) =>
   });
 
 export async function onRequestPost({ request, env }) {
+  // 6. rate limit FIRST - cheapest gate, and it protects the Turnstile verify call downstream
+  //    from being used as a free oracle. Fail-open inside allow(): a KV hiccup never blocks a user.
+  const ip = request.headers.get("cf-connecting-ip") || "";
+  const rl = await allow(env, { key: "feedback", ip, limit: RL.limit, windowSec: RL.windowSec });
+  if (!rl.ok) return bad("Demasiados pedidos. Tenta mais tarde.", 429);
+
   let body;
   try { body = await request.json(); } catch { return bad("Pedido invalido."); }
 
