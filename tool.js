@@ -45,7 +45,7 @@
   var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.08.07";
+  var FB_VERSION = "2026.08.08";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -1702,6 +1702,15 @@
     fetch("/json/obterDocumentosAdquirente.action?dataInicioFilter=" + year + "-01-01&dataFimFilter=" + year + "-12-31",
       { credentials: "include", headers: { Accept: "application/json" } })
       .then(function (r) { return r.json(); })
+      .then(function (d) {
+        // Logged out, this endpoint answers with VALID JSON {success:false, expiredSession:true}
+        // and no linhas - which used to read as "0 faturas" and render a false "Estas em dia".
+        // (The other logged-out shape, an HTML login page, makes r.json() throw into the catch.)
+        if (d && (d.expiredSession === true || d.success === false)) {
+          throw new Error("sess\u00e3o do e-Fatura n\u00e3o iniciada ou expirada - faz login e volta a clicar");
+        }
+        return d;
+      })
       .then(function (d) {
         // Pull the map slices for THESE merchants before doing anything else. Everything below
         // reads caemap synchronously, so it has to be populated first.
