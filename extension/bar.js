@@ -5,6 +5,29 @@
 // the same endpoint the analyser uses; nothing leaves the browser) and the button
 // runs the bundled analyser. On other portal pages the button links to e-Fatura.
 (function () {
+  // Situacoes bridge: the analyser stores its household answers (IRS conjunto, monoparental)
+  // in the PORTAL's localStorage (key efh-profile) - which AT's origin can clear at any time.
+  // chrome.storage.local is the extension's own persistent copy: restore it when the portal
+  // lost it, capture it when the user (re)answers. First answer anywhere wins, forever.
+  try {
+    var raw = localStorage.getItem("efh-profile");
+    var prof = raw ? JSON.parse(raw) : null;
+    if (prof && prof.sitOk) {
+      chrome.storage.local.set({ "fb-sit": { joint: !!prof.joint, mono: !!prof.mono, sitOk: true } });
+    } else {
+      chrome.storage.local.get("fb-sit", function (r) {
+        var s = r && r["fb-sit"];
+        if (!s || !s.sitOk) return;
+        try {
+          var cur = JSON.parse(localStorage.getItem("efh-profile") || "{}");
+          if (cur.sitOk) return;
+          cur.joint = !!s.joint; cur.mono = !!s.mono; cur.sitOk = true;
+          localStorage.setItem("efh-profile", JSON.stringify(cur));
+        } catch (e) {}
+      });
+    }
+  } catch (e) {}
+
   if (document.getElementById("fb-ext-bar")) return;
   var HIDE_KEY = "fb-ext-bar-hidden";
   try { if (localStorage.getItem(HIDE_KEY) === "1") return; } catch (e) {}
