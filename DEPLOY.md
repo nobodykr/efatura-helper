@@ -54,7 +54,9 @@ So the order matters - commit tool.js BEFORE generating the manifest:
    audit-manifest.json for /auditoria (fails loud via test-audit-sync.js if it drifts).
 4. Commit versions.json + audit-manifest.json, then `git push` to nobodykr - the push is what makes
    `source_commit` resolve on GitHub (no separate `git push --tags` step to forget).
-5. Deploy (`npx wrangler pages deploy . --project-name=efatura-helper --branch=main`, from a clean tree -
+5. Deploy from a FILTERED copy - `extension/` and `dist/` must never reach the public site
+   (`rsync -a --exclude extension --exclude dist --exclude node_modules --exclude .git . /tmp/fb-deploy/`
+   then `npx wrangler pages deploy /tmp/fb-deploy --project-name=efatura-helper --branch=main`, from a clean tree -
    node_modules is not deployable). Verify at /verificar (served tool.js must hash to the published
    integrity) and that versions.json `repo` is nobodykr, not a fork.
 
