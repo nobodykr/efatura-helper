@@ -1,12 +1,12 @@
 {
-  "current": "2026.08.10",
+  "current": "2026.08.11",
   "repo": "https://github.com/nobodykr/efatura-helper",
-  "source_commit": "75c0f0d8f667435218518a744f11c85944add36b",
-  "source": "https://github.com/nobodykr/efatura-helper/blob/75c0f0d8f667435218518a744f11c85944add36b/tool.js",
+  "source_commit": "7a1bb4b5119bc5fe142591058200e6c66cb637c6",
+  "source": "https://github.com/nobodykr/efatura-helper/blob/7a1bb4b5119bc5fe142591058200e6c66cb637c6/tool.js",
   "files": {
     "tool.js": {
-      "version": "2026.08.10",
-      "integrity": "sha384-rJKjmQD2STGZvSNgWyupCgCjZeaxKKlIwiYyS0zEwyOcCQT5yeThEd/1q9qCSV/B",
+      "version": "2026.08.11",
+      "integrity": "sha384-e/39z5yXurUrmvWdvoNT2mqm9AqTCUedvvASUEDSpUI1Zs1EtCgHXLetb6SEyx7J",
       "bytes": 172502
     }
   },
