@@ -1,4 +1,4 @@
-# Fatura Boa - https://faturas.diogoandrade.com
+# Fiscalidade - https://faturas.diogoandrade.com
 #
 # Everything here is meant to be found. There is nothing private on this origin: the tool runs
 # entirely in the visitor's browser and this site is static.
@@ -14,4 +14,4 @@ Disallow: /hp/
 # The merchant data lives on a different origin (cae-db.diogoandrade.com) and is not linked into
 # any indexable page on purpose - see the "no per-company pages" decision.
 
-Sitemap: https://faturas.diogoandrade.com/sitemap.xml
+Sitemap: https://fiscalida.de/sitemap.xml

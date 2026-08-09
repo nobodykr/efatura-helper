@@ -2202,8 +2202,8 @@
           '<button type="button" id="efh-join" class="efh-btn-mini">Ligar</button>' +
           '<div id="efh-hh" style="margin-top:4px" class="efh-mute"></div></div></div>' +
 
-          '<div class="efh-warn" style="margin-bottom:10px"><b>Vers\u00e3o de teste.</b> Esta ferramenta <b>n\u00e3o submete nada</b> ' +
-          '\u00e0 AT - s\u00f3 analisa e mostra o plano. Aplicas tu no e-Fatura: clica no nome de uma fatura para a abrir l\u00e1.</div>' +
+          '<div class="efh-warn" style="margin-bottom:10px">Esta ferramenta <b>n\u00e3o submete nada</b> ' +
+          '\u00e0 AT - s\u00f3 analisa e mostra o plano. A decis\u00e3o e o clique final s\u00e3o sempre teus: clica no nome de uma fatura para a abrir no e-Fatura.</div>' +
 
           '<div class="efh-eyebrow">Tetos</div>' +
           '<div id="efh-bars"></div>' +
