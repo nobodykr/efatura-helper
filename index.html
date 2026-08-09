@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Fatura Boa | A tua situação fiscal, das fontes oficiais (grátis, sem password)</title>
+<title>Fiscalidade | A tua situação fiscal, das fontes oficiais (grátis, sem password)</title>
 <meta name="description" content="Ferramenta gratuita e verificável que lê o teu próprio registo nas Finanças e na Segurança Social, na tua sessão, sem password, e mostra a tua situação fiscal: faturas do e-Fatura por setor e teto de dedução, rendas, situação fiscal e prazos, património e IMI, e histórico de IRS. Corre no teu navegador, nada sai de lá.">
 <link rel="canonical" href="https://faturas.diogoandrade.com/">
 <!-- Diogo's DA monogram, same mark as diogoandrade.com. There was no favicon at all before, so
@@ -16,23 +16,23 @@
 <meta name="author" content="Diogo Andrade">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_PT">
-<meta property="og:site_name" content="Fatura Boa">
+<meta property="og:site_name" content="Fiscalidade">
 <meta property="og:url" content="https://faturas.diogoandrade.com/">
-<meta property="og:title" content="Fatura Boa | A tua situação fiscal, das fontes oficiais">
+<meta property="og:title" content="Fiscalidade | A tua situação fiscal, das fontes oficiais">
 <meta property="og:description" content="Lê o teu próprio registo nas Finanças e na Segurança Social, na tua sessão, sem password, e mostra a tua situação fiscal: faturas, rendas, situação fiscal, IMI e IRS. Grátis, no teu navegador, verificável.">
 <meta property="og:image" content="https://faturas.diogoandrade.com/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Fatura Boa - a tua situação fiscal, das fontes oficiais">
+<meta property="og:image:alt" content="Fiscalidade - a tua situação fiscal, das fontes oficiais">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Fatura Boa | A tua situação fiscal, das fontes oficiais">
+<meta name="twitter:title" content="Fiscalidade | A tua situação fiscal, das fontes oficiais">
 <meta name="twitter:description" content="Lê o teu próprio registo fiscal na tua sessão, sem password, e mostra a tua situação: faturas, rendas, situação, IMI, IRS. Grátis e verificável.">
 <!-- twitter:card has said summary_large_image since the beginning, but there was no image, so
      every share on WhatsApp, LinkedIn and Slack rendered blank. Regenerate with: node make-og.mjs -->
 <meta name="twitter:image" content="https://faturas.diogoandrade.com/assets/og.png">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"SoftwareApplication",
- "name":"Fatura Boa",
+ "name":"Fiscalidade",
  "applicationCategory":"FinanceApplication",
  "operatingSystem":"Qualquer navegador",
  "url":"https://faturas.diogoandrade.com/",
@@ -385,7 +385,7 @@
     <script defer src="/metrics.js"></script>
 </head>
 <body>
-<!-- Fatura Boa (c) 2026 Diogo Andrade. Licenca PolyForm Noncommercial 1.0.0
+<!-- Fiscalidade (c) 2026 Diogo Andrade. Licenca PolyForm Noncommercial 1.0.0
      (https://polyformproject.org/licenses/noncommercial/1.0.0). Uso nao-comercial apenas.
      Copia, redistribuicao ou uso comercial sem autorizacao viola a licenca e pode ser objecto
      de accao legal. Origem oficial: faturas.diogoandrade.com | ref fb-lic-e1ec0c96c9 -->
@@ -459,7 +459,7 @@
          variables - the mark follows the palette instead of being a second place to update it.
          Counter-shapes (the D's bowl, the A's crossbar, the signature cut) are painted in the
          SAME colour as the plate, so they read as holes at any size. -->
-    <a class="brand" href="/" aria-label="Fatura Boa, início">
+    <a class="brand" href="/" aria-label="Fiscalidade, início">
       <span class="markbox"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><defs><linearGradient id="fg" x1="6" y1="26" x2="28" y2="6" gradientUnits="userSpaceOnUse"><stop stop-color="#1E88FF"/><stop offset="1" stop-color="#00C6D7"/></linearGradient><mask id="fm"><rect fill="#fff" x="6" y="6.5" width="4" height="19"/><rect fill="#fff" x="6" y="6.5" width="15" height="4"/><rect fill="#fff" x="6" y="14" width="11" height="4"/><rect fill="#fff" x="22" y="6.5" width="3.5" height="13"/><rect fill="#fff" x="22" y="22.5" width="3.5" height="3"/><rect fill="#000" x="22" y="12.25" width="3.5" height="1.75" rx="0.4"/><path fill="#000" d="M8 25.5 L23 6.5 H25.5 L10.5 25.5 Z" opacity="0.18"/></mask></defs><rect width="32" height="32" fill="url(#fg)" mask="url(#fm)"/></svg></span>
       <span class="nm">Fiscalida<span class="fde">de</span></span>
     </a>
@@ -527,8 +527,8 @@
         <a class="btn-primary" id="sit-opensrc" target="_blank" rel="noopener" href="https://faturas.portaldasfinancas.gov.pt">
         <svg class="icon" aria-hidden="true"><use href="#i-external"/></svg><span id="sit-opensrclabel">Abrir e-Fatura</span></a></div>
     </div>
-    <p class="framecap" id="sit-emptycap" hidden>Na página oficial, clica no favorito Fatura Boa. Os dados aparecem em
-      <a href="/perfil">A minha situação</a>, só neste navegador.</p>
+    <p class="framecap" id="sit-emptycap" hidden>Na página oficial, carrega em <b>Analisar</b> na barra
+      (ou usa o favorito). Os dados aparecem em <a href="/perfil">A minha situação</a>, só neste navegador.</p>
 
     <div id="sit-cta" hidden style="text-align:center;margin-top:22px">
       <a class="btn-primary" id="sit-continue" href="/perfil" style="max-width:420px">
@@ -591,16 +591,17 @@
 </section>
 
 <section id="como">
-  <h2>Como classificar as faturas pendentes do e-Fatura</h2>
+  <h2>Como classificar as tuas faturas - em 3 passos</h2>
   <div class="hgrid">
-    <div class="hstep"><div class="hn"><span class="num">01</span><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></div>
-      <p>Faz <b>login normal</b> no <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a>, como sempre fazes.</p></div>
-    <div class="hstep"><div class="hn"><span class="num">02</span><svg class="icon" aria-hidden="true"><use href="#i-doc"/></svg></div>
-      <p>Clica no favorito <b>Fatura Boa</b> (instalado abaixo). Ele lê as tuas faturas pendentes e sugere o setor de cada uma <b>com base no teu histórico e na atividade oficial de cada comerciante</b>, já a saltar os setores cujo teto anual esteja cheio.</p></div>
+    <div class="hstep"><div class="hn"><span class="num">01</span><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg></div>
+      <p><b>Adiciona a extensão</b> ao teu navegador. É um clique. <a href="/extensao">Ver como</a>.
+      <span class="note">Não queres instalar nada? Há o favorito, que funciona em qualquer navegador.</span></p></div>
+    <div class="hstep"><div class="hn"><span class="num">02</span><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></div>
+      <p><b>Abre o <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a> e entra</b> como sempre fazes. A ferramenta nunca vê nem pede a tua password.</p></div>
     <div class="hstep"><div class="hn"><span class="num">03</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></div>
-      <p><b>Revês</b> a tabela. Cada fatura traz duas sugestões: <b>Provável</b> (o que a compra
-      provavelmente foi) e <b>Otimizada</b> (o que dá mais dedução e ainda cabe no teto). Vem
-      selecionada a Provável; clicas na outra se a compra foi mesmo dessa natureza. Depois <b>copias o plano</b> (ou envias para o teu email) e aplicas no e-Fatura. <b>A ferramenta não submete nada.</b></p></div>
+      <p><b>Carrega em Analisar</b> na barra que aparece no topo. Ela lê as tuas faturas por
+      classificar e sugere o melhor setor de cada uma. Tu revês a tabela e aplicas no e-Fatura.
+      <b>A ferramenta não submete nada</b> - o último passo é sempre teu.</p></div>
   </div>
 </section>
 
@@ -644,7 +645,7 @@
 
   <p style="margin-top:22px"><b>Alternativa: o favorito (bookmarklet).</b> Não instala nada e
     funciona em qualquer navegador. Arrasta este botão para a tua barra de favoritos.</p>
-  <p><a class="bm" id="bookmarklet" href="#"> Fatura Boa</a></p>
+  <p><a class="bm" id="bookmarklet" href="#"> Fiscalidade</a></p>
 
   <p><b>Se arrastar não der:</b> copia o código e cola-o num favorito novo.</p>
   <p>
@@ -655,7 +656,7 @@
     <summary>Como colar num favorito novo, por navegador</summary>
     <div class="howto-body">
       <p><b>Chrome / Edge / Brave:</b> Ctrl+Shift+O abre o gestor de favoritos. Botão direito na
-        barra, <i>Adicionar página</i>, dá-lhe o nome <i>Fatura Boa</i> e cola o código no campo URL.</p>
+        barra, <i>Adicionar página</i>, dá-lhe o nome <i>Fiscalidade</i> e cola o código no campo URL.</p>
       <p><b>Firefox:</b> Ctrl+Shift+O, depois <i>Organizar</i>, <i>Adicionar marcador</i>, e cola o
         código no campo <i>Endereço</i>.</p>
       <p><b>Safari:</b> adiciona qualquer página aos favoritos, depois <i>Editar favoritos</i>,
@@ -753,7 +754,7 @@
 <footer><div class="wrap">
   <div class="ft-top">
     <div class="ft-brand">
-      <a class="brand" href="/" aria-label="Fatura Boa, início">
+      <a class="brand" href="/" aria-label="Fiscalidade, início">
         <span class="markbox"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><defs><linearGradient id="fg" x1="6" y1="26" x2="28" y2="6" gradientUnits="userSpaceOnUse"><stop stop-color="#1E88FF"/><stop offset="1" stop-color="#00C6D7"/></linearGradient><mask id="fm"><rect fill="#fff" x="6" y="6.5" width="4" height="19"/><rect fill="#fff" x="6" y="6.5" width="15" height="4"/><rect fill="#fff" x="6" y="14" width="11" height="4"/><rect fill="#fff" x="22" y="6.5" width="3.5" height="13"/><rect fill="#fff" x="22" y="22.5" width="3.5" height="3"/><rect fill="#000" x="22" y="12.25" width="3.5" height="1.75" rx="0.4"/><path fill="#000" d="M8 25.5 L23 6.5 H25.5 L10.5 25.5 Z" opacity="0.18"/></mask></defs><rect width="32" height="32" fill="url(#fg)" mask="url(#fm)"/></svg></span>
         <span class="nm">Fiscalida<span class="fde">de</span></span>
       </a>

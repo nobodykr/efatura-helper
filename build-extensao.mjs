@@ -19,16 +19,16 @@ const between = (startMarker, endMarker, inclusiveEnd = true) => {
 let head = raw.slice(0, raw.indexOf('</head>') + '</head>'.length);   // <!doctype> .. </head>
 // page-specific meta swaps (only these differ from the homepage)
 head = head
-  .replace('<title>Fatura Boa | A tua situação fiscal, das fontes oficiais (grátis, sem password)</title>',
-           '<title>Extensão Fatura Boa para Chrome | e-Fatura mais fácil</title>')
+  .replace('<title>Fiscalidade | A tua situação fiscal, das fontes oficiais (grátis, sem password)</title>',
+           '<title>Extensão Fiscalidade para Chrome | e-Fatura mais fácil</title>')
   .replace(/<meta name="description" content="[^"]*">/,
-           '<meta name="description" content="A extensão Fatura Boa põe uma barra no topo do e-Fatura: analisa as tuas faturas, sugere o melhor setor de dedução e mostra os tetos do IRS. Corre no teu navegador, sem password. Grátis.">')
+           '<meta name="description" content="A extensão Fiscalidade põe uma barra no topo do e-Fatura: analisa as tuas faturas, sugere o melhor setor de dedução e mostra os tetos do IRS. Corre no teu navegador, sem password. Grátis.">')
   .replace('<link rel="canonical" href="https://faturas.diogoandrade.com/">',
            '<link rel="canonical" href="https://faturas.diogoandrade.com/extensao">')
   .replace('<meta property="og:url" content="https://faturas.diogoandrade.com/">',
            '<meta property="og:url" content="https://faturas.diogoandrade.com/extensao">')
-  .replace('<meta property="og:title" content="Fatura Boa | A tua situação fiscal, das fontes oficiais">',
-           '<meta property="og:title" content="Extensão Fatura Boa para Chrome">')
+  .replace('<meta property="og:title" content="Fiscalidade | A tua situação fiscal, das fontes oficiais">',
+           '<meta property="og:title" content="Extensão Fiscalidade para Chrome">')
   // drop the homepage-only FAQ/SoftwareApplication JSON-LD duplication is fine to keep; harmless.
   ;
 
@@ -46,7 +46,7 @@ const main = `
 <header>
   <div class="wrap">
     <h1><span class="eyebrow">Extensão para Chrome</span>O e-Fatura, num clique.</h1>
-    <p class="sub">A extensão Fatura Boa põe uma barra no topo do e-Fatura com o resumo do teu ano e um botão para analisar as faturas. Corre na tua sessão, <b>sem password</b>, e nada sai do navegador. É o mesmo motor do favorito, agora sempre à mão.</p>
+    <p class="sub">A extensão Fiscalidade põe uma barra no topo do e-Fatura com o resumo do teu ano e um botão para analisar as faturas. Corre na tua sessão, <b>sem password</b>, e nada sai do navegador. Faz o mesmo que o favorito, agora sempre à mão - e trata das faturas, rendas, dívidas, prazos, IRS e Segurança Social.</p>
     <div class="cta-row">
       <a class="cta-main" id="cta-chrome" href="${STORE_URL}" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg>Adicionar ao Chrome</a>
       <a class="cta-alt" href="/#instalar">ou usa o favorito (sem instalar)</a>
@@ -75,9 +75,9 @@ const main = `
   <div class="wrap">
     <h2>Instalar é rápido</h2>
     <div class="hgrid">
-      <div class="hstep"><span class="hn"><span class="num">01</span></span><div><h3>Adicionar ao Chrome</h3><p>Um clique na loja do Chrome. A extensão só actua no portal das Finanças - em mais lado nenhum.</p><p><a class="btn" href="${STORE_URL}" target="_blank" rel="noopener">Adicionar ao Chrome</a></p></div></div>
+      <div class="hstep"><span class="hn"><span class="num">01</span></span><div><h3>Adicionar ao Chrome</h3><p>Um clique na loja do Chrome. A extensão só actua nas páginas do Estado (Finanças e Segurança Social) - em mais lado nenhum.</p><p><a class="btn" href="${STORE_URL}" target="_blank" rel="noopener">Adicionar ao Chrome</a></p></div></div>
       <div class="hstep"><span class="hn"><span class="num">02</span></span><div><h3>Abre o e-Fatura e faz login</h3><p>Na tua sessão normal das Finanças. A extensão nunca vê nem pede a password.</p></div></div>
-      <div class="hstep"><span class="hn"><span class="num">03</span></span><div><h3>Clica em Analisar</h3><p>Na barra da Fatura Boa. Vês o resumo do ano e o plano de classificação, e aplicas tu no e-Fatura.</p></div></div>
+      <div class="hstep"><span class="hn"><span class="num">03</span></span><div><h3>Clica em Analisar</h3><p>Na barra da Fiscalidade. Vês o resumo do ano e o plano de classificação, e aplicas tu no e-Fatura.</p></div></div>
     </div>
   </div>
 </section>
@@ -86,8 +86,8 @@ const main = `
   <div class="wrap">
     <h2>Como fica</h2>
     <div style="display:grid;gap:26px;margin-top:8px">
-      <figure style="margin:0"><img src="/img/extensao/detalhe.png" width="1280" height="800" alt="Painel da Fatura Boa no e-Fatura: faturas por setor, com ligacao directa a cada fatura" loading="lazy" style="width:100%;height:auto;border:1px solid var(--rule);border-radius:10px"><figcaption class="note" style="margin-top:8px">O plano por fatura, com ligação directa a cada uma no e-Fatura.</figcaption></figure>
-      <figure style="margin:0"><img src="/img/extensao/resumo.png" width="1280" height="800" alt="Resumo do ano da Fatura Boa" loading="lazy" style="width:100%;height:auto;border:1px solid var(--rule);border-radius:10px"><figcaption class="note" style="margin-top:8px">O resumo do ano, logo ao abrir.</figcaption></figure>
+      <figure style="margin:0"><img src="/img/extensao/detalhe.png" width="1280" height="800" alt="Painel da Fiscalidade no e-Fatura: faturas por setor, com ligacao directa a cada fatura" loading="lazy" style="width:100%;height:auto;border:1px solid var(--rule);border-radius:10px"><figcaption class="note" style="margin-top:8px">O plano por fatura, com ligação directa a cada uma no e-Fatura.</figcaption></figure>
+      <figure style="margin:0"><img src="/img/extensao/resumo.png" width="1280" height="800" alt="Resumo do ano da Fiscalidade" loading="lazy" style="width:100%;height:auto;border:1px solid var(--rule);border-radius:10px"><figcaption class="note" style="margin-top:8px">O resumo do ano, logo ao abrir.</figcaption></figure>
     </div>
   </div>
 </section>
