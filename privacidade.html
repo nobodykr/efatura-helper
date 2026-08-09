@@ -102,6 +102,7 @@
     .mainnav .navlink,.navsep{display:none}
     .brand .nm{font-size:1.25rem}
   }
+  .fde{color:#1E88FF}
 </style>
     <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
     <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="faturas.diogoandrade.com" data-exclude-search="true"></script>
@@ -123,11 +124,8 @@
 </div></div>
 <div class="mast"><div class="wrap">
   <a class="brand" href="/" aria-label="Fatura Boa, início">
-    <span class="markbox"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect class="plate" width="32" height="32" rx="7"/>
-      <path fill="#fff" d="M6.75 6.5 H13.375 C18.875 6.5 22.75 10.3125 22.75 16 C22.75 21.6875 18.875 25.5 13.375 25.5 H6.75 Z M10 9.5 V22.5 H13.1875 C16.8125 22.5 19.5 20 19.5 16 C19.5 12 16.8125 9.5 13.1875 9.5 H10 Z"/>
-      <path fill="#fff" d="M18.25 25.5 L23.875 6.5 H26.375 L20.75 25.5 Z"/><path fill="#fff" d="M25.25 6.5 H27.75 L22.125 25.5 H19.625 Z"/>
-      <rect class="cut" x="20.875" y="16.375" width="4.875" height="2.25" rx="0.5"/><path class="cut" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/></svg></span>
-    <span class="nm">Fatura Boa</span>
+    <span class="markbox"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><defs><linearGradient id="fg" x1="6" y1="26" x2="28" y2="6" gradientUnits="userSpaceOnUse"><stop stop-color="#1E88FF"/><stop offset="1" stop-color="#00C6D7"/></linearGradient><mask id="fm"><rect fill="#fff" x="6" y="6.5" width="4" height="19"/><rect fill="#fff" x="6" y="6.5" width="15" height="4"/><rect fill="#fff" x="6" y="14" width="11" height="4"/><rect fill="#fff" x="22" y="6.5" width="3.5" height="13"/><rect fill="#fff" x="22" y="22.5" width="3.5" height="3"/><rect fill="#000" x="22" y="12.25" width="3.5" height="1.75" rx="0.4"/><path fill="#000" d="M8 25.5 L23 6.5 H25.5 L10.5 25.5 Z" opacity="0.18"/></mask></defs><rect width="32" height="32" fill="url(#fg)" mask="url(#fm)"/></svg></span>
+    <span class="nm">Fiscalida<span class="fde">de</span></span>
   </a>
   <nav class="mainnav" aria-label="Principal">
     <a class="navlink" href="/perfil" data-mode-link="situacao"><svg class="icon" aria-hidden="true"><use href="#i-user"/></svg><span>A minha situação</span></a>
@@ -205,13 +203,8 @@
   <div class="ft-top">
     <div class="ft-brand">
       <a class="brand" href="/" aria-label="Fatura Boa, início">
-        <span class="markbox"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-          <rect class="plate" width="32" height="32" rx="7"/>
-          <path fill="#fff" d="M6.75 6.5 H13.375 C18.875 6.5 22.75 10.3125 22.75 16 C22.75 21.6875 18.875 25.5 13.375 25.5 H6.75 Z M10 9.5 V22.5 H13.1875 C16.8125 22.5 19.5 20 19.5 16 C19.5 12 16.8125 9.5 13.1875 9.5 H10 Z"/>
-          <path fill="#fff" d="M18.25 25.5 L23.875 6.5 H26.375 L20.75 25.5 Z"/><path fill="#fff" d="M25.25 6.5 H27.75 L22.125 25.5 H19.625 Z"/>
-          <rect class="cut" x="20.875" y="16.375" width="4.875" height="2.25" rx="0.5"/><path class="cut" d="M15.75 24.5 L25.125 6.5 H27.375 L18 24.5 Z" opacity="0.18"/>
-        </svg></span>
-        <span class="nm">Fatura Boa</span>
+        <span class="markbox"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><defs><linearGradient id="fg" x1="6" y1="26" x2="28" y2="6" gradientUnits="userSpaceOnUse"><stop stop-color="#1E88FF"/><stop offset="1" stop-color="#00C6D7"/></linearGradient><mask id="fm"><rect fill="#fff" x="6" y="6.5" width="4" height="19"/><rect fill="#fff" x="6" y="6.5" width="15" height="4"/><rect fill="#fff" x="6" y="14" width="11" height="4"/><rect fill="#fff" x="22" y="6.5" width="3.5" height="13"/><rect fill="#fff" x="22" y="22.5" width="3.5" height="3"/><rect fill="#000" x="22" y="12.25" width="3.5" height="1.75" rx="0.4"/><path fill="#000" d="M8 25.5 L23 6.5 H25.5 L10.5 25.5 Z" opacity="0.18"/></mask></defs><rect width="32" height="32" fill="url(#fg)" mask="url(#fm)"/></svg></span>
+        <span class="nm">Fiscalida<span class="fde">de</span></span>
       </a>
       <p class="ft-pitch">A tua situação fiscal, das fontes oficiais das Finanças e da Segurança Social. Grátis, sem contas, no teu navegador.</p>
     </div>
@@ -236,7 +229,7 @@
     </div>
   </div>
   <div class="ftbottom">
-    <p class="note" style="margin-bottom:6px">Fatura Boa é uma ferramenta <b>Fiscalida<span style="color:var(--pri)">.de</span></b>.</p>
+    <p class="note" style="margin-bottom:6px">Fatura Boa é uma ferramenta <b>Fiscalida<span style="color:var(--pri)">de</span></b>.</p>
     <p>Ferramenta comunitária e independente. <b>Não</b> afiliada à Autoridade Tributária. Sem garantias, confirma sempre nas Finanças.</p>
     <p class="note"><a href="https://polyformproject.org/licenses/noncommercial/1.0.0" target="_blank" rel="noopener">PolyForm Noncommercial 1.0.0</a> - livre para uso pessoal, proibido monetizar. Feito por <a href="https://diogoandrade.com" target="_blank" rel="noopener">Diogo Andrade</a>.</p>
   </div>

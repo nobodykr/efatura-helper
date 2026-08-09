@@ -11,7 +11,7 @@
 import { chromium } from '/mnt/data/apps/fiscal-monitor/node_modules/playwright-core/index.mjs';
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const EXE = '/home/diogo/.cache/ms-playwright/chromium-1228/chrome-linux64/chrome';
+const EXE = '/home/diogo/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome';
 const here = (f) => new URL('./' + f, import.meta.url).pathname;
 
 // strip the leading comment so the SVG starts with <svg
