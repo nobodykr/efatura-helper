@@ -6,9 +6,9 @@
 <link rel="icon" href="/favicon.ico" sizes="48x48" type="image/x-icon">
 <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
 <title>Verificar a ferramenta | Fiscalidade</title>
-<meta name="description" content="Confirma que o código do Fiscalidade que corre no teu navegador é exatamente o código publicado e auditável. Provably fair, para software.">
+<meta name="description" content="Confirma que o código da Fiscalidade que corre no teu navegador é exatamente o código publicado e auditável. Provably fair, para software.">
 <meta name="robots" content="index,follow">
-<link rel="canonical" href="https://faturas.diogoandrade.com/verificar">
+<link rel="canonical" href="https://fiscalida.de/verificar">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{--pri:#034ad8;--pri-dark:#021c51;--ink:#2B363C;--ink2:#4a5a63;--mute:#6b7780;--bg:#fff;--bg2:#f4f6f9;--bg3:#E1E4EA;--rule:#d5dae1;--red:#c8102e;--green:#1E5A3A;--amber:#8a6100;--focus:#ff7a00;--r:6px;}
@@ -65,7 +65,7 @@
 </style>
 <meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem faturas.diogoandrade.com; ref fb-lic-734da84007">
     <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
-    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="faturas.diogoandrade.com" data-exclude-search="true"></script>
+    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="fiscalida.de" data-exclude-search="true"></script>
 </head>
 <body>
 <!-- Fiscalidade (c) 2026 Diogo Andrade. Licenca PolyForm Noncommercial 1.0.0
@@ -77,7 +77,7 @@
 <div class="mast"><div class="wrap"><div class="nm">Fiscalidade</div><a href="/">Início</a></div></div>
 <header><div class="wrap">
   <h1>Verificar a ferramenta</h1>
-  <p>O Fiscalidade corre no teu próprio navegador, na tua sessão. Aqui podes confirmar que o código
+  <p>A Fiscalidade corre no teu próprio navegador, na tua sessão. Aqui podes confirmar que o código
      que corre é exatamente o código publicado e auditável. Como um casino provably fair, mas para
      software: não precisas de confiar, podes verificar.</p>
 </div></header>
@@ -85,9 +85,11 @@
 
   <div class="card">
     <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">1. Verificação automática</div>
-    <p class="kv">Isto vai buscar o ficheiro que serve a ferramenta (<code>/tool.js</code>), calcula
-       a sua impressão digital (SHA-384) no teu navegador, e compara com a que está publicada em
-       <code>/versions.json</code>. Se baterem certo, o que corre é o que foi publicado.</p>
+    <p class="kv"><b>Em simples:</b> confirma que o código que corre é mesmo o que está publicado -
+       ninguém o pode trocar sem se notar. Para quem quiser o detalhe técnico: isto vai buscar o
+       ficheiro que serve a ferramenta (<code>/tool.js</code>), calcula a sua impressão digital
+       (SHA-384) no teu navegador, e compara com a que está publicada em <code>/versions.json</code>.
+       Se baterem certo, o que corre é o que foi publicado.</p>
     <button class="btn" id="run">Verificar agora</button>
     <div id="result"></div>
   </div>

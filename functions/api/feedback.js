@@ -63,7 +63,7 @@ export async function onRequestPost({ request, env }) {
   if (!rl.ok) return bad("Demasiados pedidos. Tenta mais tarde.", 429);
 
   let body;
-  try { body = await request.json(); } catch { return bad("Pedido invalido."); }
+  try { body = await request.json(); } catch { return bad("Pedido inválido."); }
 
   // 2. honeypot - silently accept so a bot cannot tell it failed
   if (body.website) return new Response(JSON.stringify({ ok: true }), {
@@ -92,7 +92,7 @@ export async function onRequestPost({ request, env }) {
   const email   = sanitise(raw.email);
   const context = sanitise(raw.context);
   if (!message) return bad("Escreve a mensagem.");
-  if (email && !/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(email)) return bad("Email invalido.");
+  if (email && !/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(email)) return bad("Email inválido.");
 
   // 1. Turnstile, server-side (reuses `ip` captured for the rate-limit gate above)
   const form = new FormData();
@@ -109,7 +109,7 @@ export async function onRequestPost({ request, env }) {
     method: "POST",
     headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
     body: JSON.stringify({
-      from: "Fatura Boa <faturas@send.diogoandrade.com>",
+      from: "Fiscalidade <faturas@send.diogoandrade.com>",
       to: [env.FEEDBACK_TO],
       reply_to: email || undefined,
       subject: `Feedback Fatura Boa${context ? ": " + context.slice(0, 60) : ""}`,

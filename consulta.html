@@ -7,31 +7,31 @@
 <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png">
 <title>Consulta de NIF | Fiscalidade</title>
-<meta name="description" content="Consulte um NIF portugues: nome oficial, CAE principal e secundarios, morada e em que sector de deducao do IRS as faturas desse comerciante podem entrar.">
-<link rel="canonical" href="https://faturas.diogoandrade.com/consulta">
+<meta name="description" content="Consulte um NIF português: nome oficial, CAE principal e secundários, morada e em que setor de dedução do IRS as faturas desse comerciante podem entrar.">
+<link rel="canonical" href="https://fiscalida.de/consulta">
 <meta name="robots" content="index,follow,max-snippet:-1">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_PT">
 <meta property="og:site_name" content="Fiscalidade">
-<meta property="og:url" content="https://faturas.diogoandrade.com/consulta">
+<meta property="og:url" content="https://fiscalida.de/consulta">
 <meta property="og:title" content="Consulta de NIF | CAE e atividade de uma empresa">
-<meta property="og:description" content="Nome oficial, CAE principal e secundarios, morada e o setor de deducao do IRS de qualquer empresa portuguesa. Dados do SICAE e do VIES.">
-<meta property="og:image" content="https://faturas.diogoandrade.com/assets/og.png">
+<meta property="og:description" content="Nome oficial, CAE principal e secundários, morada e o setor de dedução do IRS de qualquer empresa portuguesa. Dados do SICAE e do VIES.">
+<meta property="og:image" content="https://fiscalida.de/assets/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Consulta de NIF | CAE e atividade de uma empresa">
-<meta name="twitter:description" content="Nome oficial, CAE principal e secundarios, morada e o setor de deducao do IRS de qualquer empresa portuguesa.">
-<meta name="twitter:image" content="https://faturas.diogoandrade.com/assets/og.png">
+<meta name="twitter:description" content="Nome oficial, CAE principal e secundários, morada e o setor de dedução do IRS de qualquer empresa portuguesa.">
+<meta name="twitter:image" content="https://fiscalida.de/assets/og.png">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"WebApplication",
  "name":"Consulta de NIF",
  "applicationCategory":"BusinessApplication",
  "operatingSystem":"Qualquer navegador",
- "url":"https://faturas.diogoandrade.com/consulta",
+ "url":"https://fiscalida.de/consulta",
  "inLanguage":"pt-PT",
- "description":"Consulta o nome oficial, as atividades registadas (CAE principal e secundarios) e a morada de uma empresa portuguesa a partir do NIF, e indica em que setores de deducao do IRS as faturas desse comerciante podem entrar.",
- "isPartOf":{"@type":"WebSite","name":"Fiscalidade","url":"https://faturas.diogoandrade.com/"},
+ "description":"Consulta o nome oficial, as atividades registadas (CAE principal e secundários) e a morada de uma empresa portuguesa a partir do NIF, e indica em que setores de dedução do IRS as faturas desse comerciante podem entrar.",
+ "isPartOf":{"@type":"WebSite","name":"Fiscalidade","url":"https://fiscalida.de/"},
  "offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},
  "isAccessibleForFree":true}
 </script>
@@ -129,7 +129,7 @@
   .fde{background:linear-gradient(120deg,#1E88FF,#00C6D7);-webkit-background-clip:text;background-clip:text;color:transparent}
 </style>
     <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
-    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="faturas.diogoandrade.com" data-exclude-search="true" data-exclude-hash="true"></script>
+    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="fiscalida.de" data-exclude-search="true" data-exclude-hash="true"></script>
 </head>
 <body>
 
@@ -147,8 +147,8 @@
 <header>
   <div class="wrap">
     <h1>Consulta de NIF</h1>
-    <p>Nome oficial, actividades registadas (CAE principal <strong>e secundarios</strong>) e em que
-       sector de deducao do IRS as faturas desse comerciante podem entrar.
+    <p>Nome oficial, atividades registadas (CAE principal <strong>e secundários</strong>) e em que
+       setor de dedução do IRS as faturas desse comerciante podem entrar.
        Parte do <a href="/">Fiscalidade</a>.</p>
   </div>
 </header>
@@ -156,11 +156,11 @@
 <main class="wrap">
 
   <form class="form" id="f" autocomplete="off">
-    <input id="q" name="q" inputmode="search" placeholder="NIF (9 digitos) ou nome da empresa"
+    <input id="q" name="q" inputmode="search" placeholder="NIF (9 dígitos) ou nome da empresa"
            aria-label="NIF ou nome da empresa">
     <button type="submit"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Consultar</button>
   </form>
-  <p class="hint">Exemplos: <code>500960046</code> &middot; <code>farmacia</code></p>
+  <p class="hint">Exemplos: <code>500960046</code> &middot; <code>farmácia</code></p>
 
   <div id="out"></div>
 
@@ -168,42 +168,42 @@
        this a crawler saw about 160 words and had nothing to rank. It also answers the question
        people actually arrive with ("what is a CAE?") instead of assuming they know. -->
   <section class="card" id="sobre">
-    <h2 style="margin:0 0 10px;font-size:1.1rem">O que e um CAE, e porque e que ha mais do que um</h2>
+    <h2 style="margin:0 0 10px;font-size:1.1rem">O que é um CAE, e porque é que há mais do que um</h2>
     <p style="margin:0 0 12px;font-size:.95rem;color:var(--ink2)">
-      O <strong>CAE</strong> (Classificacao Portuguesa de Actividades Economicas) e o codigo com que
-      cada empresa esta registada no Estado. Diz o que a empresa faz: 47730 e farmacia, 56101 e
-      restaurante, 95310 e reparacao de automoveis.
+      O <strong>CAE</strong> (Classificação Portuguesa de Atividades Económicas) é o código com que
+      cada empresa está registada no Estado. Diz o que a empresa faz: 47730 é farmácia, 56101 é
+      restaurante, 95310 é reparação de automóveis.
     </p>
     <p style="margin:0 0 12px;font-size:.95rem;color:var(--ink2)">
-      Quase nenhuma empresa tem so um. Ha um <strong>CAE principal</strong> e pode haver varios
-      <strong>secundarios</strong>, e sao os secundarios que costumam surpreender: um hipermercado
-      com CAE de farmacia, uma papelaria com CAE de livraria. A maioria dos servicos de consulta de
-      NIF mostra apenas o principal, e e por isso que esta pagina mostra <strong>todos</strong> - o principal e cada secundario.
+      Quase nenhuma empresa tem só um. Há um <strong>CAE principal</strong> e pode haver vários
+      <strong>secundários</strong>, e são os secundários que costumam surpreender: um hipermercado
+      com CAE de farmácia, uma papelaria com CAE de livraria. A maioria dos serviços de consulta de
+      NIF mostra apenas o principal, e é por isso que esta página mostra <strong>todos</strong> - o principal e cada secundário.
     </p>
     <p style="margin:0;font-size:.95rem;color:var(--ink2)">
       Isto importa no IRS: o setor em que uma fatura pode entrar depende das atividades registadas
-      do comerciante. Um comerciante com CAE de saude permite classificar a fatura em Saude &mdash;
-      <em>se a compra foi mesmo dessa natureza</em>. Ser aceite pelo e-Fatura nao quer dizer que
-      esteja certo, e quem declara e sempre o contribuinte. As regras aplicadas, com a base legal de
-      cada uma, estao em <a href="/deducoes">Deducoes do IRS</a>.
+      do comerciante. Um comerciante com CAE de saúde permite classificar a fatura em Saúde &mdash;
+      <em>se a compra foi mesmo dessa natureza</em>. Ser aceite pelo e-Fatura não quer dizer que
+      esteja certo, e quem declara é sempre o contribuinte. As regras aplicadas, com a base legal de
+      cada uma, estão em <a href="/deducoes">Deduções do IRS</a>.
     </p>
   </section>
 
   <div class="note">
-    <strong>O que esta consulta faz e nao faz.</strong>
-    Os dados vem do <strong>SICAE</strong> (registo do Estado: nome e CAE) e do
-    <strong>VIES</strong> da Comissao Europeia (morada e validade do NIF de IVA). Sao registos
-    publicos de empresas. Particulares nao aparecem: nenhuma das duas fontes os devolve.
+    <strong>O que esta consulta faz e não faz.</strong>
+    Os dados vêm do <strong>SICAE</strong> (registo do Estado: nome e CAE) e do
+    <strong>VIES</strong> da Comissão Europeia (morada e validade do NIF de IVA). São registos
+    públicos de empresas. Particulares não aparecem: nenhuma das duas fontes os devolve.
     <br><br>
     <strong>Ao contrário da ferramenta (que corre no teu navegador), esta página faz um pedido por consulta</strong>, por isso
     o servidor vê o NIF que pesquisaste. A ferramenta não funciona assim, precisamente para que isso
     nunca aconteça com as tuas faturas.
     <br><br>
-    Cada consulta responde a partir do que ja foi recolhido; se o NIF ainda nao for conhecido, e
-    procurado no SICAE nesse momento. E uma consulta de cada vez, como se fosse ao registo
-    directamente.
+    Cada consulta responde a partir do que já foi recolhido; se o NIF ainda não for conhecido, é
+    procurado no SICAE nesse momento. É uma consulta de cada vez, como se fosse ao registo
+    diretamente.
     <br><br>
-    O sector sugerido nao e aconselhamento fiscal e a AT tem a sua propria validacao. As regras
+    O setor sugerido não é aconselhamento fiscal e a AT tem a sua própria validação. As regras
     aplicadas, com a base legal de cada uma, estao em
     <a href="https://github.com/nobodykr/efatura-helper/blob/main/DEDUCOES.md">DEDUCOES.md</a> e
     <a href="https://cae-db.diogoandrade.com/cae-map.json">cae-map.json</a>.
@@ -214,7 +214,7 @@
 <footer class="wrap">
   <a href="/">Fiscalidade</a> &middot;
   <a href="https://github.com/nobodykr/efatura-helper">Codigo</a> &middot;
-  Dados: SICAE (Estado) + VIES (Comissao Europeia)
+  Dados: SICAE (Estado) + VIES (Comissão Europeia)
  &middot; uma ferramenta <b>Fiscalida<span style="color:var(--pri)">de</span></b>
 </footer>
 
@@ -238,7 +238,7 @@
     if (d.sem_registo_activo){
       h += '<div class="note" style="margin:0 0 14px">'
          + '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> '
-         + esc(d.nota || "Sem actividade registada no SICAE.") + '</div>';
+         + esc(d.nota || "Sem atividade registada no SICAE.") + '</div>';
     } else {
       // sectors: first is the suggestion, the rest are the cascade as ceilings fill
       var pills = (d.sectors||[]).map(function(s,i){
@@ -249,7 +249,7 @@
            + esc((d.sector_notes||{})[(d.sectors||[])[0]]||"") + '</div>');
 
       var acts = (d.atividades&&d.atividades.length) ? d.atividades : (d.caes||[]).map(function(c){return {cae:c};});
-      h += row('<i class="fa-solid fa-briefcase" aria-hidden="true"></i> Actividades', acts.map(function(a){
+      h += row('<i class="fa-solid fa-briefcase" aria-hidden="true"></i> Atividades', acts.map(function(a){
         return '<div class="cae"><span class="c mono">'+esc(a.cae)+'</span>'
              + (a.desc ? ' <span class="d">'+esc(a.desc)+'</span>' : '')
              + (a.sector ? ' <span class="s">&rarr; '+esc(a.sector)+'</span>' : '')
@@ -259,10 +259,10 @@
     var v = d.vies;
     if (v && !v.unavailable){
       h += row('<i class="fa-solid fa-location-dot" aria-hidden="true"></i> Morada',
-               v.morada ? esc(v.morada) : '<span class="muted">nao disponivel no VIES</span>');
+               v.morada ? esc(v.morada) : '<span class="muted">não disponível no VIES</span>');
       h += row('<i class="fa-solid fa-receipt" aria-hidden="true"></i> NIF de IVA', v.valid
-            ? '<span class="pill ok"><i class="fa-solid fa-check" aria-hidden="true"></i> valido</span>'
-            : '<span class="pill no"><i class="fa-solid fa-xmark" aria-hidden="true"></i> nao valido</span> <span class="muted">nao registado para IVA, normalmente inactivo</span>');
+            ? '<span class="pill ok"><i class="fa-solid fa-check" aria-hidden="true"></i> válido</span>'
+            : '<span class="pill no"><i class="fa-solid fa-xmark" aria-hidden="true"></i> não válido</span> <span class="muted">não registado para IVA, normalmente inativo</span>');
     } else if (v) {
       h += row('<i class="fa-solid fa-location-dot" aria-hidden="true"></i> Morada',
                '<span class="muted">VIES indisponivel neste momento</span>');
@@ -315,16 +315,16 @@
           var e = (x.j || {}).error, n = '<span class="mono">' + esc(nif) + '</span>';
           var msg;
           if (e === "no registered activity") {
-            msg = '<strong>' + n + '</strong> existe mas nao tem actividade aberta no SICAE.'
-                + '<br>Aparecem aqui empresas e entidades com actividade registada. Particulares,'
-                + ' entidades ja cessadas e NIFs estrangeiros nao constam deste registo.';
+            msg = '<strong>' + n + '</strong> existe mas não tem atividade aberta no SICAE.'
+                + '<br>Aparecem aqui empresas e entidades com atividade registada. Particulares,'
+                + ' entidades já cessadas e NIFs estrangeiros não constam deste registo.';
           } else if (e === "bad nif") {
-            msg = n + ' nao e um NIF valido. Um NIF portugues tem 9 digitos.';
+            msg = n + ' não é um NIF válido. Um NIF português tem 9 dígitos.';
           } else if (e === "rate") {
             msg = 'Demasiadas consultas seguidas. Espere um momento e tente de novo.';
           } else {
-            msg = 'Nao foi encontrado nada para <strong>' + n + '</strong>.'
-                + '<br>Confirme o numero, ou pesquise pelo nome do comerciante.';
+            msg = 'Não foi encontrado nada para <strong>' + n + '</strong>.'
+                + '<br>Confirme o número, ou pesquise pelo nome do comerciante.';
           }
           out.innerHTML = '<div class="err">' + msg + '</div>';
           return;

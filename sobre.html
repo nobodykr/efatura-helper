@@ -7,8 +7,8 @@
 <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png">
 <title>Sobre | Fiscalidade - a tua situação fiscal, das fontes oficiais</title>
-<meta name="description" content="O A Fiscalidade é uma ferramenta gratuita e verificável que lê o teu próprio registo fiscal, na tua sessão, sem password. A missão, o modelo de segurança completo, e o que a torna diferente.">
-<link rel="canonical" href="https://faturas.diogoandrade.com/sobre">
+<meta name="description" content="A Fiscalidade é uma ferramenta gratuita e verificável que lê o teu próprio registo fiscal, na tua sessão, sem password. A missão, o modelo de segurança completo, e o que a torna diferente.">
+<link rel="canonical" href="https://fiscalida.de/sobre">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{--pri:#034ad8;--pri-dark:#021c51;--ink:#2B363C;--ink2:#4a5a63;--mute:#6b7780;--bg:#fff;--bg2:#f4f6f9;--rule:#d5dae1;--green:#1E5A3A;--amber:#8a6100;--focus:#ff7a00;--r:6px;}
@@ -145,7 +145,7 @@
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem faturas.diogoandrade.com; ref fb-lic-2d5ffcb188">
     <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
-    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="faturas.diogoandrade.com" data-exclude-search="true"></script>
+    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="fiscalida.de" data-exclude-search="true"></script>
     <script defer src="/metrics.js"></script>
 </head>
 <body>
@@ -194,12 +194,12 @@
   <a href="/termos">Termos</a>
 </div></div>
 <header><div class="wrap">
-  <h1>Sobre o Fiscalidade</h1>
+  <h1>Sobre a Fiscalidade</h1>
   <p>Uma ferramenta gratuita e verificável que lê o teu próprio registo fiscal, na tua sessão, e te ajuda a perceber a tua situação. Sem password, sem contas, nada sai do teu navegador.</p>
 </div></header>
 <main class="wrap">
   <h2>A missão</h2>
-  <p>A informação fiscal em Portugal é pública mas difícil de usar. Está espalhada por vários portais, e a maioria das pessoas trata dela a adivinhar, ou paga a alguém para o fazer às escuras. O Fiscalidade parte de uma ideia simples: <b>tu já tens acesso aos teus dados</b> nas Finanças e na Segurança Social - o que falta é uma ferramenta que os leia por ti, com clareza, e te diga o que fazer. Gratuita, para toda a gente, e feita de forma a que <b>não precises de confiar</b>: podes verificar.</p>
+  <p>A informação fiscal em Portugal é pública mas difícil de usar. Está espalhada por vários portais, e a maioria das pessoas trata dela a adivinhar, ou paga a alguém para o fazer às escuras. A Fiscalidade parte de uma ideia simples: <b>tu já tens acesso aos teus dados</b> nas Finanças e na Segurança Social - o que falta é uma ferramenta que os leia por ti, com clareza, e te diga o que fazer. Gratuita, para toda a gente, e feita de forma a que <b>não precises de confiar</b>: podes verificar.</p>
 
   <h2>Porque existe</h2>
   <p>Sempre tive problemas com isto. Todos os anos a mesma coisa: dezenas de faturas pendentes à
@@ -261,6 +261,7 @@
   </ul>
   <p class="warn"><b>Atenção:</b> nunca introduzas o teu NIF e password das Finanças numa página cujo endereço não termine em <code>.gov.pt</code>. Esta ferramenta nunca to pede, e é essa a diferença.</p>
 
+  <p><b>Em resumo:</b> as tuas faturas nunca saem do teu navegador. A ferramenta só descarrega um mapa público de setores (igual para toda a gente) e lê as tuas faturas na tua própria sessão. Para quem quiser o detalhe, aqui está cada pedido de rede, por ordem:</p>
   <h3>O que acontece quando clicas <span class="note">(todos os pedidos de rede, por ordem)</span></h3>
   <p class="note">Para quem quiser confirmar antes de correr: isto é a lista completa. Abre o
     separador Rede do navegador e compara.</p>
@@ -284,9 +285,9 @@
       sugestões</b> (opcional, desligada por omissão); ou o botão "Enviar anónimo" (quatro números).
       Se não ativares nada, nada sai.</li>
   </ol>
-  <p class="warn">Nesta versão <b>não existe nenhum pedido de escrita para a AT</b>. O código que
-    submeteria está no repositório, desligado, e há um teste automático que falha se alguma vez passar
-    a submeter.</p>
+  <p class="warn">Por opção, <b>não existe nenhum pedido de escrita para a AT</b>: a decisão e o clique
+    final são sempre teus. O código que submeteria está no repositório, desligado, e há um teste
+    automático que falha se alguma vez passar a submeter.</p>
   <p class="note"><b>E a página inicial, em que estavas antes?</b> A lista acima é o que a ferramenta
     faz dentro do e-Fatura. A página inicial, por si só, carrega duas coisas de fora: os tipos de
     letra do <b>Google Fonts</b> e o <b>Cloudflare Turnstile</b> (a verificação anti-spam do formulário
@@ -332,7 +333,7 @@
     <div class="field">
       <label for="fb-mail">O teu email, se quiseres resposta <span class="note">(opcional)</span></label>
       <input id="fb-mail" name="email" type="email" maxlength="200" autocomplete="email">
-      <p class="note">Uso-o so para te responder. Nada mais. Nao fica guardado em nenhuma base de dados: vai dentro do email que me e enviado, e fica na minha caixa de correio ate eu o apagar.</p>
+      <p class="note">Uso-o só para te responder. Nada mais. Não fica guardado em nenhuma base de dados: vai dentro do email que me é enviado, e fica na minha caixa de correio até eu o apagar.</p>
     </div>
     <div class="hp" aria-hidden="true">
       <label for="fb-web">Nao preencher</label>
