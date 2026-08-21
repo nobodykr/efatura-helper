@@ -2,6 +2,11 @@
 
 This is a static site: `index.html` + `tool.js`. Host it anywhere that serves files.
 
+**Runtime dependency:** consulta/contrato/perfil/index counter and `tool.js` call the cae-db public
+API at `https://cae-db.diogoandrade.com` (served by the `cae-db-workers` container on the homeserver).
+If clicks stop fetching, check that host first - see `/mnt/data/apps/cae-db/CONSUMERS.md`
+(`GET /health` there reports fd budget). 2026-08-21 outage was exactly this.
+
 ## Before you deploy tool.js
 
 `tool.js` must be **pure ASCII**. The e-Fatura page is served as Latin-1, so a raw accented
