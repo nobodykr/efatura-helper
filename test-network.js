@@ -1,7 +1,8 @@
 // The page publishes an exact list of the network requests the tool makes, so someone can audit
 // it before running it. A claim like that rots the moment anyone adds a fetch. This pins it:
-// clicking the bookmarklet must make ZERO requests until the user accepts the consent gate, then
-// EXACTLY ONE off-site request, a GET of the public CAE map, and never a POST anywhere.
+// injecting the reviewed tool must make ZERO requests until the user accepts the consent gate.
+// Afterwards every off-site request must be one of the documented public Fiscalidade data reads,
+// and no POST is allowed by default.
 //   node test-network.js tool.js
 const { chromium } = require("playwright-core");
 const { readFileSync } = require("fs");
@@ -19,6 +20,10 @@ const rows = [{ estadoBeneficio: "P", nifEmitente: "500000009", nomeEmitente: "P
       return r.fulfill({ contentType: "application/json", body: JSON.stringify({ linhas: rows }) });
     if (u.startsWith("https://faturas.portaldasfinancas.gov.pt/"))
       return r.fulfill({ contentType: "text/html", body: "<!doctype html><body></body>" });
+    if (/^https:\/\/fiscalida\.de\/api\/v1\/map\/buckets\/\d{3}/.test(u))
+      return r.fulfill({ contentType: "application/json", body: JSON.stringify({ "500000009": ["C01"] }) });
+    if (u === "https://fiscalida.de/offers.json")
+      return r.fulfill({ contentType: "application/json", body: "[]" });
     return r.continue();
   });
   await p.goto("https://faturas.portaldasfinancas.gov.pt/x");
@@ -50,9 +55,9 @@ const rows = [{ estadoBeneficio: "P", nifEmitente: "500000009", nomeEmitente: "P
   // (offers.json). It is inert data - the pinned core validates every URL is https and escapes
   // every string - and it carries nothing of the user's. It is allowed HERE and nowhere else,
   // and step 1b of the published list on index.html has to keep saying so.
-  const ALLOWED_NON_MAP = /^GET https:\/\/faturas\.diogoandrade\.com\/offers\.json$/;
-  const mapSlices = offsite.filter(r => /\/bucket\/\d{3}\b/.test(r));
-  const others = offsite.filter(r => !/\/bucket\/\d{3}\b/.test(r));
+  const ALLOWED_NON_MAP = /^GET https:\/\/fiscalida\.de\/offers\.json$/;
+  const mapSlices = offsite.filter(r => /\/api\/v1\/map\/buckets\/\d{3}\b/.test(r));
+  const others = offsite.filter(r => !/\/api\/v1\/map\/buckets\/\d{3}\b/.test(r));
   const okCount = mapSlices.length >= 1;
   const okGet = offsite.every(r => r.startsWith("GET "));
   const okMap = others.every(r => ALLOWED_NON_MAP.test(r));

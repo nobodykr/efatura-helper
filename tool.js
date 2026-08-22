@@ -1,14 +1,14 @@
 /* Fatura Boa (c) 2026 Diogo Andrade. Licenca PolyForm Noncommercial 1.0.0
  * (https://polyformproject.org/licenses/noncommercial/1.0.0). Uso nao-comercial apenas; copias
- * carregam este aviso. Origem oficial: faturas.diogoandrade.com | ref fb-lic-4761358cab */
+ * carregam este aviso. Origem oficial: fiscalida.de | ref fb-lic-4761358cab */
 /* Fatura Boa - runs 100% in the user's own browser, on their own e-Fatura session.
  * It never sees a password: it reuses the login already in the browser (same-origin cookies).
  *
  * Network calls (audit them yourself - there are exactly three kinds):
  *   - same-origin to faturas.portaldasfinancas.gov.pt  (read your faturas, submit classifications)
- *   - static BRAND ASSETS from faturas.diogoandrade.com (the IBM Plex font files and the
+ *   - static BRAND ASSETS from fiscalida.de (the IBM Plex font files and the
  *     offers.json sponsor feed - plain downloads, the same files for everybody, send nothing)
- *   - ONE read-only GET of the PUBLIC map at cae-db.diogoandrade.com/sectors.json
+ *   - ONE read-only GET of the PUBLIC map at fiscalida.de/api/v1/sectors.json
  *     (public business-registry data: NIF -> ranked deductible sectors, built from SICAE, the
  *     state's own CAE registry. It is a plain download and SENDS NOTHING of yours - not your NIF,
  *     not your faturas, nothing. The same file is served to everybody.)
@@ -44,17 +44,33 @@
     return;
   }
   if (document.getElementById("efh-panel")) { document.getElementById("efh-panel").remove(); }
-  var CAEMAP_URL = "https://cae-db.diogoandrade.com/sectors.json";
+  var RUNTIME = (window.__FISCALIDADE_CONFIG__ && typeof window.__FISCALIDADE_CONFIG__ === "object")
+    ? window.__FISCALIDADE_CONFIG__ : {};
+  var PUBLIC_ORIGIN = RUNTIME.publicOrigin || "https://fiscalida.de";
+  var API_BASE = RUNTIME.apiBase || (PUBLIC_ORIGIN + "/api/v1");
+  var EXTENSION_MODE = RUNTIME.extension === true;
+  var _extensionSettings = Object.assign({}, RUNTIME.extensionSettings || {});
+  function saveExtensionSettings(patch) {
+    if (!EXTENSION_MODE) return;
+    _extensionSettings = Object.assign({}, _extensionSettings, patch || {});
+    try {
+      if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage)
+        chrome.runtime.sendMessage({ type: "fb-settings-save", settings: patch || {} });
+    } catch (e) {}
+  }
+  var MAP_BUCKET_URL = API_BASE + "/map/buckets/";
+  var MERCHANT_CONTRIBUTION_URL = API_BASE + "/contributions/merchant";
+  var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.08.11";
+  var FB_VERSION = "2026.08.22";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
    * and renders it, validating every URL is https and escaping every string. The data can only pick
    * from core-defined styles; it can never inject markup or execute. A built-in DEFAULT (the current
    * offers) is in the audited code, so a pinned core still works and is honest if the feed is down. */
-  var OFFERS_URL = "https://faturas.diogoandrade.com/offers.json";
+  var OFFERS_URL = RUNTIME.offersUrl || (PUBLIC_ORIGIN + "/offers.json");
   var DEFAULT_OFFERS = { message: "Isto e gratuito e continua a ser. Se te poupou trabalho e quiseres retribuir, abrir conta pelo link acima da-me uma pequena comissao, e a ti nao te custa nada.",
     offers: [ { style: "revolut", url: "https://revolut.com/referral/?referral-code=nobodykr!JUL2-26-AR-L1&geo-redirect", label: "Abrir conta Revolut" },
               { style: "coffee", url: "https://buymeacoffee.com/diogoandrade", label: "Buy me a coffee" } ] };
@@ -91,7 +107,7 @@
   }
 
   /* DRAFT MODE. While true the panel never submits anything to the AT: no apply button is
-   * rendered and applySelected() is unreachable. The page at faturas.diogoandrade.com states
+   * rendered and applySelected() is unreachable. The page at fiscalida.de states
    * this in several places ("Nada e submetido, de todo"), so FLIPPING THIS TO false IS NOT A
    * CODE-ONLY CHANGE - those claims become false and must be rewritten first. See the plan file
    * for the exact passages (index.html 202-205, 246-249, 257, 364-370, 377-381, meta 7 and 16,
@@ -126,15 +142,15 @@
    * base "iva" = you deduct a share of the VAT; base "total" = a share of the invoice value.
    * The C01..C04 + C09..C14 sectors do NOT have a cap each: they all share ONE 250 EUR pot
    * (art. 78.o-F), so once that pot is full every one of them is full at the same time.
-   * Sources are listed on https://faturas.diogoandrade.com */
+   * Sources are listed on https://fiscalida.de */
   var POT = "iva78F";
   var CEIL = {
     C05: { rate: 0.15, base: "total", cap: 1000 },
     C06: { rate: 0.30, base: "total", cap: 800 },
-    // Art. 78.o-E n.1 a) EM VIGOR (pagina dedicada DRE 2014-70048167-1124882175, alterada
-    // 2026-06-03, lida 2026-07-28): rendas 15% ate 800 EUR. O n.4 ESCALONA para cima (ate 1.100 p/
-    // coletavel <= 1.o escalao, formula ate 30.000) - nao modelado; 800 e o piso, logo conservador.
-    // Historico: 900 (original) nao era o valor de nenhum ano; 502 (fix de ontem) era o texto
+    // Art. 78.o-E: the permanent n.10 ceiling is 1,000 EUR, but DL 97/2026 art. 15 applies
+    // 900 EUR to income year 2026. N.4 can raise the result to 1,100 for lower incomes; that
+    // income-dependent increase is not modelled, so this remains the conservative base ceiling.
+    // Historico: 502 (fix anterior) era o texto
     // DESATUALIZADO do render do diploma-pai - o valor por ano vive em RENDAS_CAP_ANO abaixo.
     C07: { rate: 0.15, base: "total", cap: 900 },
     C08: { rate: 0.25, base: "total", cap: 403.75 },
@@ -155,7 +171,7 @@
   // origin, so the browser blocks us from reading it). So we ask once and keep it in localStorage
   // - it never leaves your browser, same as everything else here.
   var PKEY = "efh-profile";
-  var HH_URL = "https://cae-db.diogoandrade.com/household/";
+  var HH_URL = API_BASE + "/households/";
 
   /* Household sharing - OPT-IN, off unless you press Ligar.
    *
@@ -172,11 +188,13 @@
    * member id. No faturas, no merchants, no dates, no amounts, no NIF, no email. */
   function memberId() {
     var k = "efh-member", v = null;
-    try { v = localStorage.getItem(k); } catch (e) {}
+    if (EXTENSION_MODE) v = _extensionSettings.member || null;
+    else try { v = localStorage.getItem(k); } catch (e) {}
     if (!v) {
       var a = new Uint8Array(12); crypto.getRandomValues(a);
       v = Array.prototype.map.call(a, function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
-      try { localStorage.setItem(k, v); } catch (e) {}
+      if (EXTENSION_MODE) saveExtensionSettings({ member: v });
+      else try { localStorage.setItem(k, v); } catch (e) {}
     }
     return v;
   }
@@ -203,39 +221,14 @@
   }
   var ROOM_RE = /^[0-9a-f]{32,128}$/i;   // must match household.py ROOM_RE
 
-  /* Anonymous per-user id for the recovered-euro counter (dedup + distinct-user count). Hash of the
-   * user's OWN NIF - the NIF never leaves the browser, only the hash. UNLIKE the room key above, this
-   * is NOT a secret and grants NOTHING: the server peppers it (HMAC) before storing and /counter/total
-   * returns only aggregates, so "guessable NIF -> recompute hash" buys an attacker nothing (they can
-   * at most re-post that user's own recoverable figure). And deriving per-person is exactly what we
-   * want here (one id per taxpayer), the very thing that was wrong for a SHARED room key. */
-  var FB_UID_SALT = "fatura-boa-uid-v2";
-  function sha256hex(s) {
-    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)).then(function (buf) {
-      return Array.prototype.map.call(new Uint8Array(buf), function (x) { return ("0" + x.toString(16)).slice(-2); }).join("");
-    });
-  }
-  /* PBKDF2 e nao um sha256 simples (v2, 2026-07-28): os NIFs pessoais tem ~3e7 valores validos
-   * (prefixo 1/2/3 + digito de controlo), por isso um hash rapido com salt publico reverte-se com
-   * uma tabela barata. 600k iteracoes tornam essa tabela cara (horas de GPU, nao segundos) - e uma
-   * DESACELERACAO honesta, nao uma impossibilidade; a protecao real em transito e a cifra RSA-OAEP
-   * aplicada no envio (ver sendCounter no /perfil). Corre UMA vez por leitura (~0,5s). */
-  function uidFromNif(nif) {
-    if (!nif) return Promise.resolve(null);
-    var enc = new TextEncoder();
-    return crypto.subtle.importKey("raw", enc.encode(String(nif)), "PBKDF2", false, ["deriveBits"])
-      .then(function (k) {
-        return crypto.subtle.deriveBits(
-          { name: "PBKDF2", hash: "SHA-256", salt: enc.encode(FB_UID_SALT), iterations: 600000 }, k, 256);
-      })
-      .then(function (buf) {
-        return Array.prototype.map.call(new Uint8Array(buf), function (x) { return ("0" + x.toString(16)).slice(-2); }).join("");
-      });
-  }
   function loadProfile() {
+    if (EXTENSION_MODE) return Object.assign({}, _extensionSettings.classifierProfile || {});
     try { return JSON.parse(localStorage.getItem(PKEY)) || {}; } catch (e) { return {}; }
   }
-  function saveProfile(p) { try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch (e) {} }
+  function saveProfile(p) {
+    if (EXTENSION_MODE) { saveExtensionSettings({ classifierProfile: p }); return; }
+    try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch (e) {}
+  }
 
   /* Despesas gerais is the only sector whose RATE and CAP depend on the household:
    *   normal        35% capped 250 EUR per taxpayer (so 500 filing jointly)
@@ -258,7 +251,7 @@
     var used = {};
     rows.forEach(function (x) {
       var sec = x.actividadeEmitente, c = CEIL[sec];
-      if (x.estadoBeneficio !== "R" || !c) return;
+      if (!isAttributed(x.estadoBeneficio) || !c) return;
       var baseVal = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100;
       var key = c.pot || sec;
       used[key] = (used[key] || 0) + baseVal * (sec === "C99" ? c99Rate(prof) : c.rate);
@@ -295,10 +288,14 @@
     return getJSON(u).then(function (j) {
       if (j && (j.expiredSession === true || j.success === false)) throw new Error("sess\u00e3o do e-Fatura expirada");
       var rows = (j && (j.linhas || j.documentos)) || []; if (!Array.isArray(rows)) rows = [];
-      var total = (j && j.totalElementos != null) ? j.totalElementos : rows.length;
-      if (rows.length >= total) return rows;                 // complete
+      var hasTotal = !!(j && j.totalElementos != null);
+      var total = hasTotal ? Number(j.totalElementos) : rows.length;
+      // If the count field disappears and exactly the known server cap arrives, completeness is
+      // unknowable. Split until each interval is below the cap instead of accepting a neat 300.
+      var mayBeCapped = hasTotal ? rows.length < total : rows.length >= 300;
+      if (!mayBeCapped) return rows;                         // complete
       var mid = _midDate(ini, fim);
-      if (!mid) return rows;                                  // cannot split further - accept what we have
+      if (!mid) throw new Error("pagina\u00e7\u00e3o incompleta: " + rows.length + " de " + total + " faturas");
       return fetchRange(sec, ini, mid).then(function (a) {
         return fetchRange(sec, _nextDay(mid), fim).then(function (b) { return a.concat(b); });
       });
@@ -529,14 +526,14 @@
 
   function sendOutcomes(pend) {
     if (!shareOn() || !pend || !pend.length) return;
-    var url = CAEMAP_URL.replace(/sectors\.json$/, "outcome"), seen = {}, sent = 0;
+    var url = MERCHANT_CONTRIBUTION_URL, seen = {}, sent = 0;
     pend.forEach(function (x, i) {
       var ck = document.querySelector('.efh-ck[data-i="' + i + '"]');
       var se = document.querySelector('.efh-sec[data-i="' + i + '"]');
       if (!ck || !ck.checked || !se) return;
       var nif = String(x.nifEmitente || "").trim();
       var sug = String(x.__sug || "").toUpperCase(), cho = String(se.value || "").toUpperCase();
-      if (!/^[0-9]{8,9}$/.test(nif) || !/^C[0-9]{2}$/.test(sug) || !/^C[0-9]{2}$/.test(cho)) return;
+      if (!isVerifiedLegalEntityNif(nif) || !/^C[0-9]{2}$/.test(sug) || !/^C[0-9]{2}$/.test(cho)) return;
       var k = nif + sug + cho;
       if (seen[k] || sent >= 200) return;
       seen[k] = 1; sent++;
@@ -550,30 +547,35 @@
     });
   }
 
-  /* Panel stylesheet - mirrors the faturas.diogoandrade.com design tokens (index.html :root).
+  /* Merchant feedback must never turn a sole trader's personal NIF into contributed data. The
+   * conservative allowlist accepts only namespaces reserved for legal persons (5) and public
+   * legal persons (6), then validates the Portuguese check digit. Natural-person, estate,
+   * association/condominium and other ambiguous prefixes are rejected. */
+  function isVerifiedLegalEntityNif(nif) {
+    nif = String(nif || "");
+    if (!/^[56][0-9]{8}$/.test(nif)) return false;
+    var sum = 0;
+    for (var i = 0; i < 8; i++) sum += Number(nif.charAt(i)) * (9 - i);
+    var rem = sum % 11, check = rem < 2 ? 0 : 11 - rem;
+    return check === Number(nif.charAt(8));
+  }
+
+  /* Panel stylesheet - mirrors the fiscalida.de design tokens (index.html :root).
    * One source of visual truth: every color in the panel is a token below; radius is 6px
    * everywhere; type is IBM Plex Sans (falls back to system-ui on machines without it - the
    * portal's CSP is not ours to test, so no font download is attempted) with IBM Plex Mono
    * reserved for numbers, NIFs and the eyebrow section titles, exactly like the site. */
   var WIDE_KEY = "efh-wide";
-  function isWide() { try { return localStorage.getItem(WIDE_KEY) === "1"; } catch (e) { return false; } }
+  function isWide() {
+    if (EXTENSION_MODE) return _extensionSettings.wide === true;
+    try { return localStorage.getItem(WIDE_KEY) === "1"; } catch (e) { return false; }
+  }
   if (!document.getElementById('efh-style')) {
-    var FONT_HOST = "https://faturas.diogoandrade.com/fonts/";
-    // Real brand type on AT's page: the portal serves no CSP (verified 2026-08-08), so the
-    // panel loads the SAME self-hosted IBM Plex files the site serves. Plain static downloads,
-    // identical for everybody, nothing sent - declared in the network-calls list up top.
-    var face = function (fam, w, slug) {
-      return "@font-face{font-family:'" + fam + "';font-style:normal;font-weight:" + w +
-        ";font-display:swap;src:url(" + FONT_HOST + slug + ".woff2) format('woff2')}";
-    };
+    // System fonts deliberately avoid even an asset request before the user has consented. The
+    // extension package still contains its audited assets, but the injected account-page code
+    // has no reason to request them.
     var fs = document.createElement('style'); fs.id = 'efh-style';
     fs.textContent =
-      face("IBM Plex Sans", 400, "ibm-plex-sans-400-latin") +
-      face("IBM Plex Sans", 500, "ibm-plex-sans-500-latin") +
-      face("IBM Plex Sans", 600, "ibm-plex-sans-600-latin") +
-      face("IBM Plex Sans", 700, "ibm-plex-sans-700-latin") +
-      face("IBM Plex Mono", 400, "ibm-plex-mono-400-latin") +
-      face("IBM Plex Mono", 600, "ibm-plex-mono-600-latin") +
       /* tokens = index.html :root, verbatim */
       '#efh-panel{--pri:#034ad8;--pri-dark:#021c51;--pri-mid:#1b4dab;--pri-soft:#eaf1ff;' +
         '--ink:#2B363C;--ink2:#4a5a63;--mute:#6b7780;' +
@@ -671,16 +673,15 @@
     if (isWide()) d.className = "efh-wide";
     d.innerHTML = html; document.body.appendChild(d); return d;
   }
-  // Mobile browsers cannot run a bookmarklet inside a page, so this is desktop-only. Say it in
-  // the panel too rather than leaving a half-working screen.
+  // The reviewed interface is desktop-only for now. Say it in the panel rather than leaving a
+  // half-working screen on mobile browsers.
   if (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) {
-    alert("A Fatura Boa s\u00f3 funciona no computador. Os navegadores de telem\u00f3vel n\u00e3o deixam correr "
-        + "favoritos dentro da p\u00e1gina do e-Fatura. Abre isto num computador.");
+    alert("A Fatura Boa s\u00f3 funciona no computador durante esta revis\u00e3o. Abre isto num computador.");
   }
   panel('<div class="efh-head">' +
-    '<a href="https://faturas.diogoandrade.com" target="_blank" rel="noopener" style="text-decoration:none;border-bottom:1px solid rgba(255,255,255,.45)" title="Abrir faturas.diogoandrade.com">Fatura Boa</a>' +
+    '<a href="' + esc(PUBLIC_ORIGIN) + '" target="_blank" rel="noopener" style="text-decoration:none;border-bottom:1px solid rgba(255,255,255,.45)" title="Abrir Fiscalidade">Fatura Boa</a>' +
     '<span class="efh-tag">v' + FB_VERSION + '</span>' +
-    '<span class="efh-sub"><a href="https://faturas.diogoandrade.com/verificar" target="_blank" rel="noopener">verificar</a></span>' +
+    '<span class="efh-sub"><a href="' + esc(PUBLIC_ORIGIN) + '/verificar" target="_blank" rel="noopener">verificar</a></span>' +
     '<button type="button" id="efh-expand" style="margin-left:auto;cursor:pointer;background:none;border:1px solid rgba(255,255,255,.45);border-radius:6px;color:#fff;font:inherit;font-size:11px;font-weight:400;padding:2px 8px"></button>' +
     '<button type="button" aria-label="Fechar" style="cursor:pointer;background:none;border:0;color:#fff;font:inherit;padding:0 4px" onclick="document.getElementById(\'efh-panel\').remove()">\u2715</button></div>' +
     '<div class="efh-alert"><b>Esta ferramenta nunca te pede a password.</b> Corre na sess\u00e3o que j\u00e1 abriste, s\u00f3 nesta p\u00e1gina. Se algum site te pedir as credenciais das Finan\u00e7as, \u00e9 burla.</div>' +
@@ -692,7 +693,8 @@
     var label = function () { b.textContent = p.className === "efh-wide" ? "Encolher" : "Expandir"; };
     b.onclick = function () {
       p.className = p.className === "efh-wide" ? "" : "efh-wide";
-      try { localStorage.setItem(WIDE_KEY, p.className === "efh-wide" ? "1" : "0"); } catch (e) {}
+      if (EXTENSION_MODE) saveExtensionSettings({ wide: p.className === "efh-wide" });
+      else try { localStorage.setItem(WIDE_KEY, p.className === "efh-wide" ? "1" : "0"); } catch (e) {}
       label();
     };
     label();
@@ -703,11 +705,13 @@
    * anything at all) and agreeing to SHARE (off by default, and only ever merchant NIF + sector).
    * Asking after collecting would be the wrong order - by then it is already done. */
   function consent() {
+    if (EXTENSION_MODE) return { ok: true, share: _extensionSettings.share === true, extension: true };
     var c = null;
     try { c = JSON.parse(localStorage.getItem(CKEY) || "null"); } catch (e) {}
     return c;
   }
   function saveConsent(share) {
+    if (EXTENSION_MODE) { saveExtensionSettings({ share: !!share }); return; }
     try { localStorage.setItem(CKEY, JSON.stringify({ ok: true, share: !!share, ts: Date.now() })); } catch (e) {}
   }
 
@@ -723,8 +727,8 @@
    * a per-NIF lookup would name your merchants outright, and downloading everything was the
    * previous way of avoiding that.
    *
-   * Fails soft, per bucket: a bucket that errors just yields {} and those merchants fall back to
-   * C99, exactly as an unknown merchant always has. Nothing breaks, you simply lose that hint.
+   * Fails visibly: a missing bucket must not be confused with an unknown merchant. Silently
+   * falling back to C99 can produce a plausible but wrong recommendation.
    */
   function bucketOf(nif) { return String(nif || "").slice(-3); }
 
@@ -735,10 +739,11 @@
       if (/^\d{3}$/.test(b) && !seen[b]) { seen[b] = 1; buckets.push(b); }
     });
     if (!buckets.length) return Promise.resolve({});
-    var base = CAEMAP_URL.replace(/sectors\.json$/, "bucket/");
     return Promise.all(buckets.map(function (b) {
-      return fetch(base + b).then(function (r) { return r.ok ? r.json() : {}; })
-                            .catch(function () { return {}; });
+      return fetch(MAP_BUCKET_URL + b).then(function (r) {
+        if (!r.ok) throw new Error("mapa de atividades incompleto (bloco " + b + ")");
+        return r.json();
+      });
     })).then(function (parts) {
       var map = {};
       parts.forEach(function (p) { for (var k in p) if (p.hasOwnProperty(k)) map[k] = p[k]; });
@@ -875,14 +880,19 @@
    * "apagada automaticamente ao fim do dia" da pagina de privacidade so era verdade em metade dos
    * sitios onde os dados estao. */
   function profExpiry() { var d = new Date(); d.setHours(24, 0, 0, 0); return d.getTime(); }
+  var _extensionProfile = { partitions: {} };
   function profLoad() {
+    if (EXTENSION_MODE) return _extensionProfile;
     try {
       var p = JSON.parse(localStorage.getItem(PROF_KEY)) || { partitions: {} };
       if (p.expiresAt && Date.now() >= p.expiresAt) { localStorage.removeItem(PROF_KEY); return { partitions: {} }; }
       return p;
     } catch (e) { return { partitions: {} }; }
   }
-  function profSave(p) { try { p.expiresAt = profExpiry(); localStorage.setItem(PROF_KEY, JSON.stringify(p)); } catch (e) {} }
+  function profSave(p) {
+    if (EXTENSION_MODE) { p.expiresAt = profExpiry(); _extensionProfile = p; return; }
+    try { p.expiresAt = profExpiry(); localStorage.setItem(PROF_KEY, JSON.stringify(p)); } catch (e) {}
+  }
 
   /* CROSS-PARTITION HANDOFF (SPEC Option A). Each AT partition is a separate origin, so this
    * page's localStorage cannot be read on the next partition. To assemble ONE profile we hand
@@ -890,14 +900,59 @@
    * NEVER sent in the HTTP request, so this is a browser-to-our-page handoff, not a server send -
    * the data still never leaves the machine. /perfil accumulates across partitions in its single
    * origin. (The separate, opt-in, redacted SERVER telemetry is a different thing entirely.) */
-  var PROF_SITE = "https://faturas.diogoandrade.com/perfil";
+  var PROF_SITE = PUBLIC_ORIGIN + "/perfil";
   function b64(s) { return btoa(unescape(encodeURIComponent(s))); }
   function handoffUrl(pid, data, shape) {
     var u = PROF_SITE + "#p=" + encodeURIComponent(pid) + "&d=" + encodeURIComponent(b64(JSON.stringify(data)));
     if (shape && Object.keys(shape).length) u += "&s=" + encodeURIComponent(b64(JSON.stringify(shape)));
     return u;
   }
-  function profConsent() { try { return JSON.parse(localStorage.getItem(PROF_CONSENT) || "null"); } catch (e) { return null; } }
+  function shapeEndpointId(url) {
+    var s = String(url || "").split("?")[0];
+    var rules = [
+      [/obterDocumentosAdquirente/, "efatura.documents.v1"], [/consultarDespesasDeducoes/, "irs.deductions.v1"],
+      [/obterContratos\/locador/, "rents.contracts.v1"], [/obterRecibos\/locador/, "rents.receipts.v1"],
+      [/\/geral\/dividas/, "tax-status.debts.v1"], [/\/geral\/coimas/, "tax-status.fines.v1"],
+      [/agendaFiscal/, "tax-status.calendar.v1"], [/consultardeclaracoes/, "activity.declarations.v1"],
+      [/integrada\/presentation/, "activity.integrated.v1"], [/liquidacoesIRSDataTables/, "irs.liquidations.v1"],
+      [/reembolsosDataTables/, "irs.refunds.v1"], [/resumoCobranca/, "finance.movements.v1"],
+      [/obtemDocumentosV2/, "receipts.green.v1"], [/\/app\/consulta\/pesquisa/, "irs.declarations.v1"],
+      [/dashboard-regime-simplificado/, "activity.expenses.v1"], [/login\/personalData/, "social.profile.v1"],
+      [/payments\/current/, "social.payments.v1"], [/situacao-contributiva/, "social.contribution-status.v1"],
+      [/matrizesinter\/api\/patrimonio/, "property.assets.v1"]
+    ];
+    for (var i = 0; i < rules.length; i++) if (rules[i][0].test(s)) return rules[i][1];
+    return null;
+  }
+  function contributeProfileShapes(shape) {
+    if (!EXTENSION_MODE || _extensionSettings.shareShapes !== true || !shape) return;
+    var stable = {};
+    Object.keys(shape).forEach(function (url) {
+      var id = shapeEndpointId(url); if (id) stable[id] = shape[url];
+    });
+    if (!Object.keys(stable).length) return;
+    try {
+      fetch(API_BASE + "/contributions/shapes", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ consent: true, shapes: stable }) }).catch(function () {});
+    } catch (e) {}
+  }
+  function deliverProfile(pid, data, shape) {
+    if (EXTENSION_MODE && typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage) {
+      try {
+        chrome.runtime.sendMessage({ type: "fb-profile-save", partition: pid, data: data, shape: shape || {} });
+        contributeProfileShapes(shape || {});
+        return true;
+      } catch (e) {}
+    }
+    location.href = handoffUrl(pid, data, shape);
+    return false;
+  }
+  function profConsent() {
+    // The extension's first-run gate is stored in chrome.storage.local before tool.js can be
+    // injected. Do not duplicate profile state or consent in an official-portal origin.
+    if (EXTENSION_MODE) return { ok: true, extension: true };
+    try { return JSON.parse(localStorage.getItem(PROF_CONSENT) || "null"); } catch (e) { return null; }
+  }
   function currentPartition() {
     var here = PARTITIONS.filter(function (p) { return location.host === p.host; });
     if (here.length <= 1) return here[0] || null;
@@ -1059,15 +1114,9 @@
 
   function readEfatura() {
     var u = "/json/obterDocumentosAdquirente.action?dataInicioFilter=" + year + "-01-01&dataFimFilter=" + year + "-12-31";
-    return getJSON(u).then(function (j) {
-      // A STALE e-Fatura session returns valid JSON {success:false, expiredSession:true} - NOT an
-      // HTML redirect - so getJSON lets it through and we'd read undefined `linhas` -> silently
-      // show 0 pending. Verified against the real server response 2026-07-23. Treat it as a login
-      // gate. (Same envelope likely on other .action endpoints; harden them if the shape shows up.)
-      if (j && (j.expiredSession === true || j.success === false))
-        throw new Error("sess\u00e3o do e-Fatura expirada - reabre a p\u00e1gina e faz login");
-      var rows = (j && (j.linhas || j.documentos)) || [];
-      if (!Array.isArray(rows)) rows = [];
+    // The same recursive reader used by the classifier is mandatory here too. The plain endpoint
+    // caps a busy account at 300 rows and otherwise looks like a successful complete response.
+    return fetchSector(year, "").then(function (rows) {
       var pend = 0, byAct = {};
       rows.forEach(function (x) {
         if (x.estadoBeneficio === "P") pend++;
@@ -1080,15 +1129,9 @@
       return Promise.all(anos.map(function (a) {
         return reAuditAno(a, {}).catch(function () { return null; });
       })).then(function (ra) {
-        // The user IS the adquirente, so their own NIF is on every row - hash it (locally) for the
-        // anonymous counter id; store the HASH, never the NIF.
-        var ownNif = null;
-        for (var i = 0; i < rows.length; i++) { if (rows[i].nifAdquirente) { ownNif = rows[i].nifAdquirente; break; } }
-        return uidFromNif(ownNif).then(function (uid) {
-          return { data: { ano: year, totalFaturas: (j && j.totalElementos != null ? j.totalElementos : rows.length),
-                           porClassificar: pend, atividades: byAct, uid: uid,
-                           reAudit: ra.filter(Boolean) }, source: u };
-        });
+        return { data: { ano: year, totalFaturas: rows.length,
+                         porClassificar: pend, atividades: byAct,
+                         reAudit: ra.filter(Boolean) }, source: u };
       });
     });
   }
@@ -1449,58 +1492,11 @@
    * conta \u00e9 a \u00daLTIMA; o `montante` da linha pode dizer 0,00 / "SALDO NULO EMITIDO" e ainda assim haver
    * imposto (foi o caso real de 2025: 1.\u00aa dizia 2.281,60, a substitui\u00e7\u00e3o dizia 0,00 mas eram 1.487,44).
    * Por isso: ordenar por tipo ("N. D.PRAZO") e dataRececao, e assinalar que houve substitui\u00e7\u00e3o. */
-  /* DEMONSTRACAO DE LIQUIDACAO: ler o PDF NO PROPRIO NAVEGADOR, sem biblioteca nenhuma.
-   * Ao contrario do comprovativo do Modelo 3, este PDF NAO esta encriptado - basta inflacionar os
-   * streams FlateDecode (DecompressionStream('deflate') e nativo) e apanhar o texto entre parentesis
-   * dos operadores Tj/TJ. Da os numeros OFICIAIS do ano (taxa marginal, taxa efetiva, deducoes), por
-   * isso NAO se pergunta nada ao utilizador sobre um ano ja entregue: esta no documento da AT. */
-  function inflate(bytes) {
-    if (typeof DecompressionStream === "undefined") return Promise.resolve(null);
-    try {
-      var ds = new DecompressionStream("deflate");
-      return new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer()
-        .then(function (b) { return new Uint8Array(b); }).catch(function () { return null; });
-    } catch (e) { return Promise.resolve(null); }
-  }
-
-  function pdfTexto(buf) {
-    var u8 = new Uint8Array(buf), lat = "";
-    for (var i = 0; i < u8.length; i++) lat += String.fromCharCode(u8[i]);
-    var jobs = [], re = /stream\r?\n/g, m;
-    while ((m = re.exec(lat)) !== null) {
-      var st = m.index + m[0].length, en = lat.indexOf("endstream", st);
-      if (en < 0) continue;
-      jobs.push(inflate(u8.subarray(st, en)));
-    }
-    return Promise.all(jobs).then(function (parts) {
-      var out = [];
-      parts.forEach(function (p) {
-        if (!p) return;
-        var s = "";
-        for (var i = 0; i < p.length; i++) s += String.fromCharCode(p[i]);
-        if (s.indexOf("Tj") < 0 && s.indexOf("TJ") < 0) return;
-        var t, rx = /\(((?:[^()\\]|\\.)*)\)/g;
-        while ((t = rx.exec(s)) !== null) out.push(t[1].replace(/\\([()])/g, "$1"));
-      });
-      return out.join(" ").replace(/\s+/g, " ");
-    });
-  }
-
-  function lerDemonstracao(url) {
-    return fetch(url, { credentials: "include" }).then(function (r) { return r.arrayBuffer(); })
-      .then(pdfTexto).then(function (t) {
-        if (!t || t.length < 200) return null;
-        var num = function (x) { return x ? +String(x).replace(/\./g, "").replace(",", ".") : null; };
-        var pick = function (re) { var m = t.match(re); return m ? m[1] : null; };
-        return {
-          marginal: num(pick(/Quociente familiar\s+[\d,]+\s+taxa\s+([\d,]+)\s*%/i)),
-          taxaEfetiva: num(pick(/Taxa Efetiva de Tributa[\u00e7c][\u00e3a]o\s*-\s*([\d,]+)\s*%/i)),
-          deducoesTotal: num(pick(/Total das Dedu[\u00e7c][\u00f5o]es\s*:?\s*([\d.]+,\d{2})/i)),
-          deducaoEfetiva: num(pick(/Dedu[\u00e7c][\u00e3a]o Efetiva\s*:?\s*([\d.]+,\d{2})/i)),
-          fonte: "demonstracao de liquidacao (PDF lido no navegador)"
-        };
-      }).catch(function () { return null; });
-  }
+  /* DEMONSTRACAO DE LIQUIDACAO: deliberately not parsed in this browser build yet. The previous
+   * hand-written scanner assumed unencrypted, literal-text Flate streams and could silently miss
+   * ToUnicode fonts, object streams, filters or encryption while still returning plausible tax
+   * numbers. Metadata and the official download link remain available; no derived PDF value is
+   * exposed until the vetted parser fixture suite covers those formats. */
 
 
   function readDeclaracoes() {
@@ -1535,13 +1531,10 @@
           urlDem: v.urlPDFLiquidacao || null
         };
       });
-      // Ler a demonstracao VIGENTE de cada ano (PDF, no navegador) - da os numeros oficiais e evita
-      // perguntar ao utilizador o que ja esta no documento.
-      var anos = Object.keys(porAno).filter(function (a) { return porAno[a].urlDem; });
-      return Promise.all(anos.map(function (a) {
-        return lerDemonstracao(porAno[a].urlDem).then(function (d) { if (d) porAno[a].liquidacao = d; })
-          .catch(function () {});
-      })).then(function () { return porAno; });
+      Object.keys(porAno).forEach(function (a) {
+        if (porAno[a].urlDem) porAno[a].leituraDemonstracao = "indisponivel-ate-parser-validado";
+      });
+      return porAno;
     });
   }
 
@@ -1687,7 +1680,7 @@
       '<button type="button" id="fb-prof-go" style="cursor:pointer;background:#034ad8;color:#fff;border:0;' +
       'border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">Concordo, carregar</button>';
     document.getElementById("fb-prof-go").onclick = function () {
-      try { localStorage.setItem(PROF_CONSENT, JSON.stringify({ ok: true, ts: Date.now() })); } catch (e) {}
+      if (!EXTENSION_MODE) try { localStorage.setItem(PROF_CONSENT, JSON.stringify({ ok: true, ts: Date.now() })); } catch (e) {}
       var p = profLoad(); if (!p.consentedAt) { p.consentedAt = new Date().toISOString(); profSave(p); }
       runProfiling();            // consent given -> go straight to auto-reading this page
     };
@@ -1719,7 +1712,7 @@
       document.getElementById("efh-body").innerHTML =
         '<div style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
         '.<br>A abrir a tua situa\u00e7\u00e3o...</div>';
-      setTimeout(function () { location.href = handoffUrl(cur.id, res.data, _shapes); }, 700);
+      setTimeout(function () { deliverProfile(cur.id, res.data, _shapes); }, 700);
     }).catch(function (e) {
       var s = profLoad();
       var msg = (e && e.message) || "erro";
@@ -1766,10 +1759,14 @@
         (isDone ? 'Reler ' : 'Ler ') + esc(cur.label) + '</button>';
       // Once THIS partition is read, hand it to /perfil (via URL fragment - stays in the browser)
       // so the profile assembles across origins. This is the only way to combine partitions.
-      if (isDone)
-        h += ' <a href="' + handoffUrl(cur.id, store.partitions[cur.id].data, store.partitions[cur.id].shape) + '" ' +
-          'style="display:inline-block;cursor:pointer;background:#128a3a;color:#fff;text-decoration:none;' +
-          'border-radius:6px;padding:9px 16px;font-weight:600">Guardar a minha situa\u00e7\u00e3o \u2192</a>';
+      if (isDone) {
+        if (RUNTIME.extension === true)
+          h += ' <button type="button" id="fb-save-profile" style="display:inline-block;cursor:pointer;background:#128a3a;color:#fff;border:0;border-radius:6px;padding:9px 16px;font-weight:600">Guardar no perfil da extens\u00e3o \u2192</button>';
+        else
+          h += ' <a href="' + handoffUrl(cur.id, store.partitions[cur.id].data, store.partitions[cur.id].shape) + '" ' +
+            'style="display:inline-block;cursor:pointer;background:#128a3a;color:#fff;text-decoration:none;' +
+            'border-radius:6px;padding:9px 16px;font-weight:600">Guardar a minha situa\u00e7\u00e3o \u2192</a>';
+      }
     } else {
       h += '<div style="color:#666;font-size:12px">Esta p\u00e1gina n\u00e3o \u00e9 uma das que lemos. Abre uma da lista acima.</div>';
     }
@@ -1795,10 +1792,23 @@
         profSave(s); profRender();
       });
     };
+    var sp = document.getElementById("fb-save-profile");
+    if (sp && cur) sp.onclick = function () {
+      var saved = profLoad().partitions[cur.id];
+      if (saved) deliverProfile(cur.id, saved.data, saved.shape);
+    };
     var rs = document.getElementById("fb-reset");
     // "apagar" = apagar TUDO o que o tool guardou nesta origem: a situacao fiscal E a configuracao
     // do agregado (incluindo a chave de sala da partilha - quem pede para apagar quer apagar).
-    if (rs) rs.onclick = function (ev) { ev.preventDefault(); try { localStorage.removeItem(PROF_KEY); localStorage.removeItem(PKEY); } catch (e) {} profRender(); };
+    if (rs) rs.onclick = function (ev) {
+      ev.preventDefault();
+      if (EXTENSION_MODE) {
+        _extensionProfile = { partitions: {} };
+        _extensionSettings.classifierProfile = {};
+        try { chrome.runtime.sendMessage({ type: "fb-settings-clear" }); } catch (e) {}
+      } else try { localStorage.removeItem(PROF_KEY); localStorage.removeItem(PKEY); } catch (e) {}
+      profRender();
+    };
   }
 
   function runProfiling() {
@@ -1840,18 +1850,9 @@
 
   function run() {
     var caemap = {};
-    fetch("/json/obterDocumentosAdquirente.action?dataInicioFilter=" + year + "-01-01&dataFimFilter=" + year + "-12-31",
-      { credentials: "include", headers: { Accept: "application/json" } })
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        // Logged out, this endpoint answers with VALID JSON {success:false, expiredSession:true}
-        // and no linhas - which used to read as "0 faturas" and render a false "Estas em dia".
-        // (The other logged-out shape, an HTML login page, makes r.json() throw into the catch.)
-        if (d && (d.expiredSession === true || d.success === false)) {
-          throw new Error("sess\u00e3o do e-Fatura n\u00e3o iniciada ou expirada - faz login e volta a clicar");
-        }
-        return d;
-      })
+    // The unpaginated endpoint caps at 300. Use the recursive, fail-visible reader for the current
+    // year too; otherwise a busy account appears complete while silently missing older invoices.
+    fetchSector(year, "").then(function (rows) { return { linhas: rows, totalElementos: rows.length }; })
       .then(function (d) {
         // Pull the map slices for THESE merchants before doing anything else. Everything below
         // reads caemap synchronously, so it has to be populated first.
@@ -1863,7 +1864,7 @@
         var pend = rows.filter(function (x) { return x.estadoBeneficio === "P"; });
         var learned = {};
         rows.forEach(function (x) {
-          if (x.estadoBeneficio === "R" && x.actividadeEmitente) {
+          if (isAttributed(x.estadoBeneficio) && x.actividadeEmitente) {
             (learned[x.nifEmitente] = learned[x.nifEmitente] || {})[x.actividadeEmitente] =
               (learned[x.nifEmitente][x.actividadeEmitente] || 0) + 1;
           }
@@ -2221,7 +2222,7 @@
           '<tbody>' + trs + '</tbody></table></div>' +
           '<div style="margin-top:12px;display:flex;gap:8px;align-items:center">' +
           // #efh-apply is rendered ONLY when DRAFT is off. While DRAFT is on the tool writes nothing,
-          // and the page copy at faturas.diogoandrade.com promises exactly that - so this button and
+          // and the page copy at fiscalida.de promises exactly that - so this button and
           // those promises flip together, never one without the other.
           (DRAFT ? '' :
             '<button id="efh-apply" class="efh-btn efh-btn-green">Aplicar no e-Fatura</button> ') +
@@ -2394,7 +2395,7 @@
           var room = typed || prof.room || newRoom();
           hhBox.textContent = typed ? "A ligar..." : "A criar chave...";
           Promise.resolve(room).then(function (room) {
-            var body = { member: memberId() };
+            var body = { member: memberId(), consent: true };
             ["C05", "C06", "C07", "C08", "C99"].forEach(function (k) { body[k] = +(used[k] || 0).toFixed(2); });
             body.POT = +(used[POT] || 0).toFixed(2);
             return fetch(HH_URL + room, { method: "PUT", headers: { "Content-Type": "application/json" },
@@ -2437,7 +2438,7 @@
     box.appendChild(d);
     document.getElementById("efh-win").onclick = function () {
       var msg = document.getElementById("efh-winmsg");
-      fetch(CAEMAP_URL.replace(/sectors\.json$/, "win"), {
+      fetch(IMPACT_CONTRIBUTION_URL, {
         method: "POST", headers: { "Content-Type": "application/json" },
         // consent:true required by the server. This send sits behind an explicit button, so the
         // assertion is accurate; a payload without it means the client never asked anyone.
@@ -2513,9 +2514,10 @@
         // the SAME data the learning loop sends (a merchant NIF, nothing of yours), so it lives
         // under the same consent - otherwise the transparency page's "se nao ativares nada, nada
         // sai" would not hold. Server accepts this unauthenticated but rate-limited.
-        if (shareOn() && /atividade registada/i.test(reason)) {
+        if (shareOn() && isVerifiedLegalEntityNif(p.x.nifEmitente) && /atividade registada/i.test(reason)) {
           try {
-            fetch(CAEMAP_URL.replace(/sectors\.json$/, "refresh/") + p.x.nifEmitente, { method: "POST" })
+            fetch(MERCHANT_CONTRIBUTION_URL, { method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ nif: String(p.x.nifEmitente), action: "refresh", consent: true }) })
               .catch(function () {});
           } catch (e) {}
         }

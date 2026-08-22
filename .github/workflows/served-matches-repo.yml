@@ -1,7 +1,7 @@
 name: served-matches-repo
 
-# The README promises "What you see is what runs": the tool.js served from
-# faturas.diogoandrade.com is byte-identical to the one in this repo. That claim IS the
+# The audit promise is that the tool.js eventually served from fiscalida.de is byte-identical to
+# the one in this repo. That claim is part of the security model: people are asked to review the
 # security model - people are asked to read the source and then run it against their tax
 # account, so if the served file can silently diverge, reading the source proves nothing.
 #
@@ -11,15 +11,10 @@ name: served-matches-repo
 #
 # This job fetches the live file and compares its SHA-256 to the committed one.
 #
-# It runs on a SCHEDULE, not on push, deliberately: right after a commit the live file is
-# legitimately still the old one until you deploy. Failing on push would just cry wolf on
-# every commit. A daily check catches the case that actually matters - a fix that was
-# committed, and then never shipped.
+# Internal preview is not deployed, so this workflow is manual until the release gate is opened.
 
 on:
-  schedule:
-    - cron: "17 7 * * *"      # daily, 07:17 UTC
-  workflow_dispatch:           # and on demand, e.g. right after a deploy
+  workflow_dispatch:
 
 jobs:
   hash-match:
@@ -30,17 +25,9 @@ jobs:
       - name: served tool.js must match the committed one
         run: |
           set -euo pipefail
-          # pages.dev is listed FIRST and is never behind Cloudflare Access, so it always gives a
-          # real check. The custom domains (faturas / fiscalida) are gated behind CF Access during
-          # the pre-launch period: an unauthenticated fetch there returns the Access login page, not
-          # tool.js. That is NOT a code divergence, so a host that is not actually serving the file
-          # (detected by the tool.js license-header signature) is SKIPPED, not failed. When the
-          # domains ungate they serve the real file again and this check resumes on them by itself.
-          # We still HARD-FAIL if NO host could be verified, so a genuine "committed but never
-          # deployed" case is never masked - pages.dev must stay public for that reason.
           REPO=$(sha256sum tool.js | cut -d' ' -f1)
           verified=0
-          for HOST in https://efatura-helper.pages.dev https://faturas.diogoandrade.com https://fiscalida.de; do
+          for HOST in https://fiscalida.de; do
             echo "--- $HOST"
             # cache-bust: the bookmarklet itself loads tool.js?v=<timestamp>
             if ! curl -fsSL --max-time 30 "$HOST/tool.js?v=$(date +%s)" -o served.js; then
@@ -61,7 +48,7 @@ jobs:
             echo "  match"; verified=$((verified + 1))
           done
           if [ "$verified" -eq 0 ]; then
-            echo "::error file=tool.js::Could not verify tool.js on ANY host (all gated or unreachable). efatura-helper.pages.dev must stay public so this guarantee stays checkable - investigate the Pages deploy."
+            echo "::error file=tool.js::Could not verify tool.js at the canonical host. Do not treat the internal preview as released."
             exit 1
           fi
           echo "verified tool.js on $verified host(s)"
@@ -74,7 +61,7 @@ jobs:
           #
           # Compares the `map` object ONLY, not the whole document. /cae-map.json injects
           # meta.ranking at serve time, so a whole-file hash would fail every run for no reason.
-          curl -fsSL --max-time 30 "https://cae-db.diogoandrade.com/cae-map.json?v=$(date +%s)" -o served-map.json
+          curl -fsSL --max-time 30 "https://fiscalida.de/api/v1/map/rules?v=$(date +%s)" -o served-map.json
           python3 - <<'EOF'
           import json, sys
           served = json.load(open("served-map.json"))["map"]
@@ -86,7 +73,7 @@ jobs:
           only_repo = {k: repo[k]   for k in repo.keys()   - served.keys()}
           changed   = {k: (repo[k], served[k]) for k in served.keys() & repo.keys() if served[k] != repo[k]}
           print("::error file=cae_sectors.json::The committed CAE -> sector table no longer matches "
-                "the one actually being applied at cae-db.diogoandrade.com. DEDUCOES.md invites "
+                "the one actually being applied through fiscalida.de. DEDUCOES.md invites "
                 "accountants to review this file, so it must not drift. Re-export it from /data.")
           if only_live: print("  live has, repo missing :", only_live)
           if only_repo: print("  repo has, live missing :", only_repo)
@@ -97,10 +84,9 @@ jobs:
       - name: index.html served must match too
         run: |
           set -euo pipefail
-          # pages.dev is ungated; the custom domains are behind CF Access pre-launch. Skip if the
-          # host is not actually serving the site (gated/unreachable) rather than warning on the
-          # Access login page. Non-fatal either way (a warning, never a job failure).
-          if curl -fsSL --max-time 30 "https://efatura-helper.pages.dev/?v=$(date +%s)" -o served.html \
+          # Manual post-release check. Non-fatal because the executable hash above is the security
+          # boundary; page drift is still reported because it can invalidate privacy claims.
+          if curl -fsSL --max-time 30 "https://fiscalida.de/?v=$(date +%s)" -o served.html \
              && head -c 512 served.html | grep -qi "Fiscalida"; then
             LIVE=$(sha256sum served.html | cut -d' ' -f1)
             REPO=$(sha256sum index.html  | cut -d' ' -f1)

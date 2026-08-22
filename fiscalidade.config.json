@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "environment": "internal-preview",
+  "publicOrigin": "https://fiscalida.de",
+  "apiBase": "https://fiscalida.de/api/v1",
+  "bookmarkletInstallationEnabled": false,
+  "publicIndexingEnabled": false,
+  "shapeEndpointIds": [
+    "efatura.documents.v1",
+    "irs.deductions.v1",
+    "rents.contracts.v1",
+    "rents.receipts.v1",
+    "tax-status.debts.v1",
+    "tax-status.fines.v1",
+    "tax-status.calendar.v1",
+    "activity.declarations.v1",
+    "activity.integrated.v1",
+    "irs.liquidations.v1",
+    "irs.refunds.v1",
+    "finance.movements.v1",
+    "receipts.green.v1",
+    "irs.declarations.v1",
+    "activity.expenses.v1",
+    "social.profile.v1",
+    "social.payments.v1",
+    "social.contribution-status.v1",
+    "property.assets.v1"
+  ],
+  "extension": {
+    "profileStorage": "chrome.storage.local",
+    "profileRetention": "end-of-local-day",
+    "remoteCodeAllowed": false
+  }
+}

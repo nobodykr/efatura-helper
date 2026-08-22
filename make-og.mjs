@@ -15,10 +15,9 @@ const EXE = '/home/diogo/.cache/ms-playwright/chromium-1228/chrome-linux64/chrom
 const OUT = new URL('./assets/og.png', import.meta.url).pathname;
 
 const html = `<!doctype html><html lang="pt"><head><meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@600&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0}
-  body{width:1200px;height:630px;background:#fff;font-family:'IBM Plex Sans',sans-serif;
+  body{width:1200px;height:630px;background:#fff;font-family:Arial,sans-serif;
        display:flex;flex-direction:column;justify-content:space-between;
        border-left:18px solid #034ad8}
   .top{padding:64px 72px 0}
@@ -30,7 +29,7 @@ const html = `<!doctype html><html lang="pt"><head><meta charset="utf-8">
   p{margin-top:26px;font-size:27px;line-height:1.45;color:#4a5a63;max-width:30ch}
   .foot{background:#f4f6f9;border-top:1px solid #d5dae1;padding:26px 72px;
         display:flex;align-items:center;justify-content:space-between}
-  .url{font-family:'IBM Plex Mono',monospace;font-size:23px;color:#034ad8;font-weight:600}
+  .url{font-family:monospace;font-size:23px;color:#034ad8;font-weight:600}
   .tag{font-size:20px;color:#6b7780}
 </style></head><body>
   <div class="top">
@@ -39,7 +38,7 @@ const html = `<!doctype html><html lang="pt"><head><meta charset="utf-8">
     <p>O setor certo para cada fatura, a partir da atividade oficial do comerciante. E os teus tetos de dedução do IRS.</p>
   </div>
   <div class="foot">
-    <div class="url">faturas.diogoandrade.com</div>
+    <div class="url">fiscalida.de</div>
     <div class="tag">Gratuito · nunca pede a password</div>
   </div>
 </body></html>`;

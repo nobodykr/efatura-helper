@@ -2,8 +2,8 @@
 set -euo pipefail
 
 # Rebuild the three safe preview captures without opening a real browser profile.
-# The first view uses the application's fictitious example mode, the second uses
-# a public company record, and the third is a static verification page.
+# The first view uses the application's fictitious example mode and the second is a static
+# verification page. No live account or company lookup is used.
 
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 image="${FISCAL_CAPTURE_IMAGE:-mcr.microsoft.com/playwright/python:latest}"
@@ -31,7 +31,6 @@ capture() {
 }
 
 capture "file:///work/perfil.html?exemplo=1" "04-perfil-exemplo.png"
-capture "file:///work/consulta.html?q=500960046" "05-consulta-empresa.png"
 capture "file:///work/verificar.html" "06-verificacao.png"
 
-printf '%s\n' 'captured=3 source=fixtures-demo-public'
+printf '%s\n' 'captured=2 source=fixtures-demo'

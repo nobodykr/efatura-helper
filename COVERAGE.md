@@ -6,11 +6,16 @@ matrix (Taiga #79) fills the gaps as the tool grows into more regimes. See `/aud
 
 There are three levels of "tested", and they are NOT the same thing:
 
-## 1. Validated against REAL data (the strongest, and the thinnest)
-- **Two real subjects only:** the author's own case and one household member (Inês).
-- Both are **employed-worker / e-Fatura consumer** profiles (categoria A income, deductions on the
-  consumption side). Rendas/household nuances were exercised on the author's real account.
-- That is the entire real-world validation set today. Everything below is synthetic or unmodelled.
+## 1. Controlled account checks (non-reproducible evidence)
+
+Historical manual checks used a very small number of authorized accounts. Their identities, exact
+figures and profile characteristics are intentionally not recorded in this repository. Those checks
+can reveal a response-shape change, but they are not reproducible release evidence and do not justify
+a claim that a full tax profile is correct.
+
+The 2026 internal-hardening pass did not capture or publish account values. It replaced value-based
+debugging with synthetic fixtures, field/type-only schema diagnostics and explicit completeness
+failures.
 
 ## 2. Exercised by SYNTHETIC fixtures (code paths, constructed inputs, not real outcomes)
 The `test-*.js` suite runs the code against fabricated invoice/profile data with known expected
@@ -22,7 +27,11 @@ results. It proves the code does what it's written to do - not that a real perso
 - `test-obligations.js`, `test-deadlines.js` - the obligations/deadline engine (detects atividade,
   IVA, categoria B, pensão signals; computes correction windows).
 - `test-deducoes-sync.js`, `test-audit-sync.js`, `test-draft.js`, `test-network.js` - invariants
-  (three-source agreement, manifest sync, draft-mode safety, no pre-consent requests).
+  (four-source agreement, manifest sync, draft-mode safety, no pre-consent requests).
+- `test-complete-reader.js`, `test-attribution-states.js` - capped-result splitting and the full set
+  of attributed document states.
+- `test-extension-*.js`, `test-api-facade.js`, `test-shape-contract.js` - extension consent/storage,
+  exact permissions, API forwarding boundaries and stable schema identifiers.
 
 ## 3. Modelled but NOT validated end-to-end against reality
 The tool *detects/mentions* these, but no real case has confirmed the full outcome:
@@ -31,7 +40,7 @@ The tool *detects/mentions* these, but no real case has confirmed the full outco
   on a real single-parent household.
 - **Trabalhador independente / atividade aberta / recibos verdes** (categoria B) - obligations are
   detected; the *emission* and category-B computation are not a validated flow.
-- **Rendimentos prediais** (categoria F) beyond the author's own case.
+- **Rendimentos prediais** (categoria F) as a complete end-to-end tax outcome.
 
 ## Not covered at all (out of current scope)
 - **IRC** (companies) - a different code entirely.

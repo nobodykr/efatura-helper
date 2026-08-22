@@ -9,7 +9,7 @@
 <title>A minha situação fiscal | Fiscalidade</title>
 <meta name="description" content="Vê a tua situação fiscal a partir dos documentos oficiais das Finanças. Tudo fica no teu navegador - nada é enviado.">
 <!-- noindex: this is a personal working page, not content to rank. -->
-<meta name="robots" content="noindex,nofollow">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <link href="/fonts.css" rel="stylesheet">
 <style>
   /* Tokens: the design-system chapter of the spec is binding for --pri/--green/--focus/radii.
@@ -312,16 +312,14 @@
   }
   .fde{background:linear-gradient(120deg,#1E88FF,#00C6D7);-webkit-background-clip:text;background-clip:text;color:transparent}
 </style>
-<meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem faturas.diogoandrade.com; ref fb-lic-63e7b7c353">
-    <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
-    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="fiscalida.de" data-exclude-search="true"></script>
+<meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem fiscalida.de; ref fb-lic-63e7b7c353">
 </head>
 <body>
 <!-- Fiscalidade (c) 2026 Diogo Andrade. Licenca PolyForm Noncommercial 1.0.0
      (https://polyformproject.org/licenses/noncommercial/1.0.0). Uso nao-comercial apenas.
      Copia, redistribuicao ou uso comercial sem autorizacao viola a licenca e pode ser objecto
-     de accao legal. Origem oficial: faturas.diogoandrade.com | ref fb-lic-63e7b7c353 -->
-<div hidden aria-hidden="true" data-fb-lic="PolyForm-Noncommercial-1.0.0" data-fb-ref="fb-lic-63e7b7c353" data-fb-origem="faturas.diogoandrade.com">Codigo protegido por direitos de autor. Licenca PolyForm Noncommercial 1.0.0: uso comercial ou redistribuicao sem autorizacao proibidos.</div>
+     de accao legal. Origem oficial: fiscalida.de | ref fb-lic-63e7b7c353 -->
+<div hidden aria-hidden="true" data-fb-lic="PolyForm-Noncommercial-1.0.0" data-fb-ref="fb-lic-63e7b7c353" data-fb-origem="fiscalida.de">Codigo protegido por direitos de autor. Licenca PolyForm Noncommercial 1.0.0: uso comercial ou redistribuicao sem autorizacao proibidos.</div>
 <a href="/hp/registo-63e7b7c353" hidden aria-hidden="true" rel="nofollow noindex" tabindex="-1">.</a>
 <!-- Icon sprite: every icon on the page is a <use> against one of these symbols, drawn here as
      2px-stroke currentColor line icons so they cost no request and follow the text colour. -->
@@ -394,14 +392,6 @@
 <main class="wrap">
   <div id="out"></div>
 </main>
-<!-- The PROFILING bookmarklet (private). Different from the public one on the home page: this
-     allows ALL portaldasfinancas.gov.pt partitions and sets __FB_PROFILE to unlock the profile
-     flow. Drag it to the bookmarks bar once; use it on every Financas page. It lives OUTSIDE the
-     re-rendered region and is MOVED into the action frame by render(), so its href (the payload
-     that /verificar hashes) is never rebuilt from a JavaScript string. -->
-<div id="bmsrc" hidden>
-    <a class="btn-outline" id="bmprofile" title="Fiscalidade - Situação" onclick="try{if(window.umami)umami.track('bookmarklet-lancou')}catch(e){}" href="javascript:(function(){if(!/(portaldasfinancas\.gov\.pt|seg-social\.pt)$/.test(location.host)){alert('Abre uma pagina das Financas ou da Seguranca Social e faz login.');return;}window.__FB_PROFILE=1;var s=document.createElement('script');s.charset='utf-8';s.src='https://faturas.diogoandrade.com/tool.js?v='+Date.now();document.body.appendChild(s);})();"><svg class="icon" aria-hidden="true"><use href="#i-bookmark"/></svg>Instalar favorito</a>
-</div>
 <!-- FOOTER: hand-synced across index.html, perfil.html, sobre.html, deducoes.html, auditoria.html,
      privacidade.html, termos.html, verificar.html - same markup everywhere (static files, no
      shared include). Only the second ftbottom paragraph differs on purpose: perfil is the page
@@ -449,12 +439,13 @@
 <script>
 (function(){
   var PKEY = "fb-profile-v1";
-  var SHARE_KEY = "fb-profile-share";                 // remembers the opt-in choice
+  var SHAPES_KEY = "fb-profile-share-shapes";         // response-schema diagnostics opt-in
+  var IMPACT_KEY = "fb-profile-share-impact";         // aggregate impact opt-in
   var CONFIRM_KEY = "fb-profile-extra-confirmed";     // gate: the result only shows after "Outras situacoes"
-  var API = "https://cae-db.diogoandrade.com";
+  var API = "https://fiscalida.de/api/v1";
   // DEMO MODE (/perfil?exemplo=1): a fictitious profile shown so a first-time visitor can see the
   // payoff before installing anything. It lives ONLY in memory: load/save/loadExtra/saveExtra/
-  // shareOn/confirm all short-circuit to MEM below, ingestHash is skipped and nothing - not one key -
+  // contribution choices/confirm all short-circuit to MEM below, ingestHash is skipped and no key -
   // is read from or written to localStorage while it is on.
   var DEMO = /(^|[?&])exemplo=1(&|$)/.test(location.search);
   // MEM.confirmed defaults true: the example profile is pre-confirmed, so a first-time visitor
@@ -464,7 +455,8 @@
   // this file may read fb-profile-extra-confirmed from localStorage or MEM.confirmed directly.
   // That is what keeps demo and real from ever disagreeing about the gate state.
   var MEM = { store:null, extra:{}, confirmed:true };
-  function shareOn(){ if (DEMO) return false; try { return localStorage.getItem(SHARE_KEY) === "1"; } catch(e){ return false; } }
+  function shapesOn(){ if (DEMO) return false; try { return localStorage.getItem(SHAPES_KEY) === "1"; } catch(e){ return false; } }
+  function impactOn(){ if (DEMO) return false; try { return localStorage.getItem(IMPACT_KEY) === "1"; } catch(e){ return false; } }
   function isConfirmed(){ return DEMO ? MEM.confirmed : realConfirmed(); }
   function realConfirmed(){ try { return localStorage.getItem(CONFIRM_KEY) === "1"; } catch(e){ return false; } }
   function setConfirmed(v){
@@ -477,56 +469,58 @@
   // of endpoints not yet parsed and build readers for them. By construction it carries NO values and
   // NO name/NIF - only the skeleton the reader captured; the server further coerces every leaf to a
   // type token. Fires only when the box is ticked. Fails silently: contributing is never a blocker.
+  function endpointId(url){
+    var s=String(url||"").split("?")[0];
+    var rules=[
+      [/obterDocumentosAdquirente/,"efatura.documents.v1"],[/consultarDespesasDeducoes/,"irs.deductions.v1"],
+      [/obterContratos\/locador/,"rents.contracts.v1"],[/obterRecibos\/locador/,"rents.receipts.v1"],
+      [/\/geral\/dividas/,"tax-status.debts.v1"],[/\/geral\/coimas/,"tax-status.fines.v1"],[/agendaFiscal/,"tax-status.calendar.v1"],
+      [/consultardeclaracoes/,"activity.declarations.v1"],[/integrada\/presentation/,"activity.integrated.v1"],
+      [/liquidacoesIRSDataTables/,"irs.liquidations.v1"],[/reembolsosDataTables/,"irs.refunds.v1"],
+      [/resumoCobranca/,"finance.movements.v1"],[/obtemDocumentosV2/,"receipts.green.v1"],
+      [/\/app\/consulta\/pesquisa/,"irs.declarations.v1"],
+      [/dashboard-regime-simplificado/,"activity.expenses.v1"],[/login\/personalData/,"social.profile.v1"],
+      [/payments\/current/,"social.payments.v1"],[/situacao-contributiva/,"social.contribution-status.v1"],
+      [/matrizesinter\/api\/patrimonio/,"property.assets.v1"]
+    ];
+    for(var i=0;i<rules.length;i++) if(rules[i][0].test(s)) return rules[i][1];
+    return null;
+  }
   function sendShare(store){
-    if (!shareOn()) return;
+    if (!shapesOn()) return;
     // Flatten to { endpointURL: skeleton } - the sink groups by endpoint (the URL is the schema key),
     // NOT by partition. s.shape is already { endpointURL: skeleton }, so merge them across partitions.
     var shapes = {};
     PARTITIONS.forEach(function(p){
       var s = store.partitions[p.id];
-      if (s && s.shape) Object.keys(s.shape).forEach(function(url){ shapes[url] = s.shape[url]; });
+      if (s && s.shape) Object.keys(s.shape).forEach(function(url){ var id=endpointId(url); if(id) shapes[id] = s.shape[url]; });
     });
     if (!Object.keys(shapes).length) return;
     try {
-      fetch(API + "/shapes", { method:"POST", headers:{ "Content-Type":"application/json" },
+      fetch(API + "/contributions/shapes", { method:"POST", headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({ consent:true, shapes:shapes }) }).catch(function(){});
     } catch(e){}
   }
-  // Anonymous recovered-euro counter: the hashed user id (from the e-Fatura reader, never the NIF) +
-  // the total STILL-RECOVERABLE amount (open correction windows only). Same opt-in as the shapes.
-  function sendCounter(store){
-    if (!shareOn()) return;
+  // Aggregate impact report. No identifier is generated or accepted: the server increments an
+  // aggregate immediately and cannot count distinct people or link two reports to one browser.
+  function sendImpact(store){
+    if (!impactOn()) return;
     var ef = assemble(store).detalhes.efatura;
-    if (!ef || !ef.uid) return;
+    if (!ef) return;
     var total = 0;
+    var reports = 0;
     (ef.reAudit||[]).forEach(function(x){
       // Soma o ACONSELHADO (setor do CAE principal do emitente), NUNCA o maximo teorico: esse inclui
       // setores secundarios e a propria pagina diz que "nao e uma recomendacao". Um contador publico
       // alimentado pelo maximo teorico anunciaria dinheiro que nos proprios desaconselhamos.
       var val = (x && x.recuperavelAconselhado != null) ? x.recuperavelAconselhado : 0;
-      if (val > 0){ var w = resubmissionWindows(x.ano); if (w.recover.open) total += val; }
+      if (val > 0){ var w = resubmissionWindows(x.ano); if (w.recover.open) { total += val; reports++; } }
     });
     if (!(total > 0)) return;
-    // O id (ja PBKDF2 do NIF, ver tool.js) segue CIFRADO para a chave publica do servidor: quem
-    // esteja no caminho (logs de WAF/proxy) ve so ciphertext, e como o padding OAEP e aleatorio,
-    // dois envios do MESMO utilizador nem sequer sao ligaveis entre si. A chave esta AFIXADA aqui
-    // - e nao pedida por fetch - para viajar com a mesma verificacao de repo/SRI que o resto da
-    // ferramenta; rodar a chave = novo par + nova constante + bump de versao.
-    encryptCounterId(ef.uid).then(function(idEnc){
-      if (!idEnc) return;
-      return fetch(API + "/counter", { method:"POST", headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ consent:true, idEnc: idEnc, recuperavel: Math.round(total*100)/100 }) });
-    }).catch(function(){});
-  }
-  var COUNTER_PUBKEY_B64 = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyxHHErlqx3sAmH8J2b2soAD39QOlp2RfiJZ9QZQMwITbK7/1OAzAfJ5SwUJCFknYRbUkvhh9mLuCJPPia3gqrHsaW4rXPAuJMV1czRUfbiHmf2Y3QMMe1wxSKQC2TS3c4vR+qLshG/H25cNoIBurcZ+7svBaOP4TxOt23HXme3CSAS+cca/4lTegovnR0QFmxvRE/r+aBR0okDAgnhgXZhNyB1Zv7b3Q98RoYhc/siSuFYiMKDYpHUZ7EX7NNYYzAbYox1jvAnFj7RdJ+kDTTSigJ4fFOJIH2AAChOuGzybI/wEpHuXbxSOBnN2eEq6a7PWTbz2+PtM72NLzUqlGpQIDAQAB";
-  function encryptCounterId(uid){
     try {
-      var der = Uint8Array.from(atob(COUNTER_PUBKEY_B64), function(c){ return c.charCodeAt(0); });
-      return crypto.subtle.importKey("spki", der.buffer, { name:"RSA-OAEP", hash:"SHA-256" }, false, ["encrypt"])
-        .then(function(k){ return crypto.subtle.encrypt({ name:"RSA-OAEP" }, k, new TextEncoder().encode(uid)); })
-        .then(function(ct){ return btoa(String.fromCharCode.apply(null, new Uint8Array(ct))); })
-        .catch(function(){ return null; });
-    } catch(e){ return Promise.resolve(null); }
+      fetch(API + "/contributions/impact", { method:"POST", headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ consent:true, recoverable:Math.round(total*100)/100, reports:reports }) }).catch(function(){});
+    } catch(e){}
   }
   // Mirrors the PARTITIONS list in tool.js (kept in sync by hand - two files, two origins, no
   // shared module). id + where to go to read each one.
@@ -840,14 +834,16 @@
 
   // Verified per-income-year deduction ceilings (source: year_snapshots.json, from portaldasfinancas
   // with redacao-law provenance; DRE is source of record). Only rendas moves across these years
-  // (base 502/600/600). Keep in sync with year_snapshots.json when a new year is sourced.
+  // (base 502/600/700/900). Keep in sync with year_snapshots.json when a new year is sourced.
   var CEILINGS = {
     2023: { despesas_gerais:{pct:35,ceiling:250}, saude:{pct:15,ceiling:1000}, educacao:{pct:30,ceiling:800},
             imoveis_rendas:{pct:15,base_ceiling:502}, lares:{pct:25,ceiling:403.75}, iva_conjunto:{pct:15,ceiling:250} },
     2024: { despesas_gerais:{pct:35,ceiling:250}, saude:{pct:15,ceiling:1000}, educacao:{pct:30,ceiling:800},
             imoveis_rendas:{pct:15,base_ceiling:600}, lares:{pct:25,ceiling:403.75}, iva_conjunto:{pct:15,ceiling:250} },
     2025: { despesas_gerais:{pct:35,ceiling:250}, saude:{pct:15,ceiling:1000}, educacao:{pct:30,ceiling:800},
-            imoveis_rendas:{pct:15,base_ceiling:600}, lares:{pct:25,ceiling:403.75}, iva_conjunto:{pct:15,ceiling:250} }
+            imoveis_rendas:{pct:15,base_ceiling:700}, lares:{pct:25,ceiling:403.75}, iva_conjunto:{pct:15,ceiling:250} },
+    2026: { despesas_gerais:{pct:35,ceiling:250}, saude:{pct:15,ceiling:1000}, educacao:{pct:30,ceiling:800},
+            imoveis_rendas:{pct:15,base_ceiling:900}, lares:{pct:25,ceiling:403.75}, iva_conjunto:{pct:15,ceiling:250} }
   };
 
   // Re-audit of a past year: given that year's ceilings (from year_snapshots.json) and how much the
@@ -856,44 +852,11 @@
   // testable. The deductible for a category is rate% of the spend, capped at the ceiling; headroom
   // is what is left under the cap. Indicators only, never a submission. `rules` is a year's rules
   // object; `spent` is {categoryKey: eur}. Categories with no pct/ceiling (unsourced) are skipped.
-  /* Escalões IRS oficiais (art. 68 CIRS, Continente) - [limite, taxa, parcela a abater OFICIAL].
-     A parcela vem da coluna "taxa Média (B)" da tabela da AT: parcela_n = limite_ant x (Normal_n -
-     Média_ant). NUNCA derivar de cabeça - foi assim que uma tabela pré-redução (37% em vez de 35,5%)
-     passou despercebida. Validado contra as liquidações reais de 2023/2024/2025. */
-  var ESCALOES = {
-    2023: [[7479,0.145,0],[11284,0.21,485.14],[15992,0.265,1105.76],[20700,0.285,1425.60],
-           [26355,0.35,2771.10],[38632,0.37,3299.12],[50483,0.435,5809.20],[78834,0.45,6566.45],[null,0.48,8931.47]],
-    2024: [[7703,0.13,0],[11623,0.165,269.61],[16472,0.22,908.87],[21321,0.25,1402.03],
-           [27146,0.32,2894.50],[39791,0.355,3845.50],[43000,0.435,7028.78],[80000,0.45,7673.78],[null,0.48,10073.78]],
-    2025: [[8059,0.125,0],[12160,0.16,282.07],[17233,0.215,951.42],[22306,0.244,1451.18],
-           [28400,0.314,3012.63],[41629,0.349,4006.63],[44987,0.431,7423.61],[83696,0.446,8098.42],[null,0.48,10944.08]]
-  };
-  var DED_ESPECIFICA = 4104;         // art. 25: max(4104, contribuições obrigatórias)
-  var TAXA_AUTONOMA_F = 0.28;        // art. 72: rendas, taxa especial
-
-  function coletaIRS(coletavel, ano){
-    var br = ESCALOES[ano]; if (!br) return null;
-    for (var i=0;i<br.length;i++){
-      if (br[i][0] === null || coletavel <= br[i][0])
-        return { coleta: coletavel*br[i][1] - br[i][2], taxa: br[i][1] };
-    }
-    return null;
-  }
+  var RENTAL_RECOMMENDATION_ENABLED = false;
 
   /* O que teria dado MENOS imposto, com o MESMO rendimento. Só compara opções que a lei permitia
      nesse ano e que se aplicam ao perfil real - por isso a comparação de rendas só aparece se houve
      rendas. Devolve null quando não há nada a dizer (não inventa sugestões). */
-  function whatIfRendas(ano, rendimentoA, contribuicoes, rendasLiquidas){
-    if (!rendasLiquidas || !ESCALOES[ano]) return null;
-    var esp = Math.max(DED_ESPECIFICA, contribuicoes || 0);
-    var cEng = coletaIRS(rendimentoA + rendasLiquidas - esp, ano);
-    var cAut = coletaIRS(rendimentoA - esp, ano);
-    if (!cEng || !cAut) return null;
-    var eng = cEng.coleta, aut = cAut.coleta + rendasLiquidas*TAXA_AUTONOMA_F;
-    return { melhor: (aut < eng ? "autonoma" : "englobamento"),
-             diferenca: +Math.abs(eng-aut).toFixed(2),
-             marginal: cAut.taxa, autonoma: TAXA_AUTONOMA_F };
-  }
   function agendaMatch(prof, kws){
     var ag = (prof.detalhes.situacao && prof.detalhes.situacao.agenda && prof.detalhes.situacao.agenda.proximos) || [];
     for (var i=0;i<ag.length;i++){
@@ -1091,7 +1054,7 @@
         'Imprimir / Guardar PDF</button></div>'+
       '<header><div class="brand">Fiscalidade</div>'+
         '<h1>Relatório de correção - IRS '+esc(yy)+'</h1>'+
-        '<div class="meta">Gerado em '+esc(geradoEm)+' &middot; faturas.diogoandrade.com &middot; '+
+        '<div class="meta">Gerado em '+esc(geradoEm)+' &middot; fiscalida.de &middot; '+
         'prazo estimado para corrigir a teu favor: <b>'+esc(wnd.recover.deadline)+'</b> ('+
         (wnd.recover.open ? 'janela ABERTA' : 'janela fechada')+')</div></header>'+
       '<h2>Resumo</h2>'+
@@ -1112,7 +1075,7 @@
       '<h2>Detalhe por comerciante</h2>'+
       (semDetalhe
         ? '<p>Este perfil foi guardado por uma versão anterior do leitor e não tem o detalhe por comerciante. '+
-          'Volta ao e-Fatura e carrega em Analisar na barra (ou no favorito) para o obteres.</p>'
+          'Volta ao e-Fatura e carrega em Analisar na barra da extensão para o obteres.</p>'
         : tabela('Cenário otimizado (máximo teórico)', ra.porComerciante)+
           tabela('Cenário aconselhado (setor principal do comerciante)', ra.porComercianteAconselhado))+
       '<div class="priv"><b>Este documento contém dados fiscais pessoais.</b> Foi gerado inteiramente no teu '+
@@ -1212,7 +1175,7 @@
         '<div class="acell"><div class="atitle">'+(done.length?'Já reuniste':'1. Preparar')+'</div>'+
           (done.length
             ? '<div class="adone">'+done.map(function(p){ return esc(meta(p.id).short); }).join(' · ')+'</div>'
-            : '<span id="slot-bm"></span><div class="acap">Só uma vez</div>')+
+            : '<a class="btn-outline" href="/extensao">Ver estado da extensão</a><div class="acap">pré-visualização interna</div>')+
         '</div>'+
         '<div class="acell"><div class="atitle">'+(done.length?'Próxima fonte':'2. Começar por')+'</div>'+
           srcSelect(missing)+'</div>'+
@@ -1221,7 +1184,7 @@
           ico('i-external')+'<span id="opensrclabel">'+(done.length?'Abrir e continuar':'Abrir '+esc(meta(missing[0].id).short))+'</span></a></div>'+
       '</div>';
       if (!done.length)
-        h += '<p class="framecap">Na página oficial, carrega em Ler na barra (ou usa o favorito). Os dados aparecem aqui.</p>';
+        h += '<p class="framecap">Na página oficial, carrega em Ler na barra da extensão. Os dados aparecem aqui.</p>';
     }
 
     // ESTADO VAZIO: o que dá para juntar a seguir --------------------------------------------
@@ -1372,7 +1335,7 @@
           // agregados na mesma e diz-se o que fazer para o obter - nunca uma lista vazia.
           var semDetalhe = !ra.porComerciante && !ra.porComercianteAconselhado;
           var avisoDetalhe = semDetalhe
-            ? '<div class="w mfoot">Volta ao e-Fatura e carrega em Analisar na barra (ou no favorito) para veres o detalhe por comerciante.</div>' : '';
+            ? '<div class="w mfoot">Volta ao e-Fatura e carrega em Analisar na barra da extensão para veres o detalhe por comerciante.</div>' : '';
 
           var paneOtim = '<div class="w"><b style="color:'+cor+'">~&euro;'+esc(Math.round(otim))+'</b> em '+esc(ra.nMover)+' fatura(s)'+
             (Object.keys(ra.porSetor||{}).length?' - '+fmtSet(ra.porSetor):'')+'.'+
@@ -1411,43 +1374,16 @@
         } else if (ra){
           raHtml = '<div class="w" style="margin-top:4px">Nada por reclassificar em '+yy+' - as faturas já estão no melhor setor possível.</div>';
         }
-        // A decisão englobar-vs-28% depende SÓ da taxa marginal. NÃO pedimos o rendimento: para um
-        // ano já entregue a taxa vem impressa na demonstração de liquidação ("Quociente familiar 1,00
-        // taxa 35,500%"), logo pedir o rendimento é (a) redundante - a informação está na liquidação -
-        // e (b) perigoso: um valor errado/parcial atirava o cálculo para o 1.º escalão (12,5%) e
-        // INVERTIA o conselho. Bug real (2026-07-25): dizia "englobar poupa ~632 EUR" quando a marginal
-        // verdadeira era 44,6% e o correto era a autónoma (que o Diogo já tinha escolhido).
-        // Rendas recebidas nesse ano (do leitor de rendas; anulados já excluídos). Sem rendas, nada
-        // disto se aplica - a comparação englobamento vs 28% só existe para quem tem Cat F.
+        // Rental-regime recommendation is deliberately disabled. A correct comparison is not
+        // "marginal rate versus one fixed percentage": it is year-specific and depends on taxable
+        // net rent, article 41 expenses, household choices and the exact assessment. Until that
+        // model has independent fixtures, showing no answer is safer than a plausible wrong one.
         var rd = prof.detalhes.rendas || {};
         var rendasAno = (rd.rendasPorAno && rd.rendasPorAno[yy]) || null;
         var rendasVal = (rendasAno && rendasAno.valor) || 0;
-        // A taxa marginal vem AGORA da própria demonstração de liquidação, lida pelo tool.js no
-        // navegador (o PDF não está encriptado). Só se cai no input manual se, por alguma razão, a
-        // leitura falhar - nunca se pergunta o que já está no documento que a AT nos serve.
-        var ex = loadExtra();
-        var liq = (prof.detalhes.recibos && prof.detalhes.recibos.declaracoes
-                   && prof.detalhes.recibos.declaracoes[yy] && prof.detalhes.recibos.declaracoes[yy].liquidacao) || null;
-        var marg = (liq && liq.marginal) || +ex["marg_"+yy] || 0;
-        if (rendasVal > 0 && marg > 0){
-          var melhor = (marg/100 > TAXA_AUTONOMA_F) ? 'autonoma' : 'englobamento';
-          var dif = Math.abs((marg/100 - TAXA_AUTONOMA_F) * rendasVal);
-          raHtml += '<div class="w" style="margin-top:4px">Rendas em '+yy+' (&euro;'+esc(Math.round(rendasVal))+'): a tua taxa marginal foi <b>'+esc(marg)+'%</b>'+(liq&&liq.marginal?' <span class="w">(lida da tua demonstração)</span>':'')+'. '+
-            (melhor === 'autonoma'
-               ? 'Como é <b>acima de 28%</b>, a <b>taxa autónoma</b> (art. 72.º) é melhor - englobar custaria mais <b>~&euro;'+esc(Math.round(dif))+'</b>.'
-               : 'Como é <b>abaixo de 28%</b>, o <b>englobamento</b> é melhor - poupa <b>~&euro;'+esc(Math.round(dif))+'</b>.')+
-            ' <span style="color:var(--mute)">Estimativa sobre a renda recebida: não conhecemos os gastos do art. 41.º (IMI, condomínio, obras) que reduzem a renda tributável.</span></div>';
-        } else if (rendasVal > 0){
-          // NUNCA pedir um numero que esta no documento. Esta pagina nao tem sessao da AT (corre em
-          // faturas.diogoandrade.com), por isso quem le a demonstracao e o FAVORITO, na pagina da AT.
-          // Se a taxa nao esta aqui e porque os dados guardados sao anteriores a essa leitura -> a
-          // accao certa e reler, nao escrever a mao.
-          raHtml += '<div class="w" style="margin-top:4px">Recebeste <b>&euro;'+esc(Math.round(rendasVal))+'</b> de rendas em '+yy+'. '+
-            'Podes declará-las a <b>28%</b> (taxa autónoma, art. 72.º) ou <b>englobá-las</b> - e englobar só compensa se a tua taxa marginal for inferior a 28%. '+
-            '<b>Essa taxa está na tua demonstração de liquidação e a ferramenta lê-a sozinha</b>: abre '+
-            '<a href="https://irs.portaldasfinancas.gov.pt/app/consulta" target="_blank" rel="noopener">Consultar Declaração</a> '+
-            'e carrega em Ler na barra (ou no favorito) - depois volta aqui e a comparação aparece feita.</div>';
-        }
+        if (rendasVal > 0 && !RENTAL_RECOMMENDATION_ENABLED)
+          raHtml += '<div class="w" style="margin-top:4px;color:var(--amber)"><b>Comparação de rendas desativada.</b> '+
+            'A ferramenta registou &euro;'+esc(Math.round(rendasVal))+' em '+yy+', mas não recomenda englobamento nem taxa autónoma enquanto o modelo anual completo não estiver validado.</div>';
         // Resultado REAL desse ano, lido das declarações (a que conta é a última - ver readDeclaracoes).
         var dcl = (prof.detalhes.recibos && prof.detalhes.recibos.declaracoes && prof.detalhes.recibos.declaracoes[yy]) || null;
         var dclHtml = '';
@@ -1483,14 +1419,14 @@
       '<span class="flabel">'+ico('i-doc')+'As nove fontes</span>'+
       '<span class="fdesc">'+done.length+' de '+PARTITIONS.length+' reunidas · abre cada página oficial</span>'+chev()+
       '</summary><div class="fbody">'+
-      '<div class="w" style="margin:14px 0 4px">A barra da extensão faz isto num clique. Se preferires o favorito, chega carregares nele em cada página.</div>';
+      '<div class="w" style="margin:14px 0 4px">A barra da extensão faz esta leitura apenas quando carregas nela.</div>';
     PARTITIONS.forEach(function(p){
       var ok = store.partitions[p.id] && store.partitions[p.id].status==="done";
       h += '<div class="step"><div class="ic">'+ico(ok?'i-check-circle':meta(p.id).icon)+'</div><div class="bd">'+
         '<div class="t">'+esc(p.label)+'</div><div class="w">'+esc(p.why)+'</div>'+
         '<div style="margin-top:7px"><a class="btn'+(ok?' ghost':'')+'" href="'+p.open+'" target="_blank" rel="noopener">'+
         (ok?'Reler esta página':'Abrir e ler esta página')+'</a></div>'+
-        (ok?'':'<div class="w" style="margin-top:5px">Na página, carrega em Ler na barra (ou no favorito). Lê a página e volta aqui sozinho.</div>')+
+        (ok?'':'<div class="w" style="margin-top:5px">Na página, carrega em Ler na barra da extensão. Lê a página e volta aqui sozinho.</div>')+
         '</div></div>';
     });
     if (done.length) h += '<div style="margin-top:14px;border-top:1px solid var(--hair);padding-top:12px">'+
@@ -1503,13 +1439,14 @@
             : '<a href="#" id="reset">Apagar os meus dados</a>')+'</div>';
     h += trustStrip();
 
-    // opt-in contribution
+    // Independent opt-ins. A user may help validate schemas without publishing an impact total,
+    // or the reverse. Neither choice changes local analysis.
     if (!DEMO && done.length) h += '<label class="optin">'+
-      '<input type="checkbox" id="share" '+(shareOn()?'checked':'')+' style="margin-right:6px">'+
-      'Ajudar a melhorar a ferramenta, de forma <b>anónima</b>. '+
-      'Envia a <b>estrutura</b> das respostas das Finanças (os nomes dos campos) e o <b>total que dá para recuperar</b> '+
-      'que a ferramenta te encontrou - identificado por um código sem retorno, <b>nunca o teu nome nem NIF</b>. '+
-      'Assim cobrimos mais situações e mostramos quanto já ajudámos a poupar. Podes desligar quando quiseres.</label>';
+      '<input type="checkbox" id="share-shapes" '+(shapesOn()?'checked':'')+' style="margin-right:6px">'+
+      '<b>Diagnóstico de formatos:</b> enviar só nomes de campos e tipos, sem valores, URLs livres ou identificadores.</label>'+
+      '<label class="optin">'+
+      '<input type="checkbox" id="share-impact" '+(impactOn()?'checked':'')+' style="margin-right:6px">'+
+      '<b>Impacto agregado:</b> somar o total recuperável ao contador. Não cria nem envia um identificador de pessoa.</label>';
     // Debug: copy the response STRUCTURES (keys+types, values redacted) to validate the readers.
     // Only appears once at least one partition captured a shape. Safe to paste - carries no values.
     var haveShapes = PARTITIONS.some(function(p){ return store.partitions[p.id] && store.partitions[p.id].shape; });
@@ -1518,10 +1455,6 @@
     h += '<div class="w" style="margin-top:12px;font-size:.82rem">Os teus dados são apagados automaticamente ao fim do dia, aqui neste navegador.</div>';
 
     document.getElementById("out").innerHTML = h;
-    // The bookmarklet anchor is MOVED (never rebuilt) from its static holder into the action frame,
-    // so its href - the payload /verificar hashes - stays byte-identical to what is in the file.
-    var slot = document.getElementById("slot-bm"), bm = document.getElementById("bmprofile");
-    if (slot && bm) slot.appendChild(bm);
     // Source picker: keeps the primary button pointing at the chosen source.
     var sel = document.getElementById("srcsel"), openBtn = document.getElementById("opensrc");
     if (sel && openBtn) sel.onchange = function(){
@@ -1621,13 +1554,22 @@
     var rs = document.getElementById("reset");
     if (rs) rs.onclick = function(ev){ ev.preventDefault();
       if (DEMO){ MEM.store = null; MEM.extra = {}; render(); return; }
-      try{ localStorage.removeItem(PKEY); }catch(e){}
+      try{
+        localStorage.removeItem(PKEY);
+        localStorage.removeItem(SHAPES_KEY);
+        localStorage.removeItem(IMPACT_KEY);
+      }catch(e){}
       setConfirmed(false);                 // apagar os dados também apaga a confirmação do gate
       ACC = {}; render(); };
-    var sh = document.getElementById("share");
+    var sh = document.getElementById("share-shapes");
     if (sh) sh.onchange = function(){
-      try { localStorage.setItem(SHARE_KEY, sh.checked ? "1" : "0"); } catch(e){}
-      if (sh.checked) { sendShare(load()); sendCounter(load()); }   // contribute the moment they opt in
+      try { localStorage.setItem(SHAPES_KEY, sh.checked ? "1" : "0"); } catch(e){}
+      if (sh.checked) sendShare(load());
+    };
+    var im = document.getElementById("share-impact");
+    if (im) im.onchange = function(){
+      try { localStorage.setItem(IMPACT_KEY, im.checked ? "1" : "0"); } catch(e){}
+      if (im.checked) sendImpact(load());
     };
   }
 
@@ -1655,7 +1597,7 @@
 
   var added = DEMO ? null : ingestHash();   // o exemplo nunca lê nem escreve armazenamento
   render(added);
-  if (added) { sendShare(load()); sendCounter(load()); }   // a new partition arrived - contribute if opted in
+  if (added) { sendShare(load()); sendImpact(load()); }   // a new partition arrived - contribute if opted in
 })();
 </script>
 <script defer src="/launcher.js"></script>

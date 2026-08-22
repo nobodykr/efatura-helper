@@ -1,4 +1,5 @@
-// CROSS-CHECK: deducoes.html (what we TELL people) == tool.js CEIL (what we COMPUTE with)
+// CROSS-CHECK: deducoes.html + DEDUCOES.md (what we TELL people)
+//              == tool.js CEIL (what we COMPUTE with)
 //              == year_snapshots.json (what we VERIFIED against the law).
 //
 //   node test-deducoes-sync.js
@@ -14,6 +15,7 @@
 const fs = require("fs");
 
 const page = fs.readFileSync("deducoes.html", "utf8");
+const markdown = fs.readFileSync("DEDUCOES.md", "utf8");
 const tool = fs.readFileSync("tool.js", "utf8");
 const snap = JSON.parse(fs.readFileSync("year_snapshots.json", "utf8"));
 
@@ -35,6 +37,38 @@ for (let m; (m = rowRe.exec(page)); ) {
 if (Object.keys(rows).length !== 16)
   bad(`page table: expected 16 rows, parsed ${Object.keys(rows).length} - the HTML shape changed, fix the regex before trusting anything below`);
 else ok("page table parsed: 16 rows");
+
+/* ---- 1b. parse the Markdown table -------------------------------------------------------- */
+const mdRows = {};
+for (const line of markdown.split(/\r?\n/)) {
+  const m = line.match(/^\|\s*(C\d+)\s*\|[^|]*\|\s*([^|]+?)\s*\|/);
+  if (!m) continue;
+  const value = m[2];
+  const pct = (value.match(/(\d+)%/) || [])[1];
+  const capM = value.match(/at[eé]\s+([\d.,]+)\s+EUR/i);
+  mdRows[m[1]] = {
+    pct: pct ? Number(pct) : null,
+    cap: capM ? Number(capM[1].replace(".", "").replace(",", ".")) : null,
+    iva: /do IVA/.test(value)
+  };
+}
+if (Object.keys(mdRows).length !== 16)
+  bad(`Markdown table: expected 16 rows, parsed ${Object.keys(mdRows).length}`);
+else ok("Markdown table parsed: 16 rows");
+
+if (!/C09 a C15/.test(page) || !/C09 a C15/.test(markdown))
+  bad("shared IVA ceiling must explicitly include every sector through C15 in page and Markdown");
+else ok("shared IVA ceiling includes C15 in page and Markdown");
+
+for (const [code, r] of Object.entries(rows)) {
+  const md = mdRows[code];
+  if (!md) { bad(`${code} is on the page but missing from DEDUCOES.md`); continue; }
+  if (r.pct !== md.pct) bad(`${code} rate: page says ${r.pct}%, Markdown says ${md.pct}%`);
+  if (r.iva !== md.iva) bad(`${code} base differs between page and Markdown`);
+  if (r.cap !== md.cap) bad(`${code} cap: page says ${r.cap}, Markdown says ${md.cap}`);
+}
+for (const code of Object.keys(mdRows))
+  if (!rows[code]) bad(`${code} is in DEDUCOES.md but missing from the page`);
 
 /* ---- 2. parse tool.js CEIL + RENDAS_CAP_ANO ---------------------------------------------- */
 const ceil = {};
@@ -92,6 +126,6 @@ if (ceil.C07.cap !== rendasAno[nowYear])
 if ((rules.iva_conjunto || {}).ceiling !== potCap)
   bad(`POT_CAP ${potCap} != snapshot iva_conjunto ${(rules.iva_conjunto || {}).ceiling}`);
 
-console.log(fails ? `\n  ${fails} FAILED - the three sources disagree; fix the DATA, not this test`
-                  : "\n  page == CEIL == year_snapshots: all three sources agree");
+console.log(fails ? `\n  ${fails} FAILED - the four sources disagree; fix the DATA, not this test`
+                  : "\n  page == Markdown == CEIL == year_snapshots: all four sources agree");
 process.exit(fails ? 1 : 0);

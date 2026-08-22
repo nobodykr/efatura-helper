@@ -1,9 +1,13 @@
-# Deploying
+# Release runbook (blocked during internal review)
+
+Do not deploy, change DNS, enable indexing, publish a bookmarklet, or submit/appeal the extension
+while `fiscalidade.config.json` says `internal-preview`. This document is a future release checklist,
+not authorization to publish.
 
 This is a static site: `index.html` + `tool.js`. Host it anywhere that serves files.
 
-**Runtime dependency:** consulta/contrato/perfil/index counter and `tool.js` call the cae-db public
-API at `https://cae-db.diogoandrade.com` (served by the `cae-db-workers` container on the homeserver).
+**Runtime dependency:** perfil/index aggregate counters and `tool.js` call the reviewed API at
+`https://fiscalida.de/api/v1`, forwarded to the backend selected in server-side configuration.
 If clicks stop fetching, check that host first - see `/mnt/data/apps/cae-db/CONSUMERS.md`
 (`GET /health` there reports fd budget). 2026-08-21 outage was exactly this.
 
@@ -25,28 +29,22 @@ that ships fine and then throws at runtime for every user. Check the symbols exi
 ## Testing without publishing
 
 Open e-Fatura, log in, open the browser console (F12), paste the entire contents of `tool.js`,
-press enter. Identical behaviour to the bookmarklet, nothing published. Always do this first -
+press enter. This exercises the same analyzer code without publishing an installation surface.
 real invoice data exercises paths nothing else will.
 
 ## Related service
 
-The bookmarklet reads its merchant map from a **cae-db** instance. Point `CAEMAP_URL` in
-`tool.js` at your own, or use the public one at `https://cae-db.diogoandrade.com`.
+The extension reads bucketed merchant-map data through `https://fiscalida.de/api/v1`. The upstream
+origin belongs only in deployment configuration, never in browser code.
 
 The cae-db source is **private**, deliberately. The split is: *how your tax is calculated* is
 public and auditable (`tool.js` here, plus the CAE -> sector map it relies on); *how the merchant
 data is fetched* is not. The registry-scraping mechanics are an implementation detail and
 publishing them mostly just invites people to hammer SICAE.
 
-The map API stays open where it has to be: `/sectors.json`, `/map.json`, `/cae-map.json` and
-`/stats` answer to anyone. Serving the whole map is what lets the bookmarklet work without ever
-telling the server which merchants you shop at.
-
-`/nif/{nif}` and `/search` are PUBLIC reads since 2026-07-22 (opened for the NIF searcher;
-/search is deliberately restricted to trading businesses - see the docstring in cae-db server.py,
-that restriction is load-bearing). The map-MUTATING routes remain token-gated. An earlier version
-of this note said both reads were 401-gated; that was true on 2026-07-21 and superseded a day
-later - verified live 2026-07-28.
+The browser receives only the last-three-digit map buckets needed for the current analysis. A
+failed bucket aborts the recommendation instead of silently turning every missing merchant into
+general expenses.
 
 ## Provably-fair releases
 Provenance is a `source_commit` (the immutable Git commit that last changed tool.js), NOT a release tag.
@@ -63,7 +61,7 @@ So the order matters - commit tool.js BEFORE generating the manifest:
    public site, AND the docs / tests / build scripts must not be publicly served (they leak the
    architecture - the cae-db split, endpoint shapes, this very deploy command). Only runtime files
    go up: tool.js, *.html, all data *.json, metrics.js, fonts, functions/, _headers, _routes.json,
-   robots/sitemap/icons. Exact command:
+   robots/icons. Exact command:
    ```
    rsync -a --delete \
      --exclude extension --exclude dist --exclude node_modules --exclude .git \

@@ -68,7 +68,7 @@ function render(profile) {
     const errors = [];
     const dom = new JSDOM(html, {
       runScripts: "dangerously",
-      url: "https://faturas.diogoandrade.com/perfil",
+      url: "https://fiscalida.de/perfil",
       beforeParse(w) {
         w.fetch = () => Promise.reject(new Error("offline no teste"));
         w.localStorage.setItem("fb-profile-v1", JSON.stringify(profile));
@@ -92,11 +92,12 @@ function render(profile) {
     ok(`[${nome}] rendeu conteudo (nao ficou em branco)`, r.html.length > 200, r.html.length + " chars");
     ok(`[${nome}] sem erros de runtime`, r.errors.length === 0, r.errors.join(" | ").slice(0, 120));
   }
-  // o caso completo tem de trazer as abas e usar a taxa lida da demonstracao
+  // o caso completo tem de trazer as abas, mas a recomendacao de rendas fica desligada enquanto o
+  // modelo anual e o parser de demonstracoes nao tiverem fixtures independentes.
   const full = await render(PROFILES["completo (rendas + liquidacao)"]);
   ok("abas Otimizado/Aconselhado presentes", /class="fbtab"/.test(full.html));
-  ok("usa a taxa da demonstracao (nao pergunta ao utilizador)",
-     /lida da tua demonstra/.test(full.html) && !/escreve-a/.test(full.html));
+  ok("comparacao de rendas esta explicitamente desativada",
+     /Comparação de rendas desativada/.test(full.html) && /não recomenda englobamento/.test(full.html));
   console.log(failures ? `\n  ${failures} FAILED` : "\n  all render tests passed");
   process.exit(failures ? 1 : 0);
 })();

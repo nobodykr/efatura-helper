@@ -85,7 +85,7 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   let store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("e-Fatura auto-read + stored as done", store.partitions && store.partitions.efatura && store.partitions.efatura.status === "done");
   ok("e-Fatura counts parsed (2 pending of 3)", store.partitions.efatura.data.porClassificar === 2 && store.partitions.efatura.data.totalFaturas === 3);
-  ok("auto-navigates to /perfil handoff (efatura)", /faturas\.diogoandrade\.com\/perfil#p=efatura&d=/.test(w.__nav || ""));
+  ok("auto-navigates to /perfil handoff (efatura)", /fiscalida\.de\/perfil#p=efatura&d=/.test(w.__nav || ""));
 
   // 4. On Imoveis (a DIFFERENT origin) the browser gives fresh localStorage - modelled by mkEnv's
   //    new _d each call, which is exactly the same-origin policy. So: consent asked again, then the
@@ -103,7 +103,7 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   //     (never sent to a server), so /perfil can merge it. Payload carries no nif/name.
   {
     const hand = w.__nav || "";
-    ok("auto-navigates to /perfil handoff (rendas, fragment)", /faturas\.diogoandrade\.com\/perfil#p=rendas&d=/.test(hand));
+    ok("auto-navigates to /perfil handoff (rendas, fragment)", /fiscalida\.de\/perfil#p=rendas&d=/.test(hand));
     if (hand) {
       const d = JSON.parse(Buffer.from(decodeURIComponent(hand.split("&d=")[1]), "base64").toString("utf8"));
       ok("handoff payload carries the partition summary", d.activos === 1 && d.contratos === 1);

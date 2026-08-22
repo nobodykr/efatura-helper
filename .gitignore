@@ -7,3 +7,5 @@ node_modules/
 dist/
 extension/tool.js
 extension/*.png
+extension/offers.json
+extension/fonts/

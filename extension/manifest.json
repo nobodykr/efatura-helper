@@ -1,17 +1,41 @@
 {
   "manifest_version": 3,
   "name": "Fatura Boa",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "A tua situação fiscal, organizada. Faturas do e-Fatura, rendas, dívidas, prazos, IRS e Segurança Social - tudo no teu navegador, sem password.",
   "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" },
   "permissions": ["scripting", "storage"],
-  "host_permissions": ["https://*.portaldasfinancas.gov.pt/*", "https://*.seg-social.pt/*"],
+  "host_permissions": [
+    "https://faturas.portaldasfinancas.gov.pt/*",
+    "https://imoveis.portaldasfinancas.gov.pt/*",
+    "https://sitfiscal.portaldasfinancas.gov.pt/*",
+    "https://irs.portaldasfinancas.gov.pt/*",
+    "https://www.seg-social.pt/*"
+  ],
   "background": { "service_worker": "background.js" },
   "content_scripts": [
     {
-      "matches": ["https://*.portaldasfinancas.gov.pt/*", "https://*.seg-social.pt/*"],
-      "js": ["bar.js"],
+      "matches": [
+        "https://faturas.portaldasfinancas.gov.pt/*",
+        "https://imoveis.portaldasfinancas.gov.pt/*",
+        "https://sitfiscal.portaldasfinancas.gov.pt/*",
+        "https://irs.portaldasfinancas.gov.pt/*",
+        "https://www.seg-social.pt/*"
+      ],
+      "js": ["config.js", "bar.js"],
       "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["offers.json"],
+      "matches": [
+        "https://faturas.portaldasfinancas.gov.pt/*",
+        "https://imoveis.portaldasfinancas.gov.pt/*",
+        "https://sitfiscal.portaldasfinancas.gov.pt/*",
+        "https://irs.portaldasfinancas.gov.pt/*",
+        "https://www.seg-social.pt/*"
+      ]
     }
   ],
   "action": { "default_title": "Fiscalidade - abre uma página do Estado para usar" }

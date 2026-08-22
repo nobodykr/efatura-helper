@@ -27,8 +27,8 @@ global.DOMParser = window.DOMParser;
 global.alert=()=>{};
 global.fetch = (u, opt) => {
   const s = String(u);
-  var CAEMAP=caemap; if(s.includes("/bucket/")){var _b=s.split("/bucket/")[1].split("?")[0];var _o={};for(var _k in CAEMAP){if(_k.slice(-3)===_b)_o[_k]=CAEMAP[_k];}return Promise.resolve({ok:true,json:()=>Promise.resolve(_o)});} if (s.includes("sectors.json")) return Promise.resolve({ok:true,json:()=>Promise.resolve(CAEMAP)});
-  if (s.includes("obterDocumentosAdquirente")) return Promise.resolve({ok:true,json:()=>Promise.resolve({linhas:rows})});
+  var CAEMAP=caemap; if(s.includes("/api/v1/map/buckets/")){var _b=s.split("/api/v1/map/buckets/")[1].split("?")[0];var _o={};for(var _k in CAEMAP){if(_k.slice(-3)===_b)_o[_k]=CAEMAP[_k];}return Promise.resolve({ok:true,json:()=>Promise.resolve(_o)});} if (s.includes("sectors.json")) return Promise.resolve({ok:true,json:()=>Promise.resolve(CAEMAP)});
+  if (s.includes("obterDocumentosAdquirente")) return Promise.resolve({ok:true,headers:{get:()=>"application/json"},text:()=>Promise.resolve(JSON.stringify({linhas:rows}))});
   if (s.includes("detalheDocumentoAdquirente")) {
     const id = (s.match(/idDocumento=([^&]+)/)||[])[1];
     return Promise.resolve({ok:true, text:()=>Promise.resolve(

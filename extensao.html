@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Extensão Fiscalidade para Chrome | e-Fatura mais fácil</title>
-<meta name="description" content="A extensão Fiscalidade põe uma barra no topo das páginas do Estado que usas - e-Fatura, situação fiscal, rendas, IRS, recibos verdes e Segurança Social - e também no site Fiscalidade, para saltares para o passo seguinte. Corre no teu navegador, sem password. Grátis.">
+<meta name="description" content="A extensão Fiscalidade põe uma barra no topo do e-Fatura: analisa as tuas faturas, sugere o melhor setor de dedução e mostra os tetos do IRS. Corre no teu navegador, sem password. Grátis.">
 <link rel="canonical" href="https://fiscalida.de/extensao">
 <!-- Diogo's DA monogram, same mark as diogoandrade.com. There was no favicon at all before, so
      every tab showed the browser default and /favicon.ico returned 404. Regenerate the raster
@@ -12,7 +12,7 @@
 <link rel="icon" href="/favicon.ico" sizes="48x48" type="image/x-icon">
 <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png">
-<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <meta name="author" content="Diogo Andrade">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_PT">
@@ -35,7 +35,7 @@
  "name":"Fiscalidade",
  "applicationCategory":"FinanceApplication",
  "operatingSystem":"Qualquer navegador",
- "url":"https://fiscalida.de/extensao",
+ "url":"https://fiscalida.de/",
  "inLanguage":"pt-PT",
  "description":"Ferramenta gratuita e verificavel que le o proprio registo do utilizador nas Financas e na Seguranca Social, na sua sessao, sem password, e mostra a situacao fiscal: faturas do e-Fatura por setor, rendas, situacao fiscal e prazos, patrimonio e IMI, e historico de IRS.",
  "author":{"@type":"Person","name":"Diogo Andrade","url":"https://diogoandrade.com"},
@@ -379,17 +379,14 @@
   }
   .fde{background:linear-gradient(120deg,#1E88FF,#00C6D7);-webkit-background-clip:text;background-clip:text;color:transparent}
 </style>
-<meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem faturas.diogoandrade.com; ref fb-lic-e1ec0c96c9">
-    <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
-    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="fiscalida.de" data-exclude-search="true"></script>
-    <script defer src="/metrics.js"></script>
+<meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem fiscalida.de; ref fb-lic-e1ec0c96c9">
 </head>
 <body>
 <!-- Fiscalidade (c) 2026 Diogo Andrade. Licenca PolyForm Noncommercial 1.0.0
      (https://polyformproject.org/licenses/noncommercial/1.0.0). Uso nao-comercial apenas.
      Copia, redistribuicao ou uso comercial sem autorizacao viola a licenca e pode ser objecto
-     de accao legal. Origem oficial: faturas.diogoandrade.com | ref fb-lic-e1ec0c96c9 -->
-<div hidden aria-hidden="true" data-fb-lic="PolyForm-Noncommercial-1.0.0" data-fb-ref="fb-lic-e1ec0c96c9" data-fb-origem="faturas.diogoandrade.com">Codigo protegido por direitos de autor. Licenca PolyForm Noncommercial 1.0.0: uso comercial ou redistribuicao sem autorizacao proibidos.</div>
+     de accao legal. Origem oficial: fiscalida.de | ref fb-lic-e1ec0c96c9 -->
+<div hidden aria-hidden="true" data-fb-lic="PolyForm-Noncommercial-1.0.0" data-fb-ref="fb-lic-e1ec0c96c9" data-fb-origem="fiscalida.de">Codigo protegido por direitos de autor. Licenca PolyForm Noncommercial 1.0.0: uso comercial ou redistribuicao sem autorizacao proibidos.</div>
 <a href="/hp/registo-e1ec0c96c9" hidden aria-hidden="true" rel="nofollow noindex" tabindex="-1">.</a>
 <!-- icon sprite: every inline icon on the page is a <use> against one of these symbols,
      drawn as simple 2px-stroke line icons so they inherit currentColor and never need a request. -->
@@ -491,10 +488,10 @@
 <header>
   <div class="wrap">
     <h1><span class="eyebrow">Extensão para Chrome</span>O e-Fatura, num clique.</h1>
-    <p class="sub">A extensão Fiscalidade põe uma barra no topo de cada página do Estado que usas - e-Fatura, situação fiscal, rendas, património, IRS, recibos verdes e Segurança Social. Em cada uma mostra o que interessa e um botão para ler essa página. E no próprio site Fiscalidade a mesma barra é o teu atalho para o passo seguinte. Corre na tua sessão, <b>sem password</b>, e nada sai do navegador. Faz o mesmo que o favorito, agora sempre à mão.</p>
+    <p class="sub">A extensão Fiscalidade põe uma barra no topo das páginas oficiais que lês. Só atua depois da tua autorização e guarda o perfil no armazenamento privado da própria extensão. Corre na tua sessão, <b>sem password</b>.</p>
     <div class="cta-row">
-      <a class="cta-main" id="cta-chrome" href="https://chromewebstore.google.com/detail/epaillcckgnnimpepilnkphmkjbggjoi" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg>Adicionar ao Chrome</a>
-      <a class="cta-alt" href="/#instalar">ou usa o favorito (sem instalar)</a>
+      <span class="cta-main" aria-disabled="true"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>Em revisão interna</span>
+      <a class="cta-alt" href="/privacidade">ver a política de privacidade</a>
     </div>
     <div class="trust-row" style="margin-top:22px">
       <div class="trust-item"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg><span>Nunca pede a password</span></div>
@@ -508,7 +505,7 @@
   <div class="wrap">
     <h2>O que faz por ti</h2>
     <div class="cards">
-      <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-monitor"/></svg><h3>Sempre à mão</h3><p>Uma barra no topo de cada página do Estado, com o resumo e o botão de ler. E no site Fiscalidade, o atalho para o passo seguinte. Sem procurar favoritos.</p></div>
+      <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-monitor"/></svg><h3>Sempre à mão</h3><p>Uma barra no topo das páginas oficiais, com o botão de ler quando tu decidires.</p></div>
       <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-receipt-euro"/></svg><h3>Melhor setor de dedução</h3><p>Para cada fatura por classificar, sugere o setor que mais deduz e ainda tem espaço no teto - e mostra também o provável.</p></div>
       <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-user"/></svg><h3>Lembra a tua situação</h3><p>Respondes uma vez se entregas o IRS em conjunto ou separado. Fica guardado no teu navegador, não volta a perguntar.</p></div>
       <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-check"/></svg><h3>Mesmo código aberto</h3><p>A extensão corre exactamente o mesmo código publicado e <a href="/verificar">verificável</a>. Nada de diferente escondido.</p></div>
@@ -518,9 +515,9 @@
 
 <section>
   <div class="wrap">
-    <h2>Instalar é rápido</h2>
+    <h2>Como funcionará depois da revisão</h2>
     <div class="hgrid">
-      <div class="hstep"><span class="hn"><span class="num">01</span></span><div><h3>Adicionar ao Chrome</h3><p>Um clique na loja do Chrome. A extensão só actua nas páginas do Estado (Finanças e Segurança Social) - em mais lado nenhum.</p><p><a class="btn" href="https://chromewebstore.google.com/detail/epaillcckgnnimpepilnkphmkjbggjoi" target="_blank" rel="noopener">Adicionar ao Chrome</a></p></div></div>
+      <div class="hstep"><span class="hn"><span class="num">01</span></span><div><h3>Adicionar ao Chrome</h3><p>A instalação pública está desativada enquanto revemos permissões, consentimento, cálculos e política de privacidade.</p></div></div>
       <div class="hstep"><span class="hn"><span class="num">02</span></span><div><h3>Abre o e-Fatura e faz login</h3><p>Na tua sessão normal das Finanças. A extensão nunca vê nem pede a password.</p></div></div>
       <div class="hstep"><span class="hn"><span class="num">03</span></span><div><h3>Clica em Analisar</h3><p>Na barra da Fiscalidade. Vês o resumo do ano e o plano de classificação, e aplicas tu no e-Fatura.</p></div></div>
     </div>
@@ -539,13 +536,12 @@
 
 <section>
   <div class="wrap">
-    <h2>Extensão ou favorito?</h2>
-    <p class="sub">Fazem o mesmo e correm o mesmo código. A diferença é só o conforto.</p>
+    <h2>Estado da distribuição</h2>
+    <p class="sub">A extensão e o site estão em revisão interna. Não há neste momento um método de instalação pública.</p>
     <div class="box">
-      <p><b>Extensão</b> (recomendada): a barra está sempre lá quando abres o e-Fatura, guarda a tua situação, e é um clique. Precisa de instalar, e por agora só Chrome.</p>
-      <p style="margin-bottom:0"><b>Favorito</b> (bookmarklet): não instala nada e funciona em qualquer navegador. Tens de o clicar cada vez, na página do e-Fatura. <a href="/#instalar">Ver como instalar o favorito</a>.</p>
+      <p style="margin-bottom:0"><b>Próximo passo:</b> concluir os testes internos e preparar um pacote de loja e uma política de privacidade coerentes. Só depois haverá nova submissão.</p>
     </div>
-    <p class="note" style="margin-top:14px">Firefox a caminho.</p>
+    <p class="note" style="margin-top:14px">Firefox brevemente.</p>
   </div>
 </section>
 
@@ -602,6 +598,5 @@
     });
   })();
 </script>
-<script defer src="/launcher.js"></script>
 </body>
 </html>

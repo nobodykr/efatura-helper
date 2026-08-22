@@ -30,14 +30,14 @@ global.fetch = (u) => {
   const s = String(u);
   // The tool fetches /bucket/<last 3 digits of NIF>, not the whole map. Serve those slices from
   // the same table, so this test exercises the real code path instead of a URL nothing requests.
-  if (s.includes("/bucket/")) {
-    const b = s.split("/bucket/")[1].split("?")[0];
+  if (s.includes("/api/v1/map/buckets/")) {
+    const b = s.split("/api/v1/map/buckets/")[1].split("?")[0];
     const out = {};
     for (const k in caemap) if (k.slice(-3) === b) out[k] = caemap[k];
     return Promise.resolve({ ok: true, json: () => Promise.resolve(out) });
   }
   if (s.includes("sectors.json")) return Promise.resolve({ ok: true, json: () => Promise.resolve(caemap) });
-  if (s.includes("obterDocumentosAdquirente")) return Promise.resolve({ ok: true, json: () => Promise.resolve({ linhas: rows }) });
+  if (s.includes("obterDocumentosAdquirente")) return Promise.resolve({ ok: true, headers: { get: () => "application/json" }, text: () => Promise.resolve(JSON.stringify({ linhas: rows })) });
   return Promise.resolve({ ok: true, json: () => Promise.resolve({}), text: () => Promise.resolve("") });
 };
 global.localStorage.setItem("efh-consent-v1", JSON.stringify({ ok: true, share: false }));

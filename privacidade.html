@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <link rel="icon" href="/favicon.ico" sizes="48x48" type="image/x-icon">
 <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png">
 <title>Privacidade | Fiscalidade</title>
-<meta name="description" content="Como a Fiscalidade trata os teus dados: nada sai do teu navegador, nunca pede a password, e só é enviado o que escolheres contribuir, sem nome nem NIF.">
+<meta name="description" content="Política de privacidade da Fiscalidade: leituras locais, opções de contribuição, retenção e eliminação.">
 <link rel="canonical" href="https://fiscalida.de/privacidade">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{--pri:#034ad8;--pri-dark:#021c51;--ink:#2B363C;--ink2:#4a5a63;--mute:#6b7780;--bg:#fff;--bg2:#f4f6f9;--bg3:#E1E4EA;--rule:#d5dae1;--green:#1E5A3A;--focus:#ff7a00;--r:6px;}
   *{box-sizing:border-box}
@@ -104,8 +104,6 @@
   }
   .fde{background:linear-gradient(120deg,#1E88FF,#00C6D7);-webkit-background-clip:text;background-clip:text;color:transparent}
 </style>
-    <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
-    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="fiscalida.de" data-exclude-search="true"></script>
 </head>
 <body>
 <svg hidden aria-hidden="true">
@@ -148,53 +146,47 @@
 </div></div>
 <header><div class="wrap"><h1>Privacidade</h1></div></header>
 <main class="wrap">
-  <p class="lead" id="password">A regra é simples: os teus dados ficam no teu navegador. A Fiscalidade nunca vê a tua password e não guarda os teus dados nos nossos servidores.</p>
+  <p class="lead" id="password">A Fiscalidade não tem contas próprias nem pede a tua password. As leituras da tua área autenticada são iniciadas por ti e processadas localmente no navegador.</p>
 
-  <h2>O que a ferramenta lê, e onde</h2>
-  <p>A Fiscalidade corre no teu próprio navegador, na sessão que <b>tu</b> já abriste no Portal das Finanças e na Segurança Social. Lê o teu registo (faturas, rendas, recibos, declarações e demonstrações de IRS, situação cadastral, património) a partir dessa sessão, e faz as contas <b>no teu computador</b>. Não recebe, não transmite e não consegue ver a tua password.</p>
+  <h2>Responsável e âmbito</h2>
+  <p>Esta política aplica-se ao site <code>fiscalida.de</code> e à extensão Fatura Boa. A ferramenta é comunitária e independente da Autoridade Tributária e da Segurança Social. O contacto do responsável está no fim desta página.</p>
+
+  <h2>O que a extensão lê</h2>
+  <p>A extensão só atua nos endereços oficiais expressamente indicados na sua configuração. Depois de autorizares as leituras locais e carregares num botão de análise, pode ler, conforme a página oficial aberta: faturas e respetivo estado de benefício, rendas, atividade, declarações e liquidações de IRS, movimentos fiscais, património, recibos verdes e informação contributiva da Segurança Social. Não lê estes dados antes da autorização nem em segundo plano.</p>
+  <p>A extensão usa a sessão que já abriste nos portais oficiais. Não pede, lê, transmite nem guarda a password desses portais. Também não cria um login na Fiscalidade.</p>
 
   <h2>Onde ficam os dados</h2>
-  <p>A tua situação fiscal é montada e guardada no armazenamento local do teu navegador (<code>localStorage</code>), tanto na página da ferramenta como aqui. Não sai dali. Para reduzir a exposição, é <b>apagada automaticamente ao fim do dia</b> em que foi guardada, em ambos os sítios. Exceção única: se usares a partilha do agregado, a <b>chave de sala</b> (aleatória, não derivada de ti) fica guardada até a apagares - o botão de apagar da ferramenta também a apaga. Podes também apagá-la a qualquer momento em <a href="/perfil">A minha situação</a>, ou limpando os dados do site no navegador.</p>
+  <p>O perfil criado pela extensão fica em <code>chrome.storage.local</code>, no teu dispositivo, e expira no fim do dia. A página de perfil da extensão permite apagá-lo imediatamente e revogar a autorização. A versão web, enquanto existir apenas para revisão interna, usa armazenamento local da origem <code>fiscalida.de</code> com a mesma expiração diária. Estes perfis não são enviados para o nosso servidor.</p>
 
-  <h2>O que é enviado (só se escolheres)</h2>
-  <p>Por omissão, <b>nada</b> é enviado. Há uma opção de contribuir, desligada de origem, que envia dois resumos <b>anónimos</b> para ajudar a melhorar a ferramenta. Em concreto:</p>
+  <h2>Pedidos necessários ao funcionamento</h2>
+  <p>Quando inicias uma análise, o navegador faz pedidos à própria página oficial para obter os dados que essa sessão te permite consultar. Para sugerir setores, pede a <code>fiscalida.de</code> blocos do mapa público de atividades económicas e um ficheiro público de informação da ferramenta. Esses pedidos não incluem faturas, valores, datas, o teu NIF, NISS, nome ou identificador de conta.</p>
+
+  <h2>Contribuições opcionais, desligadas de origem</h2>
+  <p>A ferramenta funciona sem contribuir. Cada opção é separada e exige uma escolha explícita:</p>
   <ul>
-    <li><b>Formas dos dados, não dados:</b> os nomes e tipos dos campos que o Portal devolve (por exemplo, <code>dataEmissao: date</code>) - para detetarmos quando a AT muda os ecrãs. Valores, nunca; e números longos nos endereços são substituídos por <code>:id</code> antes de sair do navegador.</li>
-    <li><b>Um total em euros</b> (o valor recuperável que a ferramenta encontrou), para o contador público da página inicial.</li>
-    <li><b>Um identificador anónimo</b>, para o contador não contar a mesma pessoa duas vezes. É derivado do NIF por uma função <b>lenta</b> (PBKDF2, 600 mil iterações), viaja <b>cifrado</b> para a chave do servidor - quem esteja no caminho (proxies, registos de firewall) vê só texto cifrado - e o servidor guarda apenas um código com um segredo adicional, nunca o identificador em si. Sejamos exatos: isto torna a reversão <b>cara e restrita ao servidor</b>, não matematicamente impossível; é por isso que também é opcional.</li>
-    <li>Nunca inclui o teu <b>nome</b>, <b>NIF</b> ou <b>NISS</b> em claro, e o servidor remove qualquer campo que pareça identificar-te.</li>
-    <li>Podes desligar quando quiseres.</li>
+    <li><b>Correção de atividade de uma empresa:</b> pode enviar o NIF de uma pessoa coletiva, o setor sugerido e o setor escolhido. NIFs de pessoas singulares, empresários em nome individual e prefixos ambíguos são recusados no navegador e no servidor. Não inclui a fatura, valor, data ou identidade do comprador.</li>
+    <li><b>Diagnóstico de formatos:</b> envia apenas identificadores estáveis de endpoints e estruturas em que cada valor foi substituído pelo respetivo tipo. O servidor volta a remover valores, chaves dinâmicas e números que possam ser identificadores, e agrega estruturas iguais.</li>
+    <li><b>Impacto agregado:</b> envia totais globais de relatórios e valor recuperável. Não cria nem aceita um identificador de pessoa e agrega o contributo quando chega.</li>
+    <li><b>Partilha do agregado:</b> envia apenas os totais usados por seis categorias de dedução, um identificador aleatório de membro e uma chave de sala aleatória. Quem tiver a chave pode consultar ou alterar a sala; trata-a como uma password e partilha-a apenas com o agregado.</li>
   </ul>
 
-  <h2>Sem contas, sem seguimento</h2>
-  <p>Não há registo nem login nesta ferramenta. Não usamos cookies de seguimento nem publicidade que te siga. O formulário de contacto usa proteção anti-spam (Cloudflare Turnstile) e envia a tua mensagem por email; se deixares um email, é só para te podermos responder.</p>
+  <h2>Retenção e eliminação</h2>
+  <p>Não existe uma conta Fiscalidade nem um perfil pessoal no servidor para reter ou apagar. Os perfis locais expiram no fim do dia ou podem ser apagados de imediato. As salas de agregado expiram 400 dias depois da última atualização; cada membro pode apagar a sua própria linha com a chave e o identificador guardados no dispositivo.</p>
+  <p>As correções de empresas, estruturas sem valores e totais de impacto são transformados em contagens agregadas. Não mantêm um registo por utilizador e podem ser conservados como estatística do projeto.</p>
 
-  <h2>Contagem de visitas (só nas páginas do site, não na ferramenta)</h2>
-  <p>Isto aplica-se apenas às <b>páginas de faturas.diogoandrade.com</b>. A ferramenta em si, que
-  corre na tua sessão das Finanças, <b>não tem qualquer analítica</b> e não envia nada, como está
-  descrito acima.</p>
-  <p>Nas páginas do site medimos o uso com <b>analytics próprio, nosso e alojado por nós</b> em
-  <code>analytics.d1060.com</code>. Apesar do endereço, <b>não é um serviço de terceiros</b>: é o
-  nosso servidor. Estes dados são <b>nossos</b>, servem <b>exclusivamente para analítica</b>, e
-  <b>não são partilhados nem vendidos</b> a ninguém, nem à Google nem a qualquer outra empresa. São
-  <b>metadados anónimos</b>, nunca dados pessoais nem fiscais:</p>
-  <ul>
-    <li>que <b>páginas</b> foram visitadas e de que <b>origem</b> chegou a visita;</li>
-    <li>o <b>país</b>, e se o dispositivo é telemóvel ou computador (mais o browser e o sistema);</li>
-    <li>que <b>botões ou ligações</b> foram usados (por exemplo, lançar a ferramenta, correr a
-        verificação ou fazer uma consulta) e <b>até onde a página foi lida</b> (profundidade de leitura).</li>
-  </ul>
-  <p>Sem cookies, sem seguimento entre sites, sem publicidade. O endereço IP <b>não</b> é guardado:
-  é transformado numa chave anónima que muda todos os dias, o que impede ligar visitas de dias
-  diferentes à mesma pessoa. Nada disto inclui o que compraste, valores, datas, nome ou NIF. Serve
-  para saber que páginas e passos são úteis, e nada mais.</p>
+  <h2>Sem venda, publicidade ou analítica na extensão</h2>
+  <p>Não vendemos dados, não apresentamos publicidade comportamental e não usamos os dados fiscais para crédito, seguros ou outros fins. A extensão não inclui analítica. Durante esta fase de revisão interna, as páginas públicas também estão sem analítica e marcadas para não serem indexadas.</p>
 
-  <h2>Consultar NIF</h2>
+  <h2>Permissões da extensão</h2>
+  <p>As permissões de anfitrião estão limitadas aos subdomínios oficiais concretos necessários às funções descritas acima. A permissão <code>storage</code> guarda consentimento e perfil local; <code>scripting</code> executa o analisador apenas depois do teu clique. Todo o código executável é incluído no pacote da extensão; não é descarregado código remoto.</p>
+
+  <h2>Alterações</h2>
+  <p>Qualquer alteração material a estas práticas exige atualizar esta página e a data abaixo antes de uma nova publicação da extensão.</p>
 
   <h2>Contacto</h2>
-  <p>Dúvidas sobre privacidade: pelo formulário na <a href="/">página inicial</a>. O código é público e auditável em <a href="https://github.com/nobodykr/efatura-helper" target="_blank" rel="noopener">GitHub</a>, e podes <a href="/verificar">verificar</a> que o que corre é o código publicado.</p>
+  <p>Pedidos ou dúvidas sobre privacidade: abre um issue no <a href="https://github.com/nobodykr/efatura-helper/issues" target="_blank" rel="noopener">GitHub</a>, sem incluir NIF, nomes, documentos, capturas da área autenticada, valores fiscais ou credenciais. Antes da disponibilização pública, esta política deve estar acessível diretamente neste endereço, sem login nem redirecionamento para uma página geral.</p>
 
-  <p class="upd">Última atualização: 31 de julho de 2026.</p>
+  <p class="upd">Última atualização: 22 de agosto de 2026.</p>
 </main>
 <!-- FOOTER: hand-synced across index.html, perfil.html, sobre.html, deducoes.html, auditoria.html,
      privacidade.html, termos.html, verificar.html - same markup everywhere (static files, no

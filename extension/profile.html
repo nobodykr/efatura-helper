@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>O meu perfil | Fiscalidade</title>
+  <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+  <main>
+    <p class="eyebrow">FISCALIDADE</p>
+    <h1>O meu perfil neste navegador</h1>
+    <p class="lead">Guardado pela extensão no teu dispositivo. Não é enviado para a Fiscalidade.</p>
+    <section id="privacy" class="notice">
+      <h2>Privacidade e autorizações</h2>
+      <p>A extensão só lê uma página oficial depois de autorizares leituras locais e carregares no botão dessa página. As contribuições opcionais, onde estiverem disponíveis, exigem uma ação separada.</p>
+      <p>Não existe conta Fiscalidade, identificador derivado do teu NIF, analítica dentro das páginas oficiais ou código carregado remotamente.</p>
+    </section>
+    <section>
+      <div class="row"><h2>Fontes reunidas</h2><button type="button" id="refresh">Atualizar</button></div>
+      <div id="status" role="status"></div>
+      <div id="sources"></div>
+    </section>
+    <section>
+      <h2>Autorizações</h2>
+      <div id="consent"></div>
+      <button type="button" id="revoke">Revogar leituras locais</button>
+      <div class="choices">
+        <label><input type="checkbox" id="share-merchants"> <span><b>Correções de empresas</b><br>Quando alterares uma sugestão, contribuir apenas o NIF de pessoa coletiva e os dois setores. Sem fatura, valor, data ou comprador.</span></label>
+        <label><input type="checkbox" id="share-shapes"> <span><b>Diagnóstico de formatos</b><br>Na próxima leitura, contribuir apenas nomes de campos e tipos através de identificadores de endpoint fixos. Sem valores.</span></label>
+      </div>
+      <p class="small">Estas opções estão desligadas de origem e são independentes da autorização de leitura. O impacto agregado e a partilha do agregado têm botões próprios no analisador.</p>
+    </section>
+    <section class="danger">
+      <h2>Apagar</h2>
+      <p>Apaga o perfil, autorizações e preferências guardados pela extensão neste dispositivo.</p>
+      <button type="button" id="erase">Apagar todos os dados da extensão</button>
+    </section>
+  </main>
+  <script src="profile.js"></script>
+</body>
+</html>

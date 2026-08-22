@@ -1,5 +1,5 @@
-// Root catch-all. It runs for every request NOT handled by a more specific function (e.g.
-// /api/feedback stays with functions/api/feedback.js). Its only job: trap honeypot hits, pass
+// Root catch-all. It runs for every request not handled by a more specific function. Its only job
+// is to trap honeypot hits and pass
 // everything else straight through to the static site with next(). A normal visitor never notices.
 //
 // Trapped:

@@ -23,10 +23,10 @@ head = head
            '<title>Extensão Fiscalidade para Chrome | e-Fatura mais fácil</title>')
   .replace(/<meta name="description" content="[^"]*">/,
            '<meta name="description" content="A extensão Fiscalidade põe uma barra no topo do e-Fatura: analisa as tuas faturas, sugere o melhor setor de dedução e mostra os tetos do IRS. Corre no teu navegador, sem password. Grátis.">')
-  .replace('<link rel="canonical" href="https://faturas.diogoandrade.com/">',
-           '<link rel="canonical" href="https://faturas.diogoandrade.com/extensao">')
-  .replace('<meta property="og:url" content="https://faturas.diogoandrade.com/">',
-           '<meta property="og:url" content="https://faturas.diogoandrade.com/extensao">')
+  .replace('<link rel="canonical" href="https://fiscalida.de/">',
+           '<link rel="canonical" href="https://fiscalida.de/extensao">')
+  .replace('<meta property="og:url" content="https://fiscalida.de/">',
+           '<meta property="og:url" content="https://fiscalida.de/extensao">')
   .replace('<meta property="og:title" content="Fiscalidade | A tua situação fiscal, das fontes oficiais">',
            '<meta property="og:title" content="Extensão Fiscalidade para Chrome">')
   // drop the homepage-only FAQ/SoftwareApplication JSON-LD duplication is fine to keep; harmless.
@@ -46,10 +46,10 @@ const main = `
 <header>
   <div class="wrap">
     <h1><span class="eyebrow">Extensão para Chrome</span>O e-Fatura, num clique.</h1>
-    <p class="sub">A extensão Fiscalidade põe uma barra no topo do e-Fatura com o resumo do teu ano e um botão para analisar as faturas. Corre na tua sessão, <b>sem password</b>, e nada sai do navegador. Faz o mesmo que o favorito, agora sempre à mão - e trata das faturas, rendas, dívidas, prazos, IRS e Segurança Social.</p>
+    <p class="sub">A extensão Fiscalidade põe uma barra no topo das páginas oficiais que lês. Só atua depois da tua autorização e guarda o perfil no armazenamento privado da própria extensão. Corre na tua sessão, <b>sem password</b>.</p>
     <div class="cta-row">
-      <a class="cta-main" id="cta-chrome" href="${STORE_URL}" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg>Adicionar ao Chrome</a>
-      <a class="cta-alt" href="/#instalar">ou usa o favorito (sem instalar)</a>
+      <span class="cta-main" aria-disabled="true"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>Em revisão interna</span>
+      <a class="cta-alt" href="/privacidade">ver a política de privacidade</a>
     </div>
     <div class="trust-row" style="margin-top:22px">
       <div class="trust-item"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg><span>Nunca pede a password</span></div>
@@ -63,7 +63,7 @@ const main = `
   <div class="wrap">
     <h2>O que faz por ti</h2>
     <div class="cards">
-      <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-monitor"/></svg><h3>Sempre à mão</h3><p>Uma barra no topo do e-Fatura, com o resumo do ano e o botão de analisar. Sem procurar favoritos.</p></div>
+      <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-monitor"/></svg><h3>Sempre à mão</h3><p>Uma barra no topo das páginas oficiais, com o botão de ler quando tu decidires.</p></div>
       <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-receipt-euro"/></svg><h3>Melhor setor de dedução</h3><p>Para cada fatura por classificar, sugere o setor que mais deduz e ainda tem espaço no teto - e mostra também o provável.</p></div>
       <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-user"/></svg><h3>Lembra a tua situação</h3><p>Respondes uma vez se entregas o IRS em conjunto ou separado. Fica guardado no teu navegador, não volta a perguntar.</p></div>
       <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-check"/></svg><h3>Mesmo código aberto</h3><p>A extensão corre exactamente o mesmo código publicado e <a href="/verificar">verificável</a>. Nada de diferente escondido.</p></div>
@@ -73,9 +73,9 @@ const main = `
 
 <section>
   <div class="wrap">
-    <h2>Instalar é rápido</h2>
+    <h2>Como funcionará depois da revisão</h2>
     <div class="hgrid">
-      <div class="hstep"><span class="hn"><span class="num">01</span></span><div><h3>Adicionar ao Chrome</h3><p>Um clique na loja do Chrome. A extensão só actua nas páginas do Estado (Finanças e Segurança Social) - em mais lado nenhum.</p><p><a class="btn" href="${STORE_URL}" target="_blank" rel="noopener">Adicionar ao Chrome</a></p></div></div>
+      <div class="hstep"><span class="hn"><span class="num">01</span></span><div><h3>Adicionar ao Chrome</h3><p>A instalação pública está desativada enquanto revemos permissões, consentimento, cálculos e política de privacidade.</p></div></div>
       <div class="hstep"><span class="hn"><span class="num">02</span></span><div><h3>Abre o e-Fatura e faz login</h3><p>Na tua sessão normal das Finanças. A extensão nunca vê nem pede a password.</p></div></div>
       <div class="hstep"><span class="hn"><span class="num">03</span></span><div><h3>Clica em Analisar</h3><p>Na barra da Fiscalidade. Vês o resumo do ano e o plano de classificação, e aplicas tu no e-Fatura.</p></div></div>
     </div>
@@ -94,11 +94,10 @@ const main = `
 
 <section>
   <div class="wrap">
-    <h2>Extensão ou favorito?</h2>
-    <p class="sub">Fazem o mesmo e correm o mesmo código. A diferença é só o conforto.</p>
+    <h2>Estado da distribuição</h2>
+    <p class="sub">A extensão e o site estão em revisão interna. Não há neste momento um método de instalação pública.</p>
     <div class="box">
-      <p><b>Extensão</b> (recomendada): a barra está sempre lá quando abres o e-Fatura, guarda a tua situação, e é um clique. Precisa de instalar, e por agora só Chrome.</p>
-      <p style="margin-bottom:0"><b>Favorito</b> (bookmarklet): não instala nada e funciona em qualquer navegador. Tens de o clicar cada vez, na página do e-Fatura. <a href="/#instalar">Ver como instalar o favorito</a>.</p>
+      <p style="margin-bottom:0"><b>Próximo passo:</b> concluir os testes internos e preparar um pacote de loja e uma política de privacidade coerentes. Só depois haverá nova submissão.</p>
     </div>
     <p class="note" style="margin-top:14px">Firefox brevemente.</p>
   </div>

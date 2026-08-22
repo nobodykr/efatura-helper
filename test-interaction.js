@@ -28,8 +28,12 @@ window.localStorage = global.localStorage;
 global.crypto = { getRandomValues:a=>a, subtle:{} };
 global.TextEncoder = require("util").TextEncoder;
 global.fetch = (u) => {
-  if (String(u).includes("sectors.json")) return Promise.resolve({ok:true, json:()=>Promise.resolve(caemap)});
-  return Promise.resolve({ok:true, json:()=>Promise.resolve({linhas: rows}), text:()=>Promise.resolve("")});
+  if (String(u).includes("/api/v1/map/buckets/")) {
+    const b=String(u).split("/api/v1/map/buckets/")[1].split("?")[0], out={};
+    for(const k in caemap) if(k.slice(-3)===b) out[k]=caemap[k];
+    return Promise.resolve({ok:true,json:()=>Promise.resolve(out)});
+  }
+  return Promise.resolve({ok:true,headers:{get:()=>"application/json"},json:()=>Promise.resolve({linhas: rows}),text:()=>Promise.resolve(JSON.stringify({linhas:rows}))});
 };
 global.alert = () => {};
 global.location = window.location;

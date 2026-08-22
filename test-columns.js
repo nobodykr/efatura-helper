@@ -21,8 +21,8 @@ global.navigator={clipboard:{writeText:()=>Promise.resolve()}};
 window.document.execCommand=()=>true;
 global.fetch=(u,o)=>{const s=String(u);
   if(/resolverPendencia/.test(s)){ posted.push(s); }
-  var CAEMAP={"500000009":["C99","C05"]}; if(s.includes("/bucket/")){var _b=s.split("/bucket/")[1].split("?")[0];var _o={};for(var _k in CAEMAP){if(_k.slice(-3)===_b)_o[_k]=CAEMAP[_k];}return Promise.resolve({ok:true,json:()=>Promise.resolve(_o)});} if(s.includes("sectors.json")) return Promise.resolve({ok:true,json:()=>Promise.resolve(CAEMAP)});
-  return Promise.resolve({ok:true,json:()=>Promise.resolve({linhas:rows}),text:()=>Promise.resolve("")});};
+  var CAEMAP={"500000009":["C99","C05"]}; if(s.includes("/api/v1/map/buckets/")){var _b=s.split("/api/v1/map/buckets/")[1].split("?")[0];var _o={};for(var _k in CAEMAP){if(_k.slice(-3)===_b)_o[_k]=CAEMAP[_k];}return Promise.resolve({ok:true,json:()=>Promise.resolve(_o)});} if(s.includes("sectors.json")) return Promise.resolve({ok:true,json:()=>Promise.resolve(CAEMAP)});
+  return Promise.resolve({ok:true,headers:{get:()=>"application/json"},json:()=>Promise.resolve({linhas:rows}),text:()=>Promise.resolve(JSON.stringify({linhas:rows}))});};
 // The consent gate (tool.js) blocks all reads until accepted. Seed a prior acceptance so
 // these tests exercise the RETURNING-USER path; test-network.js phase 1 covers the gate itself.
 global.localStorage.setItem("efh-consent-v1", JSON.stringify({ok:true,share:false}));

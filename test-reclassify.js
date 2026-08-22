@@ -39,14 +39,14 @@ global.navigator = { clipboard: { writeText: () => Promise.resolve() } };
 global.fetch = (u, opt) => {
   const s = String(u);
   // Same slice mock as the other tests: the tool asks for /bucket/<last 3 digits>, never the map.
-  if (s.includes("/bucket/")) {
-    const b = s.split("/bucket/")[1].split("?")[0];
+  if (s.includes("/api/v1/map/buckets/")) {
+    const b = s.split("/api/v1/map/buckets/")[1].split("?")[0];
     const out = {};
     for (const k in caemap) if (k.slice(-3) === b) out[k] = caemap[k];
     return Promise.resolve({ ok: true, json: () => Promise.resolve(out) });
   }
   if (s.includes("sectors.json")) return Promise.resolve({ ok: true, json: () => Promise.resolve(caemap) });
-  if (s.includes("obterDocumentosAdquirente")) return Promise.resolve({ ok: true, json: () => Promise.resolve({ linhas: rows }) });
+  if (s.includes("obterDocumentosAdquirente")) return Promise.resolve({ ok: true, headers: { get: () => "application/json" }, text: () => Promise.resolve(JSON.stringify({ linhas: rows })) });
   if (s.includes("detalheDocumentoAdquirente")) {
     const id = (s.match(/idDocumento=([^&]+)/) || [])[1];
     return Promise.resolve({ ok: true, text: () => Promise.resolve(detalhe(id)) });

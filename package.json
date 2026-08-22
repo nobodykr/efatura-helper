@@ -3,10 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "description": "Fatura Boa - situacao fiscal tool. Auditable: `npm install && npm test` reproduces the correctness checks. The real release version is FB_VERSION in tool.js / versions.json, not this field.",
-  "homepage": "https://faturas.diogoandrade.com",
+  "homepage": "https://fiscalida.de",
   "repository": "github:nobodykr/efatura-helper",
   "scripts": {
-    "test": "node run-tests.mjs"
+    "test": "node run-tests.mjs",
+    "test:unit": "FISCALIDADE_ALLOW_BROWSER_SKIP=1 node run-tests.mjs",
+    "test:browser": "node test-network.js tool.js"
   },
   "devDependencies": {
     "jsdom": "^29.1.1"

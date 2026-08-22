@@ -7,9 +7,9 @@ const {window}=dom; global.window=window; global.document=window.document; globa
 global.localStorage={_d:{},getItem(k){return this._d[k]??null},setItem(k,v){this._d[k]=String(v)}}; window.localStorage=global.localStorage;
 global.crypto={getRandomValues:a=>a,subtle:{}}; global.TextEncoder=require("util").TextEncoder;
 global.navigator={clipboard:{writeText:()=>Promise.resolve()}}; global.alert=()=>{};
-global.fetch=u=>String(u).includes("sectors.json")
+global.fetch=u=>String(u).includes("/api/v1/map/buckets/")
  ? Promise.resolve({ok:true,json:()=>Promise.resolve({"500000001":["C99"],"500000002":["C05","C99"]})})
- : Promise.resolve({ok:true,json:()=>Promise.resolve({linhas:rows}),text:()=>Promise.resolve("")});
+ : Promise.resolve({ok:true,headers:{get:()=>"application/json"},json:()=>Promise.resolve({linhas:rows}),text:()=>Promise.resolve(JSON.stringify({linhas:rows}))});
 // The consent gate (tool.js) blocks all reads until accepted. Seed a prior acceptance so
 // these tests exercise the RETURNING-USER path; test-network.js phase 1 covers the gate itself.
 global.localStorage.setItem("efh-consent-v1", JSON.stringify({ok:true,share:false}));

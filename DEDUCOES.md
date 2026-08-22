@@ -21,21 +21,22 @@ Cada fatura pendente no e-Fatura tem de ser atribuída a um sector. Os que a fer
 |------|--------|-----------|------------|
 | C05 | Saúde | 15% até 1.000 EUR | art. 78.º-C CIRS |
 | C06 | Educação | 30% até 800 EUR | art. 78.º-D CIRS |
-| C07 | Imóveis (rendas) | 15% até 502 EUR | art. 78.º-E CIRS |
-| C08 | Lares | 25% até 403 EUR | art. 84.º CIRS |
-| C09 | Veterinário | 15% do IVA | art. 78.º-F CIRS |
+| C07 | Imóveis (rendas) | 15% até 900 EUR em 2026 | art. 78.º-E CIRS e art. 15.º do DL 97/2026 |
+| C08 | Lares | 25% até 403,75 EUR | art. 84.º CIRS |
+| C09 | Veterinário | 15% do IVA; 35% em medicamentos veterinários | art. 78.º-F n.º 1 e) e n.º 6 |
 | C01 | Reparação de automóveis | 15% do IVA | art. 78.º-F |
 | C02 | Reparação de motociclos | 15% do IVA | art. 78.º-F |
 | C03 | Restauração e alojamento | 15% do IVA | art. 78.º-F |
 | C04 | Cabeleireiros e institutos de beleza | 15% do IVA | art. 78.º-F |
-| C10 | Passes de transporte público | 15% do IVA | art. 78.º-F n.º 3 |
-| C11 | Ginásios e clubes desportivos | 15% do IVA | art. 78.º-F n.º 8 |
-| C12 | Jornais e revistas | 15% do IVA | art. 78.º-F n.º 7 |
-| C13 | Livros | 15% do IVA | art. 78.º-F |
-| C14 | Cultura (bibliotecas, museus, espectáculos) | 15% do IVA | art. 78.º-F |
+| C10 | Passes de transporte público | 100% do IVA | art. 78.º-F n.º 3 |
+| C11 | Ginásios e clubes desportivos | 30% do IVA | art. 78.º-F n.º 8 |
+| C12 | Jornais e revistas | 100% do IVA | art. 78.º-F n.º 7 |
+| C13 | Livros | 15% do IVA | art. 78.º-F n.º 1 g) |
+| C14 | Cultura (teatro, música, espectáculos, bibliotecas) | 15% do IVA | art. 78.º-F n.º 1 h) a j) |
+| C15 | Museus e monumentos | 15% do IVA | art. 78.º-F n.º 1 k) e l) |
 | C99 | Despesas gerais familiares | 35% até 250 EUR | art. 78.º-B |
 
-Os sectores C01 a C04 e C09 a C14 **partilham um tecto conjunto de 250 EUR** (art. 78.º-F n.º 1).
+Os sectores C01 a C04 e C09 a C15 **partilham um tecto conjunto de 250 EUR** (art. 78.º-F n.º 1).
 Isto é decisivo: encher C03 não deixa espaço para C11. O tecto é do conjunto, não de cada um.
 
 ---
@@ -60,7 +61,7 @@ omissão, listá-los não mudava nada.
 2. O NIF é procurado no registo do Estado (**SICAE**), que devolve o nome oficial, o **CAE
    principal** e os **CAE secundários**.
 3. Cada CAE é traduzido para um sector pela tabela em
-   [`cae-db.diogoandrade.com/cae-map.json`](https://cae-db.diogoandrade.com/cae-map.json).
+   [`fiscalida.de/api/v1/map/rules`](https://fiscalida.de/api/v1/map/rules).
 4. Ganha sempre o **prefixo mais longo**: um código de 5 dígitos específico prevalece sobre a
    divisão em que está.
 
@@ -135,9 +136,9 @@ Registados em `ambiguous` no ficheiro do mapa. Os que mais pesam:
   coerência com a prática, mas juridicamente não está nomeado.
 - **68100 compra e venda de imóveis** - o art. 78.º-E nomeia **só** 68200 (arrendamento). O mapa
   original usava o prefixo `681`, demasiado lato. Não mapeado.
-- **47782 material óptico** - já foi C05 e **a AT rejeitou** ("o emitente não tem atividade
-  registada pertencente ao setor indicado"), porque a subclasse junta óptico com fotográfico e
-  cinematográfico. Corrigido para C99 com base numa rejeição real (NIF 504225510, 2026-07-18).
+- **47782 material óptico** - já foi C05 e **a AT rejeitou** a classificação porque a subclasse
+  junta óptico com fotográfico e cinematográfico. Corrigido para C99 com base nesse caso controlado;
+  o identificador da entidade e a conta usada no teste não são publicados.
 
 Este último é o aviso mais útil do documento: **a AT tem a sua própria validação**, e um mapeamento
 logicamente defensável pode na mesma ser recusado.
@@ -154,16 +155,16 @@ Por ordem de risco, para quem quiser rever:
 2. **49100 (CP) e 93110 (piscinas municipais)** continuam por decidir.
 3. **91030 (monumentos)** morreu na Rev.4 e o equivalente ainda não foi procurado.
 4. Os tectos e taxas da secção 1 são os do CIRS à data de escrita e **não são actualizados
-   automaticamente** quando o Orçamento do Estado os altera.
-5. Ainda **não há testes automáticos** sobre esta tabela. Estão previstos: o objectivo é que uma
-   alteração ao mapa que quebre um caso conhecido falhe imediatamente, em vez de aparecer numa
-   declaração.
+   automaticamente** quando o Orçamento do Estado os altera. O teste de sincronização detecta
+   divergências internas, mas uma pessoa tem de rever cada alteração legal.
+5. Há testes automáticos sobre a tabela, o mapa e a lógica de cálculo. Esses testes detectam
+   regressões conhecidas; não provam que a interpretação fiscal esteja completa.
 
 ---
 
 ## 7. Onde estão os dados
 
-- **Tabela viva, sempre actual:** `https://cae-db.diogoandrade.com/cae-map.json`
+- **Tabela viva, sempre actual:** `https://fiscalida.de/api/v1/map/rules`
 - **Cópia neste repositório:** [`cae_sectors.json`](cae_sectors.json), para poder ser lida, revista
   e comentada em pull request. Uma verificação automática compara-a com a versão servida, porque uma
   cópia desactualizada de regras fiscais é pior do que não ter cópia nenhuma.

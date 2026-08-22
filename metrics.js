@@ -1,4 +1,4 @@
-/* Site-only analytics helper for the faturas.diogoandrade.com PAGES - never the tool.
+/* Site-only analytics helper for the fiscalida.de PAGES - never the tool.
  * The tool (tool.js) runs inside the user's Financas session and by design sends nothing;
  * this file only ever loads on the marketing/info pages, where the Umami beacon already runs.
  * It fires one anonymous scroll-depth event per page when the reader passes 75% of the page.

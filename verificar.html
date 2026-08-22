@@ -7,9 +7,8 @@
 <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
 <title>Verificar a ferramenta | Fiscalidade</title>
 <meta name="description" content="Confirma que o código da Fiscalidade que corre no teu navegador é exatamente o código publicado e auditável. Provably fair, para software.">
-<meta name="robots" content="index,follow">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <link rel="canonical" href="https://fiscalida.de/verificar">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{--pri:#034ad8;--pri-dark:#021c51;--ink:#2B363C;--ink2:#4a5a63;--mute:#6b7780;--bg:#fff;--bg2:#f4f6f9;--bg3:#E1E4EA;--rule:#d5dae1;--red:#c8102e;--green:#1E5A3A;--amber:#8a6100;--focus:#ff7a00;--r:6px;}
   *{box-sizing:border-box}
@@ -63,16 +62,14 @@
   }
   .fde{background:linear-gradient(120deg,#1E88FF,#00C6D7);-webkit-background-clip:text;background-clip:text;color:transparent}
 </style>
-<meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem faturas.diogoandrade.com; ref fb-lic-734da84007">
-    <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
-    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="fiscalida.de" data-exclude-search="true"></script>
+<meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem fiscalida.de; ref fb-lic-734da84007">
 </head>
 <body>
 <!-- Fiscalidade (c) 2026 Diogo Andrade. Licenca PolyForm Noncommercial 1.0.0
      (https://polyformproject.org/licenses/noncommercial/1.0.0). Uso nao-comercial apenas.
      Copia, redistribuicao ou uso comercial sem autorizacao viola a licenca e pode ser objecto
-     de accao legal. Origem oficial: faturas.diogoandrade.com | ref fb-lic-734da84007 -->
-<div hidden aria-hidden="true" data-fb-lic="PolyForm-Noncommercial-1.0.0" data-fb-ref="fb-lic-734da84007" data-fb-origem="faturas.diogoandrade.com">Codigo protegido por direitos de autor. Licenca PolyForm Noncommercial 1.0.0: uso comercial ou redistribuicao sem autorizacao proibidos.</div>
+     de accao legal. Origem oficial: fiscalida.de | ref fb-lic-734da84007 -->
+<div hidden aria-hidden="true" data-fb-lic="PolyForm-Noncommercial-1.0.0" data-fb-ref="fb-lic-734da84007" data-fb-origem="fiscalida.de">Codigo protegido por direitos de autor. Licenca PolyForm Noncommercial 1.0.0: uso comercial ou redistribuicao sem autorizacao proibidos.</div>
 <a href="/hp/registo-734da84007" hidden aria-hidden="true" rel="nofollow noindex" tabindex="-1">.</a>
 <div class="mast"><div class="wrap"><div class="nm">Fiscalidade</div><a href="/">Início</a></div></div>
 <header><div class="wrap">
@@ -95,22 +92,11 @@
   </div>
 
   <div class="card">
-    <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">2. Instalação verificada (opcional, mais forte)</div>
-    <p class="kv">Este favorito fixa a impressão digital acima (Subresource Integrity). Se o código
-       alguma vez não corresponder, o navegador <b>recusa-se a corrê-lo</b>. Ou seja, ninguém pode
-       trocar o código sem que o favorito simplesmente deixe de funcionar. Arrasta para os favoritos.</p>
-    <p><a class="btn" id="sri" href="#">Fiscalidade (verificado)</a></p>
-    <p class="kv">Nota: um favorito fixado não se atualiza sozinho. Quando sair uma versão nova,
-       voltas aqui e arrastas de novo (e podes verificar outra vez). Isso é de propósito - a parte
-       que mexe nos teus dados só muda quando tu deixares.</p>
-  </div>
-
-  <div class="card">
-    <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">3. Verificação manual (para quem quiser ir ao fundo)</div>
+    <div style="font-weight:700;font-size:1.05rem;margin-bottom:6px">2. Verificação manual (para quem quiser ir ao fundo)</div>
     <ol>
       <li><span class="step">Lê o código.</span> É aberto: <a href="https://github.com/nobodykr/efatura-helper" target="_blank" rel="noopener">github.com/nobodykr/efatura-helper</a>.</li>
       <li><span class="step">Calcula a impressão do que é servido.</span> No terminal:
-        <div class="mono" style="background:var(--bg2);padding:8px 10px;border-radius:6px;margin:6px 0">curl -s https://faturas.diogoandrade.com/tool.js | openssl dgst -sha384 -binary | openssl base64 -A</div></li>
+        <div class="mono" style="background:var(--bg2);padding:8px 10px;border-radius:6px;margin:6px 0">curl -s https://fiscalida.de/tool.js | openssl dgst -sha384 -binary | openssl base64 -A</div></li>
       <li><span class="step">Compara.</span> O resultado deve ser igual ao <code>integrity</code> em
         <a href="/versions.json" target="_blank">/versions.json</a> (sem o prefixo <code>sha384-</code>), e o código deve corresponder ao do GitHub.</li>
     </ol>
@@ -189,15 +175,6 @@
     });
   };
 
-  // Build the SRI-pinned bookmarklet from the published integrity, so it always pins the current one.
-  fetch("/versions.json", {cache:"no-store"}).then(function(x){ return x.json(); }).then(function(v){
-    var sri = (v.files && v.files["tool.js"] && v.files["tool.js"].integrity) || "";
-    var bm = "javascript:(function(){if(!/faturas\\.portaldasfinancas\\.gov\\.pt$/.test(location.host))"+
-      "{alert('Abre o e-Fatura e faz login primeiro.');return;}var s=document.createElement('script');"+
-      "s.charset='utf-8';s.crossOrigin='anonymous';s.integrity='"+sri+"';"+
-      "s.src='https://faturas.diogoandrade.com/tool.js';document.body.appendChild(s);})();";
-    document.getElementById("sri").setAttribute("href", bm);
-  });
 })();
 </script>
 <script defer src="/launcher.js"></script>

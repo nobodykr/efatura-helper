@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Fiscalidade | A tua situação fiscal, das fontes oficiais (grátis, sem password)</title>
-<meta name="description" content="Ferramenta gratuita e verificável que lê o teu próprio registo nas Finanças e na Segurança Social, na tua sessão, sem password, e mostra a tua situação fiscal: faturas do e-Fatura por setor e teto de dedução, rendas, situação fiscal e prazos, património e IMI, e histórico de IRS. Corre no teu navegador, nada sai de lá.">
+<meta name="description" content="Pré-visualização interna de uma ferramenta verificável que lê o teu próprio registo nas Finanças e na Segurança Social, na tua sessão e sem password. Os registos fiscais são processados localmente; contribuições mínimas e separadas são opcionais.">
 <link rel="canonical" href="https://fiscalida.de/">
 <!-- Diogo's DA monogram, same mark as diogoandrade.com. There was no favicon at all before, so
      every tab showed the browser default and /favicon.ico returned 404. Regenerate the raster
@@ -12,7 +12,7 @@
 <link rel="icon" href="/favicon.ico" sizes="48x48" type="image/x-icon">
 <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png">
-<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <meta name="author" content="Diogo Andrade">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_PT">
@@ -379,17 +379,14 @@
   }
   .fde{background:linear-gradient(120deg,#1E88FF,#00C6D7);-webkit-background-clip:text;background-clip:text;color:transparent}
 </style>
-<meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem faturas.diogoandrade.com; ref fb-lic-e1ec0c96c9">
-    <!-- analytics: Umami self-hosted, sem cookies e sem dados pessoais -->
-    <script defer src="https://analytics.d1060.com/script.js" data-website-id="1e64e3e0-fe5f-44d0-895b-ac8bfadd3538" data-domains="fiscalida.de" data-exclude-search="true"></script>
-    <script defer src="/metrics.js"></script>
+<meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem fiscalida.de; ref fb-lic-e1ec0c96c9">
 </head>
 <body>
 <!-- Fiscalidade (c) 2026 Diogo Andrade. Licenca PolyForm Noncommercial 1.0.0
      (https://polyformproject.org/licenses/noncommercial/1.0.0). Uso nao-comercial apenas.
      Copia, redistribuicao ou uso comercial sem autorizacao viola a licenca e pode ser objecto
-     de accao legal. Origem oficial: faturas.diogoandrade.com | ref fb-lic-e1ec0c96c9 -->
-<div hidden aria-hidden="true" data-fb-lic="PolyForm-Noncommercial-1.0.0" data-fb-ref="fb-lic-e1ec0c96c9" data-fb-origem="faturas.diogoandrade.com">Codigo protegido por direitos de autor. Licenca PolyForm Noncommercial 1.0.0: uso comercial ou redistribuicao sem autorizacao proibidos.</div>
+     de accao legal. Origem oficial: fiscalida.de | ref fb-lic-e1ec0c96c9 -->
+<div hidden aria-hidden="true" data-fb-lic="PolyForm-Noncommercial-1.0.0" data-fb-ref="fb-lic-e1ec0c96c9" data-fb-origem="fiscalida.de">Codigo protegido por direitos de autor. Licenca PolyForm Noncommercial 1.0.0: uso comercial ou redistribuicao sem autorizacao proibidos.</div>
 <a href="/hp/registo-e1ec0c96c9" hidden aria-hidden="true" rel="nofollow noindex" tabindex="-1">.</a>
 <!-- icon sprite: every inline icon on the page is a <use> against one of these symbols,
      drawn as simple 2px-stroke line icons so they inherit currentColor and never need a request. -->
@@ -518,7 +515,7 @@
     <div class="aframe" id="sit-empty" hidden>
       <div class="acell"><div class="atitle">1. Preparar</div>
         <a class="btn-primary" href="/extensao"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg>Adicionar ao Chrome</a>
-        <div class="acap">recomendado &middot; ou <a id="bookmarklet2" href="#">instalar o favorito</a></div></div>
+        <div class="acap">pré-visualização interna; ainda não publicada</div></div>
       <div class="acell"><div class="atitle">2. Começar por</div>
         <div class="selwrap"><svg class="icon" aria-hidden="true"><use href="#i-doc"/></svg>
           <select id="sit-srcsel" aria-label="Fonte a abrir a seguir"></select>
@@ -527,8 +524,8 @@
         <a class="btn-primary" id="sit-opensrc" target="_blank" rel="noopener" href="https://faturas.portaldasfinancas.gov.pt">
         <svg class="icon" aria-hidden="true"><use href="#i-external"/></svg><span id="sit-opensrclabel">Abrir e-Fatura</span></a></div>
     </div>
-    <p class="framecap" id="sit-emptycap" hidden>Na página oficial, carrega em <b>Analisar</b> na barra
-      (ou usa o favorito). Os dados aparecem em <a href="/perfil">A minha situação</a>, só neste navegador.</p>
+    <p class="framecap" id="sit-emptycap" hidden>Na página oficial, carrega em <b>Analisar</b> na barra.
+      Os dados aparecem em <a href="/perfil">A minha situação</a>, só neste navegador.</p>
 
     <div id="sit-cta" hidden style="text-align:center;margin-top:22px">
       <a class="btn-primary" id="sit-continue" href="/perfil" style="max-width:420px">
@@ -558,13 +555,13 @@
   <p id="fb-counter" style="display:none;margin:10px 0 0;font-size:1rem;color:#0a7d33;font-weight:600"></p>
   <script>
   (function(){
-    fetch("https://cae-db.diogoandrade.com/counter/total").then(function(r){return r.json();}).then(function(d){
-      if(!d || !(d.recuperado>0)) return;
+    fetch("https://fiscalida.de/api/v1/stats/impact").then(function(r){return r.json();}).then(function(d){
+      if(!d || !(d.recoverable>0)) return;
       var el=document.getElementById("fb-counter"); if(!el) return;
-      var eur=Math.round(d.recuperado), users=d.users||0, cur=0, step=Math.max(1,Math.round(eur/40));
+      var eur=Math.round(d.recoverable), cur=0, step=Math.max(1,Math.round(eur/40));
       el.style.display="block";
       var t=setInterval(function(){ cur+=step; if(cur>=eur){cur=eur;clearInterval(t);}
-        el.innerHTML='<b>€'+cur.toLocaleString("pt-PT")+'</b> já encontrados para recuperar'+(users>1?' por '+users+' pessoas':'')+'.'; },25);
+        el.innerHTML='<b>€'+cur.toLocaleString("pt-PT")+'</b> somados em relatórios de impacto opcionais.'; },25);
     }).catch(function(){});
   })();
   </script>
@@ -594,8 +591,8 @@
   <h2>Como classificar as tuas faturas - em 3 passos</h2>
   <div class="hgrid">
     <div class="hstep"><div class="hn"><span class="num">01</span><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg></div>
-      <p><b>Adiciona a extensão</b> ao teu navegador. É um clique. <a href="/extensao">Ver como</a>.
-      <span class="note">Não queres instalar nada? Há o favorito, que funciona em qualquer navegador.</span></p></div>
+      <p><b>Adiciona a extensão</b> ao teu navegador. Durante a revisão interna, a instalação ainda
+      não está disponível ao público. <a href="/extensao">Ver o estado</a>.</p></div>
     <div class="hstep"><div class="hn"><span class="num">02</span><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></div>
       <p><b>Abre o <a href="https://faturas.portaldasfinancas.gov.pt" target="_blank" rel="noopener">e-Fatura</a> e entra</b> como sempre fazes. A ferramenta nunca vê nem pede a tua password.</p></div>
     <div class="hstep"><div class="hn"><span class="num">03</span><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></div>
@@ -643,33 +640,8 @@
     <p style="margin:0"><a class="btn" href="/extensao"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg>Ver e adicionar ao Chrome</a></p>
   </div>
 
-  <p style="margin-top:22px"><b>Alternativa: o favorito (bookmarklet).</b> Não instala nada e
-    funciona em qualquer navegador. Arrasta este botão para a tua barra de favoritos.</p>
-  <p><a class="bm" id="bookmarklet" href="#"> Fiscalidade</a></p>
-
-  <p><b>Se arrastar não der:</b> copia o código e cola-o num favorito novo.</p>
-  <p>
-    <button type="button" class="bm" id="copybm" style="border:0">Copiar o código</button>
-    <span id="copymsg" class="note" role="status" aria-live="polite"></span>
-  </p>
-  <details id="howto">
-    <summary>Como colar num favorito novo, por navegador</summary>
-    <div class="howto-body">
-      <p><b>Chrome / Edge / Brave:</b> Ctrl+Shift+O abre o gestor de favoritos. Botão direito na
-        barra, <i>Adicionar página</i>, dá-lhe o nome <i>Fiscalidade</i> e cola o código no campo URL.</p>
-      <p><b>Firefox:</b> Ctrl+Shift+O, depois <i>Organizar</i>, <i>Adicionar marcador</i>, e cola o
-        código no campo <i>Endereço</i>.</p>
-      <p><b>Safari:</b> adiciona qualquer página aos favoritos, depois <i>Editar favoritos</i>,
-        muda o nome e cola o código no endereço.</p>
-      <p class="note">Em todos: o código começa por <code>javascript:</code>. Se ao colares essa
-        parte desaparecer, estás a colar na barra de endereço em vez de no favorito. O navegador
-        remove-a de propósito, e num favorito isso não acontece.</p>
-    </div>
-  </details>
-  <p class="note" style="margin-top:14px">Depois abre o e-Fatura, faz login, e clica no favorito.
-    <b>Porque não instala sozinho:</b> os navegadores deixaram de permitir que uma página crie
-    favoritos - é a mesma razão que devia deixar-te descansado, porque assim é que se faria um
-    ataque. Tem de passar pelas tuas mãos.</p>
+  <p class="note" style="margin-top:22px"><b>Instalação temporariamente indisponível.</b> Estamos a
+    rever permissões, consentimento, leituras e cálculos antes de disponibilizar uma nova versão.</p>
 </section>
 
 <section><div class="box give">
@@ -790,39 +762,8 @@
 <script>
   // Set these two constants at deploy time.
   var GH  = "https://github.com/nobodykr/efatura-helper";
-  var HOST = location.origin;              // where tool.js is served (this site)
   document.getElementById("gh").href = GH;
   document.getElementById("gh2").href = GH;
-  // Copy the bookmarklet source. No browser lets a page create a bookmark - the APIs that used to
-  // (window.sidebar.addPanel, window.external.AddFavorite) were removed precisely because silently
-  // installing a javascript: bookmark is an attack. So the best we can do is remove the typing.
-  document.getElementById("copybm").addEventListener("click", function () {
-    var msg = document.getElementById("copymsg");
-    var code = document.getElementById("bookmarklet").getAttribute("href");
-    var done = function () {
-      msg.className = "note ok"; msg.textContent = "Copiado. Agora cola num favorito novo.";
-      document.getElementById("howto").open = true;
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(code).then(done, function () { fallback(code, msg, done); });
-    } else { fallback(code, msg, done); }
-  });
-  function fallback(code, msg, done) {
-    var ta = document.createElement("textarea");
-    ta.value = code; ta.style.position = "fixed"; ta.style.opacity = "0";
-    document.body.appendChild(ta); ta.select();
-    try { document.execCommand("copy"); done(); }
-    catch (e) { msg.className = "note err"; msg.textContent = "Nao consegui copiar. Clica com o botao direito no botao acima e copia o endereco."; }
-    document.body.removeChild(ta);
-  }
-
-  // Loader bookmarklet: injects the open-source tool.js from this site into the e-Fatura page.
-  // Profile is public now: the loader allows all Financas + Seguranca Social hosts and sets the
-  // __FB_PROFILE flag that unlocks the profile flow. (The e-Fatura classifier still runs on the
-  // faturas page.) The SRI-pinned "verified" variant lives on /verificar.
-  var loader = "javascript:(function(){if(!/(portaldasfinancas\\.gov\\.pt|seg-social\\.pt)$/.test(location.host)){alert('Abre uma pagina das Financas ou da Seguranca Social e faz login primeiro.');return;}window.__FB_PROFILE=1;var s=document.createElement('script');s.charset='utf-8';s.src='" + HOST + "/tool.js?v='+Date.now();document.body.appendChild(s);})();";
-  document.getElementById("bookmarklet").setAttribute("href", loader);
-  document.getElementById("bookmarklet2").setAttribute("href", loader);
 
   // Masthead menu (no framework): a plain toggle with aria-expanded, Escape closes.
   (function(){

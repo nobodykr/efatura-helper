@@ -6,7 +6,9 @@ const rows = [
   { estadoBeneficio: "P", nifEmitente: "500960046", nomeEmitente: "Loja A", valorTotal: 10000,
     valorTotalIva: 600, dataEmissaoDocumento: "2026-06-01", idDocumento: "p1" },
   { estadoBeneficio: "P", nifEmitente: "503540480", nomeEmitente: "Loja B", valorTotal: 5000,
-    valorTotalIva: 300, dataEmissaoDocumento: "2026-06-02", idDocumento: "p2" }
+    valorTotalIva: 300, dataEmissaoDocumento: "2026-06-02", idDocumento: "p2" },
+  { estadoBeneficio: "P", nifEmitente: "200000004", nomeEmitente: "Pessoa singular", valorTotal: 5000,
+    valorTotalIva: 300, dataEmissaoDocumento: "2026-06-03", idDocumento: "p3" }
 ];
 // "consent" is allowed alongside the three data fields: it is a boolean assertion the SERVER
 // requires (403 without it), and it carries no information about the user or their purchases.
@@ -34,19 +36,21 @@ function run(share) {
   window.document.execCommand = () => true;
   global.fetch = (u, o) => {
     const s = String(u);
-    if (/\/outcome$/.test(s)) posted.push(JSON.parse((o || {}).body || "{}"));
-    const CAEMAP = { "500960046": ["C05", "C99"], "503540480": ["C03", "C99"] };
+    if (/\/api\/v1\/contributions\/merchant$/.test(s)) posted.push(JSON.parse((o || {}).body || "{}"));
+    const CAEMAP = { "500960046": ["C05", "C99"], "503540480": ["C03", "C99"],
+                     "200000004": ["C03", "C99"] };
     // The tool fetches /bucket/<last 3 digits of NIF>, never the whole map.
-    if (s.includes("/bucket/")) {
-      const b = s.split("/bucket/")[1].split("?")[0];
+    if (s.includes("/api/v1/map/buckets/")) {
+      const b = s.split("/api/v1/map/buckets/")[1].split("?")[0];
       const out = {};
       for (const k in CAEMAP) if (k.slice(-3) === b) out[k] = CAEMAP[k];
       return Promise.resolve({ ok: true, json: () => Promise.resolve(out) });
     }
     if (s.includes("sectors.json"))
       return Promise.resolve({ ok: true, json: () => Promise.resolve(CAEMAP) });
-    return Promise.resolve({ ok: true, json: () => Promise.resolve({ linhas: rows }),
-                             text: () => Promise.resolve("") });
+    return Promise.resolve({ ok: true, headers: { get: () => "application/json" },
+                             json: () => Promise.resolve({ linhas: rows }),
+                             text: () => Promise.resolve(JSON.stringify({ linhas: rows })) });
   };
   global.localStorage.setItem("efh-consent-v1", JSON.stringify({ ok: true, share: share }));
   eval(fs.readFileSync(process.argv[2] || __dirname + "/tool.js", "utf8"));
@@ -69,12 +73,14 @@ function run(share) {
   const noForbidden = !keys.some(k => FORBIDDEN.some(f => k.toLowerCase().includes(f.toLowerCase())));
   const sectorsOk = on.every(o => /^C[0-9]{2}$/.test(o.suggested) && /^C[0-9]{2}$/.test(o.chosen));
   const nifIsMerchant = on.every(o => rows.some(r => r.nifEmitente === o.nif));
+  const noNaturalPerson = on.every(o => o.nif !== "200000004");
   console.log("  only the three allowed fields:", onlyAllowed);
   console.log("  no amount/date/identity field:", noForbidden);
   console.log("  sectors well-formed:", sectorsOk);
   console.log("  nif is the MERCHANT's, not the user's:", nifIsMerchant);
+  console.log("  natural-person merchant NIF rejected:", noNaturalPerson);
 
-  const pass = off.length === 0 && on.length > 0 && onlyAllowed && noForbidden && sectorsOk && nifIsMerchant;
+  const pass = off.length === 0 && on.length > 0 && onlyAllowed && noForbidden && sectorsOk && nifIsMerchant && noNaturalPerson;
   console.log(pass ? "  PASS" : "  *** FAIL: the learning loop sends more than it promises ***");
   if (!pass) process.exit(1);
 })();
