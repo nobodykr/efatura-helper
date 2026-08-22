@@ -48,9 +48,12 @@ for (const size of [16, 48, 128]) {
 await browser.close();
 
 const version = JSON.parse(readFileSync(here('manifest.json'), 'utf8')).version;
-mkdirSync(root('dist'), { recursive: true });
+// CI/container runs can leave the default dist directory owned by another uid. Allow a caller to
+// choose a writable artifact directory without changing package contents or the deterministic hash.
+const distDir = process.env.FISCALIDADE_EXTENSION_DIST || root('dist');
+mkdirSync(distDir, { recursive: true });
 // Ship ONLY runtime files - dev scripts and store-copy working notes stay out of the package.
-const zipPath = root(`dist/fatura-boa-extension-${version}.zip`);
+const zipPath = `${distDir.replace(/\/$/, '')}/fatura-boa-extension-${version}.zip`;
 const runtimeFiles = [
   'manifest.json', 'background.js', 'config.js', 'bar.js', 'tool.js', 'offers.json',
   'icon16.png', 'icon48.png', 'icon128.png', 'profile.html', 'profile.css', 'profile.js'

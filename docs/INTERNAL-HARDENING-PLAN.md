@@ -20,8 +20,10 @@ findings, decisions, tests and implementation commits do not exist only in chat 
   monetary parsing fail closed.
 - Statutory values are synchronized across HTML, Markdown, code and snapshots. The 2025 rent limit
   is 700 EUR (Lei 36/2024 and the AT's official table); 2026 is 900 EUR (DL 97/2026).
-- Clean-environment result: 28/28 browser/frontend checks (zero skipped), 124 backend tests plus the
+- Clean-environment result: 29/29 browser/frontend checks (zero skipped), 124 backend tests plus the
   HTTP-contract check, four strict PDF-reader tests, and the existing IRS calculation fixture pass.
+- Extension 0.5.1 was built twice from the reviewed source with the same 12-file ZIP SHA-256:
+  `20b2352d3fa78cf6faf4fe8a8acc8c31bbc150a176047349fd013367ee3afa9c`.
 - Two authorized AT personas were opened through `fiscal-monitor/profile_validate.mjs` after the
   synthetic suite passed. Raw responses stayed inside the browser; only endpoint contracts,
   booleans and value-free type schemas were emitted. Live evidence forced four same-host IRS apps
