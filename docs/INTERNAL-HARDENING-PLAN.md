@@ -20,10 +20,19 @@ findings, decisions, tests and implementation commits do not exist only in chat 
   monetary parsing fail closed.
 - Statutory values are synchronized across HTML, Markdown, code and snapshots. The 2025 rent limit
   is 700 EUR (Lei 36/2024 and the AT's official table); 2026 is 900 EUR (DL 97/2026).
-- Clean-environment result: 29/29 browser/frontend checks (zero skipped), 124 backend tests plus the
+- Clean-environment result: 33/33 browser/frontend checks (zero skipped), 124 backend tests plus the
   HTTP-contract check, four strict PDF-reader tests, and the existing IRS calculation fixture pass.
-- Extension 0.5.2 was built twice from the reviewed source with the same 12-file ZIP SHA-256:
-  `d711cd7b997ec1e2e62f76c8c0a8eccd35531ed220ff73517d79739b70739035`.
+- Classifier version `2026.08.22.3` treats pending invoices and attributed corrections as one
+  ceiling portfolio, values corrections net of deduction removed from the source, applies the 45%
+  monoparental C99 rate consistently, and rebuilds from merged household totals without uploading
+  those merged totals as one member's contribution. Four synthetic regression fixtures pin these
+  cases.
+- Historical automatic-classifier tools were reviewed as portal-behaviour evidence only. No
+  historical script was imported or executed. Their later evidence proves that the raw attributed
+  `alterarDocumentoAdquirente.action` route is rejected; Fiscalidade therefore keeps attributed
+  corrections manual and never reports them as applied without post-state verification.
+- Extension 0.5.3 was built twice from committed source with the same explicit 12-file ZIP SHA-256:
+  `9aa464dd94f850f8652fe5663eb66f6068f7a2658cec961a72d59565e6564f17`.
 - Two authorized AT personas were opened through `fiscal-monitor/profile_validate.mjs` after the
   synthetic suite passed. Raw responses stayed inside the browser; only endpoint contracts,
   booleans and value-free type schemas were emitted. Live evidence forced four same-host IRS apps
@@ -31,7 +40,8 @@ findings, decisions, tests and implementation commits do not exist only in chat 
   that one legitimate account may not expose that screen, and pinned the official deductions
   service to the last four completed income years. Segurança Social was cached-session-only:
   role flags and current payments passed, while contributory status remains unvalidated.
-- No push, deployment, DNS/indexing action, store upload, resubmission or appeal was performed.
+- No live invoice classification, push, deployment, DNS/indexing action, store upload, resubmission
+  or appeal was performed.
 
 ## Safety and release boundary
 
@@ -86,6 +96,12 @@ findings, decisions, tests and implementation commits do not exist only in chat 
 - The rental-regime recommendation stays disabled until a complete, year-specific model has
   independent fixtures. A registered CAE is a hint that a classification is available, not proof
   that a specific purchase belongs in it.
+- Pending suggestions reserve shared headroom globally. Optional correction value is calculated
+  afterwards from the remaining ceiling space and subtracts any deduction lost from the source;
+  separate paths cannot claim the same headroom twice.
+- Household aggregation keeps account-only and merged values separate. The plan, correction value,
+  summary and bars all rebuild from the same merged snapshot; repeat refreshes still upload only
+  this account's contribution.
 - PDF-derived values are accepted only after encryption, stream, font and ToUnicode handling has
   succeeded. A parse failure is unknown, never zero.
 - Household inputs and aggregates are schema-validated, bounded, retained for at most 400 days and
