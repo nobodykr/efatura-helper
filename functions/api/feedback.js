@@ -109,9 +109,9 @@ export async function onRequestPost({ request, env }) {
     method: "POST",
     headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
     body: JSON.stringify({
-      from: "Fiscalidade <faturas@send.diogoandrade.com>",
+      from: env.RESEND_FROM || "Fiscalidade <faturas@send.fiscalida.de>",
       to: [env.FEEDBACK_TO],
-      reply_to: email || undefined,
+      reply_to: email || env.RESEND_REPLY_TO || "faturas@fiscalida.de",
       subject: `Feedback Fatura Boa${context ? ": " + context.slice(0, 60) : ""}`,
       html: `<p><b>Mensagem</b></p><pre style="white-space:pre-wrap;font:14px ui-monospace,monospace">${esc(message)}</pre>`
           + `<p><b>Contexto:</b> ${context ? esc(context) : "(nenhum)"}</p>`
