@@ -11,6 +11,7 @@
     "test:browser": "node test-network.js tool.js"
   },
   "devDependencies": {
-    "jsdom": "^29.1.1"
+    "jsdom": "^29.1.1",
+    "playwright-core": "^1.62.1"
   }
 }
