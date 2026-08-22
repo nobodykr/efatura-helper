@@ -1245,7 +1245,9 @@
       // so scan each row for a year (schema-agnostic, like readIRS) - another contributor-schema target.
       var yNow = new Date().getFullYear();
       var recibosAno = o.recibos ? o.recibos.filter(function (r) { return scanYear(rowVals(r)) === yNow; }).length : null;
-      // Rendas RECEBIDAS por ano (valor, nao so contagem) - base do what-if englobamento vs 28%.
+      // Rendas RECEBIDAS por ano (valor, nao so contagem). Nao inferir daqui uma taxa: o art. 72
+      // distingue arrendamento habitacional (25% em 2025), outros prediais (28%) e reducoes por
+      // contrato. O what-if continua desativado ate natureza/duracao/gastos estarem confirmados.
       // Recibos ANULADOS nao contam (mesma armadilha do anulado no movfin).
       var rendasPorAno = {};
       (o.recibos || []).forEach(function (r) {
