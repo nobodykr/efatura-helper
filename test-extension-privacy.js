@@ -41,4 +41,3 @@ assert(run, "explicit analysis button missing after consent");
 run.click();
 assert(messages === 1, "explicit analysis click did not request injection");
 console.log("  extension first-run boundary passed");
-

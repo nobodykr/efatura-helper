@@ -54,4 +54,3 @@ setTimeout(() => {
     throw new Error("raw endpoint or identifier leaked in structure contribution");
   console.log("  extension tool kept profile out of official-page storage");
 }, 1200);
-

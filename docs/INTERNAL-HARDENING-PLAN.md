@@ -1,7 +1,7 @@
 # Fiscalidade internal hardening plan
 
-Status: implemented and verified locally on `temporary review branch` on
-2026-08-22. Public release remains blocked by the deferred work below.
+Status: implemented and verified locally on 2026-08-22, then promoted to canonical `main`. Public
+release remains blocked by the deferred work below.
 
 This is the repository copy of the approved internal-only plan. It is deliberately versioned so
 findings, decisions, tests and implementation commits do not exist only in chat history.
