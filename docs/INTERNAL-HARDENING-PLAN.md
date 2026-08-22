@@ -1,9 +1,31 @@
 # Fiscalidade internal hardening plan
 
-Status: implementation in progress on `temporary review branch`.
+Status: implemented and verified locally on `temporary review branch` on
+2026-08-22. Public release remains blocked by the deferred work below.
 
 This is the repository copy of the approved internal-only plan. It is deliberately versioned so
 findings, decisions, tests and implementation commits do not exist only in chat history.
+
+## Implementation result
+
+- `/consulta`, `/contrato`, the free-text feedback endpoint, sitemap and all active bookmarklet
+  installation surfaces are removed. Every HTML page and response is noindexed for internal review.
+- The extension is Manifest V3 with five exact official hosts, bundled runtime/data, extension-owned
+  storage, end-of-day expiry and a two-step authorize/read flow. Its explicit 12-file ZIP allowlist
+  builds deterministically.
+- The first-party API facade has a fixed HTTPS upstream, explicit route/method allowlist, 64 KiB body
+  cap, minimized headers and bounded query handling. Contributions are separate and off by default.
+- e-Fatura reads split capped ranges until complete or fail visibly. Attributed states `R`, `B` and
+  `E` consume ceilings; `P` is pending. Unsupported rental recommendations and unvalidated PDF
+  monetary parsing fail closed.
+- Statutory values are synchronized across HTML, Markdown, code and snapshots. The 2025 rent limit
+  is 700 EUR (Lei 36/2024 and the AT's official table); 2026 is 900 EUR (DL 97/2026).
+- Clean-environment result: 28/28 browser/frontend checks (zero skipped), 124 backend tests plus the
+  HTTP-contract check, four strict PDF-reader tests, and the existing IRS calculation fixture pass.
+- Authorized real accounts were not opened in this pass because no remaining test required their
+  values. The opt-in schema diagnostic now captures only stable endpoint IDs, field names and types,
+  so future format coverage does not require publishing account data.
+- No push, deployment, DNS/indexing action, store upload, resubmission or appeal was performed.
 
 ## Safety and release boundary
 
