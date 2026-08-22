@@ -1,13 +1,13 @@
 {
-  "current": "2026.08.11",
+  "current": "2026.08.22",
   "repo": "https://github.com/nobodykr/efatura-helper",
-  "source_commit": "7a1bb4b5119bc5fe142591058200e6c66cb637c6",
-  "source": "https://github.com/nobodykr/efatura-helper/blob/7a1bb4b5119bc5fe142591058200e6c66cb637c6/tool.js",
+  "source_commit": "ea28bd61fbe0133ad08833dfdbff745a9e7046bf",
+  "source": "https://github.com/nobodykr/efatura-helper/blob/ea28bd61fbe0133ad08833dfdbff745a9e7046bf/tool.js",
   "files": {
     "tool.js": {
-      "version": "2026.08.11",
-      "integrity": "sha384-e/39z5yXurUrmvWdvoNT2mqm9AqTCUedvvASUEDSpUI1Zs1EtCgHXLetb6SEyx7J",
-      "bytes": 172502
+      "version": "2026.08.22",
+      "integrity": "sha384-zvPEcFofGPUKIz1eFovJQoybydTYbBUhyRYMSXgRL9yuHz/Qd/arCMnurXyADdJW",
+      "bytes": 171729
     }
   },
   "note": "Provably-fair release manifest. The served tool.js must hash to `integrity` (verify at /verificar); `source_commit` is the immutable Git commit containing that exact file."

@@ -1,7 +1,7 @@
 {
-  "_generated": "make-audit.mjs a partir de deducoes.html + tool.js + year_snapshots.json + legal_sources.json (versão do tool.js 2026.08.11)",
+  "_generated": "make-audit.mjs a partir de deducoes.html + tool.js + year_snapshots.json + legal_sources.json (versão do tool.js 2026.08.22)",
   "_disclaimer": "GERADO automaticamente do código e das fontes, não curado. Cada linha é verificável: siga a fonte legal (DRE) e confirme o valor. Correr test-audit-sync.js garante que este ficheiro não desviou do código.",
-  "tool_version": "2026.08.11",
+  "tool_version": "2026.08.22",
   "rows": [
     {
       "code": "C01",
@@ -169,7 +169,7 @@
         "2024",
         "2025"
       ],
-      "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+      "source_law": "Lei 36/2024, arts. 2-4 (DRE) plus AT official deductions table for 2025"
     },
     {
       "code": "C08",
