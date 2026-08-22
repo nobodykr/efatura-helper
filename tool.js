@@ -63,7 +63,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.08.22.2";
+  var FB_VERSION = "2026.08.22.3";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -246,15 +246,23 @@
     return c.pot ? POT_CAP : c.cap;
   }
 
+  /* Deduction contributed by one invoice when classified in `sec`. Keep this in one place: C99
+   * is 45%, not CEIL.C99.rate (35%), for a monoparental household. Having ad-hoc copies of this
+   * formula already made the optimiser undervalue that case. Amounts from e-Fatura are cents. */
+  function deductionFor(x, sec, prof) {
+    var c = CEIL[sec]; if (!c) return 0;
+    var value = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100;
+    return value * (sec === "C99" ? c99Rate(prof) : c.rate);
+  }
+
   /* How much of each ceiling the year's ALREADY-REGISTERED invoices have used up. */
   function usedSoFar(rows, prof) {
     var used = {};
     rows.forEach(function (x) {
       var sec = x.actividadeEmitente, c = CEIL[sec];
       if (!isAttributed(x.estadoBeneficio) || !c) return;
-      var baseVal = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100;
       var key = c.pot || sec;
-      used[key] = (used[key] || 0) + baseVal * (sec === "C99" ? c99Rate(prof) : c.rate);
+      used[key] = (used[key] || 0) + deductionFor(x, sec, prof);
     });
     return used;
   }
@@ -312,58 +320,72 @@
    * sectors the merchant genuinely holds (from caemap/SICAE) are ever offered, so it can never say
    * "declare groceries as Saude". Used by run() for the current year AND by reAuditAno for past
    * years (pass the per-year rendas cap for C07). Identical logic; do not let them diverge. */
-  function movablesAndRecoverable(rows, caemap, prof, rendasCap) {
-    var used = usedSoFar(rows, prof);
+  function movablesAndRecoverable(rows, caemap, prof, rendasCap, usedOverride) {
+    // Current-year household mode supplies the authoritative merged ceiling usage. Past-year
+    // re-audits omit it and use this account's rows. Copy so allocation never mutates the caller.
+    var sourceUsed = usedOverride || usedSoFar(rows, prof), used = {};
+    Object.keys(sourceUsed).forEach(function (k) { used[k] = sourceUsed[k]; });
     var capOf = function (sec) { return (sec === "C07" && rendasCap != null) ? rendasCap : capFor(sec, prof); };
-    var headroom = function (sec) { var c = CEIL[sec]; if (!c) return Infinity; return capOf(sec) - (used[c.pot || sec] || 0); };
-    var dedu = function (x, sec) { var c = CEIL[sec]; if (!c) return 0; var v = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100; return v * (sec === "C99" ? c99Rate(prof) : c.rate); };
-    var gain = function (sec, x) { var c = CEIL[sec]; if (!c) return 0; var base = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100; return Math.max(0, Math.min(headroom(sec), c.rate * base)); };
-    var movR = [];
-    rows.forEach(function (x) {
-      if (!isAttributed(x.estadoBeneficio)) return;
-      var cur = x.actividadeEmitente; if (!cur || !CEIL[cur]) return;
-      var reg = caemap[x.nifEmitente];
-      reg = reg ? (Object.prototype.toString.call(reg) === "[object Array]" ? reg : [reg]) : [];
-      var bestA = null, bestG = gain(cur, x) + 0.01;   // must beat the current sector
-      reg.forEach(function (a) { if (a === cur || !CEIL[a]) return; var g = gain(a, x); if (g > bestG) { bestG = g; bestA = a; } });
-      // ACONSELHADO vs OTIMIZADO. O `reg` vem do cae-db ORDENADO: reg[0] deriva do **CAE PRINCIPAL**
-      // (cae-db guarda caes = [principal] + secundarios, dedup preservando a ordem). Mover para o
-      // setor do CAE PRINCIPAL e DEFENSAVEL - e o que o comerciante faz mesmo. Mover para um setor
-      // secundario e apenas ARITMETICAMENTE possivel (um hipermercado tem CAE de farmacia, mas a
-      // compra provavelmente nao foi um medicamento). E o caso mais forte de todos: a fatura estar em
-      // "gerais/C99" (o saco por omissao) quando o emitente TEM um setor especifico - aqui a
-      // classificacao atual e que provavelmente esta errada, contra o contribuinte.
-      var primario = reg.length ? reg[0] : null;
-      if (bestA) {
-        var aconselhado = (bestA === primario) &&
-                          (cur === "C99" || !CEIL[cur] || primario !== cur);
-        movR.push({ x: x, to: bestA, primario: primario, aconselhado: !!aconselhado,
-                    deGerais: cur === "C99" });
-      }
-    });
-    // Greedy por teto. `only` limita o conjunto (usado para o cenario ACONSELHADO).
-    // `out`, quando dado, recebe {m, g} por cada fatura que REALMENTE recebeu ganho - ou seja, a
-    // mesma alocacao que produz o total devolvido. E de proposito que a lista por comerciante se
-    // constroi daqui e nao de dedu() cru: dedu() ignora o teto, por isso a soma das linhas ficaria
-    // ACIMA do numero grande que /perfil mostra por cima delas. Numa pagina cujo unico argumento e
-    // nao exagerar, as partes teem de somar o todo.
-    var greedy = function (set, out) {
-      var pots = {}, total = 0;
-      set.slice().sort(function (a, b) { return dedu(b.x, b.to) - dedu(a.x, a.to); }).forEach(function (m) {
-        var c = CEIL[m.to], k = c.pot || m.to;
-        var roomLeft = headroom(m.to) - (pots[k] || 0);
-        if (roomLeft <= 0.01) return;
-        var g = Math.min(dedu(m.x, m.to), roomLeft);
-        if (g <= 0.01) return;
-        pots[k] = (pots[k] || 0) + g; total += g;
-        if (out) out.push({ m: m, g: g });
+    var keyOf = function (sec) { return CEIL[sec].pot || sec; };
+    var copyUsed = function () { var o = {}; Object.keys(used).forEach(function (k) { o[k] = used[k]; }); return o; };
+
+    /* Allocate actual NET improvements. A move does two things at once: it can add deduction to
+     * the target, but it also removes this invoice's deduction from its current category. The old
+     * code counted only the first half, so moving an invoice out of a barely-over-cap source could
+     * be reported as profitable even when it reduced the taxpayer's total deduction. Recompute the
+     * marginal before/after result against mutable ceiling levels at every greedy step. */
+    var allocate = function (onlyPrimary) {
+      var levels = copyUsed(), pending = [], out = [];
+      rows.forEach(function (x) {
+        if (!isAttributed(x.estadoBeneficio)) return;
+        var cur = x.actividadeEmitente; if (!cur || !CEIL[cur]) return;
+        var raw = caemap[x.nifEmitente];
+        var reg = raw ? (Object.prototype.toString.call(raw) === "[object Array]" ? raw : [raw]) : [];
+        reg = reg.filter(function (s, i) { return CEIL[s] && reg.indexOf(s) === i; });
+        var primario = reg.length ? reg[0] : null;
+        var targets = onlyPrimary ? (primario && primario !== cur ? [primario] : [])
+                                  : reg.filter(function (s) { return s !== cur; });
+        if (targets.length) pending.push({ x: x, cur: cur, targets: targets, primario: primario });
       });
-      return +total.toFixed(2);
+
+      while (pending.length) {
+        var best = null;
+        pending.forEach(function (p, pi) {
+          var sourceKey = keyOf(p.cur), sourceD = deductionFor(p.x, p.cur, prof);
+          var sourceBefore = Math.min(levels[sourceKey] || 0, capOf(p.cur));
+          var sourceAfter = Math.min(Math.max(0, (levels[sourceKey] || 0) - sourceD), capOf(p.cur));
+          var sourceLoss = sourceBefore - sourceAfter;
+          p.targets.forEach(function (to, ti) {
+            var targetKey = keyOf(to);
+            // Sectors in the same 78-F pot share one ceiling. Re-labelling inside that pot is not
+            // a cap-recovery operation and must be left to the factual purchase classification.
+            if (targetKey === sourceKey) return;
+            var targetD = deductionFor(p.x, to, prof);
+            var targetBefore = Math.min(levels[targetKey] || 0, capOf(to));
+            var targetAfter = Math.min((levels[targetKey] || 0) + targetD, capOf(to));
+            var net = targetAfter - targetBefore - sourceLoss;
+            if (net > 0.01 && (!best || net > best.net + 0.005))
+              best = { pi: pi, ti: ti, p: p, to: to, sourceKey: sourceKey,
+                       targetKey: targetKey, sourceD: sourceD, targetD: targetD, net: net };
+          });
+        });
+        if (!best) break;
+        levels[best.sourceKey] = Math.max(0, (levels[best.sourceKey] || 0) - best.sourceD);
+        levels[best.targetKey] = (levels[best.targetKey] || 0) + best.targetD;
+        var m = { x: best.p.x, to: best.to, primario: best.p.primario,
+                  aconselhado: best.to === best.p.primario, deGerais: best.p.cur === "C99" };
+        out.push({ m: m, g: best.net });
+        pending.splice(best.pi, 1); // one invoice can move only once
+      }
+      return out;
     };
-    var movA = movR.filter(function (m) { return m.aconselhado; });
-    var allocR = [], allocA = [];
-    return { movR: movR, recoverable: greedy(movR, allocR),
-             movA: movA, recoverableAconselhado: greedy(movA, allocA),
+
+    var allocR = allocate(false), allocA = allocate(true);
+    var movR = allocR.map(function (a) { return a.m; });
+    var movA = allocA.map(function (a) { return a.m; });
+    var sum = function (a) { return +a.reduce(function (n, x) { return n + x.g; }, 0).toFixed(2); };
+    return { movR: movR, recoverable: sum(allocR),
+             movA: movA, recoverableAconselhado: sum(allocA),
              allocR: allocR, allocA: allocA,
              nDeGerais: movR.filter(function (m) { return m.deGerais; }).length };
   }
@@ -441,8 +463,7 @@
    *
    *   - pending faturas        -> classify them (resolverPendenciaAdquirente).
    *   - o.wasted on ATTRIBUTED  -> deduction sitting in a full ceiling. RECOVERABLE by re-
-   *     classifying the fatura: on its detalhe page, Alterar -> pick the sector -> Guardar, which
-   *     POSTs alterarDocumentoAdquirente.action. Verified live 20-07-2026 (Diogo does this by hand).
+   *     classifying the fatura: on its detalhe page, Alterar -> pick the sector -> Guardar.
    *
    * An earlier version of this comment claimed the attributed amount could NOT be recovered. That
    * was wrong - it came from a probe that only enumerated <form action> and never saw the JS-driven
@@ -494,7 +515,7 @@
            // in e-Fatura. So no misleading "ou no e-Fatura" as if Detalhe were an apply path.
            (DRAFT
              ? 'V\u00ea quais em <b>Detalhe</b> (marcadas <b>corrigir</b>) e corrige-as no e-Fatura, na p\u00e1gina de cada fatura: <b>Alterar</b> \u2192 setor \u2192 <b>Guardar</b>'
-             : 'Corrige em <b>Detalhe</b> (bot\u00e3o Aplicar) ou no e-Fatura (<b>Alterar</b> \u2192 setor \u2192 <b>Guardar</b>)') +
+             : 'As pendentes podem ser aplicadas em <b>Detalhe</b>; as j\u00e1 classificadas corrigem-se no e-Fatura (<b>Alterar</b> \u2192 setor \u2192 <b>Guardar</b>)') +
            ', at\u00e9 <b>25 de fevereiro de ' + (year + 1) + '</b>.</div>';
     } else if (o.wasted > 1) {
       // Over a ceiling but NOTHING to move - the honest, calm message. Exceeding Despesas Gerais is
@@ -1935,10 +1956,11 @@
   /* Changing the household re-runs the whole pass, which rebuilds the table - so anything already
    * edited (a corrected sector, an unticked row) would be silently thrown away. Snapshot the choices
    * by idDocumento rather than row index, because row order can change, and restore after rebuild. */
-  var userEdits = {};
+  var userEdits = {}, userDirty = {};
   function snapshotEdits(pend) {
     document.querySelectorAll(".efh-sec").forEach(function (el) {
       var x = pend[+el.dataset.i]; if (!x) return;
+      if (!userDirty[x.idDocumento]) return; // untouched defaults must be recalculated for new caps
       var ck = document.querySelector('.efh-ck[data-i="' + el.dataset.i + '"]');
       userEdits[x.idDocumento] = { sec: el.value, on: ck ? ck.checked : true };
     });
@@ -1953,7 +1975,7 @@
     });
   }
 
-  function run() {
+  function run(householdSnapshot) {
     var caemap = {};
     // The unpaginated endpoint caps at 300. Use the recursive, fail-visible reader for the current
     // year too; otherwise a busy account appears complete while silently missing older invoices.
@@ -1974,46 +1996,39 @@
               (learned[x.nifEmitente][x.actividadeEmitente] || 0) + 1;
           }
         });
-        // cascade(nif) = ordered candidate sectors, best first. The CAE-DB returns a LIST per NIF
-        // (a merchant can hold several CAEs: a hypermarket with a pharmacy and a cafe), ranked
-        // most-specific-and-beneficial first, C99 last. Tolerates the old single-string format.
+        // cascade(nif) = every evidenced candidate sector, ordered with the user's own history
+        // first and the public CAE list after it. History is the strongest PROBABLE answer, but it
+        // must not erase legitimate alternatives: that made the "optimised" column unable to use a
+        // merchant's secondary activity whenever this account had classified it before.
         var cascade = function (nif) {
-          var m = learned[nif];                                   // 1) your own history wins outright
-          if (m) return [Object.keys(m).sort(function (a, b) { return m[b] - m[a]; })[0]];
-          var c = caemap[nif];                                    // 2) shared public CAE map
-          if (c) return Object.prototype.toString.call(c) === "[object Array]" ? c : [c];
-          return ["C99"];                                         // 3) safe default
+          var out = [], add = function (s) { if (CEIL[s] && out.indexOf(s) < 0) out.push(s); };
+          var m = learned[nif];
+          if (m) Object.keys(m).sort(function (a, b) { return m[b] - m[a]; }).forEach(add);
+          var c = caemap[nif];
+          if (c) (Object.prototype.toString.call(c) === "[object Array]" ? c : [c]).forEach(add);
+          if (!out.length) out.push("C99");                        // no evidence: safe default
+          return out;
         };
         // Walk the cascade and take the first sector that still has room under its ceiling.
         // This is the "prefer the most beneficial, and if it is full go to the next" rule: a
         // pharmacy invoice goes to Saude, but once Saude is capped it falls to the next option.
         var prof = loadProfile();
-        var used = usedSoFar(rows, prof);
+        // Keep own-account and merged-household totals separate. Uploading the merged result back
+        // under this member would count the partner's invoices again on every refresh.
+        var accountUsed = usedSoFar(rows, prof), used = {};
+        Object.keys(accountUsed).forEach(function (k) { used[k] = accountUsed[k]; });
+        if (householdSnapshot && householdSnapshot.merged) {
+          Object.keys(householdSnapshot.merged).forEach(function (k) {
+            used[k === "POT" ? POT : k] = Number(householdSnapshot.merged[k] || 0);
+          });
+        }
         var headroom = function (sec) {
           var c = CEIL[sec]; if (!c) return Infinity;
           return capFor(sec, prof) - (used[c.pot || sec] || 0);
         };
-        /* OTIMIZADA - of the sectors this merchant is registered for, the one that actually puts
-         * the most euros of deduction on THIS invoice. Not the same as "first in the list": the
-         * CAE-DB returns the primary CAE first, so walking the list in order would nearly always
-         * hand back the primary and the two columns would be identical.
-         * Deduction differs per sector by rate AND by base (a share of the invoice total, or a
-         * share of its VAT), and is worth nothing beyond a full ceiling - so compute the real
-         * gain and take the best. This is the "pharmacy preferred, and when it is full fall to
-         * the next" rule, done by value rather than by position. */
-        var gain = function (sec, x) {
-          var c = CEIL[sec]; if (!c) return 0;
-          var base = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100;
-          return Math.max(0, Math.min(headroom(sec), c.rate * base));
-        };
-        var suggest = function (nif, x) {
-          var opts = cascade(nif), best = opts[0], bestG = -1;
-          for (var i = 0; i < opts.length; i++) {
-            var g = gain(opts[i], x);
-            if (g > bestG + 0.005) { bestG = g; best = opts[i]; }   // ties keep the earlier (primary)
-          }
-          return bestG > 0.01 ? best : opts[0];   // everything capped - the ranking still stands
-        };
+        /* OTIMIZADA is allocated as ONE plan below, not independently row by row. Otherwise two
+         * pending invoices can both be shown the same last 10 EUR of headroom. */
+        var suggest = function (nif, x) { return x.__plannedSector || cascade(nif)[0]; };
         /* PROVAVEL - the sector the purchase most likely really belonged to, ignoring ceilings.
          * This is NOT the same question as "which sector pays best". A hypermarket holds a
          * pharmacy CAE, so the optimiser can legitimately offer Saude, but if you bought
@@ -2033,14 +2048,18 @@
          * this callback, so calling optimise() here (before its textual definition) is safe - all
          * its inputs (cascade, dedu, capFor, prof, CEIL, rows) already exist.
          *
-         * movR is the FOOTGUN-SAFE recoverable set BY CONSTRUCTION: optimise() only emits a move
-         * when a DIFFERENT sector the merchant is REGISTERED for (from cascade -> SICAE) has
+         * movR is the FOOTGUN-SAFE recoverable set BY CONSTRUCTION: the shared allocator emits a
+         * move only when a DIFFERENT sector the merchant is REGISTERED for (from SICAE) has
          * headroom. A C99-only merchant yields no move, so this can never suggest declaring
          * groceries as Saude. Verified 20-07-2026 that the landing sector is actividadeEmitente
          * (the IRS endpoint's valorTotalSetorBeneficio/DespesasGerais are always 0). */
         // movR (invoices in a full pot the merchant can move out of) + the footgun-safe recoverable,
         // now computed by the SHARED core so the current year and the past-year re-audit never drift.
-        var _mr = movablesAndRecoverable(rows, caemap, prof);   // current year -> current ceilings
+        var pendingPlan = allocatePending();
+        // Pending invoices are obligations the user still has to classify; reserve their proposed
+        // ceiling usage before valuing optional corrections so both paths cannot claim the same
+        // last euro of target headroom.
+        var _mr = movablesAndRecoverable(rows, caemap, prof, null, pendingPlan.levels);
         var movR = _mr.movR, recoverable = _mr.recoverable;
         var movTo = {};
         movR.forEach(function (m) { movTo[m.x.idDocumento] = m.to; });
@@ -2079,8 +2098,8 @@
            * work out for themselves that a better one existed.
            *
            * What keeps this honest, and must not be removed:
-           *   - Otimizada only ever offers a sector the merchant is ACTUALLY REGISTERED for
-           *     (cascade() -> the public SICAE map). It cannot invent one.
+           *   - Otimizada only ever offers an evidenced sector (own history or public SICAE map).
+           *     It cannot invent one.
            *   - The Resumo tab carries the consequence line in plain sight, not in a tooltip:
            *     classifying is a declaration to the AT, and being accepted is not being right.
            *   - Both figures sit on the switcher, so choosing PROVAVEL is one click and the user
@@ -2123,73 +2142,57 @@
          * so you can see where a ceiling lands before you click Aplicar. If the two together
          * would overshoot the cap, the overflow is drawn in red and flagged - that share of the
          * deduction is simply lost, and those faturas are better moved to another sector. */
-        /* OPTIMISER - the same pass the server-side script runs, ported to the browser.
-         * Looks at EVERY fatura of the year (registered and pending), takes the sectors each
-         * merchant legitimately allows, and allocates greedily by value so the invoices with most
-         * to gain get the scarce headroom first. Surfaces two things a per-row view cannot: how
-         * much deduction is being WASTED on a ceiling that is already over, and which
-         * already-REGISTERED faturas sit in a full sector while a legitimate alternative has room.
-         * Rates are not uniform (transportes/jornais 100% of the VAT, ginasios 30%, despesas
-         * gerais 35% of the total), so the emptiest bucket is not the best one. */
+        /* Pending allocator. Start with the deduction already used by attributed invoices, then
+         * reserve ceiling space after each proposed pending classification. This is the key lesson
+         * retained from the historical classifier: proposals are a portfolio, not independent row
+         * guesses. Registered corrections are calculated separately by movablesAndRecoverable(),
+         * so the headline cannot count them once here and again as `recoverable`. */
         function dedu(x, sec) {
-          var c = CEIL[sec]; if (!c) return 0;
-          var v = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100;
-          return v * (sec === "C99" ? c99Rate(prof) : c.rate);
+          return deductionFor(x, sec, prof);
         }
-        function optimise() {
+        function allocatePending() {
           var capOf = function (k) { return k === POT ? POT_CAP : capFor(k, prof); };
           var keyOf = function (sec) { return CEIL[sec].pot || sec; };
-          var plan = [];
-          rows.forEach(function (x) {
-            if (x.estadoBeneficio !== "R" && x.estadoBeneficio !== "P") return;
-            var cur = x.actividadeEmitente;
+          var levels = {}, moves = [];
+          Object.keys(used).forEach(function (k) { levels[k] = used[k]; });
+          var plan = pend.map(function (x, i) {
             var allowed = cascade(x.nifEmitente).filter(function (a) { return CEIL[a]; });
-            if (cur && CEIL[cur] && allowed.indexOf(cur) < 0) allowed = allowed.concat([cur]);
-            if (!allowed.length) return;
             var best = 0;
             allowed.forEach(function (a) { var d = dedu(x, a); if (d > best) best = d; });
-            plan.push({ gain: best - (cur && CEIL[cur] ? dedu(x, cur) : 0),
-                        x: x, cur: cur, allowed: allowed });
+            return { gain: best, x: x, allowed: allowed, order: i };
           });
-          plan.sort(function (a, b) { return b.gain - a.gain; });
-
-          var curPots = {};
-          plan.forEach(function (p) {
-            if (!p.cur || !CEIL[p.cur]) return;
-            var k = keyOf(p.cur);
-            curPots[k] = (curPots[k] || 0) + dedu(p.x, p.cur);
-          });
+          plan.sort(function (a, b) { return (b.gain - a.gain) || (a.order - b.order); });
           var before = 0, wasted = 0;
-          Object.keys(curPots).forEach(function (k) {
-            before += Math.min(curPots[k], capOf(k));
-            wasted += Math.max(0, curPots[k] - capOf(k));
+          Object.keys(levels).forEach(function (k) {
+            before += Math.min(levels[k], capOf(k));
+            wasted += Math.max(0, levels[k] - capOf(k));
           });
-
-          var pots = {}, moves = [];
           plan.forEach(function (p) {
-            var bestSec = null, bestVal = -1;
-            p.allowed.slice().sort(function (a, b) { return dedu(p.x, b) - dedu(p.x, a); })
-              .forEach(function (a) {
-                var k = keyOf(a), room = capOf(k) - (pots[k] || 0);
-                if (room <= 0.01) return;
-                var val = Math.min(dedu(p.x, a), room);
-                if (val > bestVal) { bestSec = a; bestVal = val; }
-              });
-            if (!bestSec) return;
-            pots[keyOf(bestSec)] = (pots[keyOf(bestSec)] || 0) + bestVal;
-            if (bestSec !== p.cur && bestVal > 0.01) {
-              moves.push({ x: p.x, from: p.cur, to: bestSec, val: bestVal });
-            }
+            if (!p.allowed.length) return;
+            var bestSec = p.allowed[0], bestVal = -1;
+            p.allowed.forEach(function (a) {
+              var k = keyOf(a), d = dedu(p.x, a);
+              var val = Math.min((levels[k] || 0) + d, capOf(k)) - Math.min(levels[k] || 0, capOf(k));
+              if (val > bestVal + 0.005) { bestSec = a; bestVal = val; }
+            });
+            p.x.__plannedSector = bestSec;
+            levels[keyOf(bestSec)] = (levels[keyOf(bestSec)] || 0) + dedu(p.x, bestSec);
+            moves.push({ x: p.x, from: null, to: bestSec, val: Math.max(0, bestVal) });
           });
           var after = 0;
-          Object.keys(pots).forEach(function (k) { after += Math.min(pots[k], capOf(k)); });
-          return { before: before, after: after, wasted: wasted, moves: moves };
+          Object.keys(levels).forEach(function (k) { after += Math.min(levels[k], capOf(k)); });
+          return { before: before, after: after, wasted: wasted, moves: moves, levels: levels };
         }
+        function optimise() { return pendingPlan; }
 
         function oneBar(label, usedV, addV, cap) {
-          var pu = cap ? (usedV / cap) * 100 : 0;
-          var pa = cap ? (addV / cap) * 100 : 0;
-          var total = pu + pa;
+          var projected = Math.max(0, usedV + addV);
+          // A correction can reduce its source category. In that case draw the projected solid
+          // level; a negative-width ghost segment is invalid CSS and hid the actual result.
+          var solidV = addV < 0 ? projected : usedV;
+          var pu = cap ? (solidV / cap) * 100 : 0;
+          var pa = cap && addV > 0 ? (addV / cap) * 100 : 0;
+          var total = cap ? (projected / cap) * 100 : 0;
           var over = total > 100.5;
           var col = pu >= 100 ? "#b00" : pu >= 80 ? "#d98a00" : "#128a3a";
           var ghost = over ? "#b00" : "#7fc79b";
@@ -2199,8 +2202,9 @@
             '<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px">' +
             "<span>" + esc(label) + "</span>" +
             '<span style="color:' + (over ? "#b00" : col) + '"><b>' + Math.round(total) + "%</b>  |  \u20ac" +
-            (usedV + addV).toFixed(0) + " / \u20ac" + cap.toFixed(0) +
+            projected.toFixed(0) + " / \u20ac" + cap.toFixed(0) +
             (addV > 0.5 ? ' <span style="color:#128a3a">(+\u20ac' + addV.toFixed(0) + " a aplicar)</span>" : "") +
+            (addV < -0.5 ? ' <span style="color:#6b7780">(-\u20ac' + Math.abs(addV).toFixed(0) + " ao corrigir)</span>" : "") +
             (over ? ' <b>excede</b>' : "") + "</span></div>" +
             '<div role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' +
             Math.round(total) + '" aria-valuetext="' + Math.round(total) + '% de ' + esc(label) +
@@ -2211,7 +2215,8 @@
             ';opacity:.75"></div></div></div>';
         }
 
-        /* What the currently-ticked rows would add to each ceiling, at their chosen sectors. */
+        /* Net ceiling deltas for the currently-ticked rows. Pending invoices only add a target;
+         * attributed corrections also remove their current contribution from the source. */
         function pendingAdds() {
           var add = {};
           document.querySelectorAll(".efh-ck").forEach(function (ck) {
@@ -2221,9 +2226,12 @@
             if (!selEl) return;
             var c = CEIL[selEl.value]; if (!c) return;
             var x = actionable[i];
-            var baseVal = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100;
             var key = c.pot || selEl.value;
-            add[key] = (add[key] || 0) + baseVal * (selEl.value === "C99" ? c99Rate(prof) : c.rate);
+            if (isAttributed(x.estadoBeneficio) && CEIL[x.actividadeEmitente]) {
+              var sourceKey = CEIL[x.actividadeEmitente].pot || x.actividadeEmitente;
+              add[sourceKey] = (add[sourceKey] || 0) - dedu(x, x.actividadeEmitente);
+            }
+            add[key] = (add[key] || 0) + dedu(x, selEl.value);
           });
           return add;
         }
@@ -2466,15 +2474,25 @@
               }).join("") + '</div>';
           };
         })();
-        document.querySelectorAll(".efh-ck").forEach(function (el) { el.onchange = renderBars; });
-        document.querySelectorAll(".efh-sec").forEach(function (el) { el.onchange = renderBars; });
+        document.querySelectorAll(".efh-ck").forEach(function (el) {
+          el.onchange = function () {
+            var x = actionable[+el.dataset.i]; if (x) userDirty[x.idDocumento] = true;
+            renderBars();
+          };
+        });
+        document.querySelectorAll(".efh-sec").forEach(function (el) {
+          el.onchange = function () {
+            var x = actionable[+el.dataset.i]; if (x) userDirty[x.idDocumento] = true;
+            renderBars();
+          };
+        });
         // changing the household re-runs the whole suggestion pass (ceilings move, so do sectors)
         var reprofile = function () {
           snapshotEdits(actionable);        // keep the user's corrections across the rebuild
           saveProfile(Object.assign(loadProfile(),
                       { joint: document.getElementById("efh-joint").checked,
                         mono: document.getElementById("efh-mono").checked }));
-          run(caemap);
+          run(householdSnapshot);
         };
         document.getElementById("efh-joint").onchange = reprofile;
         document.getElementById("efh-mono").onchange = reprofile;
@@ -2488,7 +2506,12 @@
         };
 
         var hhBox = document.getElementById("efh-hh");
-        if (prof.room) { hhBox.innerHTML = 'Ligado. Chave: <code>' + esc(prof.room.slice(0, 16)) + '...</code>'; }
+        if (prof.room && householdSnapshot && householdSnapshot.merged) {
+          hhBox.innerHTML = '\u2713 ' + (householdSnapshot.members || 1) +
+            ' membro(s). Chave: <code style="user-select:all">' + esc(prof.room) + '</code>';
+        } else if (prof.room) {
+          hhBox.innerHTML = 'Chave guardada. Clica <b>Ligar</b> para atualizar os tetos do agregado.';
+        }
         document.getElementById("efh-join").onclick = function () {
           /* Paste a key to JOIN an existing household; leave it empty to CREATE one. Nothing about
            * you goes into the key - see newRoom(). Your own NIF and email are never read here. */
@@ -2501,8 +2524,8 @@
           hhBox.textContent = typed ? "A ligar..." : "A criar chave...";
           Promise.resolve(room).then(function (room) {
             var body = { member: memberId(), consent: true };
-            ["C05", "C06", "C07", "C08", "C99"].forEach(function (k) { body[k] = +(used[k] || 0).toFixed(2); });
-            body.POT = +(used[POT] || 0).toFixed(2);
+            ["C05", "C06", "C07", "C08", "C99"].forEach(function (k) { body[k] = +(accountUsed[k] || 0).toFixed(2); });
+            body.POT = +(accountUsed[POT] || 0).toFixed(2);
             return fetch(HH_URL + room, { method: "PUT", headers: { "Content-Type": "application/json" },
                                           body: JSON.stringify(body) })
               .then(function () { return fetch(HH_URL + room); })
@@ -2510,14 +2533,11 @@
               .then(function (d) {
                 // no email is stored any more - the room key is the only household state we keep
                 saveProfile(Object.assign(loadProfile(), { joint: prof.joint, mono: prof.mono, room: room }));
-                if (d && d.merged) {
-                  Object.keys(d.merged).forEach(function (k) {
-                    used[k === "POT" ? POT : k] = d.merged[k];
-                  });
-                  renderBars();
-                }
-                hhBox.innerHTML = '\u2713 ' + (d.members || 1) + ' membro(s). Partilha esta chave: ' +
-                  '<code style="user-select:all">' + esc(room) + '</code>';
+                if (!d || !d.merged) throw new Error("totais do agregado em falta");
+                snapshotEdits(actionable);
+                // Rebuild rows, targets, recoverable value, summary and bars from one merged
+                // snapshot. A bars-only repaint leaves the actual plan based on account-only caps.
+                run({ merged: d.merged, members: d.members || 1 });
               });
           }).catch(function (e) { hhBox.textContent = "Falhou: " + e.message; });
         };
@@ -2582,26 +2602,28 @@
         return;
       }
       var p = picks[n++]; st.textContent = "A aplicar " + n + "/" + picks.length + "...";
-      /* Two write paths, chosen by the invoice's state. A PENDING fatura is resolved; an
-       * already-ATTRIBUTED one is re-classified via Alterar. Both server-render their form (with
-       * every hidden field) into the same detalhe page, so the mechanism is identical - only the
-       * form, the action, and the sector field name differ. Confirmed against the raw HTML on
-       * 20-07-2026: the detalhe page carries resolverPendencia AND alterarDocumentoAdquirente forms
-       * with all hidden inputs, so DOMParser finds them without running any JS. */
+      /* Only the pending resolver has a verified form POST. Historical portal testing proved
+       * that an attributed invoice is different: the raw alterarDocumentoAdquirente POST is a
+       * decoy/rejected path; the working portal UI fills runtime-only hashDocumento/linhasDocumento
+       * fields and then verifies the result by re-fetching invoices. Do not reproduce that browser
+       * automation here and never report an attributed correction as applied without post-state
+       * verification. Those rows remain a manual deep-link plan even if DRAFT is later disabled. */
       var isPend = /^P$/i.test(p.x.estadoBeneficio || "");
-      var formSel = isPend ? '[action="resolverPendenciaAdquirente.action"]'
-                           : '[action="alterarDocumentoAdquirente.action"]';
-      var postUrl = isPend ? "/resolverPendenciaAdquirente.action" : "/alterarDocumentoAdquirente.action";
-      var secField = isPend ? "ambitoAquisicaoPend" : "ambitoAquisicao";
+      if (!isPend) {
+        fail++;
+        errs.push({ nome: name34(p.x), sec: p.sec,
+                    reason: "corre\u00e7\u00e3o manual: abrir a fatura, Alterar, escolher setor e Guardar" });
+        next(); return;
+      }
       fetch("/detalheDocumentoAdquirente.action?idDocumento=" + p.x.idDocumento + "&dataEmissaoDocumento=" + p.x.dataEmissaoDocumento,
         { credentials: "include" }).then(function (r) { return r.text(); }).then(function (htmlText) {
         var doc = new DOMParser().parseFromString(htmlText, "text/html");
-        var form = doc.querySelector("form" + formSel) || doc.querySelector("#resolverPendencia");
+        var form = doc.querySelector('form[action="resolverPendenciaAdquirente.action"]') || doc.querySelector("#resolverPendencia");
         if (!form) throw new Error("form em falta");
         var body = new URLSearchParams();
         form.querySelectorAll('input[type="hidden"]').forEach(function (inp) { body.set(inp.name, inp.value || ""); });
-        body.set(secField, p.sec);
-        return fetch(postUrl, { method: "POST", credentials: "include",
+        body.set("ambitoAquisicaoPend", p.sec);
+        return fetch("/resolverPendenciaAdquirente.action", { method: "POST", credentials: "include",
           headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: body.toString() });
       }).then(function (r) { return r.text(); }).then(function (t) {
         if (/sucesso/i.test(t)) { ok++; next(); return; }

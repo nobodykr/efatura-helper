@@ -1,6 +1,7 @@
-// Pins the WRITE routing with DRAFT off: a PENDING fatura is resolved, an already-ATTRIBUTED one
-// is re-classified. Both hit the right action with the right sector field. Never touches a real
-// account - fetch is fully mocked. Runs tool.js with DRAFT flipped to false in memory only.
+// Pins the safe WRITE boundary with DRAFT off: a PENDING fatura uses its verified resolver form,
+// while an already-ATTRIBUTED one remains manual. Later portal investigation proved that
+// the raw alterarDocumentoAdquirente form/POST is rejected and the working UI depends on runtime
+// fields plus post-state verification. Never touches a real account - fetch is fully mocked.
 //   npm i jsdom && node test-reclassify.js [path-to-tool.js]
 const { JSDOM } = require("jsdom");
 const fs = require("fs");
@@ -15,7 +16,7 @@ const rows = [
 ];
 const caemap = { "500960046": ["C05", "C99"], "503540480": ["C05", "C99"] };
 
-// the detalhe page carries BOTH forms, exactly as the real server HTML does
+// Include the obsolete attributed form as a decoy: the tool must not submit it.
 function detalhe(id) {
   return `<form action="resolverPendenciaAdquirente.action" id="resolverPendencia">
             <input type="hidden" name="docId" value="${id}">
@@ -75,7 +76,7 @@ setTimeout(() => {
   // window.__efhPend is set to the actionable list, and test-r1.js which covers it. This comment
   // used to say it was "not built yet", which told a reader the tool lacked a feature it has.
   // We still drive __efhPend directly here rather than through the UI, because this test is about
-  // WRITE ROUTING for both states in isolation: one pending + one attributed row, with the two
+  // the write boundary for both states in isolation: one pending + one attributed row, with the two
   // ticked controls applySelected reads synthesised.
   window.__efhPend = [rows[1], rows[0]];   // [0]=pending p1, [1]=attributed r1
   d.querySelector("#efh-pane-d").insertAdjacentHTML("beforeend",
@@ -89,17 +90,16 @@ setTimeout(() => {
     const byUrl = {};
     posted.forEach(p => { byUrl[p.url] = new URLSearchParams(p.body); });
     const pend = byUrl["/resolverPendenciaAdquirente.action"];
-    const alt = byUrl["/alterarDocumentoAdquirente.action"];
     const pendOk = pend && pend.has("ambitoAquisicaoPend") && pend.get("docId") === "p1";
-    const altOk = alt && alt.has("ambitoAquisicao") && alt.get("idDocumento") === "r1"
-                  && /^C[0-9]{2}$/.test(alt.get("ambitoAquisicao"));
-    // and the pending POST must NOT carry the alter field, nor vice-versa
-    const noCross = pend && !pend.has("ambitoAquisicao") && alt && !alt.has("ambitoAquisicaoPend");
+    const noAlter = !byUrl["/alterarDocumentoAdquirente.action"];
+    const noCross = pend && !pend.has("ambitoAquisicao");
     console.log("  PENDING -> resolverPendencia + ambitoAquisicaoPend, right doc:", !!pendOk);
-    console.log("  ATTRIBUTED -> alterarDocumento + ambitoAquisicao (C-sector), right doc:", !!altOk);
-    console.log("  no field crossover between the two paths:", !!noCross);
-    const pass = pendOk && altOk && noCross;
-    console.log(pass ? "  PASS - reclassification routes correctly" : "  *** FAIL: routing is wrong");
+    console.log("  ATTRIBUTED -> no obsolete raw alter POST:", !!noAlter);
+    console.log("  pending request has no attributed-sector field:", !!noCross);
+    const onlyPending = posted.length >= 1 &&
+      posted.every(p => p.url === "/resolverPendenciaAdquirente.action");
+    const pass = onlyPending && pendOk && noAlter && noCross;
+    console.log(pass ? "  PASS - only the verified pending route can write" : "  *** FAIL: write boundary is wrong");
     if (!pass) process.exit(1);
   }, 250);
 }, 500);
