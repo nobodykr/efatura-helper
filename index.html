@@ -507,8 +507,8 @@
        collapses to just the progress bar and a single CTA into /perfil, where the full flow lives. -->
   <div class="sitmodule" id="sitmodule">
     <div class="prog">
-      <div class="plabel" id="sit-plabel">0 de 9 fontes reunidas</div>
-      <div class="segbar" id="sit-segbar" role="img" aria-label="0 de 9 fontes reunidas"></div>
+      <div class="plabel" id="sit-plabel">0 de 13 fontes reunidas</div>
+      <div class="segbar" id="sit-segbar" role="img" aria-label="0 de 13 fontes reunidas"></div>
       <div class="pcap" id="sit-pcap">Os dados ficam neste navegador até ao fim do dia.</div>
     </div>
 
@@ -812,14 +812,20 @@
       { id:"rendas", label:"Rendas (Imóveis)", open:"https://imoveis.portaldasfinancas.gov.pt/arrendamento/consultarContratos/locador" },
       { id:"situacao", label:"Situação fiscal (dívidas e prazos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/geral/dashboard" },
       { id:"atividade", label:"Atividade (cadastro e IVA)", open:"https://sitfiscal.portaldasfinancas.gov.pt/atividade/atividade/consultardeclaracoes" },
+      { id:"atividade_integrada", label:"Atividade exercida", open:"https://sitfiscal.portaldasfinancas.gov.pt/integrada/presentation" },
       { id:"patrimonio", label:"Património predial (IMI)", open:"https://imoveis.portaldasfinancas.gov.pt/matrizesinter/web/consultar-patrimonio-predial" },
       { id:"irs", label:"IRS (liquidações e reembolsos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/inffin/entrada.html" },
       { id:"movfin", label:"Movimentos financeiros", open:"https://sitfiscal.portaldasfinancas.gov.pt/movfin/resumoCobranca" },
       { id:"recibos", label:"Recibos verdes (atividade)", open:"https://irs.portaldasfinancas.gov.pt/recibos/portal/consultar" },
+      { id:"declaracoes", label:"Declarações de IRS", open:"https://irs.portaldasfinancas.gov.pt/app/consulta" },
+      { id:"deducoes", label:"Deduções oficiais", open:"https://irs.portaldasfinancas.gov.pt/consultarDespesasDeducoes.action" },
+      { id:"despesas_atividade", label:"Despesas da atividade", open:"https://irs.portaldasfinancas.gov.pt/app/dashboard-regime-simplificado" },
       { id:"ss", label:"Segurança Social", open:"https://www.seg-social.pt/ptss/pssd/home" }
     ];
     var SHORT = { efatura:"e-Fatura", rendas:"Rendas", situacao:"Situação fiscal", atividade:"Atividade",
-      patrimonio:"Património", irs:"IRS", movfin:"Movimentos financeiros", recibos:"Recibos verdes", ss:"Segurança Social" };
+      atividade_integrada:"Atividade exercida", patrimonio:"Património", irs:"IRS", movfin:"Movimentos financeiros",
+      recibos:"Recibos verdes", declaracoes:"Declarações de IRS", deducoes:"Deduções oficiais",
+      despesas_atividade:"Despesas da atividade", ss:"Segurança Social" };
 
     function loadStore(){
       try {

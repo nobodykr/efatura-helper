@@ -4,7 +4,9 @@ var CONSENT_KEY = "fiscalidade-consent-v1";
 var SETTINGS_KEY = "fiscalidade-settings-v1";
 var NAMES = {
   efatura:"e-Fatura", rendas:"Rendas", situacao:"Situação fiscal", atividade:"Atividade e IVA",
-  irs:"IRS", movfin:"Movimentos financeiros", recibos:"Recibos verdes", ss:"Segurança Social",
+  atividade_integrada:"Atividade exercida", irs:"IRS", movfin:"Movimentos financeiros",
+  recibos:"Recibos verdes", declaracoes:"Declarações de IRS", deducoes:"Deduções oficiais",
+  despesas_atividade:"Despesas da atividade", ss:"Segurança Social",
   patrimonio:"Património predial"
 };
 function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
@@ -13,9 +15,13 @@ function fact(id,d){
   if(id==="rendas") return esc(d.activos||0)+" contratos ativos";
   if(id==="situacao") return esc((d.dividas&&d.dividas.n)||0)+" dívidas ativas";
   if(id==="atividade") return d.cessada===true?"atividade cessada":d.cessada===false?"atividade aberta":"estado por confirmar";
+  if(id==="atividade_integrada") return d.disponivel===false?"não exposta nesta conta":d.cessacao?"atividade cessada":d.inicio?"cadastro lido":"estado por confirmar";
   if(id==="irs") return esc(d.liquidacoes||0)+" liquidações";
   if(id==="movfin") return esc(d.movimentos||0)+" movimentos";
   if(id==="recibos") return esc(d.recibosVerdes||0)+" recibos";
+  if(id==="declaracoes") return esc(Object.keys(d.porAno||{}).length)+" ano(s) com declaração";
+  if(id==="deducoes") return esc(Object.keys(d.porAno||{}).length)+" ano(s) oficial(is)";
+  if(id==="despesas_atividade") return d.disponivel===false?"não disponível":"lida";
   if(id==="ss") return d.estado?"situação "+esc(d.estado):"lida; estado indisponível";
   if(id==="patrimonio") return esc(d.imoveis||0)+" imóveis";
   return "lida";

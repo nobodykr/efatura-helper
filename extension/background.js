@@ -5,7 +5,8 @@ var ALLOWED_HOSTS = new Set([
   "faturas.portaldasfinancas.gov.pt", "imoveis.portaldasfinancas.gov.pt",
   "sitfiscal.portaldasfinancas.gov.pt", "irs.portaldasfinancas.gov.pt", "www.seg-social.pt"
 ]);
-var PARTITIONS = new Set(["efatura", "rendas", "situacao", "atividade", "irs", "movfin", "recibos", "ss", "patrimonio"]);
+var PARTITIONS = new Set(["efatura", "rendas", "situacao", "atividade", "atividade_integrada",
+  "irs", "movfin", "recibos", "declaracoes", "deducoes", "despesas_atividade", "ss", "patrimonio"]);
 var PROFILE_KEY = "fiscalidade-profile-v1";
 var CONSENT_KEY = "fiscalidade-consent-v1";
 var SETTINGS_KEY = "fiscalidade-settings-v1";

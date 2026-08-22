@@ -22,9 +22,13 @@ findings, decisions, tests and implementation commits do not exist only in chat 
   is 700 EUR (Lei 36/2024 and the AT's official table); 2026 is 900 EUR (DL 97/2026).
 - Clean-environment result: 28/28 browser/frontend checks (zero skipped), 124 backend tests plus the
   HTTP-contract check, four strict PDF-reader tests, and the existing IRS calculation fixture pass.
-- Authorized real accounts were not opened in this pass because no remaining test required their
-  values. The opt-in schema diagnostic now captures only stable endpoint IDs, field names and types,
-  so future format coverage does not require publishing account data.
+- Two authorized AT personas were opened through `fiscal-monitor/profile_validate.mjs` after the
+  synthetic suite passed. Raw responses stayed inside the browser; only endpoint contracts,
+  booleans and value-free type schemas were emitted. Live evidence forced four same-host IRS apps
+  into separate SSO steps, proved the signed activity screen needs top-level navigation, confirmed
+  that one legitimate account may not expose that screen, and pinned the official deductions
+  service to the last four completed income years. Segurança Social was cached-session-only:
+  role flags and current payments passed, while contributory status remains unvalidated.
 - No push, deployment, DNS/indexing action, store upload, resubmission or appeal was performed.
 
 ## Safety and release boundary
@@ -68,6 +72,9 @@ findings, decisions, tests and implementation commits do not exist only in chat 
 
 - Every account endpoint must detect expired/login HTML or failure envelopes and report them on
   screen. Pagination must be complete or fail visibly; partial results cannot look complete.
+- The profile has thirteen explicit sources because shared hostnames do not imply shared SSO
+  sessions. Green receipts, IRS declarations, official deductions and Cat B expenses are separate;
+  the activity declaration list and authoritative integrated cadastro are separate too.
 - Calculations are versioned by income year and carry provenance. Constants repeated in code,
   public explanations and snapshots are tested for agreement.
 - The rental-regime recommendation stays disabled until a complete, year-specific model has

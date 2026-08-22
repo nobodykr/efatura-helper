@@ -63,7 +63,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.08.22";
+  var FB_VERSION = "2026.08.22.1";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -843,7 +843,13 @@
     { id: "atividade", label: "Atividade (cadastro e IVA)", host: "sitfiscal.portaldasfinancas.gov.pt",
       pathHint: "/atividade",
       open: "https://sitfiscal.portaldasfinancas.gov.pt/atividade/atividade/consultardeclaracoes",
-      why: "Declara\u00e7\u00f5es de atividade e regime de IVA - se \u00e9s/foste trabalhador independente.", read: readAtividade },
+      why: "Declara\u00e7\u00f5es de in\u00edcio, altera\u00e7\u00e3o e cessa\u00e7\u00e3o de atividade.", read: readAtividade },
+    // The integrated activity screen belongs to PFAP, not the declarations app's SSO partition.
+    // It must be a separate step even though both apps share the sitfiscal hostname.
+    { id: "atividade_integrada", label: "Atividade exercida (cadastro atual)", host: "sitfiscal.portaldasfinancas.gov.pt",
+      pathHint: "/integrada",
+      open: "https://sitfiscal.portaldasfinancas.gov.pt/integrada/presentation",
+      why: "CAE/CIRS, datas de in\u00edcio e cessa\u00e7\u00e3o, contabilidade e enquadramento de IVA/IRS.", read: readAtividadeExercida },
     // Same host as situacao (sitfiscal) but the /inffin path and DIFC login partition, so its own
     // step. This is the assessed-IRS history - the outcome of every year's declaration.
     { id: "irs", label: "IRS (liquida\u00e7\u00f5es e reembolsos)", host: "sitfiscal.portaldasfinancas.gov.pt",
@@ -857,8 +863,21 @@
       open: "https://sitfiscal.portaldasfinancas.gov.pt/movfin/resumoCobranca",
       why: "Todos os documentos de cobran\u00e7a e reembolsos - de todos os impostos e anos, num s\u00f3 s\u00edtio.", read: readMovfin },
     { id: "recibos", label: "Recibos verdes (atividade)", host: "irs.portaldasfinancas.gov.pt",
+      pathHint: "/recibos",
       open: "https://irs.portaldasfinancas.gov.pt/recibos/portal/consultar",
       why: "Recibos verdes emitidos - rendimentos da categoria B (trabalho independente).", read: readRecibos },
+    { id: "declaracoes", label: "Declara\u00e7\u00f5es de IRS", host: "irs.portaldasfinancas.gov.pt",
+      pathHint: "/app/consulta",
+      open: "https://irs.portaldasfinancas.gov.pt/app/consulta",
+      why: "A declara\u00e7\u00e3o efetiva de cada ano, incluindo substitui\u00e7\u00f5es.", read: readDeclaracoesPartition },
+    { id: "deducoes", label: "Dedu\u00e7\u00f5es oficiais", host: "irs.portaldasfinancas.gov.pt",
+      pathHint: "/consultarDespesasDeducoes",
+      open: "https://irs.portaldasfinancas.gov.pt/consultarDespesasDeducoes.action",
+      why: "Totais oficiais da AT por categoria e por ano conclu\u00eddo.", read: readDeducoesPartition },
+    { id: "despesas_atividade", label: "Despesas afetas \u00e0 atividade", host: "irs.portaldasfinancas.gov.pt",
+      pathHint: "/app/dashboard-regime-simplificado",
+      open: "https://irs.portaldasfinancas.gov.pt/app/dashboard-regime-simplificado",
+      why: "Despesas reconhecidas pela AT para o regime simplificado da categoria B.", read: readDespesasAtividadePartition },
     // Seguranca Social - a DIFFERENT domain. Same-origin REST at www.seg-social.pt/ptss/rest.
     { id: "ss", label: "Seguran\u00e7a Social", host: "www.seg-social.pt",
       open: "https://www.seg-social.pt/ptss/pssd/home",
@@ -1053,37 +1072,18 @@
       // is already answerable from this list. Deep detail, if ever needed, is the server-side path.
       var avisos = ["leitura heur\u00edstica - confirmar aberta/cessada"];
       if (!regime) avisos.push("regime de IVA n\u00e3o consta aqui - ver 'Atividade Exercida' na Situa\u00e7\u00e3o Fiscal Integrada");
-      // "Atividade Exercida" (Situacao Fiscal Integrada) TEM os dados a serio: data de inicio, tipo de
-      // sujeito passivo, tipo de contabilidade (organizada vs nao -> regime simplificado), CAE
-      // principal + secundarios e o CIRS (o codigo que fixa o coeficiente da Cat B), e a cessacao.
-      // Isto e o que distingue ler de perguntar ao utilizador.
-      return readAtividadeExercida().catch(function () { return null; }).then(function (ex) {
-        var d = { declaracoes: n, cessada: cessada, regimeIva: regime, avisos: avisos };
-        if (ex) {
-          if (ex.inicio) { d.inicio = ex.inicio; d.cessada = ex.cessacao ? true : false; }
-          if (ex.cessacao) d.cessacao = ex.cessacao;
-          if (ex.tipoSujeito) d.tipoSujeito = ex.tipoSujeito;
-          if (ex.contabilidade) { d.contabilidade = ex.contabilidade; d.regimeIrs = /organiz/i.test(ex.contabilidade) && !/n[a\u00e3]o/i.test(ex.contabilidade) ? "organizada" : "simplificado"; }
-          if (ex.codigos && ex.codigos.length) d.codigos = ex.codigos;
-          d.avisos = ["lido de 'Atividade Exercida' (Situa\u00e7\u00e3o Fiscal Integrada)"];
-        }
-        return { data: d, source: "/atividade/atividade/consultardeclaracoes" + (ex ? " + integrada/ecraActividade" : "") };
-      });
+      // The authoritative "Atividade Exercida" screen is a DIFFERENT PFAP SSO partition. It is an
+      // explicit profile step (`atividade_integrada`) and cannot be fetched from this DAInter
+      // session merely because both apps share the sitfiscal host.
+      return { data: { declaracoes: n, cessada: cessada, regimeIva: regime, avisos: avisos },
+               source: "/atividade/atividade/consultardeclaracoes" };
     });
   }
 
   /* "Atividade Exercida" - o ecra da Situacao Fiscal Integrada com o cadastro REAL da atividade.
    * O URL e assinado (hmac) e MUDA, por isso NAO se forja: abre-se /integrada/ e colhe-se o link
    * targetScreen=ecraActividade da propria pagina. Devolve HTML, que se le por rotulos. */
-  function readAtividadeExercida() {
-    return fetch("/integrada/presentation", { credentials: "include" })
-      .then(function (r) { return r.text(); })
-      .then(function (html) {
-        var m = html.match(/\/integrada\/presentation\?queryStringS=targetScreen=ecraActividade&hmac=[^"'&\s]+/);
-        if (!m) throw new Error("sem link ecraActividade");
-        return fetch(m[0].replace(/&amp;/g, "&"), { credentials: "include" }).then(function (r) { return r.text(); });
-      })
-      .then(function (html) {
+  function parseAtividadeExercida(html) {
         var txt = html.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ");
         var pick = function (re) { var x = txt.match(re); return x ? x[1].trim() : null; };
         // CESSACAO: o ecra tem DUAS secoes ("Atividade em IVA" e "Atividade em IRS") e cada uma tem a
@@ -1109,7 +1109,29 @@
         while ((mm = re.exec(txt)) !== null && out.codigos.length < 12)
           out.codigos.push({ tipo: mm[1].trim(), codigo: mm[2], desc: mm[3].replace(/\s+/g, " ").trim(), desde: mm[4] });
         return out;
-      });
+  }
+
+  function readAtividadeExercida() {
+    var html = document.documentElement ? document.documentElement.outerHTML : "";
+    if (/Atividade em IVA|Atividade em IRS|Tipo de Contabilidade|CAE Principal|CIRS/i.test(html)) {
+      return Promise.resolve({ data: parseAtividadeExercida(html), source: "/integrada/presentation::ecraActividade" });
+    }
+    var links = document.querySelectorAll("a[href]"), href = null;
+    for (var i = 0; i < links.length; i++) {
+      var h = links[i].href || links[i].getAttribute("href") || "";
+      if (/ecraActividade/i.test(h)) { href = h; break; }
+    }
+    if (href) {
+      // The portal rejects this signed screen as a background fetch; it must be a top-level GET.
+      // Navigate read-only, then the user clicks the extension once more on the resulting screen.
+      location.href = href;
+      return new Promise(function () {});
+    }
+    // A second live account legitimately had no ecraActividade link. Absence is UNKNOWN/not exposed,
+    // never proof of a closed activity.
+    return Promise.resolve({ data: { disponivel: false,
+      avisos: ["A AT n\u00e3o disponibilizou o ecr\u00e3 Atividade Exercida nesta conta; estado desconhecido."] },
+      source: "/integrada/presentation (ecraActividade n\u00e3o exposto)" });
   }
 
   function readEfatura() {
@@ -1326,11 +1348,10 @@
     });
   }
 
-  /* Seguranca Social Direta (www.seg-social.pt). personalData carries name + NISS; the NISS goes
-   * in the situacao-contributiva path. CRITICAL: the NISS and name are PII - they are used ONLY to
-   * build the URL and are NEVER stored in the summary. We keep the contributory status and a count
-   * of current payments (whether you receive or contribute), no identifiers. personalData is the
-   * session gate. */
+  /* Seguranca Social Direta (www.seg-social.pt). Live validation in 2026 showed personalData may
+   * contain only citizen/entity role booleans, not a NISS. If a future/other account shape exposes a
+   * NISS it is used transiently for situacao-contributiva and never stored; otherwise estado stays
+   * unknown. Never turn a missing identifier or failed optional endpoint into "regularizada". */
   function readSS() {
     return getJSON("/ptss/rest/public/pssd/login/personalData?_=" + Date.now()).then(function (pd) {
       var niss = pd && (pd.niss || pd.NISS || pd.numeroIdentificacaoSegurancaSocial || pd.identificador || pd.niss);
@@ -1345,7 +1366,8 @@
           inscrito: true,
           estado: (sit && (sit.estado || sit.situacao)) || null,     // e.g. REGULARIZADA
           pagamentosCorrentes: pags ? pags.length : null
-        }, source: "/ptss/rest/public/pssd/login/personalData + situacao-contributiva + payments/current" };
+        }, source: "/ptss/rest/public/pssd/login/personalData + payments/current" +
+                   (sit ? " + situacao-contributiva" : " (situa\u00e7\u00e3o contributiva indispon\u00edvel)") };
       });
     });
   }
@@ -1369,13 +1391,25 @@
     var nif = (document.body.innerHTML.match(/\b(\d{9})\b/) || [])[1] || "";
     var anos = [];
     for (var a = yr; a >= yr - 5; a--) anos.push(a);
-    var qFor = function (ano) {
+    var qFor = function (ano, offset) {
       return "?dataEmissaoInicio=" + ano + "-01-01&dataEmissaoFim=" + ano + "-12-31" +
-             "&modoConsulta=Prestador&tipoPesquisa=1&isAutoSearchOn=on&offset=0&tableSize=500" +
+             "&modoConsulta=Prestador&tipoPesquisa=1&isAutoSearchOn=on&offset=" + offset + "&tableSize=500" +
              (nif ? "&nifPrestadorServicos=" + nif : "") + "&_=" + Date.now();
     };
+    var pullYear = function (ano, offset, acc) {
+      return getJSON(u + qFor(ano, offset)).then(function (j) {
+        if (!j || j.success === false) return { success: j && j.success, listaDocumentos: acc, totalDocs: acc.length };
+        var rows = j.listaDocumentos || j.documentos || j.data || j.lista || [];
+        if (!Array.isArray(rows)) throw new Error("lista de recibos inesperada");
+        var total = j.totalDocs != null ? Number(j.totalDocs) : offset + rows.length;
+        var all = acc.concat(rows);
+        if (offset + rows.length >= total) return { success: true, listaDocumentos: all, totalDocs: total };
+        if (!rows.length) throw new Error("pagina\u00e7\u00e3o incompleta dos recibos verdes");
+        return pullYear(ano, offset + rows.length, all);
+      });
+    };
     return Promise.all(anos.map(function (ano) {
-      return getJSON(u + qFor(ano)).catch(function () { return null; });
+      return pullYear(ano, 0, []).catch(function () { return null; });
     })).then(function (parts) {
       // juntar os anos num unico envelope, no formato que o resto do codigo ja espera
       var todos = [], total = 0, algum = false;
@@ -1388,10 +1422,8 @@
       });
       return algum ? { success: true, listaDocumentos: todos, totalDocs: total } : null;
     })
-    // FAIL-SOFT: esta particao transporta MUITO mais do que os recibos - traz tambem as declaracoes
-    // (+ a demonstracao de liquidacao, de onde sai a taxa marginal), as deducoes oficiais da AT e as
-    // despesas afetas a atividade. Se o endpoint dos recibos falhar (ex.: atividade CESSADA devolve
-    // uma pagina de erro em vez de JSON), NAO se pode deitar fora tudo o resto: segue-se com j=null.
+    // This SIRE partition contains only green receipts. Declarations, deductions and Cat B expenses
+    // have their own explicit SSO steps even though all four apps share irs.portaldasfinancas.gov.pt.
       .then(function (j) {
       // Real shape confirmed 2026-07-23: {success, listaDocumentos, totalDocs, ...}. The list is
       // `listaDocumentos` and the count is `totalDocs`. success:false means the query returned nothing.
@@ -1418,35 +1450,18 @@
       });
       Object.keys(porAno).forEach(function (a) { porAno[a].valor = +porAno[a].valor.toFixed(2); });
       if (semValor) avisos.push(semValor + " recibo(s) sem valor reconhecido - campos por confirmar");
-      // A app das DECLARA\u00c7\u00d5ES vive no MESMO host (irs.portaldasfinancas.gov.pt), por isso d\u00e1 para a ler
-      // aqui - mesma sess\u00e3o, mesma origem. Fornece, por ano, a declara\u00e7\u00e3o que CONTA e o seu resultado.
-      return Promise.all([
-        readDeclaracoes().catch(function () { return null; }),
-        readDeducoesOficiais().catch(function () { return null; }),
-        readDespesasAtividade().catch(function () { return null; })
-      ]).then(function (r) {
-        var decl = r[0], ded = r[1], desp = r[2];
-        return { data: { recibosVerdes: count, recibosPorAno: porAno, declaracoes: decl,
-                         deducoesOficiais: ded, despesasAtividade: desp, avisos: avisos },
-                 source: u + " (POST dataEmissao)" + (decl ? " + /app/consulta/pesquisa" : "") +
-                         (ded ? " + /consultarDespesasDeducoes.action" : "") +
-                         (desp ? " + /app/dashboard-regime-simplificado" : "") };
-      });
+      return { data: { recibosVerdes: count, recibosPorAno: porAno, avisos: avisos },
+               source: u + " (GET, um ano civil de cada vez, pagina\u00e7\u00e3o reconciliada)" };
     });
   }
 
-  /* DEDU\u00c7\u00d5ES \u00c0 COLETA calculadas pela AT, por categoria (/consultarDespesasDeducoes.action).
+  /* DEDU\u00c7\u00d5ES \u00c0 COLETA calculadas pela AT, por categoria.
    * \u00c9 o n\u00famero OFICIAL - o mesmo que aparece na demonstra\u00e7\u00e3o de liquida\u00e7\u00e3o - e evita somar faturas e
    * aplicar tetos \u00e0 m\u00e3o. Cobre ainda categorias que as faturas n\u00e3o d\u00e3o (im\u00f3veis, lares).
-   * ARMADILHA: o seletor de ano (`anoDashboard`) \u00e9 STATEFUL - pass\u00e1-lo no GET N\u00c3O muda o ano
-   * (testado: 2025/2024/2023 devolvem tudo igual). Por isso lemos S\u00d3 o ano que a p\u00e1gina mostrar e
-   * devolvemo-lo com esse ano; nunca se assume que um par\u00e2metro pegou.
-   * A p\u00e1gina \u00e9 HTML server-rendered (n\u00e3o JSON). Nota da pr\u00f3pria AT: os valores s\u00e3o POR TITULAR,
-   * sem considerar agregado nem tributa\u00e7\u00e3o conjunta. */
-  function readDeducoesOficiais() {
-    return fetch("/consultarDespesasDeducoes.action", { credentials: "include" })
-      .then(function (r) { return r.text(); })
-      .then(function (html) {
+   * The page ignores a year in its ordinary GET. Its own year selector calls the JSON service and
+   * returns `dashboardHTML`; that service was live-validated across the last four COMPLETED income
+   * years. The still-open current year can be refused, so requesting it is not a completeness proof. */
+  function parseDeducoesHtml(html, requestedYear) {
         var t = html.replace(/<[^>]+>/g, " ").replace(/&nbsp;?/g, " ").replace(/&euro;/g, "\u20ac").replace(/\s+/g, " ");
         var num = function (s) { return +String(s).replace(/\./g, "").replace(",", ".") || 0; };
         var cats = {}, total = 0, m;
@@ -1456,12 +1471,23 @@
           cats[m[1].replace(/\s+/g, " ").trim()] = { despesa: num(m[2]), deducao: d };
           total += d;
         }
-        if (!Object.keys(cats).length) return null;
-        // o ano que a p\u00e1gina est\u00e1 mesmo a mostrar (n\u00e3o o que pedimos)
+        if (!Object.keys(cats).length) throw new Error("formato das dedu\u00e7\u00f5es n\u00e3o reconhecido");
         var ano = (t.match(/Ano\s+(20\d{2})\s+Esta p[\u00e1a]gina/) || t.match(/\bAno\s+(20\d{2})\b/) || [])[1] || null;
-        return { ano: ano ? +ano : null, categorias: cats, total: +total.toFixed(2),
+        if (!ano || Number(ano) !== Number(requestedYear)) throw new Error("ano devolvido pela AT n\u00e3o corresponde ao pedido");
+        return { ano: +ano, categorias: cats, total: +total.toFixed(2),
                  nota: "valores oficiais da AT, por titular (n\u00e3o consideram agregado nem tributa\u00e7\u00e3o conjunta)" };
-      });
+  }
+  function readDeducoesOficiais() {
+    var y = new Date().getFullYear(), anos = [y - 1, y - 2, y - 3, y - 4];
+    return Promise.all(anos.map(function (ano) {
+      return getJSON("/json/consultarDespesasDeducoesService.action?anoDashboard=" + ano + "&_=" + Date.now())
+        .then(function (j) {
+          if (!j || j.success === false || !j.dashboardHTML) throw new Error("dedu\u00e7\u00f5es indispon\u00edveis para " + ano);
+          return parseDeducoesHtml(j.dashboardHTML, ano);
+        });
+    })).then(function (rows) {
+      var out = {}; rows.forEach(function (row) { out[row.ano] = row; }); return out;
+    });
   }
 
   /* DESPESAS AFETAS \u00c0 ATIVIDADE (Cat B, regime simplificado) - /app/dashboard-regime-simplificado.
@@ -1538,6 +1564,23 @@
     });
   }
 
+  function readDeclaracoesPartition() {
+    return readDeclaracoes().then(function (porAno) {
+      return { data: { porAno: porAno }, source: "/app/consulta/pesquisa (POST de pesquisa, cinco anos)" };
+    });
+  }
+  function readDeducoesPartition() {
+    return readDeducoesOficiais().then(function (porAno) {
+      return { data: { porAno: porAno },
+        source: "/json/consultarDespesasDeducoesService.action (quatro anos conclu\u00eddos)" };
+    });
+  }
+  function readDespesasAtividadePartition() {
+    return readDespesasAtividade().then(function (data) {
+      return { data: data || { disponivel: false }, source: "/app/dashboard-regime-simplificado" };
+    });
+  }
+
   /* Patrimonio predial (SMPP): the properties you own and their VPT - the base of IMI, and a
    * pointer to Cat G if one is later sold. The response shape is not pinned in our recon, so the
    * property list is read from the usual container keys and each property's fields from the usual
@@ -1592,15 +1635,34 @@
       prof.detalhes.recibos = P.recibos.data; prof.recolhidoEm.recibos = P.recibos.fetchedAt;
       if (P.recibos.data.recibosVerdes > 0) prof.categorias.push({ cat: "B", label: "Trabalho independente (recibos verdes)", base: "recibos verdes emitidos" });
     }
+    if (P.declaracoes && P.declaracoes.status === "done") {
+      prof.detalhes.declaracoes = P.declaracoes.data; prof.recolhidoEm.declaracoes = P.declaracoes.fetchedAt;
+    }
+    if (P.deducoes && P.deducoes.status === "done") {
+      prof.detalhes.deducoesOficiais = P.deducoes.data; prof.recolhidoEm.deducoes = P.deducoes.fetchedAt;
+    }
+    if (P.despesas_atividade && P.despesas_atividade.status === "done") {
+      prof.detalhes.despesasAtividade = P.despesas_atividade.data;
+      prof.recolhidoEm.despesasAtividade = P.despesas_atividade.fetchedAt;
+    }
     if (P.ss && P.ss.status === "done") {
       prof.detalhes.ss = P.ss.data; prof.recolhidoEm.ss = P.ss.fetchedAt;
     }
+    var at = null;
     if (P.atividade && P.atividade.status === "done") {
-      var at = P.atividade.data; prof.detalhes.atividade = at; prof.recolhidoEm.atividade = P.atividade.fetchedAt;
-      // Only assert Cat B when atividade is confirmed OPEN. cessada or unknown -> do NOT add it.
-      if (at.declaracoes > 0 && at.cessada === false)
-        prof.categorias.push({ cat: "B", label: "Trabalho independente (atividade aberta)", base: "cadastro de atividade" });
+      at = {}; Object.keys(P.atividade.data || {}).forEach(function (k) { at[k] = P.atividade.data[k]; });
+      prof.recolhidoEm.atividade = P.atividade.fetchedAt;
     }
+    if (P.atividade_integrada && P.atividade_integrada.status === "done") {
+      if (!at) at = {};
+      var ai = P.atividade_integrada.data || {};
+      Object.keys(ai).forEach(function (k) { at[k] = ai[k]; });
+      prof.recolhidoEm.atividadeIntegrada = P.atividade_integrada.fetchedAt;
+      // Only this authoritative cadastro can assert OPEN. A missing menu item remains unknown.
+      if (ai.disponivel !== false && ai.inicio && !ai.cessacao && !prof.categorias.some(function (c) { return c.cat === "B"; }))
+        prof.categorias.push({ cat: "B", label: "Trabalho independente (atividade aberta)", base: "Atividade Exercida" });
+    }
+    if (at) prof.detalhes.atividade = at;
     return prof;
   }
 

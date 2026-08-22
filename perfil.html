@@ -195,14 +195,14 @@
   .inforow{display:flex;align-items:center;gap:12px;padding:15px 24px;border-top:1px solid var(--hair);
            color:var(--mute);font-size:.92rem}
 
-  /* 9/9 banner. */
+  /* Complete-source banner. */
   .okbanner{display:flex;align-items:center;justify-content:center;gap:20px;border:1px solid var(--green-line);
             background:var(--green-bg);border-radius:14px;padding:22px 24px;margin-top:22px;text-align:center}
   .okbanner .icon{width:44px;height:44px;color:var(--green);stroke-width:1.8}
   .okbanner .okt{font-size:1.5rem;font-weight:700;color:var(--green);line-height:1.2}
   .okbanner .okw{color:var(--ink2);font-size:.98rem;margin-top:3px}
 
-  /* Framed collapsible rows (Outras situações / Anos anteriores / As nove fontes). */
+  /* Framed collapsible rows (Outras situações / Anos anteriores / As treze fontes). */
   details.frow{border:1px solid var(--hair);border-radius:14px;background:#fff;margin-top:14px}
   details.frow>summary{display:flex;align-items:center;gap:18px;padding:17px 24px;cursor:pointer;
                        list-style:none;min-height:62px}
@@ -532,7 +532,9 @@
     { id:"situacao", label:"Situação fiscal (dívidas e prazos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/geral/dashboard",
       why:"Dívidas e coimas em aberto, e os próximos prazos da agenda fiscal." },
     { id:"atividade", label:"Atividade (cadastro e IVA)", open:"https://sitfiscal.portaldasfinancas.gov.pt/atividade/atividade/consultardeclaracoes",
-      why:"Declarações de atividade e regime de IVA - se és/foste trabalhador independente." },
+      why:"Declarações de início, alteração e cessação de atividade." },
+    { id:"atividade_integrada", label:"Atividade exercida (cadastro atual)", open:"https://sitfiscal.portaldasfinancas.gov.pt/integrada/presentation",
+      why:"CAE/CIRS, datas de início e cessação, contabilidade e enquadramento de IVA/IRS." },
     { id:"patrimonio", label:"Património predial (IMI)", open:"https://imoveis.portaldasfinancas.gov.pt/matrizesinter/web/consultar-patrimonio-predial",
       why:"Imóveis que possuis e o seu VPT - a base do IMI." },
     { id:"irs", label:"IRS (liquidações e reembolsos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/inffin/entrada.html",
@@ -541,6 +543,12 @@
       why:"Todos os pagamentos e reembolsos, de todos os impostos e anos - a tua situação financeira num sítio." },
     { id:"recibos", label:"Recibos verdes (atividade)", open:"https://irs.portaldasfinancas.gov.pt/recibos/portal/consultar",
       why:"Recibos verdes emitidos - rendimentos da categoria B (trabalho independente)." },
+    { id:"declaracoes", label:"Declarações de IRS", open:"https://irs.portaldasfinancas.gov.pt/app/consulta",
+      why:"A declaração efetiva de cada ano, incluindo substituições." },
+    { id:"deducoes", label:"Deduções oficiais", open:"https://irs.portaldasfinancas.gov.pt/consultarDespesasDeducoes.action",
+      why:"Totais oficiais da AT por categoria e por ano concluído." },
+    { id:"despesas_atividade", label:"Despesas afetas à atividade", open:"https://irs.portaldasfinancas.gov.pt/app/dashboard-regime-simplificado",
+      why:"Despesas reconhecidas pela AT para o regime simplificado da categoria B." },
     { id:"ss", label:"Segurança Social", open:"https://www.seg-social.pt/ptss/pssd/home",
       why:"Situação contributiva e pagamentos - emprego, contribuições e prestações." }
   ];
@@ -650,11 +658,15 @@
       situacao:{ status:"done", data:{ dividas:{n:0}, coimas:{n:0}, agenda:{ n:2, proximos:[
         { data:"25/02", desc:"Validar faturas no e-Fatura" }, { data:"30/06", desc:"Entregar a declaração de IRS" } ] } } },
       atividade:{ status:"done", data:{ declaracoes:0, cessada:null, regimeIva:null } },
+      atividade_integrada:{ status:"done", data:{ disponivel:false } },
       patrimonio:{ status:"done", data:{ imoveis:1, lista:[{ artigo:"U-0000", freguesia:"(exemplo)" }] } },
       irs:{ status:"done", data:{ liquidacoes:3, reembolsos:1, porAno:[] } },
       movfin:{ status:"done", data:{ movimentos:14, porImposto:{} } },
-      recibos:{ status:"done", data:{ recibosVerdes:0, declaracoes:{}, deducoesOficiais:{ ano:ano, total:347.60,
-        categorias:{ "Despesas gerais familiares":{ deducao:250 }, "Saúde e seguros de saúde":{ deducao:97.60 } } } } },
+      recibos:{ status:"done", data:{ recibosVerdes:0 } },
+      declaracoes:{ status:"done", data:{ porAno:{} } },
+      deducoes:{ status:"done", data:{ porAno:{ [ano]:{ ano:ano, total:347.60,
+        categorias:{ "Despesas gerais familiares":{ deducao:250 }, "Saúde e seguros de saúde":{ deducao:97.60 } } } } } },
+      despesas_atividade:{ status:"done", data:{ disponivel:false } },
       ss:{ status:"done", data:{ estado:"REGULARIZADA", pagamentosCorrentes:0 } }
     } };
   }
@@ -699,12 +711,21 @@
       prof.detalhes.recibos = P.recibos.data;
       if (P.recibos.data.recibosVerdes > 0) prof.categorias.push({cat:"B", label:"Trabalho independente (recibos verdes)"});
     }
+    if (P.declaracoes && P.declaracoes.status==="done") prof.detalhes.declaracoes = P.declaracoes.data;
+    if (P.deducoes && P.deducoes.status==="done") prof.detalhes.deducoesOficiais = P.deducoes.data;
+    if (P.despesas_atividade && P.despesas_atividade.status==="done") prof.detalhes.despesasAtividade = P.despesas_atividade.data;
     if (P.ss && P.ss.status==="done") prof.detalhes.ss = P.ss.data;
+    var at = null;
     if (P.atividade && P.atividade.status==="done"){
-      prof.detalhes.atividade = P.atividade.data;
-      if (P.atividade.data.declaracoes > 0 && P.atividade.data.cessada === false)
+      at = {}; Object.keys(P.atividade.data||{}).forEach(function(k){ at[k]=P.atividade.data[k]; });
+    }
+    if (P.atividade_integrada && P.atividade_integrada.status==="done"){
+      if (!at) at={};
+      var ai=P.atividade_integrada.data||{}; Object.keys(ai).forEach(function(k){at[k]=ai[k];});
+      if (ai.disponivel!==false && ai.inicio && !ai.cessacao && !prof.categorias.some(function(c){return c.cat==="B";}))
         prof.categorias.push({cat:"B", label:"Trabalho independente (atividade aberta)"});
     }
+    if (at) prof.detalhes.atividade=at;
     return prof;
   }
 
@@ -718,7 +739,9 @@
     var d = prof.detalhes;
     if (d.efatura) h += '<div class="kv">e-Fatura '+esc(d.efatura.ano)+': <b>'+esc(d.efatura.porClassificar)+'</b> por classificar de '+esc(d.efatura.totalFaturas)+'.</div>';
     // Deduções à coleta OFICIAIS (calculadas pela AT) - melhores que qualquer estimativa nossa.
-    var dedOf = d.recibos && d.recibos.deducoesOficiais;
+    var dedYears = d.deducoesOficiais && d.deducoesOficiais.porAno;
+    var dedYear = dedYears && Object.keys(dedYears).sort().reverse()[0];
+    var dedOf = dedYear ? dedYears[dedYear] : null;
     if (dedOf && dedOf.total > 0){
       var parts = Object.keys(dedOf.categorias).filter(function(k){ return dedOf.categorias[k].deducao > 0; })
         .map(function(k){ return esc(k.replace(/ e seguros de saúde/,''))+' <b>€'+esc(dedOf.categorias[k].deducao.toFixed(2))+'</b>'; });
@@ -726,7 +749,7 @@
            (parts.length?' - '+parts.join(', '):'')+'.</div>'+
            '<div class="w" style="margin-left:2px">Por titular: não considera agregado nem tributação conjunta.</div>';
     }
-    var despAt = d.recibos && d.recibos.despesasAtividade;
+    var despAt = d.despesasAtividade;
     if (despAt && despAt.categorias && Object.keys(despAt.categorias).length){
       var dp = Object.keys(despAt.categorias).map(function(k){ return esc(k)+' €'+esc((despAt.categorias[k].considerar||0).toFixed(2)); });
       h += '<div class="kv">Despesas afetas à atividade'+(despAt.ano?' '+esc(despAt.ano):'')+' <span class="w">(Cat. B, simplificado)</span>: '+dp.join(', ')+'.</div>';
@@ -902,7 +925,7 @@
   }
 
   // Friendly buckets shown on the empty state ("Depois podes juntar") - four human groups over the
-  // nine technical partitions, so the first screen never opens with a nine-row table.
+  // thirteen technical partitions, so the first screen never opens with a thirteen-row table.
   var GROUPS = [
     { icon:"i-home", label:"Casa e rendas" },
     { icon:"i-calendar", label:"Dívidas e prazos" },
@@ -916,10 +939,14 @@
     rendas:{ icon:"i-home", short:"Rendas" },
     situacao:{ icon:"i-receipt-euro", short:"Situação fiscal" },
     atividade:{ icon:"i-user", short:"Atividade" },
+    atividade_integrada:{ icon:"i-user", short:"Atividade exercida" },
     patrimonio:{ icon:"i-home", short:"Património" },
     irs:{ icon:"i-user", short:"IRS" },
     movfin:{ icon:"i-bank", short:"Movimentos financeiros" },
     recibos:{ icon:"i-file", short:"Recibos verdes" },
+    declaracoes:{ icon:"i-file", short:"Declarações de IRS" },
+    deducoes:{ icon:"i-receipt-euro", short:"Deduções oficiais" },
+    despesas_atividade:{ icon:"i-receipt-euro", short:"Despesas da atividade" },
     ss:{ icon:"i-hands", short:"Segurança Social" }
   };
   function meta(id){ return META[id] || { icon:"i-doc", short:id }; }
@@ -945,6 +972,12 @@
       if (x.cessada===true) return { v:'Atividade cessada' };
       return { v: x.declaracoes ? 'Por confirmar' : 'Sem atividade aberta' };
     }
+    if (id==="atividade_integrada" && d.atividade){
+      x=d.atividade;
+      if (x.disponivel===false) return { v:'Não exposta nesta conta' };
+      if (x.cessacao) return { v:'Atividade cessada' };
+      return x.inicio ? { v:'Cadastro lido' } : { v:'Estado por confirmar' };
+    }
     if (id==="patrimonio" && d.patrimonio) return (d.patrimonio.imoveis>0)
       ? { v: nb(d.patrimonio.imoveis)+' imóvel(eis)' } : { v:'Sem imóveis' };
     if (id==="irs" && d.irs) return { v: nb(d.irs.liquidacoes)+' liquidações'+
@@ -952,6 +985,10 @@
     if (id==="movfin" && d.movfin) return { v: nb(d.movfin.movimentos)+' documento(s)' };
     if (id==="recibos" && d.recibos) return (d.recibos.recibosVerdes>0)
       ? { v: nb(d.recibos.recibosVerdes)+' emitido(s)' } : { v:'Sem recibos verdes' };
+    if (id==="declaracoes" && d.declaracoes) return { v:nb(Object.keys(d.declaracoes.porAno||{}).length)+' ano(s)' };
+    if (id==="deducoes" && d.deducoesOficiais) return { v:nb(Object.keys(d.deducoesOficiais.porAno||{}).length)+' ano(s)' };
+    if (id==="despesas_atividade" && d.despesasAtividade)
+      return { v:d.despesasAtividade.disponivel===false?'Não disponível':'Lida' };
     if (id==="ss" && d.ss){
       var e = d.ss.estado||'';
       if (/regularizada/i.test(e) && !/(n[aã]o|por|pendente)/i.test(e)) return { v:'Situação regularizada', cls:'good' };
@@ -968,7 +1005,9 @@
   function resumoRows(prof){
     var d = prof.detalhes, h = '';
     if (d.efatura) h += trow('i-doc','e-Fatura', factFor('efatura', d));
-    var dedOf = d.recibos && d.recibos.deducoesOficiais;
+    var dedYears = d.deducoesOficiais && d.deducoesOficiais.porAno;
+    var dedYear = dedYears && Object.keys(dedYears).sort().reverse()[0];
+    var dedOf = dedYear ? dedYears[dedYear] : null;
     if (dedOf && dedOf.total > 0)
       h += trow('i-receipt-euro','Deduções à coleta', { v:'<b>&euro;'+esc(dedOf.total.toFixed(2).replace('.', ','))+'</b> · valor oficial da AT' });
     if (d.rendas && d.rendas.activos > 0) h += trow('i-home','Rendas', factFor('rendas', d));
@@ -1150,7 +1189,7 @@
       '<div class="h1row"><h1>'+(full ? 'A minha situação fiscal' : 'Ver a minha situação fiscal')+'</h1>'+
       (DEMO ? '<span class="demochip">Exemplo com dados fictícios</span>' : '')+'</div>'+
       '<p class="sub">'+(full
-        ? 'Informação reunida das nove fontes oficiais.'
+        ? 'Informação reunida das treze fontes oficiais.'
         : (done.length
             ? 'O teu resumo aparece à medida que juntas cada fonte.'
             : 'No computador, reúne informação das Finanças e da Segurança Social sem dar a tua password.'))+'</p>';
@@ -1192,7 +1231,7 @@
       h += '<div class="juntar center"><div class="jtitle">Depois podes juntar</div><div class="jrow">'+
         GROUPS.map(function(g){ return '<div class="jitem">'+ico(g.icon)+'<span>'+esc(g.label)+'</span></div>'; }).join('')+
         '</div></div>'+
-        '<div class="linkrow"><a class="linkline" href="#fontes" id="verfontes">Ver as 9 fontes'+ico('i-external','width:16px;height:16px')+'</a></div>';
+        '<div class="linkrow"><a class="linkline" href="#fontes" id="verfontes">Ver as 13 fontes'+ico('i-external','width:16px;height:16px')+'</a></div>';
     }
 
     // ESTADO PARCIAL: o que já sabemos | o que ainda falta ------------------------------------
@@ -1205,7 +1244,7 @@
         '</div></div></div>';
     }
 
-    // 9/9 -------------------------------------------------------------------------------------
+    // Complete-source state -------------------------------------------------------------------
     if (full)
       h += '<div class="okbanner">'+ico('i-check-circle')+'<div><div class="okt">Situação carregada</div>'+
         '<div class="okw">Fica guardada só neste navegador até ao fim do dia.</div></div></div>';
@@ -1385,7 +1424,7 @@
           raHtml += '<div class="w" style="margin-top:4px;color:var(--amber)"><b>Comparação de rendas desativada.</b> '+
             'A ferramenta registou &euro;'+esc(Math.round(rendasVal))+' em '+yy+', mas não recomenda englobamento nem taxa autónoma enquanto o modelo anual completo não estiver validado.</div>';
         // Resultado REAL desse ano, lido das declarações (a que conta é a última - ver readDeclaracoes).
-        var dcl = (prof.detalhes.recibos && prof.detalhes.recibos.declaracoes && prof.detalhes.recibos.declaracoes[yy]) || null;
+        var dcl = (prof.detalhes.declaracoes && prof.detalhes.declaracoes.porAno && prof.detalhes.declaracoes.porAno[yy]) || null;
         var dclHtml = '';
         if (dcl){
           // O `montante` da linha só é o resultado real quando NÃO houve substituição. Numa
@@ -1413,10 +1452,10 @@
       });
       h += '<div class="w" style="margin-top:10px;color:var(--amber)">Prazos <b>estimados</b> pelo calendário do IRS. Confirma a data da <b>tua</b> liquidação de cada ano (o prazo conta a partir dela). Base legal: CPPT art. 59.º e 70.º, LGT art. 78.º.</div></div></details>';
     }
-    // AS NOVE FONTES: a lista completa, sempre disponível mas recolhida - é a "Rever as fontes"
-    // do rodapé de ações e o destino do link "Ver as 9 fontes" do estado vazio.
+    // AS TREZE FONTES: a lista completa, sempre disponível mas recolhida - é a "Rever as fontes"
+    // do rodapé de ações e o destino do link "Ver as 13 fontes" do estado vazio.
     h += '<details class="frow" id="fontes" data-acc="fontes"'+(ACC.fontes?' open':'')+'><summary>'+
-      '<span class="flabel">'+ico('i-doc')+'As nove fontes</span>'+
+      '<span class="flabel">'+ico('i-doc')+'As treze fontes</span>'+
       '<span class="fdesc">'+done.length+' de '+PARTITIONS.length+' reunidas · abre cada página oficial</span>'+chev()+
       '</summary><div class="fbody">'+
       '<div class="w" style="margin:14px 0 4px">A barra da extensão faz esta leitura apenas quando carregas nela.</div>';
