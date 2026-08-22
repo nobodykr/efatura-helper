@@ -61,6 +61,13 @@ const PROFILES = {
       { ano: anoPassado, recuperavel: 0, nMover: 0, porSetor: {}, recuperavelAconselhado: 0, nMoverAconselhado: 0, porSetorAconselhado: {} }] } },
     irs: { status: "done", data: { liquidacoes: 2, porAno: [{ ano: anoPassado }] } },
   } },
+  "atividade futura, ainda não aberta": { partitions: {
+    atividade: { status: "done", data: { declaracoes: 2, cessada: null,
+      ultimaDeclaracaoTipo: "inicio-ou-reinicio", ultimaDeclaracaoAceite: true,
+      avisos: ["data efetiva por confirmar"] } },
+    atividade_integrada: { status: "done", data: { estadoAtual: "agendada", cessada: null,
+      inicio: null, proximoInicio: "2099-01-01", inicios: ["2099-01-01"], cessacoes: [] } },
+  } },
 };
 
 function render(profile) {
@@ -98,6 +105,11 @@ function render(profile) {
   ok("abas Otimizado/Aconselhado presentes", /class="fbtab"/.test(full.html));
   ok("comparacao de rendas esta explicitamente desativada",
      /Comparação de rendas desativada/.test(full.html) && /não recomenda englobamento/.test(full.html));
+  const scheduled = await render(PROFILES["atividade futura, ainda não aberta"]);
+  ok("atividade futura não ativa Cat. B nem Anexo B",
+    !/Cat\. B\b/.test(scheduled.html) && !/IRS - Anexo B/.test(scheduled.html));
+  ok("atividade futura aparece como agendada",
+    /agendado|futuro/i.test(scheduled.html));
   console.log(failures ? `\n  ${failures} FAILED` : "\n  all render tests passed");
   process.exit(failures ? 1 : 0);
 })();

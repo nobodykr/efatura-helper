@@ -722,7 +722,7 @@
     if (P.atividade_integrada && P.atividade_integrada.status==="done"){
       if (!at) at={};
       var ai=P.atividade_integrada.data||{}; Object.keys(ai).forEach(function(k){at[k]=ai[k];});
-      if (ai.disponivel!==false && ai.inicio && !ai.cessacao && !prof.categorias.some(function(c){return c.cat==="B";}))
+      if (ai.disponivel!==false && ai.estadoAtual==="aberta" && !prof.categorias.some(function(c){return c.cat==="B";}))
         prof.categorias.push({cat:"B", label:"Trabalho independente (atividade aberta)"});
     }
     if (at) prof.detalhes.atividade=at;
@@ -791,7 +791,8 @@
       (d.recibos.avisos||[]).forEach(function(a){ h += '<div class="warn">⚠ '+esc(a)+'</div>'; });
     }
     if (d.atividade){
-      var at=d.atividade, est= at.cessada===true?"cessada":(at.cessada===false?"aberta":"por confirmar");
+      var at=d.atividade, est=at.estadoAtual==="agendada"?"início/reinício agendado (ainda não aberto)":
+        (at.estadoAtual||(at.cessada===true?"cessada":(at.cessada===false?"aberta":"por confirmar")));
       h += '<div class="kv">Atividade: <b>'+esc(est)+'</b>'+
            (at.declaracoes?' ('+esc(at.declaracoes)+' declaração/ões)':'')+
            (at.regimeIva?', IVA: <b>'+esc(at.regimeIva)+'</b>':'')+'.</div>';
@@ -968,15 +969,19 @@
     }
     if (id==="atividade" && d.atividade){
       x = d.atividade;
-      if (x.cessada===false) return { v:'Atividade aberta'+(x.regimeIva?' · '+esc(x.regimeIva):'') };
-      if (x.cessada===true) return { v:'Atividade cessada' };
-      return { v: x.declaracoes ? 'Por confirmar' : 'Sem atividade aberta' };
+      if (x.estadoAtual==="aberta") return { v:'Atividade aberta'+(x.regimeIva?' · '+esc(x.regimeIva):'') };
+      if (x.estadoAtual==="cessada" && x.ultimaDeclaracaoTipo==="inicio-ou-reinicio") return { v:'Cessada agora · início/reinício declarado' };
+      if (x.estadoAtual==="cessada") return { v:'Atividade cessada' };
+      if (x.ultimaDeclaracaoTipo==="inicio-ou-reinicio") return { v:'Início/reinício declarado · data por confirmar' };
+      return { v: x.declaracoes ? 'Estado por confirmar' : 'Sem declarações encontradas' };
     }
     if (id==="atividade_integrada" && d.atividade){
       x=d.atividade;
       if (x.disponivel===false) return { v:'Não exposta nesta conta' };
-      if (x.cessacao) return { v:'Atividade cessada' };
-      return x.inicio ? { v:'Cadastro lido' } : { v:'Estado por confirmar' };
+      if (x.estadoAtual==="aberta") return { v:'Atividade aberta' };
+      if (x.estadoAtual==="agendada" || x.proximoInicio) return { v:'Início/reinício futuro no cadastro' };
+      if (x.estadoAtual==="cessada") return { v:x.proximoInicio?'Cessada agora · início futuro no cadastro':'Atividade cessada' };
+      return { v:'Estado por confirmar' };
     }
     if (id==="patrimonio" && d.patrimonio) return (d.patrimonio.imoveis>0)
       ? { v: nb(d.patrimonio.imoveis)+' imóvel(eis)' } : { v:'Sem imóveis' };

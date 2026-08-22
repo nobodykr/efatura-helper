@@ -27,6 +27,12 @@ check(/location\.href\s*=\s*href/.test(tool),
   "signed integrated activity screen uses top-level read-only navigation");
 check(/disponivel:\s*false[\s\S]*estado desconhecido/.test(tool),
   "missing integrated activity menu remains unknown");
+check(/cessada:\s*null[\s\S]*ultimaDeclaracaoTipo/.test(activityBlock),
+  "declaration history never claims the current activity state");
+check(/function atividadeTemporal\([\s\S]*ultimoI > ultimoC/.test(tool),
+  "integrated activity compares the latest effective start and cessation");
+check(/proximoInicio/.test(tool) && /estadoAtual === "aberta"/.test(tool),
+  "future activity stays separate from the current-open signal");
 
 const receiptsBlock = (tool.match(/function readRecibos\(\)[\s\S]*?\n  }\n\n  \/\* DEDU/) || [""])[0];
 check(/pullYear\(ano, offset \+ rows\.length, all\)/.test(receiptsBlock),

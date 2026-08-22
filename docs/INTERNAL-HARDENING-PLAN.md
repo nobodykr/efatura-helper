@@ -77,6 +77,10 @@ findings, decisions, tests and implementation commits do not exist only in chat 
 - The profile has thirteen explicit sources because shared hostnames do not imply shared SSO
   sessions. Green receipts, IRS declarations, official deductions and Cat B expenses are separate;
   the activity declaration list and authoritative integrated cadastro are separate too.
+- Activity declaration history never asserts the current state. Historical cessations, a later
+  effective restart and a declared future start are distinct; only the date-aware integrated
+  cadastro can trigger current open-activity obligations. Older activity-assistant tooling is used
+  as portal-behavior evidence only and is not a runtime or test dependency.
 - Calculations are versioned by income year and carry provenance. Constants repeated in code,
   public explanations and snapshots are tested for agreement.
 - The rental-regime recommendation stays disabled until a complete, year-specific model has

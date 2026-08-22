@@ -55,8 +55,8 @@ function fetchOK(u) {
   }
   if (/consultardeclaracoes/.test(s)) return Promise.resolve({ ok: true, headers: { get: () => "text/html" }, text: () => Promise.resolve(
     "<html><table>" +
-    "<tr><td>Declaracao de inicio de atividade</td><td><a href='/atividade/atividade/consultardeclaracoes/comprovativo/9996N00829690'>ver</a></td></tr>" +
-    "<tr><td>Declaracao de cessacao</td><td><a href='/atividade/atividade/consultardeclaracoes/comprovativo/9996N01523817'>ver</a></td></tr>" +
+    "<tr><td>SYNTHETIC-NEW</td><td>2099-01-01</td><td>Declaracao de reinicio de atividade</td><td>Declaracao certa</td><td><a href='/atividade/atividade/consultardeclaracoes/comprovativo/SYNTHETIC-NEW'>ver</a></td></tr>" +
+    "<tr><td>SYNTHETIC-OLD</td><td>2021-01-01</td><td>Declaracao de cessacao</td><td>Declaracao certa</td><td><a href='/atividade/atividade/consultardeclaracoes/comprovativo/SYNTHETIC-OLD'>ver</a></td></tr>" +
     "</table>periodicidade trimestral</html>") });
   if (/login\/personalData/.test(s)) return json({ nome: "SECRET NAME", niss: "11111111111" });
   if (/situacao-contributiva/.test(s)) return json({ estado: "REGULARIZADA" });
@@ -158,15 +158,52 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   ok("SS: shape has only field names + types", !/"(?:niss|nome)"\s*:\s*"(?!str"|number"|boolean"|null")/.test(ssJson));
   ok("SS handoff carries NO NISS/name", !/11111111111|SECRET NAME|niss/i.test(w.__nav || ""));
 
-  // 4c-5. atividade (cadastro): the mock has BOTH inicio + cessacao -> CLOSED, so NO Cat B, and it
-  //       reads the IVA regime. Proves we do not assert Cat B on a cessada atividade.
+  // 4c-5. Declaration history is not current cadastro. A past cessation plus a newer accepted
+  //       restart may be scheduled for the future, so the list must not claim open OR closed.
   w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/atividade/atividade/consultardeclaracoes");
   eval(SRC); await wait();
   w.document.getElementById("fb-prof-go").click(); await wait();
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("atividade read + stored", store.partitions.atividade && store.partitions.atividade.status === "done");
-  ok("atividade detected CESSADA (inicio+cessacao)", store.partitions.atividade.data.cessada === true);
+  ok("declaration history does not infer current state", store.partitions.atividade.data.cessada === null);
+  ok("latest accepted restart is retained without an effective-date guess",
+    store.partitions.atividade.data.ultimaDeclaracaoTipo === "inicio-ou-reinicio" &&
+    store.partitions.atividade.data.ultimaDeclaracaoAceite === true);
   ok("atividade IVA regime parsed (trimestral)", /trimestr/i.test(store.partitions.atividade.data.regimeIva || ""));
+
+  // 4c-6. The integrated cadastro compares the latest EFFECTIVE dates. A future start must not
+  //       make the account currently open; once a later start is effective it overrides history.
+  w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/integrada/presentation");
+  w.document.body.innerHTML = "<div>Atividade em IVA Data de Início 2020-01-01 Data de Cessação 2021-01-01 " +
+    "Data de Início 2099-01-01 Tipo de Contabilidade Não organizada</div>";
+  eval(SRC); await wait();
+  w.document.getElementById("fb-prof-go").click(); await wait();
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("future restart remains scheduled, not currently open",
+    store.partitions.atividade_integrada.data.estadoAtual === "cessada" &&
+    store.partitions.atividade_integrada.data.proximoInicio === "2099-01-01" &&
+    store.partitions.atividade_integrada.data.cessada === true);
+
+  w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/integrada/presentation");
+  w.document.body.innerHTML = "<div>Atividade em IRS Data de Início 2020-01-01 Data de Cessação 2021-01-01 " +
+    "Data de Início 2022-01-01 Tipo de Contabilidade Não organizada</div>";
+  eval(SRC); await wait();
+  w.document.getElementById("fb-prof-go").click(); await wait();
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("later effective restart overrides historical cessation",
+    store.partitions.atividade_integrada.data.estadoAtual === "aberta" &&
+    store.partitions.atividade_integrada.data.inicio === "2022-01-01" &&
+    store.partitions.atividade_integrada.data.cessada === false);
+
+  w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/integrada/presentation");
+  w.document.body.innerHTML = "<div>Atividade em IVA Data de Início 2099-01-01 Tipo de Contabilidade Não organizada</div>";
+  eval(SRC); await wait();
+  w.document.getElementById("fb-prof-go").click(); await wait();
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("future-only cadastro is scheduled and cannot trigger current Cat B",
+    store.partitions.atividade_integrada.data.estadoAtual === "agendada" &&
+    store.partitions.atividade_integrada.data.proximoInicio === "2099-01-01" &&
+    store.partitions.atividade_integrada.data.cessada === null);
 
   // 4d. patrimonio: SAME host as rendas (imoveis) but a /matrizesinter path -> host+path matching
   //     must pick patrimonio, NOT rendas. Proves the disambiguation.

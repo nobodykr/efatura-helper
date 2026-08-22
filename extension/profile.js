@@ -14,8 +14,8 @@ function fact(id,d){
   if(id==="efatura") return esc(d.totalFaturas||0)+" faturas; "+esc(d.porClassificar||0)+" por classificar";
   if(id==="rendas") return esc(d.activos||0)+" contratos ativos";
   if(id==="situacao") return esc((d.dividas&&d.dividas.n)||0)+" dívidas ativas";
-  if(id==="atividade") return d.cessada===true?"atividade cessada":d.cessada===false?"atividade aberta":"estado por confirmar";
-  if(id==="atividade_integrada") return d.disponivel===false?"não exposta nesta conta":d.cessacao?"atividade cessada":d.inicio?"cadastro lido":"estado por confirmar";
+  if(id==="atividade") return d.ultimaDeclaracaoTipo==="inicio-ou-reinicio"?"início/reinício declarado; eficácia por confirmar":"estado atual por confirmar";
+  if(id==="atividade_integrada") return d.disponivel===false?"não exposta nesta conta":d.estadoAtual==="aberta"?"atividade aberta":d.estadoAtual==="agendada"?"início/reinício futuro; ainda não aberto":d.estadoAtual==="cessada"?(d.proximoInicio?"cessada agora; início futuro":"atividade cessada"):"estado por confirmar";
   if(id==="irs") return esc(d.liquidacoes||0)+" liquidações";
   if(id==="movfin") return esc(d.movimentos||0)+" movimentos";
   if(id==="recibos") return esc(d.recibosVerdes||0)+" recibos";

@@ -63,7 +63,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.08.22.1";
+  var FB_VERSION = "2026.08.22.2";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -1045,12 +1045,10 @@
     });
   }
 
-  /* Atividade (cadastro, dainter): the declaracoes de inicio/alteracao/cessacao. This is the
-   * AUTHORITATIVE Cat B source and, crucially, tells open vs CLOSED - a count > 0 does NOT mean
-   * "currently independent" (a cessacao declaration closes it). Response is likely HTML, so parsing
-   * is heuristic and everything is FLAGGED for confirmation; we never assert Cat B on a guess.
-   * Also scans for the IVA enquadramento (regime normal / isencao art. 53 / trimestral / mensal),
-   * which is the regime signal that was previously unmapped. */
+  /* Activity declarations are HISTORY, not current cadastro. In particular, the portal can accept
+   * a future start/restart while the integrated screen still shows the previous cessation. The list
+   * also labels a restart as an "inicio" in some accounts. Keep only type/status signals here and
+   * never infer open/closed from the mere presence of start or cessation rows. */
   function readAtividade() {
     return getMaybe("/atividade/atividade/consultardeclaracoes?_=" + Date.now()).then(function (res) {
       var txt = res.html || (res.json ? JSON.stringify(res.json) : "");
@@ -1058,9 +1056,24 @@
       // Count declarations by their comprovativo download links (one per declaration) - more
       // reliable than word-matching. Fall back to the word count if the markup differs.
       var n = (txt.match(/\/comprovativo\//g) || []).length || (low.match(/declara[c\u00e7][a\u00e3]o/g) || []).length;
-      var temInicio = /in[i\u00ed]cio de atividade|declara[c\u00e7][a\u00e3]o de in[i\u00ed]cio/.test(low);
+      var temInicio = /(?:re)?in[i\u00ed]cio de atividade|declara[c\u00e7][a\u00e3]o de (?:re)?in[i\u00ed]cio/.test(low);
       var temCessacao = /cessa[c\u00e7][a\u00e3]o|cessou|cessad/.test(low);
-      var cessada = temCessacao ? true : (temInicio ? false : null);
+      var ultimaTipo = null, ultimaAceite = null;
+      if (res.html) {
+        try {
+          var doc = new DOMParser().parseFromString(res.html, "text/html");
+          var linhas = doc.querySelectorAll("tr");
+          for (var li = 0; li < linhas.length; li++) {
+            if (!linhas[li].querySelector('a[href*="/comprovativo/"]')) continue;
+            var linha = (linhas[li].textContent || "").replace(/\s+/g, " ").trim().toLowerCase();
+            ultimaTipo = /cessa[c\u00e7][a\u00e3]o/.test(linha) ? "cessacao"
+              : /(?:re)?in[i\u00ed]cio(?: de atividade)?/.test(linha) ? "inicio-ou-reinicio"
+              : /altera[c\u00e7][a\u00e3]o/.test(linha) ? "alteracao" : "outra";
+            ultimaAceite = /declara[c\u00e7][a\u00e3]o certa|aceite|validada/.test(linha) ? true : null;
+            break; // the portal orders this table newest first
+          }
+        } catch (e) {}
+      }
       // The current IVA regime usually is NOT on this declarations page - it lives on the
       // "Atividade Exercida" screen of the Situacao Fiscal Integrada. Only report a regime if this
       // page happens to state it; otherwise leave null and say where to look. Never guess.
@@ -1068,14 +1081,19 @@
                  : /periodicidade mensal|iva mensal/.test(low) ? "IVA mensal"
                  : /periodicidade trimestr|iva trimestr/.test(low) ? "IVA trimestral"
                  : null;
-      // We do NOT open the comprovativo PDFs - a bookmarklet cannot parse a PDF, and open/cessada
-      // is already answerable from this list. Deep detail, if ever needed, is the server-side path.
-      var avisos = ["leitura heur\u00edstica - confirmar aberta/cessada"];
+      // The effective date exists in the official receipt, which this browser reader deliberately
+      // does not download or parse. A recent start row can therefore be current OR scheduled.
+      var avisos = ["a lista de declara\u00e7\u00f5es n\u00e3o prova o estado atual nem a data de efic\u00e1cia"];
+      if (ultimaTipo === "inicio-ou-reinicio" && temCessacao)
+        avisos.push("h\u00e1 in\u00edcio/rein\u00edcio declarado ap\u00f3s historial de cessa\u00e7\u00e3o; confirmar o comprovativo");
       if (!regime) avisos.push("regime de IVA n\u00e3o consta aqui - ver 'Atividade Exercida' na Situa\u00e7\u00e3o Fiscal Integrada");
       // The authoritative "Atividade Exercida" screen is a DIFFERENT PFAP SSO partition. It is an
       // explicit profile step (`atividade_integrada`) and cannot be fetched from this DAInter
       // session merely because both apps share the sitfiscal host.
-      return { data: { declaracoes: n, cessada: cessada, regimeIva: regime, avisos: avisos },
+      return { data: { declaracoes: n, cessada: null, regimeIva: regime,
+                       inicioOuReinicioDeclarado: temInicio, cessacaoDeclarada: temCessacao,
+                       ultimaDeclaracaoTipo: ultimaTipo, ultimaDeclaracaoAceite: ultimaAceite,
+                       avisos: avisos },
                source: "/atividade/atividade/consultardeclaracoes" };
     });
   }
@@ -1083,21 +1101,44 @@
   /* "Atividade Exercida" - o ecra da Situacao Fiscal Integrada com o cadastro REAL da atividade.
    * O URL e assinado (hmac) e MUDA, por isso NAO se forja: abre-se /integrada/ e colhe-se o link
    * targetScreen=ecraActividade da propria pagina. Devolve HTML, que se le por rotulos. */
+  function atividadeTemporal(inicios, cessacoes) {
+        var hoje;
+        try {
+          var hp = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Lisbon", year: "numeric", month: "2-digit", day: "2-digit" })
+            .formatToParts(new Date()).reduce(function (o, p) { o[p.type] = p.value; return o; }, {});
+          hoje = hp.year + "-" + hp.month + "-" + hp.day;
+        } catch (e) { hoje = new Date().toISOString().slice(0, 10); }
+        var uniq = function (xs) { return xs.filter(function (x, i) { return /^\d{4}-\d{2}-\d{2}$/.test(x) && xs.indexOf(x) === i; }).sort(); };
+        var ins = uniq(inicios), cess = uniq(cessacoes);
+        var passadosI = ins.filter(function (x) { return x <= hoje; });
+        var passadosC = cess.filter(function (x) { return x <= hoje; });
+        var futurosI = ins.filter(function (x) { return x > hoje; });
+        var ultimoI = passadosI.length ? passadosI[passadosI.length - 1] : null;
+        var ultimoC = passadosC.length ? passadosC[passadosC.length - 1] : null;
+        var estado = ultimoI ? ((!ultimoC || ultimoI > ultimoC) ? "aberta" : "cessada")
+          : (ultimoC ? "cessada" : (futurosI.length ? "agendada" : "desconhecida"));
+        return { inicios: ins, cessacoes: cess, inicio: ultimoI, cessacao: ultimoC,
+                 proximoInicio: futurosI.length ? futurosI[0] : null, estadoAtual: estado,
+                 cessada: estado === "cessada" ? true : (estado === "aberta" ? false : null) };
+  }
+
   function parseAtividadeExercida(html) {
         var txt = html.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ");
         var pick = function (re) { var x = txt.match(re); return x ? x[1].trim() : null; };
-        // CESSACAO: o ecra tem DUAS secoes ("Atividade em IVA" e "Atividade em IRS") e cada uma tem a
-        // sua "Data de Cessacao" + motivo, MUITO abaixo dos dados gerais. Ler o ecra INTEIRO e apanhar
-        // TODAS as ocorrencias - ler so o inicio do texto dava "atividade aberta" numa atividade
-        // CESSADA (erro real: Diogo cessou em 2025-09-08 e a leitura parcial nao viu).
+        // The screen can contain historical dates in both IVA and IRS sections. Compare the newest
+        // effective start and cessation; "any cessation exists" permanently misclassifies restarts.
+        var inic = (txt.match(/Data de In[i\u00ed]cio(?: de Atividade)?\s+(\d{4}-\d{2}-\d{2})/gi) || [])
+          .map(function (s) { return (s.match(/(\d{4}-\d{2}-\d{2})/) || [])[1]; }).filter(Boolean);
         var cess = (txt.match(/Data de Cessa[\u00e7c][\u00e3a]o\s+(\d{4}-\d{2}-\d{2})/gi) || [])
           .map(function (s) { return (s.match(/(\d{4}-\d{2}-\d{2})/) || [])[1]; }).filter(Boolean);
         var motivos = (txt.match(/Motivo de Cessa[\u00e7c][\u00e3a]o\s+([^]{3,40}?)\s+(?:NIF|Nome|Op[\u00e7c]|Data|Consultas)/gi) || [])
           .map(function (s) { return s.replace(/Motivo de Cessa[\u00e7c][\u00e3a]o\s+/i, "").trim(); });
+        var temporal = atividadeTemporal(inic, cess);
         var out = {
-          inicio: pick(/Data de In[i\u00ed]cio\s+(\d{4}-\d{2}-\d{2})/i),
-          cessacao: cess.length ? cess.sort()[0] : null,     // a mais ANTIGA = quando deixou de estar ativa
-          cessacoes: cess, motivosCessacao: motivos,
+          inicio: temporal.inicio, inicios: temporal.inicios,
+          cessacao: temporal.cessacao, cessacoes: temporal.cessacoes,
+          proximoInicio: temporal.proximoInicio, estadoAtual: temporal.estadoAtual,
+          cessada: temporal.cessada, motivosCessacao: motivos,
           enquadramentoIva: pick(/Atividade em IVA\s+Enquadramento\s+([^]{3,30}?)\s+Data de Enquadramento/i),
           enquadramentoIrs: pick(/Atividade em IRS\s+Enquadramento\s+([^]{3,30}?)\s+Data de Enquadramento/i),
           tipoSujeito: pick(/Tipo de Sujeito Passivo\s+([^]{3,60}?)\s+(?:Contabilidade|Tipo de Contab)/i),
@@ -1658,8 +1699,9 @@
       var ai = P.atividade_integrada.data || {};
       Object.keys(ai).forEach(function (k) { at[k] = ai[k]; });
       prof.recolhidoEm.atividadeIntegrada = P.atividade_integrada.fetchedAt;
-      // Only this authoritative cadastro can assert OPEN. A missing menu item remains unknown.
-      if (ai.disponivel !== false && ai.inicio && !ai.cessacao && !prof.categorias.some(function (c) { return c.cat === "B"; }))
+      // Only the date-aware current cadastro can assert OPEN. Historical cessations do not override
+      // a later effective restart, and a future start does not count as open before its date.
+      if (ai.disponivel !== false && ai.estadoAtual === "aberta" && !prof.categorias.some(function (c) { return c.cat === "B"; }))
         prof.categorias.push({ cat: "B", label: "Trabalho independente (atividade aberta)", base: "Atividade Exercida" });
     }
     if (at) prof.detalhes.atividade = at;
@@ -1716,7 +1758,8 @@
     }
     if (d.atividade) {
       var at = d.atividade;
-      var estado = at.cessada === true ? "cessada" : (at.cessada === false ? "aberta" : "por confirmar");
+      var estado = at.estadoAtual === "agendada" ? "in\u00edcio/rein\u00edcio agendado (ainda n\u00e3o aberto)"
+        : (at.estadoAtual || (at.cessada === true ? "cessada" : (at.cessada === false ? "aberta" : "por confirmar")));
       h += '<div style="font-size:12px;color:#333;margin:2px 0">Atividade: <b>' + esc(estado) + '</b>' +
            (at.declaracoes ? ' (' + esc(at.declaracoes) + ' declara\u00e7\u00e3o/\u00f5es)' : '') +
            (at.regimeIva ? ', IVA: <b>' + esc(at.regimeIva) + '</b>' : '') + '.</div>';
