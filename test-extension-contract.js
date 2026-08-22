@@ -38,4 +38,7 @@ assert(/https:\/\/fiscalida\.de\/privacidade/.test(privacy), "direct canonical p
 assert(/400 dias/.test(privacy) && /chrome\.storage\.local/.test(privacy), "retention/storage disclosure incomplete");
 const ext = ["background.js", "bar.js", "profile.js", "config.js"].map((f) => readFileSync("extension/" + f, "utf8")).join("\n");
 assert(!/<script[^>]+https?:|importScripts\s*\(\s*["']https?:/i.test(ext), "remote executable code found");
+const build = readFileSync("extension/build.mjs", "utf8");
+assert(/const runtimeFiles = \[/.test(build) && /utimesSync/.test(build) && /\['-X', '-q', zipPath, \.\.\.runtimeFiles\]/.test(build),
+  "extension package is not built from a deterministic explicit allowlist");
 console.log("  extension release contract passed");

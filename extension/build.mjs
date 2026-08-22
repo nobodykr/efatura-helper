@@ -9,7 +9,7 @@
 // Requires playwright-core + a chromium; point these at your own install via env.
 const PW = process.env.PLAYWRIGHT_CORE || 'playwright-core';
 const { chromium } = await import(PW);
-import { readFileSync, writeFileSync, copyFileSync, mkdirSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, copyFileSync, mkdirSync, rmSync, utimesSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
 const EXE = process.env.CHROMIUM_BIN || undefined;
@@ -51,7 +51,17 @@ const version = JSON.parse(readFileSync(here('manifest.json'), 'utf8')).version;
 mkdirSync(root('dist'), { recursive: true });
 // Ship ONLY runtime files - dev scripts and store-copy working notes stay out of the package.
 const zipPath = root(`dist/fatura-boa-extension-${version}.zip`);
+const runtimeFiles = [
+  'manifest.json', 'background.js', 'config.js', 'bar.js', 'tool.js', 'offers.json',
+  'icon16.png', 'icon48.png', 'icon128.png', 'profile.html', 'profile.css', 'profile.js'
+];
+// ZIP stores mtimes. Normalize them and omit platform-specific extra fields so the same reviewed
+// source produces the same artifact hash on every build. 1980-01-01 is the ZIP epoch.
+const epochSeconds = Number(process.env.SOURCE_DATE_EPOCH || 315532800);
+if (!Number.isInteger(epochSeconds) || epochSeconds < 315532800)
+  throw new Error('SOURCE_DATE_EPOCH must be an integer at or after the ZIP epoch');
+const epoch = new Date(epochSeconds * 1000);
+runtimeFiles.forEach((file) => utimesSync(here(file), epoch, epoch));
 rmSync(zipPath, { force: true });
-execFileSync('zip', ['-qr', zipPath, '.', '-x', 'build.mjs', 'shots.mjs', 'store-shots.mjs',
-  'STORE-LISTING.md', 'FIREFOX.md'], { cwd: here(''), stdio: 'inherit' });
+execFileSync('zip', ['-X', '-q', zipPath, ...runtimeFiles], { cwd: here(''), stdio: 'inherit' });
 console.log(`${zipPath} written`);
