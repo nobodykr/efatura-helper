@@ -1,0 +1,9 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Public browser storage key, not a credential"
+regexTarget = "secret"
+regexes = [
+  '''fiscalidade-consent-v1''',
+]

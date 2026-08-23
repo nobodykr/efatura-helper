@@ -3,7 +3,11 @@
 const { readFileSync } = require("fs");
 
 function assert(ok, message) { if (!ok) throw new Error(message); }
-const source = readFileSync("functions/api/v1/[[path]].js", "utf8");
+const limiter = readFileSync("functions/_lib/ratelimit.js", "utf8")
+  .replace("export async function allow", "async function allow");
+const facade = readFileSync("functions/api/v1/[[path]].js", "utf8")
+  .replace('import { allow } from "../../_lib/ratelimit.js";', "");
+const source = limiter + "\n" + facade;
 
 (async () => {
   const mod = await import("data:text/javascript;base64," + Buffer.from(source).toString("base64"));
@@ -20,6 +24,7 @@ const source = readFileSync("functions/api/v1/[[path]].js", "utf8");
   assert((await call("https://attacker.invalid/x")).status === 404, "arbitrary URL reached proxy route");
   assert((await call("map/buckets/009", "POST", "{}")).status === 405, "wrong method not rejected");
   assert((await call("map/rules", "POST", "{}")).status === 405, "rules write method not rejected");
+  assert((await call("contributions/impact", "POST", undefined)).status === 415, "non-JSON write not rejected");
   assert((await call("map/rules")).status === 503, "reviewable rules route is missing or bypassed configuration");
   assert((await call("not-allowlisted", "OPTIONS")).status === 404, "OPTIONS bypassed route allowlist");
   assert((await call("map/buckets/009")).status === 503, "missing upstream did not fail closed");
@@ -48,6 +53,8 @@ const source = readFileSync("functions/api/v1/[[path]].js", "utf8");
   assert(forwarded.init.headers.get("cf-access-client-id") === "test-id", "service credential not applied server-side");
   assert(!response.headers.has("x-upstream-secret"), "unreviewed upstream header leaked");
   assert(response.headers.get("x-robots-tag") === "noindex, nofollow, noarchive", "API noindex missing");
+  const options = await call("contributions/impact", "OPTIONS");
+  assert(options.headers.get("access-control-allow-methods") === "POST, OPTIONS", "route-specific CORS methods missing");
   await call("map/rules", "GET", undefined, env);
   assert(forwarded.url === "https://internal-api.invalid/api/v1/map/rules", "unreviewed query leaked upstream");
   global.fetch = originalFetch;

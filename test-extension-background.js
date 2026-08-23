@@ -7,7 +7,7 @@ let state = {};
 const executions = [];
 const writes = [];
 const chrome = {
-  runtime: { onMessage: { addListener(fn) { listener = fn; } }, getURL: (x) => "chrome-extension://id/" + x },
+  runtime: { id: "id", onMessage: { addListener(fn) { listener = fn; } }, getURL: (x) => "chrome-extension://id/" + x },
   tabs: { create() {} },
   scripting: { executeScript(spec) { executions.push(spec); return Promise.resolve(); } },
   storage: { local: {
@@ -16,7 +16,7 @@ const chrome = {
     remove(keys) { (Array.isArray(keys) ? keys : [keys]).forEach((k) => delete state[k]); }
   }}
 };
-vm.runInNewContext(readFileSync("extension/background.js", "utf8"), { chrome, URL, Set, Date, JSON, Object });
+vm.runInNewContext(readFileSync("extension/background.js", "utf8"), { chrome, URL, Set, Date, JSON, Object, Array });
 if (!listener) throw new Error("background listener not registered");
 const sender = { tab: { id: 7, url: "https://faturas.portaldasfinancas.gov.pt/x" } };
 listener({ type: "fb-run", mode: "profile" }, sender, () => {});
@@ -32,8 +32,16 @@ setTimeout(() => {
   const before = executions.length;
   listener({ type: "fb-run", mode: "profile" }, { tab: { id: 8, url: "https://example.com/" } }, () => {});
   if (executions.length !== before) throw new Error("disallowed sender injected the tool");
-  listener({ type: "fb-settings-save", settings: { wide: false, secretUnexpected: "drop" } }, sender, () => {});
+  listener({ type: "fb-run", mode: "profile" }, { tab: { id: 8, url: "http://faturas.portaldasfinancas.gov.pt/" } }, () => {});
+  if (executions.length !== before) throw new Error("non-HTTPS sender injected the tool");
+  listener({ type: "fb-settings-save", settings: {
+    wide: false, secretUnexpected: "drop", member: "bad", classifierProfile: {
+      joint: true, room: "ab".repeat(32), unexpected: "drop"
+    }
+  } }, sender, () => {});
   const saved = writes[writes.length - 1]["fiscalidade-settings-v1"];
-  if (saved.secretUnexpected !== undefined || saved.wide !== false) throw new Error("settings allowlist failed");
+  if (saved.secretUnexpected !== undefined || saved.wide !== false || saved.member !== undefined ||
+      saved.classifierProfile.unexpected !== undefined || saved.classifierProfile.room !== "ab".repeat(32))
+    throw new Error("settings schema validation failed");
   console.log("  extension background consent and sender gates passed");
 }, 0);

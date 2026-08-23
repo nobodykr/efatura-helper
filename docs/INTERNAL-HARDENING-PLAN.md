@@ -31,8 +31,8 @@ findings, decisions, tests and implementation commits do not exist only in chat 
   historical script was imported or executed. Their later evidence proves that the raw attributed
   `alterarDocumentoAdquirente.action` route is rejected; Fiscalidade therefore keeps attributed
   corrections manual and never reports them as applied without post-state verification.
-- Extension 0.5.3 was built twice from committed source with the same explicit 12-file ZIP SHA-256:
-  `9aa464dd94f850f8652fe5663eb66f6068f7a2658cec961a72d59565e6564f17`.
+- Extension 0.5.4 was built twice from the reviewed source with the same explicit 12-file ZIP
+  SHA-256: `95262e49aba31a6ac64665e21d34471bdb589e65874e99c719bf25c8aefb802f`.
 - Two authorized AT personas were opened through `fiscal-monitor/profile_validate.mjs` after the
   synthetic suite passed. Raw responses stayed inside the browser; only endpoint contracts,
   booleans and value-free type schemas were emitted. Live evidence forced four same-host IRS apps
@@ -48,10 +48,11 @@ findings, decisions, tests and implementation commits do not exist only in chat 
 - The pre-change state of `efatura-helper`, `fiscal-monitor` and `cae-db` is preserved in verified
   Git bundles, binary patches, untracked-file archives and baseline refs named
   `backup/fiscalidade-pre-hardening-20260822T123029Z`.
-- Existing dirty checkouts are not used for implementation. Each repository has an isolated
-  worktree and a dedicated hardening branch.
-- Work is committed in small reviewable checkpoints. No push, deployment, DNS change, Search
-  Console action, Chrome Web Store upload, resubmission or appeal belongs to this phase.
+- Existing dirty checkouts are not used for implementation. Changes are prepared in an isolated
+  clone and reviewed before they reach the canonical branch.
+- Work is committed in small reviewable checkpoints. Only the reviewed internal hardening release
+  may be pushed and deployed. Search Console actions, Chrome Web Store uploads, resubmissions and
+  appeals remain outside this phase.
 - No real account is needed for the initial test suite. Any later authenticated verification must
   be read-only unless a specific, reversible e-Fatura classification test has been agreed, and its
   evidence must be redacted before it is saved.
@@ -114,6 +115,10 @@ findings, decisions, tests and implementation commits do not exist only in chat 
   retired `/consulta` company-lookup surface is not part of the contract.
 - Request bodies are bounded and schema-validated. Access logs redact identifiers and room keys;
   application code does not log request bodies.
+- Edge and backend rate limits use secret-keyed HMAC pseudonyms rather than raw or enumerable IP
+  keys. Separate operation budgets preserve normal map, contribution and household workflows.
+- The honeypot rejects unknown fields, omits query strings, referrers and city data, expires its
+  private log after 7 days, and never blocks when bot evidence is missing or verified.
 - Contributions aggregate immediately where individual records are unnecessary. Shape collection
   stores field names and type tokens only under stable endpoint identifiers, never raw URLs or
   values.

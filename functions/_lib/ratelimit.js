@@ -3,19 +3,23 @@
 // Design notes:
 //  - Fail-OPEN. If KV is missing or throws, allow the request. A limiter that blocks real users
 //    when the store hiccups is worse than the abuse it prevents; the WAF rule is the hard backstop.
-//  - We never store a raw IP. The key carries a non-reversible hash of cf-connecting-ip, so the
-//    KV contents cannot deanonymise a visitor even if read.
+//  - We never store a raw IP. The key carries an HMAC-SHA-256 pseudonym keyed by FB_RL_KEY, so an
+//    exported KV namespace cannot be used to enumerate the small IPv4 address space.
 //  - Fixed window (not sliding): value = count in the current [now / windowSec] bucket, written
 //    with expirationTtl = windowSec so entries self-expire and KV never accumulates garbage.
 //  - Best-effort increment: KV is eventually consistent, so two near-simultaneous requests can
 //    both read the same count. That is fine here - the limit is an abuse ceiling, not an accountant.
 
-// djb2, hex. Cheap, deterministic, non-reversible enough for a bucket key (not a security hash).
-function hashIp(ip) {
-  let h = 5381;
-  const s = String(ip || "0.0.0.0");
-  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0;
-  return h.toString(16);
+const enc = new TextEncoder();
+
+async function visitorKey(secret, namespace, ip) {
+  if (typeof secret !== "string" || secret.length < 24) return null;
+  const key = await crypto.subtle.importKey(
+    "raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+  );
+  const data = enc.encode(`fiscalidade-rate-v1\n${namespace}\n${String(ip || "unknown").slice(0, 64)}`);
+  const digest = new Uint8Array(await crypto.subtle.sign("HMAC", key, data));
+  return Array.from(digest.slice(0, 16), (value) => value.toString(16).padStart(2, "0")).join("");
 }
 
 // allow(env, { key, ip, limit, windowSec }) -> { ok, remaining }
@@ -25,10 +29,16 @@ function hashIp(ip) {
 // window: window length in seconds
 export async function allow(env, { key, ip, limit, windowSec }) {
   const kv = env && env.FB_RL;
-  if (!kv) return { ok: true, remaining: limit }; // no binding -> fail open
+  const secret = env && env.FB_RL_KEY;
+  if (!kv || !secret) return { ok: true, remaining: limit }; // missing deployment binding -> fail open
+  if (!/^[a-z0-9:_-]{1,64}$/i.test(String(key || "")) || !Number.isInteger(limit) || limit < 1 ||
+      !Number.isInteger(windowSec) || windowSec < 1)
+    return { ok: true, remaining: limit };
   const bucket = Math.floor(Date.now() / 1000 / windowSec);
-  const k = `rl:${key}:${hashIp(ip)}:${bucket}`;
   try {
+    const visitor = await visitorKey(secret, key, ip);
+    if (!visitor) return { ok: true, remaining: limit };
+    const k = `rl:${key}:${visitor}:${bucket}`;
     const cur = parseInt((await kv.get(k)) || "0", 10) || 0;
     if (cur >= limit) return { ok: false, remaining: 0 };
     // TTL a little past the window so a request at the edge of a bucket still expires cleanly.
