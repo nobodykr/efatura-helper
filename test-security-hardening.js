@@ -51,6 +51,9 @@ const limiterModule = "data:text/javascript;base64," + Buffer.from(limiterSource
 
   const headers = readFileSync("_headers", "utf8");
   assert(/default-src 'self'/.test(headers) && /object-src 'none'/.test(headers), "full CSP baseline missing");
+  const routes = JSON.parse(readFileSync("_routes.json", "utf8"));
+  assert(routes.include.length === 1 && routes.include[0] === "/*" && routes.exclude.length === 0,
+    "canonical host gate does not cover every Pages route");
   function textFiles(dir) {
     const out = [];
     for (const entry of readdirSync(dir, { withFileTypes: true })) {

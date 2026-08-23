@@ -1,28 +1,5 @@
 {
   "version": 1,
-  "include": [
-    "/api/*",
-    "/hp/*",
-    "/wp-login.php",
-    "/wp-admin/*",
-    "/wp-content/*",
-    "/wp-includes/*",
-    "/xmlrpc.php",
-    "/.env",
-    "/.env.*",
-    "/.git/*",
-    "/.aws/*",
-    "/.vscode/*",
-    "/.svn/*",
-    "/phpmyadmin/*",
-    "/pma/*",
-    "/administrator/*",
-    "/config.php",
-    "/backup.zip",
-    "/actuator/*",
-    "/cgi-bin/*",
-    "/solr/*",
-    "/vendor/*"
-  ],
+  "include": ["/*"],
   "exclude": []
 }
