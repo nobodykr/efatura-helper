@@ -63,7 +63,7 @@ So the order matters - commit tool.js BEFORE generating the manifest:
    go up: tool.js, *.html, all data *.json, metrics.js, fonts, functions/, _headers, _routes.json,
    robots/icons. Exact command:
    ```
-   rsync -a --delete \
+   rsync -a --delete --delete-excluded \
      --exclude extension --exclude dist --exclude node_modules --exclude .git \
      --exclude .wrangler --exclude .github --exclude .claude \
      --exclude .gitignore --exclude .gitleaks.toml \
