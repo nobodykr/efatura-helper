@@ -65,12 +65,13 @@ So the order matters - commit tool.js BEFORE generating the manifest:
    ```
    rsync -a --delete \
      --exclude extension --exclude dist --exclude node_modules --exclude .git \
-     --exclude .wrangler --exclude .github \
+     --exclude .wrangler --exclude .github --exclude .claude \
+     --exclude .gitignore --exclude .gitleaks.toml \
      --exclude '*.md' --exclude docs --exclude 'test-*.js' --exclude 'make-*.mjs' \
      --exclude run-tests.mjs --exclude check-functions.js --exclude escape-tool.js \
      --exclude package.json --exclude package-lock.json \
      . /tmp/fb-deploy/
-   npx wrangler pages deploy /tmp/fb-deploy --project-name=efatura-helper --branch=main
+   npx wrangler@4.125.0 pages deploy /tmp/fb-deploy --project-name=efatura-helper --branch=main
    ```
    NEVER drop a runtime data file from this list by adding a broad `*.json` exclude - versions.json,
    audit-manifest.json, audit-freshness.json, offers.json, cae_sectors.json, legal_sources.json,
