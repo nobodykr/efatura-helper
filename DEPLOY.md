@@ -67,7 +67,8 @@ So the order matters - commit tool.js BEFORE generating the manifest:
      --exclude extension --exclude dist --exclude node_modules --exclude .git \
      --exclude .wrangler --exclude .github --exclude .claude \
      --exclude .gitignore --exclude .gitleaks.toml \
-     --exclude '*.md' --exclude docs --exclude 'test-*.js' --exclude 'make-*.mjs' \
+     --exclude '*.md' --exclude docs --exclude outreach --exclude LICENSE \
+     --exclude 'test-*.js' --exclude 'make-*.mjs' --exclude 'build-*.mjs' \
      --exclude run-tests.mjs --exclude check-functions.js --exclude escape-tool.js \
      --exclude package.json --exclude package-lock.json \
      . /tmp/fb-deploy/
