@@ -3,40 +3,90 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>O meu perfil | Fiscalidade</title>
+  <title>A minha situação | Fiscalidade</title>
+  <link rel="stylesheet" href="fonts.css">
+  <link rel="stylesheet" href="brand.css">
   <link rel="stylesheet" href="profile.css">
 </head>
 <body>
-  <main>
-    <p class="eyebrow">FISCALIDADE</p>
-    <h1>O meu perfil neste navegador</h1>
-    <p class="lead">Guardado pela extensão no teu dispositivo. Não é enviado para a Fiscalidade.</p>
-    <section id="privacy" class="notice">
-      <h2>Privacidade e autorizações</h2>
-      <p>A extensão só lê uma página oficial depois de autorizares leituras locais e carregares no botão dessa página. As contribuições opcionais, onde estiverem disponíveis, exigem uma ação separada.</p>
-      <p>Não existe conta Fiscalidade, identificador derivado do teu NIF, analítica dentro das páginas oficiais ou código carregado remotamente.</p>
-    </section>
-    <section>
-      <div class="row"><h2>Fontes reunidas</h2><button type="button" id="refresh">Atualizar</button></div>
-      <div id="status" role="status"></div>
-      <div id="sources"></div>
-    </section>
-    <section>
-      <h2>Autorizações</h2>
-      <div id="consent"></div>
-      <button type="button" id="revoke">Revogar leituras locais</button>
-      <div class="choices">
-        <label><input type="checkbox" id="share-merchants"> <span><b>Correções de empresas</b><br>Quando alterares uma sugestão, contribuir apenas o NIF de pessoa coletiva e os dois setores. Sem fatura, valor, data ou comprador.</span></label>
-        <label><input type="checkbox" id="share-shapes"> <span><b>Diagnóstico de formatos</b><br>Na próxima leitura, contribuir apenas nomes de campos e tipos através de identificadores de endpoint fixos. Sem valores.</span></label>
-      </div>
-      <p class="small">Estas opções estão desligadas de origem e são independentes da autorização de leitura. O impacto agregado e a partilha do agregado têm botões próprios no analisador.</p>
-    </section>
-    <section class="danger">
-      <h2>Apagar</h2>
-      <p>Apaga o perfil, autorizações e preferências guardados pela extensão neste dispositivo.</p>
-      <button type="button" id="erase">Apagar todos os dados da extensão</button>
-    </section>
+  <details class="alertbar">
+    <summary><div class="wrap">
+      <p class="big"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3.5l6 2.4v4.6c0 3.6-2.4 6.4-6 7.6-3.6-1.2-6-4-6-7.6V5.9z"/><path d="M9.2 11.5l1.8 1.8 3.9-4"/></svg>A password das Finanças só se escreve em .gov.pt. Aqui, nunca.</p>
+      <span class="why">Porquê?</span>
+    </div></summary>
+    <div class="wrap ab-body">
+      <p class="small">Esta página pertence à extensão. Não pede credenciais e só resume dados que leste localmente nas páginas oficiais.</p>
+      <p class="small tagline"><span class="tag">Privado e local</span> O perfil e o resumo do mapa ficam neste navegador e expiram no fim do dia.</p>
+    </div>
+  </details>
+
+  <div class="mast">
+    <div class="wrap">
+      <a class="brand" href="invoices.html" aria-label="Fiscalidade, faturas">
+        <span class="markbox"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="fg" x1="6" y1="26" x2="28" y2="6" gradientUnits="userSpaceOnUse"><stop stop-color="#1E88FF"/><stop offset="1" stop-color="#00C6D7"/></linearGradient><mask id="fm"><rect fill="#fff" x="6" y="6.5" width="4" height="19"/><rect fill="#fff" x="6" y="6.5" width="15" height="4"/><rect fill="#fff" x="6" y="14" width="11" height="4"/><rect fill="#fff" x="22" y="6.5" width="3.5" height="13"/><rect fill="#fff" x="22" y="22.5" width="3.5" height="3"/><rect fill="#000" x="22" y="12.25" width="3.5" height="1.75" rx=".4"/><path fill="#000" d="M8 25.5 L23 6.5 H25.5 L10.5 25.5 Z" opacity=".18"/></mask></defs><rect width="32" height="32" fill="url(#fg)" mask="url(#fm)"/></svg></span>
+        <span class="nm">Fiscalida<span class="fde">de</span></span><span class="tag devtag" hidden>DEV</span>
+      </a>
+      <nav class="mainnav" aria-label="Extensão">
+        <a class="navlink" href="invoices.html"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg><span>Faturas</span></a>
+        <a class="navlink" href="profile.html" aria-current="page"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5.5 20c.7-4 2.8-6 6.5-6s5.8 2 6.5 6"/></svg><span>A minha situação</span></a>
+        <span class="navsep" aria-hidden="true"></span>
+        <button class="navlink" type="button" id="return-efatura-profile"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l-6 6 6 6M4 12h11a5 5 0 0 1 5 5v1"/></svg><span>Voltar ao e-Fatura</span></button>
+      </nav>
+    </div>
+  </div>
+
+  <header class="pagehead">
+    <div class="wrap">
+      <p class="eyebrow">Perfil local</p>
+      <h1>A minha situação neste navegador</h1>
+      <p class="sub">Guardada pela extensão no teu dispositivo. Não é enviada para a Fiscalidade.</p>
+    </div>
+  </header>
+
+  <main class="profile-main">
+    <div class="wrap profile-wrap">
+      <section id="privacy" class="notice">
+        <h2>Privacidade e autorizações</h2>
+        <p>A extensão só lê uma página oficial depois de autorizares leituras locais e carregares no botão dessa página. As contribuições opcionais, onde estiverem disponíveis, exigem uma ação separada.</p>
+        <p>Não existe conta Fiscalidade, identificador derivado do teu NIF, analítica dentro das páginas oficiais ou código carregado remotamente.</p>
+      </section>
+      <section>
+        <div class="row"><h2>Fontes reunidas</h2><button type="button" id="refresh" class="btn">Atualizar</button></div>
+        <div id="status" role="status"></div>
+        <div id="sources"></div>
+      </section>
+      <section id="crc">
+        <h2>Mapa de responsabilidades de crédito</h2>
+        <p>Abre a página oficial do Banco de Portugal, autentica-te como preferires e descarrega o mapa. Depois escolhe aqui o PDF. A extensão lê-o apenas neste dispositivo.</p>
+        <div class="crc-actions">
+          <button type="button" id="open-crc" class="btn">Abrir Banco de Portugal</button>
+          <label class="file-button" for="crc-file">Escolher mapa PDF</label>
+          <input type="file" id="crc-file" accept="application/pdf,.pdf">
+        </div>
+        <div id="crc-status" role="status" class="small"></div>
+        <div id="crc-summary"></div>
+        <p class="small">O PDF original não é guardado nem enviado. Só o resumo fica no perfil local até ao fim do dia.</p>
+      </section>
+      <section>
+        <h2>Autorizações</h2>
+        <div id="consent"></div>
+        <button type="button" id="revoke" class="btn">Revogar leituras locais</button>
+        <div class="choices">
+          <label><input type="checkbox" id="share-merchants"> <span><b>Correções de empresas</b><br>Quando alterares uma sugestão, contribuir apenas o NIF de pessoa coletiva e os dois setores. Sem fatura, valor, data ou comprador.</span></label>
+          <label><input type="checkbox" id="share-shapes"> <span><b>Diagnóstico de formatos</b><br>Na próxima leitura, contribuir apenas nomes de campos e tipos através de identificadores de endpoint fixos. Sem valores.</span></label>
+        </div>
+        <p class="small">Estas opções estão desligadas de origem e são independentes da autorização de leitura. O impacto agregado e a partilha do agregado têm botões próprios no analisador.</p>
+      </section>
+      <section class="danger">
+        <h2>Apagar</h2>
+        <p>Apaga o perfil, autorizações e preferências guardados pela extensão neste dispositivo.</p>
+        <button type="button" id="erase">Apagar todos os dados da extensão</button>
+      </section>
+    </div>
   </main>
+
+  <footer><div class="wrap">Os dados locais expiram no fim do dia. As faturas reais permanecem apenas na memória da sessão da extensão.</div></footer>
+  <script src="crc-parser.js"></script>
   <script src="profile.js"></script>
 </body>
 </html>

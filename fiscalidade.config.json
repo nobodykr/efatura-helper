@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "environment": "internal-preview",
+  "environment": "production",
   "publicOrigin": "https://fiscalida.de",
   "apiBase": "https://fiscalida.de/api/v1",
   "bookmarkletInstallationEnabled": false,
@@ -29,6 +29,7 @@
   "extension": {
     "profileStorage": "chrome.storage.local",
     "profileRetention": "end-of-local-day",
-    "remoteCodeAllowed": false
+    "remoteCodeAllowed": false,
+    "localDocumentSchemas": ["credit-responsibilities.v1"]
   }
 }

@@ -1,7 +1,7 @@
 # Chrome Web Store listing - Fatura Boa
 
-Internal draft only. Do not upload or resubmit until `https://fiscalida.de/privacidade` is directly
-available without authentication and the release checklist has passed.
+Production submission copy. `https://fiscalida.de/privacidade` must remain directly available
+without authentication and the release checklist must pass for every submitted package.
 
 ## Name
 

@@ -1,8 +1,8 @@
-# Release runbook (blocked during internal review)
+# Release runbook
 
-Do not deploy, change DNS, enable indexing, publish a bookmarklet, or submit/appeal the extension
-while `fiscalidade.config.json` says `internal-preview`. This document is a future release checklist,
-not authorization to publish.
+The Chrome extension uses the controlled `production` channel. Search indexing, sitemap and the
+bookmarklet remain disabled until separately approved; extension releases still require the exact
+checks and provenance sequence below.
 
 This is a static site: `index.html` + `tool.js`. Host it anywhere that serves files.
 

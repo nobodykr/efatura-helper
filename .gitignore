@@ -8,4 +8,6 @@ dist/
 extension/tool.js
 extension/*.png
 extension/offers.json
+extension/fonts.css
 extension/fonts/
+extension/vendor/

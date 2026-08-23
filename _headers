@@ -1,5 +1,5 @@
 # Defense-in-depth headers on every response. CORS is set only on the inert offers data needed by
-# the browser analyzer. The executable tool is packaged with the extension during internal review.
+# the browser analyzer. The executable tool is packaged with the production extension.
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Frame-Options: DENY

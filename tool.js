@@ -49,6 +49,7 @@
   var PUBLIC_ORIGIN = RUNTIME.publicOrigin || "https://fiscalida.de";
   var API_BASE = RUNTIME.apiBase || (PUBLIC_ORIGIN + "/api/v1");
   var EXTENSION_MODE = RUNTIME.extension === true;
+  var DASHBOARD = EXTENSION_MODE && !!window.__FB_DASHBOARD;
   var _extensionSettings = Object.assign({}, RUNTIME.extensionSettings || {});
   function saveExtensionSettings(patch) {
     if (!EXTENSION_MODE) return;
@@ -63,7 +64,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.08.22.3";
+  var FB_VERSION = "2026.08.23.3";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -459,6 +460,74 @@
     return d.value;
   }
   function name34(x) { return deent((x.nomeEmitente || "")).trim().slice(0, 34); }
+  function firstDashboardValue(row, names) {
+    for (var i = 0; i < names.length; i++) {
+      var value = row[names[i]];
+      if (value !== undefined && value !== null && value !== "") return value;
+    }
+    return "";
+  }
+  function dashboardScope(row) {
+    var value = firstDashboardValue(row, ["afectacaoAtividade", "afetacaoAtividade", "ambitoAtividade",
+      "tipoAquisicaoAtividade", "despesaAtividade"]);
+    if (value === "") return "";
+    if (value === true || value === 1 || value === "1") return "profissional";
+    if (value === false || value === 0 || value === "0") return "pessoal";
+    value = String(value).toLowerCase();
+    if (/parcial/.test(value)) return "parcial";
+    if (/profissional|atividade|actividade|empresarial|total/.test(value)) return "profissional";
+    if (/pessoal|particular/.test(value)) return "pessoal";
+    return "";
+  }
+  function finiteDashboardNumber(value) {
+    if (value === undefined || value === null || value === "" || typeof value === "boolean") return null;
+    var number = Number(value);
+    return isFinite(number) ? number : null;
+  }
+  function deliverInvoiceDashboard(rows, caemap, mapUnavailable) {
+    var issuerSectors = {}, needed = {};
+    (rows || []).forEach(function (row) { if (row.nifEmitente) needed[String(row.nifEmitente)] = true; });
+    Object.keys(needed).forEach(function (nif) {
+      if (!caemap || caemap[nif] === undefined) return;
+      var sectors = Object.prototype.toString.call(caemap[nif]) === "[object Array]" ? caemap[nif] : [caemap[nif]];
+      issuerSectors[String(nif)] = sectors.filter(function (sector) { return /^C[0-9]{2}$/.test(String(sector)); });
+    });
+    var snapshot = {
+      version: 1,
+      year: year,
+      fetchedAt: new Date().toISOString(),
+      complete: true,
+      mapUnavailable: !!mapUnavailable,
+      issuerSectors: issuerSectors,
+      invoices: (rows || []).map(function (row) {
+        return {
+          id: String(row.idDocumento == null ? "" : row.idDocumento),
+          date: String(row.dataEmissaoDocumento || ""),
+          issuerNif: String(row.nifEmitente || ""),
+          issuerName: deent(row.nomeEmitente || "").trim(),
+          totalCents: finiteDashboardNumber(row.valorTotal),
+          vatCents: finiteDashboardNumber(row.valorTotalIva),
+          taxBaseCents: finiteDashboardNumber(row.valorTotalBaseTributavel),
+          status: String(row.estadoBeneficio || ""),
+          sector: String(row.actividadeEmitente || ""),
+          scope: dashboardScope(row),
+          activity: String(firstDashboardValue(row, ["atividadeRealizacaoAquisicao",
+            "actividadeRealizacaoAquisicao", "atividadeAquisicao", "actividadeAquisicao",
+            "codigoAtividade"]) || "")
+        };
+      })
+    };
+    var body = document.getElementById("efh-body");
+    try {
+      chrome.runtime.sendMessage({ type: "fb-invoice-snapshot", snapshot: snapshot }, function (response) {
+        if (!body) return;
+        if (response && response.ok) body.innerHTML = '<div class="efh-ok"><b>Painel aberto.</b> Usa o cabe\u00e7alho do painel para voltar a esta p\u00e1gina.</div>';
+        else body.innerHTML = '<div class="efh-warn"><b>N\u00e3o foi poss\u00edvel abrir o painel.</b> Fecha e volta a tentar pela barra da extens\u00e3o.</div>';
+      });
+    } catch (e) {
+      if (body) body.innerHTML = '<div class="efh-warn"><b>N\u00e3o foi poss\u00edvel abrir o painel.</b> Fecha e volta a tentar pela barra da extens\u00e3o.</div>';
+    }
+  }
   /* The Resumo tab. Two numbers, and BOTH are actionable:
    *
    *   - pending faturas        -> classify them (resolverPendenciaAdquirente).
@@ -748,8 +817,9 @@
    * a per-NIF lookup would name your merchants outright, and downloading everything was the
    * previous way of avoiding that.
    *
-   * Fails visibly: a missing bucket must not be confused with an unknown merchant. Silently
-   * falling back to C99 can produce a plausible but wrong recommendation.
+   * A missing bucket must not be confused with an unknown merchant. The classifier may continue
+   * from the account's own history when the optional public map is unavailable, but that degraded
+   * state must stay visibly labelled so C99 cannot look like a fully-evidenced recommendation.
    */
   function bucketOf(nif) { return String(nif || "").slice(-3); }
 
@@ -1978,7 +2048,7 @@
   }
 
   function run(householdSnapshot) {
-    var caemap = {};
+    var caemap = {}, mapUnavailable = false;
     // The unpaginated endpoint caps at 300. Use the recursive, fail-visible reader for the current
     // year too; otherwise a busy account appears complete while silently missing older invoices.
     fetchSector(year, "").then(function (rows) { return { linhas: rows, totalElementos: rows.length }; })
@@ -1986,7 +2056,17 @@
         // Pull the map slices for THESE merchants before doing anything else. Everything below
         // reads caemap synchronously, so it has to be populated first.
         var all = ((d && d.linhas) || []).map(function (x) { return x.nifEmitente; });
-        return fetchMap(all).then(function (m) { caemap = m || {}; return d; });
+        return fetchMap(all).then(function (m) {
+          caemap = m || {};
+          return d;
+        }).catch(function () {
+          // The account read already succeeded. An optional public enrichment outage must not
+          // discard those rows or claim that the e-Fatura session expired. Continue from local
+          // classification history and make the degraded evidence state explicit in the widget.
+          caemap = {};
+          mapUnavailable = true;
+          return d;
+        });
       })
       .then(function (d) {
         var rows = (d && d.linhas) || [];
@@ -1998,6 +2078,10 @@
               (learned[x.nifEmitente][x.actividadeEmitente] || 0) + 1;
           }
         });
+        if (DASHBOARD) {
+          deliverInvoiceDashboard(rows, caemap, mapUnavailable);
+          return;
+        }
         // cascade(nif) = every evidenced candidate sector, ordered with the user's own history
         // first and the public CAE list after it. History is the strongest PROBABLE answer, but it
         // must not erase legitimate alternatives: that made the "optimised" column unable to use a
@@ -2116,13 +2200,13 @@
           var same = (pv === s);
           var badge = isR ? ' <span class="efh-ok" style="font-size:9px;padding:0 3px;border-radius:3px;color:var(--green)" title="Ja classificada - isto corrige o setor">corrigir</span>' : "";
           // Deep link straight to THIS invoice on e-Fatura (same-origin detail page the portal
-          // itself uses) - amending is: click, Alterar, Guardar. New tab so the plan survives.
+          // itself uses) - amending is: click, Alterar, Guardar. Browser Back returns to the plan.
           var link = "/detalheDocumentoAdquirente.action?idDocumento=" + encodeURIComponent(x.idDocumento) +
             "&dataEmissaoDocumento=" + encodeURIComponent(x.dataEmissaoDocumento);
           return '<tr><td style="text-align:center"><input type="checkbox" class="efh-ck" data-i="' + i + '" checked></td>' +
             '<td class="efh-num" style="font-size:11px">' + esc(x.dataEmissaoDocumento) + '</td>' +
-            '<td><a href="' + link + '" target="_blank" rel="noopener" class="efh-name" ' +
-              'title="Abrir esta fatura no e-Fatura (novo separador)" style="color:var(--pri)">' +
+            '<td><a href="' + link + '" class="efh-name" ' +
+              'title="Abrir esta fatura no e-Fatura" style="color:var(--pri)">' +
               esc(deent(x.nomeEmitente || "").trim()) + '</a>' + badge + '</td>' +
             '<td class="efh-nif" style="font-size:11px"><a href="#" class="efh-copynif" data-nif="' +
               esc(String(x.nifEmitente || "")) + '" title="Copiar NIF" style="color:var(--ink2);text-decoration:none;border-bottom:1px dotted var(--mute)">' +
@@ -2287,7 +2371,12 @@
         // so the referral/offers can update without re-pinning the core. Sits at the BOTTOM of the
         // Resumo tab, after the value. Only on the simple view.
         var sponsor = renderOffers(_offers);
-        document.getElementById("efh-body").innerHTML =
+        var mapNotice = mapUnavailable
+          ? '<div id="efh-map-warning" class="efh-warn" style="margin-bottom:10px">' +
+            '<b>Faturas lidas.</b> O mapa p\u00fablico de atividades est\u00e1 temporariamente indispon\u00edvel. ' +
+            'As sugest\u00f5es usam apenas o teu hist\u00f3rico e o setor geral; confirma cada escolha no portal.</div>'
+          : "";
+        document.getElementById("efh-body").innerHTML = mapNotice +
           /* Two renderings of ONE dataset, one fetch. Resumo answers "what do I do"; Detalhe keeps
            * everything that was here before. Tabs toggle display only - #efh-bars and #efh-opt must
            * stay IN the DOM, because renderBars() and the optimiser write into them by id and would
@@ -2469,7 +2558,7 @@
                 var lk = "/detalheDocumentoAdquirente.action?idDocumento=" + encodeURIComponent(m.x.idDocumento) +
                          "&dataEmissaoDocumento=" + encodeURIComponent(m.x.dataEmissaoDocumento);
                 return '<div>' + esc(m.x.dataEmissaoDocumento) + '  |  ' +
-                       '<a href="' + lk + '" target="_blank" rel="noopener" style="color:var(--pri)" ' +
+                       '<a href="' + lk + '" style="color:var(--pri)" ' +
                        'title="Abrir esta fatura no e-Fatura">' + esc(name34(m.x)) + '</a>' +
                        '  |  <span class="efh-nif">' + esc(String(m.x.nifEmitente || "")) + '</span>' +
                        '  |  \u20ac' + eur(m.x.valorTotal) + ' - <b>' + (m.x.actividadeEmitente || "C99") + ' -> ' + m.to + '</b></div>';

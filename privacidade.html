@@ -153,10 +153,12 @@
 
   <h2>O que a extensão lê</h2>
   <p>A extensão só atua nos endereços oficiais expressamente indicados na sua configuração. Depois de autorizares as leituras locais e carregares num botão de análise, pode ler, conforme a página oficial aberta: faturas e respetivo estado de benefício, rendas, atividade, declarações e liquidações de IRS, movimentos fiscais, património, recibos verdes e informação contributiva da Segurança Social. Não lê estes dados antes da autorização nem em segundo plano.</p>
+  <p>Também podes escolher manualmente um PDF do mapa de responsabilidades de crédito descarregado do Banco de Portugal. O PDF e o respetivo texto são processados localmente, não são guardados nem enviados; apenas o resumo validado, sem nome ou NIF, fica no perfil local até ao fim do dia. O montante de crédito potencial é apresentado separadamente da dívida efetiva.</p>
   <p>A extensão usa a sessão que já abriste nos portais oficiais. Não pede, lê, transmite nem guarda a password desses portais. Também não cria um login na Fiscalidade.</p>
 
   <h2>Onde ficam os dados</h2>
-  <p>O perfil criado pela extensão fica em <code>chrome.storage.local</code>, no teu dispositivo, e expira no fim do dia. A página de perfil da extensão permite apagá-lo imediatamente e revogar a autorização. A versão web, enquanto existir apenas para revisão interna, usa armazenamento local da origem <code>fiscalida.de</code> com a mesma expiração diária. Estes perfis não são enviados para o nosso servidor.</p>
+  <p>O perfil criado pela extensão fica em <code>chrome.storage.local</code>, no teu dispositivo, e expira no fim do dia. A página de perfil da extensão permite apagá-lo imediatamente e revogar a autorização. A versão web usa armazenamento local da origem <code>fiscalida.de</code> com a mesma expiração diária. Estes perfis não são enviados para o nosso servidor.</p>
+  <p>Quando abres o painel de faturas, a extensão guarda uma cópia normalizada das faturas em <code>chrome.storage.session</code>, apenas na memória da sessão da extensão. Essa cópia permite reabrir o painel sem enviar os dados a um servidor e é eliminada quando a extensão é recarregada, a sessão termina, revogas a autorização ou chega o fim do dia.</p>
 
   <h2>Pedidos necessários ao funcionamento</h2>
   <p>Quando inicias uma análise, o navegador faz pedidos à própria página oficial para obter os dados que essa sessão te permite consultar. Para sugerir setores, pede a <code>fiscalida.de</code> blocos do mapa público de atividades económicas e um ficheiro público de informação da ferramenta. Esses pedidos não incluem faturas, valores, datas, o teu NIF, NISS, nome ou identificador de conta.</p>
@@ -178,10 +180,10 @@
   <p>Pedidos dirigidos a endereços que não existem e que são usados de forma inequívoca por scanners automáticos podem originar um registo técnico com o endereço IP, caminho sem parâmetros, método, agente do navegador, país, rede e sinais de automatização fornecidos pela infraestrutura. O corpo, o referenciador, a cidade, cookies e dados fiscais não são recolhidos por este mecanismo. Durante a pré-visualização interna, estes registos são privados e usados apenas para detetar e bloquear abuso. A abertura ao público fica condicionada à ativação e verificação do limite de tamanho e da eliminação automática ao fim de 7 dias.</p>
 
   <h2>Sem venda, publicidade ou analítica na extensão</h2>
-  <p>Não vendemos dados, não apresentamos publicidade comportamental e não usamos os dados fiscais para crédito, seguros ou outros fins. A extensão não inclui analítica. Durante esta fase de revisão interna, as páginas públicas também estão sem analítica e marcadas para não serem indexadas.</p>
+  <p>Não vendemos dados, não apresentamos publicidade comportamental e não usamos os dados fiscais para crédito, seguros ou outros fins. A extensão não inclui analítica. As páginas públicas também estão sem analítica durante este lançamento controlado.</p>
 
   <h2>Permissões da extensão</h2>
-  <p>As permissões de anfitrião estão limitadas aos subdomínios oficiais concretos necessários às funções descritas acima. A permissão <code>storage</code> guarda consentimento e perfil local; <code>scripting</code> executa o analisador apenas depois do teu clique. Todo o código executável é incluído no pacote da extensão; não é descarregado código remoto.</p>
+  <p>As permissões de anfitrião estão limitadas aos subdomínios oficiais concretos necessários às funções descritas acima. A permissão <code>storage</code> guarda consentimento, perfil local e a cópia temporária do painel; <code>scripting</code> executa o analisador apenas depois do teu clique. Todo o código executável é incluído no pacote da extensão; não é descarregado código remoto.</p>
 
   <h2>Alterações</h2>
   <p>Qualquer alteração material a estas práticas exige atualizar esta página e a data abaixo antes de uma nova publicação da extensão.</p>

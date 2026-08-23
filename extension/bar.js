@@ -7,10 +7,15 @@
 (function () {
   "use strict";
 
-  if (document.getElementById("fb-ext-bar")) return;
+  var existing = document.getElementById("fb-ext-bar");
+  if (existing) {
+    existing.style.display = "flex";
+    var firstButton = existing.querySelector("button");
+    if (firstButton) firstButton.focus();
+    return;
+  }
 
   var CONSENT_KEY = "fiscalidade-consent-v1";
-  var HIDE_KEY = "fiscalidade-bar-hidden-v1";
   var PARTS = [
     { host: "faturas.portaldasfinancas.gov.pt", id: "efatura", label: "e-Fatura", kind: "efatura" },
     { host: "imoveis.portaldasfinancas.gov.pt", path: "/arrendamento", id: "rendas", label: "Rendas", kind: "profile" },
@@ -95,6 +100,9 @@
     main.addEventListener("click", function () { run(part.kind === "efatura" ? "classifier" : "profile"); });
     actions.appendChild(main);
     if (part.kind === "efatura") {
+      var invoices = button("Painel de faturas", false);
+      invoices.addEventListener("click", function () { run("dashboard"); });
+      actions.appendChild(invoices);
       var add = button("Adicionar ao perfil", false);
       add.addEventListener("click", function () { run("profile"); });
       actions.appendChild(add);
@@ -107,7 +115,6 @@
   var close = button("Fechar", false);
   close.setAttribute("aria-label", "Fechar a barra Fiscalidade");
   close.addEventListener("click", function () {
-    chrome.storage.local.set({ [HIDE_KEY]: true });
     bar.remove();
     document.documentElement.style.marginTop = "";
   });
@@ -118,8 +125,7 @@
   bar.appendChild(close);
 
   /* Reading extension-owned state is allowed before consent; no page-origin state is touched. */
-  chrome.storage.local.get([CONSENT_KEY, HIDE_KEY], function (stored) {
-    if (stored && stored[HIDE_KEY] === true) return;
+  chrome.storage.local.get(CONSENT_KEY, function (stored) {
     document.documentElement.appendChild(bar);
     document.documentElement.style.marginTop = "48px";
     var c = stored && stored[CONSENT_KEY];

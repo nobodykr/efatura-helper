@@ -1,11 +1,11 @@
 # Fiscalidade / Fatura Boa
 
-Fiscalidade is an internal-preview browser tool for reviewing Portuguese tax information in the
-user's existing official-site sessions. Fatura Boa is its e-Fatura classifier and Chrome extension.
+Fiscalidade is a browser tool for reviewing Portuguese tax information in the user's existing
+official-site sessions. Fatura Boa is its e-Fatura classifier and Chrome extension.
 
-Public distribution is deliberately disabled while the implementation, calculations, permissions
-and privacy disclosures are audited. There is no supported bookmarklet installation, public Chrome
-Web Store installation, sitemap, or indexed release at this stage.
+The Chrome extension is on the controlled production channel. Bookmarklet installation, sitemap
+and public search indexing remain disabled; the extension is distributed only through its reviewed
+Chrome Web Store item.
 
 ## Security and privacy boundary
 
@@ -64,10 +64,9 @@ The suite checks, among other contracts:
 
 ## Release boundary
 
-This work does not authorize deployment, DNS changes, search indexing, store submission, appeal,
-or account-data capture. Before any public release, follow the deferred checks in the internal plan,
-verify the direct privacy-policy URL is reachable without authentication, and rerun all suites from
-the exact packaged artifact.
+Every production update follows [`DEPLOY.md`](DEPLOY.md): commit the exact analyzer bytes, regenerate
+the public provenance manifests, verify the direct privacy-policy URL anonymously, run the complete
+browser suite and submit only the deterministic package produced by `extension/build.mjs`.
 
 ## License
 

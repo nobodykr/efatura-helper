@@ -1,6 +1,6 @@
-# Fiscalidade internal preview - https://fiscalida.de
-# Public discovery is intentionally disabled until the privacy, correctness and extension review
-# is complete. The response headers repeat this as X-Robots-Tag for defence in depth.
+# Fiscalidade controlled production launch - https://fiscalida.de
+# Public search discovery remains intentionally disabled during the initial extension review. The
+# response headers repeat this as X-Robots-Tag for defence in depth.
 
 User-agent: *
 Disallow: /
