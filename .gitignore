@@ -2,7 +2,7 @@ node_modules/
 *.log
 .DS_Store
 .wrangler/
-# per-machine Claude Code permission grants - not project configuration
+# per-machine permission grants, not project configuration
 .claude/settings.local.json
 dist/
 extension/tool.js
