@@ -5,7 +5,9 @@ official-site sessions. Fatura Boa is its e-Fatura classifier and Chrome extensi
 
 The site remains gated and no Chrome Web Store version is public. Sitemap and public search
 indexing remain disabled. Stable Store submission is a separate legal/review step; local testing
-uses a separately named DEV extension and a generated, self-contained DEV bookmarklet.
+uses a separately named DEV extension and a generated DEV bookmarklet. The bookmarklet restores
+the small July loader and pins today's `profile-contract.js` and `tool.js` with SRI; the asset-only
+`faturas.diogoandrade.com` host serves those two files and returns 404 for every other path.
 The bookmarklet installer exists only at the gated internal `/favorito-dev` route; there is no
 public bookmarklet surface.
 

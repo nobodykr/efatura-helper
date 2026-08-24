@@ -1,7 +1,7 @@
 # Release runbook
 
 The Chrome extension uses the controlled `production` channel. Search indexing, sitemap and any
-public bookmarklet remain disabled. The self-contained DEV bookmarklet is available only on the
+public bookmarklet remain disabled. The small July-style DEV loader is available only on the
 gated internal `/favorito-dev` route; extension releases still require the checks below.
 
 This is a static site: `index.html` + `tool.js`. Host it anywhere that serves files.
@@ -28,10 +28,14 @@ that ships fine and then throws at runtime for every user. Check the symbols exi
 
 ## Testing without publishing
 
-Run `npm run build:dev`. It produces a separately named unpacked extension/ZIP and a self-contained
-DEV bookmarklet installer under `dist/dev`, and the identical ignored runtime page
+Run `npm run build:dev`. It produces a separately named unpacked extension/ZIP and a small
+SRI-pinned DEV bookmarklet loader under `dist/dev`, and the identical ignored runtime page
 `favorito-dev.html` for the gated site. Neither artifact changes the Web Store draft. The favorite
 also works directly on a supported official page and retries the gated `/perfil` handshake.
+
+The loader host `faturas.diogoandrade.com` must remain attached to this Pages project. The root
+Function permits only `/tool.js` and `/profile-contract.js` on that hostname, and `_headers` gives
+only those paths cross-origin script headers. Do not put the full site or an API on that hostname.
 
 ## Related service
 

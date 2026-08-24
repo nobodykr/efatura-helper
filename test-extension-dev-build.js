@@ -4,7 +4,7 @@ const stable = JSON.parse(readFileSync("extension/manifest.json", "utf8"));
 const dev = JSON.parse(readFileSync("extension/manifest.dev.json", "utf8"));
 const build = readFileSync("extension/build.mjs", "utf8");
 assert(stable.name === "Fatura Boa" && stable.version === "0.8.0.1" && stable.version_name === "0.8.0", "stable production identity/version missing");
-assert(dev.name === "Fatura Boa DEV" && dev.version === "0.8.0.2" && dev.version_name === "0.8.0-dev.3", "DEV identity/version missing");
+assert(dev.name === "Fatura Boa DEV" && dev.version === "0.8.0.3" && dev.version_name === "0.8.0-dev.4", "DEV identity/version missing");
 assert(/--channel=dev/.test(build) && /dev\/\$\{releaseName\}/.test(build), "separate DEV build output missing");
 assert(["invoices.html","invoices.css","invoices.js"].every((file) => existsSync("extension/" + file) && build.includes("'" + file + "'")), "dashboard files missing from package allowlist");
 assert(["brand.css","fonts.css"].every((file) => build.includes("'" + file + "'")) && /fontFiles/.test(build), "canonical brand assets missing from package allowlist");

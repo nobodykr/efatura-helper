@@ -30,6 +30,18 @@ const limiterModule = "data:text/javascript;base64," + Buffer.from(limiterSource
     next() { throw new Error("non-canonical host reached the static site"); }
   });
   assert(alternate.status === 404, "non-canonical Pages hostname was served");
+  for (const asset of ["/tool.js", "/profile-contract.js"]) {
+    const response = await trap.onRequest({
+      request: new Request("https://faturas.diogoandrade.com" + asset), env: {},
+      next() { return new Response("asset", { status:200 }); }
+    });
+    assert(response.status === 200, `${asset} is not reachable on the July loader hostname`);
+  }
+  const assetHostRoot = await trap.onRequest({
+    request: new Request("https://faturas.diogoandrade.com/"), env: {},
+    next() { throw new Error("asset hostname exposed the full static site"); }
+  });
+  assert(assetHostRoot.status === 404, "asset hostname exposed a non-browser-asset route");
   let forwarded;
   const oldFetch = global.fetch;
   global.fetch = async (_url, init) => { forwarded = JSON.parse(init.body); return new Response(null, { status: 204 }); };

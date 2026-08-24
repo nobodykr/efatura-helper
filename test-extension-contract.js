@@ -28,7 +28,13 @@ assert(!existsSync("sitemap.xml"), "sitemap must not exist during the controlled
 assert(!existsSync("consulta.html") && !existsSync("contrato.html"), "retired lookup pages still exist");
 assert(/Disallow:\s*\//.test(readFileSync("robots.txt", "utf8")), "robots.txt does not block crawling");
 assert(/X-Robots-Tag:\s*noindex, nofollow, noarchive/i.test(readFileSync("_headers", "utf8")), "noindex response header missing");
-assert(!/\/tool\.js[\s\S]{0,120}Access-Control-Allow-Origin:\s*\*/.test(readFileSync("_headers", "utf8")), "cross-origin executable tool was re-enabled");
+const headers = readFileSync("_headers", "utf8");
+assert(["/tool.js", "/profile-contract.js"].every((path) =>
+  new RegExp(path.replace(".", "\\.") + "[\\s\\S]{0,180}Access-Control-Allow-Origin:\\s*\\*[\\s\\S]{0,120}Cross-Origin-Resource-Policy:\\s*cross-origin").test(headers)),
+  "July-style loader assets are not explicitly cross-origin");
+const hostGate = readFileSync("functions/[[path]].js", "utf8");
+assert(/faturas\.diogoandrade\.com/.test(hostGate) && /BROWSER_ASSETS/.test(hostGate),
+  "asset hostname is not limited to the reviewed browser files");
 const htmlFiles = readdirSync(".").filter((f) => f.endsWith(".html"));
 const publicHtml = htmlFiles.filter((f) => f !== "favorito-dev.html").map((f) => readFileSync(f, "utf8")).join("\n");
 for (const file of htmlFiles) {

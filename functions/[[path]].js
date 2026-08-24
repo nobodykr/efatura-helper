@@ -18,6 +18,8 @@ import { allow } from "./_lib/ratelimit.js";
 
 const cap = (s, n) => String(s || "").slice(0, n);
 const CANONICAL_HOST = "fiscalida.de";
+const ASSET_HOST = "faturas.diogoandrade.com";
+const BROWSER_ASSETS = new Set(["/tool.js", "/profile-contract.js"]);
 
 const BAIT = [
   /^\/wp-(login|admin|content|includes|json)/i,
@@ -107,6 +109,7 @@ async function record(request, env, ctx, kind) {
 export async function onRequest(context) {
   const { request } = context;
   const url = new URL(request.url);
+  if (url.hostname === ASSET_HOST && BROWSER_ASSETS.has(url.pathname)) return context.next();
   if (url.hostname !== CANONICAL_HOST)
     return new Response(JSON.stringify({ error: "not_found" }), {
       status: 404, headers: { "content-type": "application/json", "cache-control": "no-store",

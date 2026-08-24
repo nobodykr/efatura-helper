@@ -8,7 +8,7 @@ import { readdirSync } from "fs";
 import { spawnSync } from "child_process";
 
 const PERFIL = new Set(["test-deadlines.js", "test-obligations.js", "test-render.js"]); // assert on perfil.html
-const BROWSER = new Set(["test-network.js"]); // needs Playwright/chromium
+const BROWSER = new Set(["test-bookmarklet-browser.js", "test-network.js"]); // needs Playwright/chromium
 
 const tests = readdirSync(".").filter((f) => /^test-.*\.js$/.test(f)).sort();
 const checks = tests.map((t) => ({
