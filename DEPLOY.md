@@ -1,15 +1,15 @@
 # Release runbook
 
-The Chrome extension uses the controlled `production` channel. Search indexing, sitemap and the
-bookmarklet remain disabled until separately approved; extension releases still require the exact
-checks and provenance sequence below.
+The Chrome extension uses the controlled `production` channel. Search indexing, sitemap and any
+public bookmarklet remain disabled. The self-contained DEV bookmarklet is available only on the
+gated internal `/favorito-dev` route; extension releases still require the checks below.
 
 This is a static site: `index.html` + `tool.js`. Host it anywhere that serves files.
 
-**Runtime dependency:** perfil/index aggregate counters and `tool.js` call the reviewed API at
-`https://fiscalida.de/api/v1`, forwarded to the backend selected in server-side configuration.
-If clicks stop fetching, check that host first - see `/mnt/data/apps/cae-db/CONSUMERS.md`
-(`GET /health` there reports fd budget). 2026-08-21 outage was exactly this.
+**Runtime dependencies:** read-only merchant-map routes use the existing configured API. The new
+`POST /api/v1/intake` route must use `FISCALIDADE_MARKET_ORIGIN` and its own optional Access
+credentials; it deliberately never falls back to `FISCALIDADE_API_ORIGIN` or cae-db. It is disabled
+and optional for local profile completion until the isolated service and cleanup are verified.
 
 ## Before you deploy tool.js
 
@@ -28,9 +28,10 @@ that ships fine and then throws at runtime for every user. Check the symbols exi
 
 ## Testing without publishing
 
-Open e-Fatura, log in, open the browser console (F12), paste the entire contents of `tool.js`,
-press enter. This exercises the same analyzer code without publishing an installation surface.
-real invoice data exercises paths nothing else will.
+Run `npm run build:dev`. It produces a separately named unpacked extension/ZIP and a self-contained
+DEV bookmarklet installer under `dist/dev`, and the identical ignored runtime page
+`favorito-dev.html` for the gated site. Neither artifact changes the Web Store draft. The favorite
+also works directly on a supported official page and retries the gated `/perfil` handshake.
 
 ## Related service
 
@@ -45,6 +46,9 @@ publishing them mostly just invites people to hammer SICAE.
 The browser receives only the last-three-digit map buckets needed for the current analysis. A
 failed bucket aborts the recommendation instead of silently turning every missing merchant into
 general expenses.
+
+The write-only market intake is implemented in `market/` with a dedicated SQLite file and pepper.
+It must be deployed separately, with access logs disabled and no cae-db volume or credential.
 
 ## Provably-fair releases
 Provenance is a `source_commit` (the immutable Git commit that last changed tool.js), NOT a release tag.
@@ -82,3 +86,7 @@ So the order matters - commit tool.js BEFORE generating the manifest:
 The commit hash in versions.json is the public commitment: content-addressed, so it can't be moved or
 point at different code the way a tag can. A `git tag vYYYY.MM.DD` is still fine as a human-readable
 marker, but it is no longer the provenance anchor.
+
+Before any public release, complete legal review of the mandatory market exchange, verify the
+privacy page can meet Store requirements without ungating unrelated product pages, run the full
+browser suite with zero skips, and submit a newly reviewed stable ZIP. A DEV ZIP is never uploaded.

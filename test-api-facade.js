@@ -32,6 +32,10 @@ const source = limiter + "\n" + facade;
     "non-HTTPS upstream accepted");
   const large = JSON.stringify({ value: "x".repeat(70 * 1024) });
   assert((await call("contributions/impact", "POST", large)).status === 413, "body cap not enforced");
+  assert((await call("intake", "POST", large, { FISCALIDADE_API_ORIGIN: "https://cae.invalid" })).status === 503,
+    "market intake fell back to the CAE API origin");
+  const tooLargeIntake = JSON.stringify({ value: "x".repeat(1024 * 1024 + 1) });
+  assert((await call("intake", "POST", tooLargeIntake)).status === 413, "market intake body cap not enforced");
 
   let forwarded;
   const originalFetch = global.fetch;
@@ -57,6 +61,14 @@ const source = limiter + "\n" + facade;
   assert(options.headers.get("access-control-allow-methods") === "POST, OPTIONS", "route-specific CORS methods missing");
   await call("map/rules", "GET", undefined, env);
   assert(forwarded.url === "https://internal-api.invalid/api/v1/map/rules", "unreviewed query leaked upstream");
+  const marketEnv = {
+    FISCALIDADE_API_ORIGIN: "https://internal-api.invalid",
+    FISCALIDADE_MARKET_ORIGIN: "https://market-api.invalid/private",
+    FISCALIDADE_MARKET_CLIENT_ID: "market-id", FISCALIDADE_MARKET_CLIENT_SECRET: "market-secret"
+  };
+  await call("intake", "POST", "{}", marketEnv);
+  assert(forwarded.url === "https://market-api.invalid/api/v1/intake", "intake did not use its isolated origin");
+  assert(forwarded.init.headers.get("cf-access-client-id") === "market-id", "dedicated market credential not applied");
   global.fetch = originalFetch;
   console.log("  API facade allowlist and header boundary passed");
 })().catch((error) => { console.error(error); process.exit(1); });

@@ -18,6 +18,9 @@ assert(manifest.background.service_worker === "background.js", "unexpected backg
 assert(runtime.environment === "production", "runtime is not production");
 assert(runtime.publicOrigin === "https://fiscalida.de", "canonical origin mismatch");
 assert(runtime.bookmarkletInstallationEnabled === false, "bookmarklet installation re-enabled");
+assert(runtime.adminBookmarkletInstallationEnabled === true, "gated admin bookmarklet is not enabled");
+assert(runtime.marketIntake.enabled === false && runtime.marketIntake.requiredForLocalCompletion === false,
+  "market intake can still gate local completion");
 assert(runtime.publicIndexingEnabled === false, "public indexing re-enabled");
 assert(runtime.extension.profileRetention === "end-of-local-day", "runtime retention policy diverges from the implemented expiry");
 assert(JSON.stringify(runtime.extension.localDocumentSchemas) === JSON.stringify(["credit-responsibilities.v1"]), "local CRC document contract missing");
@@ -26,14 +29,19 @@ assert(!existsSync("consulta.html") && !existsSync("contrato.html"), "retired lo
 assert(/Disallow:\s*\//.test(readFileSync("robots.txt", "utf8")), "robots.txt does not block crawling");
 assert(/X-Robots-Tag:\s*noindex, nofollow, noarchive/i.test(readFileSync("_headers", "utf8")), "noindex response header missing");
 assert(!/\/tool\.js[\s\S]{0,120}Access-Control-Allow-Origin:\s*\*/.test(readFileSync("_headers", "utf8")), "cross-origin executable tool was re-enabled");
-const html = readdirSync(".").filter((f) => f.endsWith(".html")).map((f) => readFileSync(f, "utf8")).join("\n");
-for (const file of readdirSync(".").filter((f) => f.endsWith(".html"))) {
+const htmlFiles = readdirSync(".").filter((f) => f.endsWith(".html"));
+const publicHtml = htmlFiles.filter((f) => f !== "favorito-dev.html").map((f) => readFileSync(f, "utf8")).join("\n");
+for (const file of htmlFiles) {
   const source = readFileSync(file, "utf8");
   assert(/<meta name="robots" content="noindex,nofollow,noarchive">/.test(source), `${file} is missing the controlled-launch robots meta`);
 }
-assert(!/href\s*=\s*["']javascript:/i.test(html), "active javascript bookmarklet link found");
-assert(!/href\s*=\s*["']\/(?:consulta|contrato)(?:[?"'#])/i.test(html), "link to retired lookup surface found");
-assert(!/analytics\.d1060\.com|fonts\.googleapis\.com|fonts\.gstatic\.com|challenges\.cloudflare\.com/.test(html), "retired analytics/font/widget host remains active");
+assert(!/href\s*=\s*["']javascript:/i.test(publicHtml), "bookmarklet escaped the gated admin installer");
+assert(!/href\s*=\s*["']\/(?:consulta|contrato)(?:[?"'#])/i.test(publicHtml), "link to retired lookup surface found");
+assert(!/analytics\.d1060\.com|fonts\.googleapis\.com|fonts\.gstatic\.com|challenges\.cloudflare\.com/.test(publicHtml), "retired analytics/font/widget host remains active");
+assert(existsSync("favorito-dev.html"), "gated bookmarklet installer was not generated");
+const bookmarklet = readFileSync("favorito-dev.html", "utf8");
+assert(/href="javascript:/.test(bookmarklet) && /SHA-256/.test(bookmarklet) && /href="\/perfil"/.test(bookmarklet),
+  "gated bookmarklet installer is incomplete");
 const privacy = readFileSync("privacidade.html", "utf8");
 assert(/https:\/\/fiscalida\.de\/privacidade/.test(privacy), "direct canonical privacy URL missing");
 assert(/400 dias/.test(privacy) && /chrome\.storage\.local/.test(privacy), "retention/storage disclosure incomplete");

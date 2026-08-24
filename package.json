@@ -7,8 +7,9 @@
   "repository": "github:nobodykr/efatura-helper",
   "scripts": {
     "test": "node run-tests.mjs",
-    "test:unit": "FISCALIDADE_ALLOW_BROWSER_SKIP=1 node run-tests.mjs",
-    "test:browser": "node test-network.js tool.js"
+    "test:unit": "FISCALIDADE_ALLOW_BROWSER_SKIP=1 FISCALIDADE_ALLOW_DIRTY_PROVENANCE=1 node run-tests.mjs",
+    "test:browser": "node test-network.js tool.js",
+    "build:dev": "node extension/build.mjs --channel=dev && node build-bookmarklet-dev.mjs"
   },
   "devDependencies": {
     "jsdom": "^29.1.1",

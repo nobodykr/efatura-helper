@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Fatura Boa",
-  "version": "0.7.0.2",
-  "version_name": "0.7.0",
+  "version": "0.8.0.1",
+  "version_name": "0.8.0",
   "description": "Revê faturas e reúne a tua situação fiscal a partir das páginas oficiais, localmente e só quando pedires.",
   "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" },
   "permissions": ["scripting", "storage"],
@@ -23,7 +23,7 @@
         "https://irs.portaldasfinancas.gov.pt/*",
         "https://www.seg-social.pt/*"
       ],
-      "js": ["config.js", "bar.js"],
+      "js": ["config.js", "profile-contract.js", "bar.js"],
       "run_at": "document_idle"
     }
   ],

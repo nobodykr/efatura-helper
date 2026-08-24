@@ -5,6 +5,7 @@ const background = fs.readFileSync("extension/background.js", "utf8");
 const profile = fs.readFileSync("perfil.html", "utf8");
 const extensionProfile = fs.readFileSync("extension/profile.js", "utf8");
 const home = fs.readFileSync("index.html", "utf8");
+const contract = fs.readFileSync("profile-contract.js", "utf8");
 
 let fails = 0;
 function check(ok, message) {
@@ -15,9 +16,9 @@ function check(ok, message) {
 const splitIds = ["atividade_integrada", "declaracoes", "deducoes", "despesas_atividade"];
 for (const id of splitIds) {
   check(new RegExp(`id:\\s*"${id}"`).test(tool), `tool exposes separate ${id} partition`);
-  check(background.includes(`"${id}"`), `background accepts ${id} handoff`);
-  check(new RegExp(`id:\\s*"${id}"`).test(profile), `web profile accepts ${id} handoff`);
-  check(extensionProfile.includes(`${id}:`), `extension profile labels ${id}`);
+  check(new RegExp(`id:\\s*"${id}"`).test(contract), `shared contract accepts ${id} handoff`);
+  check(/profile-contract\.js/.test(background) && /profile-contract\.js/.test(profile), `extension and web load the ${id} contract`);
+  check(extensionProfile.includes(`${id}:`), `legacy extension profile still labels ${id}`);
 }
 
 const activityBlock = (tool.match(/function readAtividade\(\)[\s\S]*?\n  }\n\n  \/\* "Atividade Exercida"/) || [""])[0];

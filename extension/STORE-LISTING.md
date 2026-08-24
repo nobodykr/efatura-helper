@@ -25,7 +25,7 @@ Fatura Boa ajuda a rever o e-Fatura e a reunir informação fiscal dispersa por 
 diretamente no navegador.
 
 A extensão permanece inativa até autorizares leituras locais. Mesmo depois da autorização, só lê a
-página quando carregas em "Analisar faturas" ou "Ler para o perfil". Usa a sessão que já abriste no
+página quando carregas em "Ler e voltar à Fiscalidade". Usa a sessão que já abriste no
 Portal das Finanças ou na Segurança Social; nunca pede nem vê a tua password.
 
 Pode:
@@ -36,10 +36,12 @@ Pode:
   verdes e situação contributiva;
 - abrir a página oficial correspondente para confirmares ou corrigires a informação.
 
-O perfil fica no armazenamento local da extensão e expira no fim do dia. Não existe conta
-Fiscalidade. As contribuições para melhorar a ferramenta são opcionais, separadas e desligadas de
-origem. A classificação final é sempre uma decisão do utilizador e deve ser confirmada no portal
-oficial.
+O perfil fiscal completo fica no armazenamento local de fiscalida.de e expira no fim do dia. Não
+existe conta Fiscalidade. Para usar o perfil gratuito é necessário aceitar uma contribuição
+minimizada: estruturas sem valores e, no e-Fatura, totais anuais por pessoa coletiva (NIF da
+empresa, ano, número de faturas, totais em euros inteiros e contagens por setor). Não inclui a
+identidade do utilizador nem faturas individuais. A classificação final é sempre uma decisão do
+utilizador e deve ser confirmada no portal oficial.
 
 Código e verificação: https://fiscalida.de/verificar
 
@@ -50,8 +52,8 @@ abre, processando os dados localmente e apenas após autorização e ação expl
 
 ## Permission justifications (required)
 
-- `storage`: guarda no dispositivo a autorização, a preferência de visibilidade da barra e o perfil
-  temporário. O perfil expira no fim do dia e pode ser apagado na página da extensão.
+- `storage`: guarda no dispositivo a autorização e as preferências da extensão. O perfil fiscal
+  completo fica no armazenamento local de fiscalida.de e expira no fim do dia.
 - `scripting`: injeta o analisador incluído no pacote apenas depois de o utilizador carregar num
   botão de análise. Não existe código remoto.
 - `https://faturas.portaldasfinancas.gov.pt/*`: leitura e revisão do e-Fatura.
@@ -68,11 +70,12 @@ Não é pedida uma permissão wildcard para todos os subdomínios ou para todos 
 - Privacy policy URL: https://fiscalida.de/privacidade
 - A extensão lê dados fiscais e financeiros da página oficial apenas para fornecer a função pedida
   pelo utilizador.
-- Esses dados são processados localmente e o perfil permanece no dispositivo.
-- Existem transmissões opcionais e consentidas de dados minimizados: correções relativas a NIFs de
-  pessoas coletivas, estruturas sem valores, impacto imediatamente agregado e totais de uma sala de
-  agregado sob chave aleatória. Cada opção está desligada de origem e a política explica campos,
-  finalidade, retenção e eliminação.
+- Esses dados são processados localmente e o perfil completo permanece no dispositivo.
+- Depois de aceitação explícita, o perfil gratuito transmite obrigatoriamente estruturas sem
+  valores e agregados anuais por pessoa coletiva no e-Fatura. A política enumera os campos,
+  finalidade, deduplicação, retenção e limiar mínimo de divulgação.
+- Outras transmissões opcionais (correções de atividade, impacto agregado e sala de agregado)
+  mantêm escolhas próprias e desligadas de origem.
 - Não declarar "does not collect" em categorias incompatíveis com estas opções. Responder ao
   questionário da loja de acordo com o comportamento efetivamente incluído no pacote submetido.
 

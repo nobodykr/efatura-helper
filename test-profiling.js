@@ -7,6 +7,7 @@
 //   node test-profiling.js tool.js
 const { JSDOM } = require("jsdom"); const fs = require("fs");
 const SRC = fs.readFileSync(process.argv[2], "utf8");
+const CONTRACT = require("./profile-contract.js");
 let failures = 0;
 function ok(name, cond) { console.log((cond ? "  PASS " : "  FAIL ") + name); if (!cond) failures++; }
 
@@ -14,17 +15,37 @@ function mkEnv(host, flag, fetchImpl, path) {
   const dom = new JSDOM(`<!doctype html><body></body>`, { url: "https://" + host + (path || "/x") });
   const { window } = dom;
   global.window = window; global.document = window.document;
-  // Replace `location` with a plain capturing stub: tool.js reads location.host + location.pathname
-  // (host+path picks the partition when several share a host) and, on a successful read, sets
-  // location.href to the /perfil handoff URL. jsdom's real location would navigate; capture instead.
-  window.__nav = null;
-  const loc = { host: host, hash: "", pathname: path || "/x", assign(v) { window.__nav = v; } };
-  Object.defineProperty(loc, "href", { get() { return "https://" + host + "/x"; }, set(v) { window.__nav = v; } });
+  // tool.js reads the official host/path and hands the result to a named /perfil window. Model the
+  // v3 ready/envelope/accepted channel without exposing the payload to a URL or a server.
+  const loc = { host: host, hash: "", pathname: path || "/x" };
+  Object.defineProperty(loc, "href", { get() { return "https://" + host + "/x"; } });
   global.location = loc;
   global.localStorage = { _d: {}, getItem(k) { return this._d[k] ?? null; }, setItem(k, v) { this._d[k] = String(v); }, removeItem(k) { delete this._d[k]; } };
   window.localStorage = global.localStorage;
   global.alert = () => {}; global.navigator = window.navigator; global.DOMParser = window.DOMParser;
   global.fetch = fetchImpl;
+  global.FISCALIDADE_PROFILE_CONTRACT = CONTRACT;
+  window.FISCALIDADE_PROFILE_CONTRACT = CONTRACT;
+  window.__handoffs = [];
+  const profileDom = new JSDOM("", { url:"https://fiscalida.de/perfil" });
+  const profileTarget = profileDom.window;
+  profileTarget.postMessage = function (message) {
+    if (message.type === CONTRACT.helloType) setTimeout(function () {
+      window.dispatchEvent(new window.MessageEvent("message", { origin:"https://fiscalida.de",
+        source:profileTarget, data:{ type:CONTRACT.readyType, partition:message.partition,
+          requestId:message.requestId, nonce:"f".repeat(32) } }));
+    }, 0);
+    if (message.type === CONTRACT.messageType) {
+      window.__handoffs.push(message.envelope);
+      setTimeout(function () {
+        window.dispatchEvent(new window.MessageEvent("message", { origin:"https://fiscalida.de",
+          source:profileTarget, data:{ type:CONTRACT.acceptedType, partition:message.partition,
+            requestId:message.requestId, intake:"disabled" } }));
+      }, 0);
+    }
+  };
+  window.open = function () { return profileTarget; };
+  window.__profileDom = profileDom;
   if (flag) window.__FB_PROFILE = 1; else { try { delete window.__FB_PROFILE; } catch (e) {} }
   return window;
 }
@@ -80,17 +101,17 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   ok("flag: consent gate shown", !!w.document.getElementById("fb-prof-go"));
   ok("flag: nothing stored before accept", global.localStorage.getItem("fb-profile-v1") == null);
 
-  // 3. accept -> AUTO-reads e-Fatura -> stored -> auto-navigates to the /perfil handoff
+  // 3. accept -> AUTO-reads e-Fatura -> stored -> nonce-bound /perfil handoff
   w.document.getElementById("fb-prof-go").click(); await wait();
   let store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("e-Fatura auto-read + stored as done", store.partitions && store.partitions.efatura && store.partitions.efatura.status === "done");
   ok("e-Fatura counts parsed (2 pending of 3)", store.partitions.efatura.data.porClassificar === 2 && store.partitions.efatura.data.totalFaturas === 3);
-  ok("auto-navigates to /perfil handoff (efatura)", /fiscalida\.de\/perfil#p=efatura&d=/.test(w.__nav || ""));
+  ok("e-Fatura uses the v3 browser handoff", w.__handoffs.some(h => h.partition === "efatura" && h.contract === 3));
 
   // 4. On Imoveis (a DIFFERENT origin) the browser gives fresh localStorage - modelled by mkEnv's
   //    new _d each call, which is exactly the same-origin policy. So: consent asked again, then the
   //    rendas read populates THIS origin's store and hands off. Cross-origin assembly is a known
-  //    limit that the /perfil fragment handoff exists to bridge.
+  //    limit that the canonical /perfil browser handoff bridges.
   w = mkEnv("imoveis.portaldasfinancas.gov.pt", true, fetchOK, "/arrendamento/consultarContratos/locador");
   eval(SRC); await wait();
   ok("cross-origin: consent asked again on Imoveis (separate localStorage)", !!w.document.getElementById("fb-prof-go"));
@@ -99,16 +120,12 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   ok("rendas auto-read + stored as done", store.partitions.rendas && store.partitions.rendas.status === "done");
   ok("rendas: 1 active contract", store.partitions.rendas.data.activos === 1);
 
-  // 4b. handoff: the auto-navigation URL points at /perfil with the data in the URL FRAGMENT
-  //     (never sent to a server), so /perfil can merge it. Payload carries no nif/name.
+  // 4b. The full local result moves only through postMessage, never in a URL.
   {
-    const hand = w.__nav || "";
-    ok("auto-navigates to /perfil handoff (rendas, fragment)", /fiscalida\.de\/perfil#p=rendas&d=/.test(hand));
-    if (hand) {
-      const d = JSON.parse(Buffer.from(decodeURIComponent(hand.split("&d=")[1]), "base64").toString("utf8"));
-      ok("handoff payload carries the partition summary", d.activos === 1 && d.contratos === 1);
-      ok("handoff payload has NO nif/name fields", !JSON.stringify(d).match(/nomeLocador|nomeLocatario|nif/i));
-    }
+    const hand = w.__handoffs.find(h => h.partition === "rendas");
+    ok("rendas uses the v3 browser handoff", !!hand);
+    ok("handoff payload carries the partition summary", hand && hand.data.activos === 1 && hand.data.contratos === 1);
+    ok("handoff payload has NO nif/name values", hand && !JSON.stringify(hand.data).match(/nomeLocador|nomeLocatario|nif/i));
   }
 
   // 4c. situacao fiscal partition (sitfiscal /geral): reads dividas/coimas/agenda, hands off
@@ -118,7 +135,7 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("situacao picked on /geral (not irs)", store.partitions.situacao && store.partitions.situacao.status === "done" && !store.partitions.irs);
   ok("situacao: 0 dividas, 1 agenda item", store.partitions.situacao.data.dividas.n === 0 && store.partitions.situacao.data.agenda.n === 1);
-  ok("situacao hands off to /perfil", /perfil#p=situacao&d=/.test(w.__nav || ""));
+  ok("situacao hands off to /perfil", w.__handoffs.some(h => h.partition === "situacao"));
 
   // 4c-2. IRS partition: SAME host as situacao (sitfiscal) but /inffin path -> picks irs
   w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/inffin/entrada.html");
@@ -136,8 +153,8 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   ok("recibos auto-read + stored", store.partitions.recibos && store.partitions.recibos.status === "done");
   ok("recibos: 2 recibos verdes", store.partitions.recibos.data.recibosVerdes === 2);
   {
-    const d = JSON.parse(Buffer.from(decodeURIComponent((w.__nav || "").split("&d=")[1] || ""), "base64").toString("utf8") || "{}");
-    ok("recibos hands off with Cat B derivable", store.partitions.recibos.data.recibosVerdes === 2);
+    const d = w.__handoffs.find(h => h.partition === "recibos");
+    ok("recibos hands off with Cat B derivable", d && d.data.recibosVerdes === 2);
   }
 
   // 4c-4. Seguranca Social (seg-social.pt - DIFFERENT domain). NISS is used to build the URL but
@@ -156,7 +173,7 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   ok("SS: NISS/name values NOT stored", !/11111111111|SECRET NAME/.test(ssJson));
   ok("SS: NISS redacted in endpoint path", !/posicao-atual\/\d/.test(ssJson) && /posicao-atual\/:id/.test(ssJson));
   ok("SS: shape has only field names + types", !/"(?:niss|nome)"\s*:\s*"(?!str"|number"|boolean"|null")/.test(ssJson));
-  ok("SS handoff carries NO NISS/name", !/11111111111|SECRET NAME|niss/i.test(w.__nav || ""));
+  ok("SS handoff carries NO NISS/name values", !/11111111111|SECRET NAME/.test(JSON.stringify(w.__handoffs)));
 
   // 4c-5. Declaration history is not current cadastro. A past cessation plus a newer accepted
   //       restart may be scheduled for the future, so the list must not claim open OR closed.
@@ -213,7 +230,7 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("patrimonio picked (not rendas) on /matrizesinter path", store.partitions.patrimonio && store.partitions.patrimonio.status === "done" && !store.partitions.rendas);
   ok("patrimonio: 1 imovel parsed", store.partitions.patrimonio.data.imoveis === 1 && store.partitions.patrimonio.data.lista[0].artigo === "1234");
-  ok("patrimonio hands off to /perfil", /perfil#p=patrimonio&d=/.test(w.__nav || ""));
+  ok("patrimonio hands off to /perfil", w.__handoffs.some(h => h.partition === "patrimonio"));
 
   // 5. rule 3: HTML 200 on the contracts endpoint => pending, not stored as done
   const fetchHtml = (u) => {
@@ -228,7 +245,7 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("rule 3: HTML-200 treated as not-logged-in (rendas pending)", !store.partitions.rendas || store.partitions.rendas.status === "pending");
   ok("rule 3: failure is loud on-screen (no console needed)", /Não consegui ler/.test(w.document.getElementById("efh-body").textContent));
-  ok("rule 3: no navigation on failure", !w.__nav);
+  ok("rule 3: no handoff on failure", w.__handoffs.length === 0);
 
   console.log(failures ? ("\n  " + failures + " FAILED") : "\n  all passed");
   process.exit(failures ? 1 : 0);

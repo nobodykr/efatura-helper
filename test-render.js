@@ -11,7 +11,8 @@ const { JSDOM } = require("jsdom");
 const fs = require("fs");
 
 const FILE = process.argv[2] || "perfil.html";
-const html = fs.readFileSync(FILE, "utf8");
+const contract = fs.readFileSync("profile-contract.js", "utf8");
+const html = fs.readFileSync(FILE, "utf8").replace('<script src="/profile-contract.js"></script>', '<script>' + contract + '</script>');
 let failures = 0;
 function ok(name, cond, extra) {
   console.log((cond ? "  PASS " : "  FAIL ") + name + (cond || !extra ? "" : " -> " + extra));
@@ -78,7 +79,8 @@ function render(profile) {
       url: "https://fiscalida.de/perfil",
       beforeParse(w) {
         w.fetch = () => Promise.reject(new Error("offline no teste"));
-        w.localStorage.setItem("fb-profile-v1", JSON.stringify(profile));
+        w.localStorage.setItem("fb-profile-v2", JSON.stringify(profile));
+        w.localStorage.setItem("fiscalidade-market-agreement-v1", JSON.stringify({ version:"market-v1", accepted:true }));
         w.addEventListener("error", (e) => errors.push(String(e.message || e)));
       },
     });

@@ -5,6 +5,7 @@ const { JSDOM } = require("jsdom");
 const { readFileSync } = require("fs");
 
 const src = readFileSync("extension/bar.js", "utf8");
+const contract = readFileSync("profile-contract.js", "utf8");
 const dom = new JSDOM("<!doctype html><html><head></head><body><p id=account>private</p></body></html>", {
   url: "https://faturas.portaldasfinancas.gov.pt/x", runScripts: "outside-only"
 });
@@ -20,7 +21,7 @@ w.chrome = { runtime: { sendMessage() { messages++; } }, storage: { local: {
   get(keys, cb) { cb(Object.assign({}, extensionState)); },
   set(value, cb) { Object.assign(extensionState, value); writes++; if (cb) cb(); }
 }}};
-w.eval(src);
+w.eval(contract); w.eval(src);
 
 function assert(ok, message) { if (!ok) throw new Error(message); }
 assert(fetches === 0, "bar fetched before consent");
@@ -30,14 +31,9 @@ assert(writes === 0, "bar wrote extension state before a user action");
 assert(/não lê esta página/.test(w.document.getElementById("fb-ext-summary").textContent), "consent copy missing");
 assert(!w.document.querySelector('script[src],link[href^="http"],img[src^="http"]'), "remote asset inserted before consent");
 
-const allow = [...w.document.querySelectorAll("button")].find((b) => /Autorizar/.test(b.textContent));
-assert(allow, "authorize button missing");
+const allow = [...w.document.querySelectorAll("button")].find((b) => /Ler e voltar/.test(b.textContent));
+assert(allow, "first-run guided read button missing");
 allow.click();
 assert(writes === 1 && extensionState["fiscalidade-consent-v1"].localAnalysis === true, "consent not stored");
-assert(fetches === 0 && pageStorageReads === 0 && messages === 0, "authorization itself read the account");
-
-const run = [...w.document.querySelectorAll("button")].find((b) => /Analisar faturas/.test(b.textContent));
-assert(run, "explicit analysis button missing after consent");
-run.click();
-assert(messages === 1, "explicit analysis click did not request injection");
+assert(fetches === 0 && pageStorageReads === 0 && messages === 1, "guided click did work outside the background gate");
 console.log("  extension first-run boundary passed");

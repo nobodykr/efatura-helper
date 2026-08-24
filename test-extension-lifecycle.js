@@ -3,6 +3,7 @@
 const { JSDOM } = require("jsdom");
 const { readFileSync } = require("fs");
 const src = readFileSync("extension/bar.js", "utf8");
+const contract = readFileSync("profile-contract.js", "utf8");
 const dom = new JSDOM("<!doctype html><html><head></head><body></body></html>", {
   url: "https://faturas.portaldasfinancas.gov.pt/consultarDocumentosAdquirente.action",
   runScripts: "outside-only"
@@ -19,7 +20,7 @@ w.chrome = { runtime: { sendMessage(message) { messages.push(message); } }, stor
 }}};
 
 function assert(ok, message) { if (!ok) throw new Error(message); }
-w.eval(src);
+w.eval(contract); w.eval(src);
 assert(w.document.getElementById("fb-ext-bar"), "legacy hidden key still suppresses the bar");
 const close = w.document.querySelector('[aria-label="Fechar a barra Fiscalidade"]');
 close.click();
@@ -29,8 +30,10 @@ w.eval(src);
 assert(w.document.getElementById("fb-ext-bar"), "bar could not be reopened on the same page");
 w.eval(src);
 assert(w.document.querySelectorAll("#fb-ext-bar").length === 1, "toolbar reopen duplicated the bar");
-const dashboard = [...w.document.querySelectorAll("button")].find((button) => /Painel de faturas/.test(button.textContent));
-assert(dashboard, "dashboard action missing after reopen");
-dashboard.click();
-assert(messages.some((message) => message.type === "fb-run" && message.mode === "dashboard"), "dashboard action did not request a read");
+const read = [...w.document.querySelectorAll("button")].find((button) => /Ler e voltar/.test(button.textContent));
+assert(read, "single guided read action missing after reopen");
+read.click();
+assert(messages.some((message) => message.type === "fb-run" && message.mode === "profile"), "guided action did not request a profile read");
+assert(![...w.document.querySelectorAll("button")].some((button) => /Painel de faturas|Adicionar ao perfil|Analisar faturas/.test(button.textContent)),
+  "duplicate e-Fatura actions survived in the bar");
 console.log("  extension close and toolbar reopen lifecycle passed");

@@ -46,7 +46,7 @@ const main = `
 <header>
   <div class="wrap">
     <h1><span class="eyebrow">Extensão para Chrome</span>O e-Fatura, num clique.</h1>
-    <p class="sub">A extensão Fiscalidade põe uma barra no topo das páginas oficiais que lês. Só atua depois da tua autorização e guarda o perfil no armazenamento privado da própria extensão. Corre na tua sessão, <b>sem password</b>.</p>
+    <p class="sub">A extensão Fiscalidade põe uma barra no topo das páginas oficiais que lês. Só atua depois da tua autorização e devolve a leitura à área pessoal em fiscalida.de, guardada neste navegador até ao fim do dia. Corre na tua sessão, <b>sem password</b>.</p>
     <div class="cta-row">
       <span class="cta-main" aria-disabled="true"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>Em revisão na Chrome Web Store</span>
       <a class="cta-alt" href="/privacidade">ver a política de privacidade</a>
@@ -63,7 +63,7 @@ const main = `
   <div class="wrap">
     <h2>O que faz por ti</h2>
     <div class="cards">
-      <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-monitor"/></svg><h3>Sempre à mão</h3><p>Uma barra no topo das páginas oficiais, com o botão de ler quando tu decidires.</p></div>
+      <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-monitor"/></svg><h3>Um caminho claro</h3><p>Uma barra no topo da fonte oficial, com um único botão: ler e voltar à Fiscalidade.</p></div>
       <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-receipt-euro"/></svg><h3>Melhor setor de dedução</h3><p>Para cada fatura por classificar, sugere o setor que mais deduz e ainda tem espaço no teto - e mostra também o provável.</p></div>
       <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-user"/></svg><h3>Lembra a tua situação</h3><p>Respondes uma vez se entregas o IRS em conjunto ou separado. Fica guardado no teu navegador, não volta a perguntar.</p></div>
       <div class="card"><svg class="icon ci" aria-hidden="true"><use href="#i-check"/></svg><h3>Mesmo código aberto</h3><p>A extensão corre exactamente o mesmo código publicado e <a href="/verificar">verificável</a>. Nada de diferente escondido.</p></div>
@@ -77,7 +77,7 @@ const main = `
     <div class="hgrid">
       <div class="hstep"><span class="hn"><span class="num">01</span></span><div><h3>Adicionar ao Chrome</h3><p>A versão de produção foi submetida. A Chrome Web Store ativa a instalação pública depois de concluir a revisão.</p></div></div>
       <div class="hstep"><span class="hn"><span class="num">02</span></span><div><h3>Abre o e-Fatura e faz login</h3><p>Na tua sessão normal das Finanças. A extensão nunca vê nem pede a password.</p></div></div>
-      <div class="hstep"><span class="hn"><span class="num">03</span></span><div><h3>Clica em Analisar</h3><p>Na barra da Fiscalidade. Vês o resumo do ano e o plano de classificação, e aplicas tu no e-Fatura.</p></div></div>
+      <div class="hstep"><span class="hn"><span class="num">03</span></span><div><h3>Clica em Ler e voltar</h3><p>Na barra da Fiscalidade. A leitura regressa à tua área pessoal e indica a fonte seguinte.</p></div></div>
     </div>
   </div>
 </section>

@@ -16,24 +16,10 @@
   }
 
   var CONSENT_KEY = "fiscalidade-consent-v1";
-  var PARTS = [
-    { host: "faturas.portaldasfinancas.gov.pt", id: "efatura", label: "e-Fatura", kind: "efatura" },
-    { host: "imoveis.portaldasfinancas.gov.pt", path: "/arrendamento", id: "rendas", label: "Rendas", kind: "profile" },
-    { host: "imoveis.portaldasfinancas.gov.pt", path: "/matrizesinter", id: "patrimonio", label: "Património", kind: "profile" },
-    { host: "sitfiscal.portaldasfinancas.gov.pt", path: "/geral", id: "situacao", label: "Situação fiscal", kind: "profile" },
-    { host: "sitfiscal.portaldasfinancas.gov.pt", path: "/atividade", id: "atividade", label: "Atividade", kind: "profile" },
-    { host: "sitfiscal.portaldasfinancas.gov.pt", path: "/inffin", id: "irs", label: "IRS", kind: "profile" },
-    { host: "sitfiscal.portaldasfinancas.gov.pt", path: "/movfin", id: "movfin", label: "Movimentos", kind: "profile" },
-    { host: "irs.portaldasfinancas.gov.pt", id: "recibos", label: "Recibos verdes", kind: "profile" },
-    { host: "www.seg-social.pt", id: "ss", label: "Segurança Social", kind: "profile" }
-  ];
+  var CONTRACT = globalThis.FISCALIDADE_PROFILE_CONTRACT;
 
   function detect() {
-    var here = PARTS.filter(function (p) { return location.host === p.host; });
-    for (var i = 0; i < here.length; i++)
-      if (here[i].path && location.pathname.indexOf(here[i].path) === 0) return here[i];
-    for (var j = 0; j < here.length; j++) if (!here[j].path) return here[j];
-    return null;
+    return CONTRACT ? CONTRACT.current(location.host, location.pathname) : null;
   }
 
   var part = detect();
@@ -68,16 +54,23 @@
     return b;
   }
 
-  function openProfile() { chrome.runtime.sendMessage({ type: "fb-open-profile" }); }
+  function openProfile() {
+    var target = window.open("https://fiscalida.de/perfil", "fiscalidade-perfil");
+    if (target) try { target.focus(); } catch (e) {}
+  }
 
   function renderConsent() {
     actions.textContent = "";
     summary.textContent = "não lê esta página antes da tua autorização";
-    var allow = button("Autorizar leituras locais", true);
+    var allow = button("Ler e voltar à Fiscalidade", true);
     var privacy = button("Privacidade", false);
     allow.addEventListener("click", function () {
       var consent = { version: 1, localAnalysis: true, acknowledgedAt: new Date().toISOString() };
-      chrome.storage.local.set({ [CONSENT_KEY]: consent }, renderEnabled);
+      // Reserve/reuse the named profile tab while this click still has browser activation. The
+      // account read is asynchronous, so opening it only after the read is vulnerable to popup
+      // blocking (and to the Access gate taking a few seconds).
+      openProfile();
+      chrome.storage.local.set({ [CONSENT_KEY]: consent }, function () { renderEnabled(); run("profile"); });
     });
     privacy.addEventListener("click", function () { chrome.runtime.sendMessage({ type: "fb-open-privacy" }); });
     actions.appendChild(allow);
@@ -96,20 +89,11 @@
       return;
     }
     summary.textContent = part.label + ": pronta; só lê quando carregares no botão";
-    var main = button(part.kind === "efatura" ? "Analisar faturas" : "Ler para o perfil", true);
-    main.addEventListener("click", function () { run(part.kind === "efatura" ? "classifier" : "profile"); });
+    var main = button("Ler e voltar à Fiscalidade", true);
+    main.addEventListener("click", function () { openProfile(); run("profile"); });
     actions.appendChild(main);
-    if (part.kind === "efatura") {
-      var invoices = button("Painel de faturas", false);
-      invoices.addEventListener("click", function () { run("dashboard"); });
-      actions.appendChild(invoices);
-      var add = button("Adicionar ao perfil", false);
-      add.addEventListener("click", function () { run("profile"); });
-      actions.appendChild(add);
-    }
-    var profile = button("Ver perfil", false);
-    profile.addEventListener("click", openProfile);
-    actions.appendChild(profile);
+    var profile = button("Voltar ao perfil", false);
+    profile.addEventListener("click", openProfile); actions.appendChild(profile);
   }
 
   var close = button("Fechar", false);

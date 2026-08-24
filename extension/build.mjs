@@ -24,6 +24,7 @@ const isDev = channel === 'dev';
 const manifestSource = here(isDev ? 'manifest.dev.json' : 'manifest.json');
 
 copyFileSync(root('tool.js'), here('tool.js'));
+copyFileSync(root('profile-contract.js'), here('profile-contract.js'));
 console.log('tool.js copied into extension/');
 
 const runtime = JSON.parse(readFileSync(root('fiscalidade.config.json'), 'utf8'));
@@ -84,7 +85,7 @@ const distDir = process.env.FISCALIDADE_EXTENSION_DIST || root('dist');
 mkdirSync(distDir, { recursive: true });
 // Ship ONLY runtime files - dev scripts and store-copy working notes stay out of the package.
 const runtimeFiles = [
-  'manifest.json', 'background.js', 'config.js', 'bar.js', 'tool.js', 'offers.json',
+  'manifest.json', 'background.js', 'config.js', 'profile-contract.js', 'bar.js', 'tool.js', 'offers.json',
   'icon16.png', 'icon48.png', 'icon128.png', 'profile.html', 'profile.css', 'crc-parser.js',
   'profile.js', 'brand.css', 'fonts.css', ...fontFiles,
   'invoices.html', 'invoices.css', 'invoices.js',

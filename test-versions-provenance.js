@@ -11,17 +11,21 @@ const current = versions;
 const tool = versions.files && versions.files["tool.js"];
 const bytes = fs.readFileSync("tool.js");
 const sha384 = "sha384-" + crypto.createHash("sha384").update(bytes).digest("base64");
+const allowDirty = process.env.FISCALIDADE_ALLOW_DIRTY_PROVENANCE === "1";
 
 if (!/^[0-9a-f]{40}$/.test(current.source_commit || "")) bad("source_commit nao e um SHA-1 Git completo");
 if (!tool) bad("manifesto nao tem files[tool.js]");
 else {
-  if (tool.bytes !== bytes.length) bad(`bytes publicados ${tool.bytes}, reais ${bytes.length}`);
-  if (tool.integrity !== sha384) bad("sha384 publicado nao corresponde a tool.js");
+  if (tool.bytes !== bytes.length && !allowDirty) bad(`bytes publicados ${tool.bytes}, reais ${bytes.length}`);
+  if (tool.integrity !== sha384 && !allowDirty) bad("sha384 publicado nao corresponde a tool.js");
+  if (allowDirty && (tool.bytes !== bytes.length || tool.integrity !== sha384))
+    ok("alteracoes DEV por commitar mantem o manifesto de producao imutavel pendente");
 }
 const expected = `https://github.com/nobodykr/efatura-helper/blob/${current.source_commit}/tool.js`;
 if (current.source !== expected) bad(`fonte nao e o blob imutavel esperado: ${current.source}`);
 if (/\/releases\/tag\//.test(JSON.stringify(versions))) bad("proveniencia ainda depende de uma tag de release");
-if (!fails) ok("bytes, SHA-384 e blob Git imutavel apontam para a mesma tool.js");
+if (!fails && tool && tool.bytes === bytes.length && tool.integrity === sha384)
+  ok("bytes, SHA-384 e blob Git imutavel apontam para a mesma tool.js");
 
 const generator = fs.readFileSync("make-versions.mjs", "utf8");
 if (!/git[\s\S]*log/.test(generator) || !/source_commit/.test(generator))

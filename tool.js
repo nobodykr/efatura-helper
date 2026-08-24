@@ -64,7 +64,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.08.23.3";
+  var FB_VERSION = "2026.08.25.1";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -128,7 +128,7 @@
    * panel, and must never be presented as an amount the user can click to recover. */
   var IRS_URL = "/json/obterDocumentosIRSAdquirente.action";
 
-  var SECTORS = { C01: "Repara\u00e7\u00e3o autom\u00f3veis", C02: "Repara\u00e7\u00e3o motociclos", C03: "Alojamento / restaura\u00e7\u00e3o",
+  var SECTORS = { C01: "Repara\u00e7\u00e3o autom\u00f3veis", C02: "Repara\u00e7\u00e3o motociclos", C03: "Alojamento/restaura\u00e7\u00e3o",
     C04: "Cabeleireiros / beleza", C05: "Sa\u00fade", C06: "Educa\u00e7\u00e3o", C07: "Im\u00f3veis / habita\u00e7\u00e3o", C08: "Lares",
     C09: "Veterin\u00e1rias", C10: "Transportes p\u00fablicos", C11: "Gin\u00e1sios", C12: "Jornais / revistas",
     C13: "Livros", C14: "Art\u00edsticas", C15: "Museus / monumentos", C99: "Outros" };
@@ -425,6 +425,31 @@
                .sort(function (p, q) { return q.valor - p.valor; })
                .slice(0, GRUPOS_MAX);
   }
+  /* Mandatory market contribution for the free profile flow. Only Portuguese legal-entity NIFs
+   * that pass the checksum are eligible. The row contains one company/year aggregate: no issuer
+   * name, invoice/date/document identifiers, consumer identity or individual invoice survives.
+   * e-Fatura monetary fields are cents (the same unit used by dedu()), hence /100 here. */
+  function marketCompanyYear(rows, ano) {
+    var by = {};
+    (rows || []).forEach(function (row) {
+      var nif = String(row.nifEmitente || "");
+      if (!isVerifiedLegalEntityNif(nif)) return;
+      if (!by[nif]) by[nif] = { nif: nif, year: Number(ano), invoiceCount: 0,
+        grossEur: 0, vatEur: 0, sectorCounts: {} };
+      var item = by[nif];
+      item.invoiceCount++;
+      item.grossEur += (Number(row.valorTotal) || 0) / 100;
+      item.vatEur += (Number(row.valorTotalIva) || 0) / 100;
+      var sector = /^C[0-9]{2}$/.test(String(row.actividadeEmitente || ""))
+        ? String(row.actividadeEmitente) : "UNCLASSIFIED";
+      item.sectorCounts[sector] = (item.sectorCounts[sector] || 0) + 1;
+    });
+    return Object.keys(by).sort().map(function (nif) {
+      by[nif].grossEur = +by[nif].grossEur.toFixed(2);
+      by[nif].vatEur = +by[nif].vatEur.toFixed(2);
+      return by[nif];
+    });
+  }
   /* Past-year re-audit = the optimiser above, run over EVERY invoice of a year (all sectors, fetched
    * completely via the recursive splitter), cross-referenced NIF-by-NIF against cae-db. Reports how
    * much deduction was left on the table by suboptimal classification, and which target sectors. */
@@ -445,7 +470,10 @@
                  // mostram cenarios diferentes. Uma lista unica debaixo do painel "Aconselhado"
                  // estaria a incluir setores secundarios sob um titulo que promete so o principal.
                  porComerciante: groupByMerchant(mr.allocR),
-                 porComercianteAconselhado: groupByMerchant(mr.allocA) };
+                 porComercianteAconselhado: groupByMerchant(mr.allocA),
+                 // Private transport field. readEfatura removes it before the local profile data
+                 // is stored and passes it only through the minimized market envelope.
+                 _market: marketCompanyYear(rows, ano) };
       });
     });
   }
@@ -983,6 +1011,21 @@
   ];
   // rendas lives on the same host; tag its path so host+path matching can tell them apart.
   PARTITIONS[1].pathHint = "/arrendamento";
+  // The packaged contract is authoritative. The inline list above remains only as a compatibility
+  // fallback for people pasting an older standalone tool.js in DevTools; extension and DEV
+  // bookmarklet builds always load profile-contract.js first.
+  var PROFILE_CONTRACT = (typeof FISCALIDADE_PROFILE_CONTRACT !== "undefined")
+    ? FISCALIDADE_PROFILE_CONTRACT : null;
+  if (PROFILE_CONTRACT) {
+    var readers = { efatura: readEfatura, rendas: readRendas, situacao: readSituacao,
+      atividade: readAtividade, atividade_integrada: readAtividadeExercida, patrimonio: readPatrimonio,
+      irs: readIRS, movfin: readMovfin, recibos: readRecibos, declaracoes: readDeclaracoesPartition,
+      deducoes: readDeducoesPartition, despesas_atividade: readDespesasAtividadePartition, ss: readSS };
+    PARTITIONS = PROFILE_CONTRACT.partitions.map(function (item) {
+      return { id: item.id, label: item.label, host: item.host, pathHint: item.path || null,
+        open: item.open, why: item.why, read: readers[item.id] };
+    });
+  }
 
   /* A MESMA regra de expiracao do /perfil (fim do dia), aplicada TAMBEM aqui: este ficheiro corre
    * na origem da AT, e o /perfil (outra origem) nao consegue apagar o localStorage desta - so o
@@ -1004,58 +1047,92 @@
     try { p.expiresAt = profExpiry(); localStorage.setItem(PROF_KEY, JSON.stringify(p)); } catch (e) {}
   }
 
-  /* CROSS-PARTITION HANDOFF (SPEC Option A). Each AT partition is a separate origin, so this
-   * page's localStorage cannot be read on the next partition. To assemble ONE profile we hand
-   * each partition's summary to our own /perfil page via a URL FRAGMENT. A fragment (#...) is
-   * NEVER sent in the HTTP request, so this is a browser-to-our-page handoff, not a server send -
-   * the data still never leaves the machine. /perfil accumulates across partitions in its single
-   * origin. (The separate, opt-in, redacted SERVER telemetry is a different thing entirely.) */
+  /* CROSS-PARTITION HANDOFF. /perfil and the official portal are different origins. The reader
+   * opens/reuses the named profile window, asks it for a one-time nonce, then sends a strictly
+   * versioned envelope with postMessage. No fiscal value enters a URL or an HTTP request. */
   var PROF_SITE = PUBLIC_ORIGIN + "/perfil";
-  function b64(s) { return btoa(unescape(encodeURIComponent(s))); }
-  function handoffUrl(pid, data, shape) {
-    var u = PROF_SITE + "#p=" + encodeURIComponent(pid) + "&d=" + encodeURIComponent(b64(JSON.stringify(data)));
-    if (shape && Object.keys(shape).length) u += "&s=" + encodeURIComponent(b64(JSON.stringify(shape)));
-    return u;
+  function profileRequestId() {
+    var bytes = new Uint8Array(16); crypto.getRandomValues(bytes);
+    return Array.prototype.map.call(bytes, function (x) { return ("0" + x.toString(16)).slice(-2); }).join("");
   }
-  function shapeEndpointId(url) {
-    var s = String(url || "").split("?")[0];
-    var rules = [
-      [/obterDocumentosAdquirente/, "efatura.documents.v1"], [/consultarDespesasDeducoes/, "irs.deductions.v1"],
-      [/obterContratos\/locador/, "rents.contracts.v1"], [/obterRecibos\/locador/, "rents.receipts.v1"],
-      [/\/geral\/dividas/, "tax-status.debts.v1"], [/\/geral\/coimas/, "tax-status.fines.v1"],
-      [/agendaFiscal/, "tax-status.calendar.v1"], [/consultardeclaracoes/, "activity.declarations.v1"],
-      [/integrada\/presentation/, "activity.integrated.v1"], [/liquidacoesIRSDataTables/, "irs.liquidations.v1"],
-      [/reembolsosDataTables/, "irs.refunds.v1"], [/resumoCobranca/, "finance.movements.v1"],
-      [/obtemDocumentosV2/, "receipts.green.v1"], [/\/app\/consulta\/pesquisa/, "irs.declarations.v1"],
-      [/dashboard-regime-simplificado/, "activity.expenses.v1"], [/login\/personalData/, "social.profile.v1"],
-      [/payments\/current/, "social.payments.v1"], [/situacao-contributiva/, "social.contribution-status.v1"],
-      [/matrizesinter\/api\/patrimonio/, "property.assets.v1"]
-    ];
-    for (var i = 0; i < rules.length; i++) if (rules[i][0].test(s)) return rules[i][1];
-    return null;
+  function profileDiagnostic(stage, partition, code) {
+    var log = window.__FISCALIDADE_HANDOFF_DIAGNOSTICS__ || [];
+    log.push({ at: new Date().toISOString(), stage: stage, partition: partition, code: code || null });
+    window.__FISCALIDADE_HANDOFF_DIAGNOSTICS__ = log.slice(-20);
   }
-  function contributeProfileShapes(shape) {
-    if (!EXTENSION_MODE || _extensionSettings.shareShapes !== true || !shape) return;
-    var stable = {};
-    Object.keys(shape).forEach(function (url) {
-      var id = shapeEndpointId(url); if (id) stable[id] = shape[url];
-    });
-    if (!Object.keys(stable).length) return;
-    try {
-      fetch(API_BASE + "/contributions/shapes", { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ consent: true, shapes: stable }) }).catch(function () {});
-    } catch (e) {}
+  function profileMessage(css, title, detail) {
+    var body = document.getElementById("efh-body");
+    if (body) body.innerHTML = '<div class="' + css + '"><b>' + title + '</b> ' + detail + '</div>';
   }
-  function deliverProfile(pid, data, shape) {
-    if (EXTENSION_MODE && typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage) {
-      try {
-        chrome.runtime.sendMessage({ type: "fb-profile-save", partition: pid, data: data, shape: shape || {} });
-        contributeProfileShapes(shape || {});
-        return true;
-      } catch (e) {}
+  function deliverProfile(pid, data, shape, market) {
+    var contract = PROFILE_CONTRACT;
+    var requestId = profileRequestId();
+    var envelope = { contract: contract && contract.version, partition: pid, status: "done",
+      capturedAt: new Date().toISOString(), data: data, shapes: shape || {} };
+    if (market) envelope.market = market;
+    if (!contract || !contract.validEnvelope(envelope)) {
+      profileDiagnostic("rejected", pid, "contract_unavailable");
+      profileMessage("efh-warn", "Vers\u00e3o incompat\u00edvel.",
+        "Atualiza o favorito ou a extens\u00e3o DEV. A leitura n\u00e3o foi enviada nem colocada no endere\u00e7o.");
+      return false;
     }
-    location.href = handoffUrl(pid, data, shape);
-    return false;
+    var target = null;
+    try {
+      target = window.open(PROF_SITE, "fiscalidade-perfil");
+      if (!target && window.opener && !window.opener.closed) target = window.opener;
+    } catch (e) {}
+    if (!target) {
+      profileDiagnostic("blocked", pid, "profile_window_unavailable");
+      profileMessage("efh-warn", "O navegador bloqueou o regresso.",
+        "Abre fiscalida.de/perfil e volta a carregar no favorito. A leitura n\u00e3o foi enviada nem colocada no endere\u00e7o.");
+      return false;
+    }
+    var ready = false, finished = false, retries = 0;
+    profileDiagnostic("hello", pid, "started");
+    function onMessage(event) {
+      if (event.origin !== PUBLIC_ORIGIN || event.source !== target || !event.data) return;
+      if (event.data.type === contract.readyType && event.data.partition === pid &&
+          event.data.requestId === requestId && typeof event.data.nonce === "string") {
+        ready = true;
+        profileDiagnostic("ready", pid, "nonce_received");
+        target.postMessage({ type: contract.messageType, partition: pid, requestId: requestId,
+          nonce: event.data.nonce, envelope: envelope }, PUBLIC_ORIGIN);
+      }
+      if (event.data.type === contract.acceptedType && event.data.partition === pid &&
+          event.data.requestId === requestId) {
+        finished = true; clearInterval(retryTimer); clearTimeout(timeoutTimer);
+        window.removeEventListener("message", onMessage);
+        profileDiagnostic("accepted", pid, event.data.intake || "local");
+        try { target.focus(); } catch (e) {}
+        profileMessage("efh-ok", "Leitura conclu\u00edda.", "Ficou guardada localmente no teu perfil Fiscalidade.");
+      }
+      if (event.data.type === contract.rejectedType && event.data.partition === pid &&
+          event.data.requestId === requestId) {
+        finished = true; clearInterval(retryTimer); clearTimeout(timeoutTimer);
+        window.removeEventListener("message", onMessage);
+        profileDiagnostic("rejected", pid, event.data.code || "profile_rejected");
+        profileMessage("efh-warn", "O perfil recusou esta leitura.",
+          "Confirma que o perfil e o favorito/extens\u00e3o DEV t\u00eam a mesma vers\u00e3o e tenta outra vez.");
+      }
+    }
+    function hello() {
+      if (finished || ready) return;
+      retries++;
+      try { target.postMessage({ type: contract.helloType, contract: contract.version,
+        partition: pid, requestId: requestId }, PUBLIC_ORIGIN); } catch (e) {}
+    }
+    window.addEventListener("message", onMessage);
+    hello();
+    var retryTimer = setInterval(hello, 750);
+    var timeoutTimer = setTimeout(function () {
+      if (finished) return;
+      clearInterval(retryTimer);
+      window.removeEventListener("message", onMessage);
+      profileDiagnostic("timeout", pid, "no_matching_profile");
+      profileMessage("efh-warn", "O perfil n\u00e3o respondeu em 120 segundos.",
+        "Conclui o acesso a fiscalida.de, deixa /perfil aberto e volta a carregar no favorito. A leitura n\u00e3o foi enviada.");
+    }, 120000);
+    return true;
   }
   function profConsent() {
     // The extension's first-run gate is stored in chrome.storage.local before tool.js can be
@@ -1099,14 +1176,35 @@
 
   /* RULE 3 (SPEC): a wrong session or missing permission on AT returns 200 + an HTML redirect,
    * never 401. So assert on CONTENT - did we get the JSON shape we asked for - never on r.ok. */
-  function getJSON(url) {
-    return fetch(url, { credentials: "include", headers: { "Accept": "application/json" } }).then(function (r) {
-      var ct = r.headers.get("content-type") || "";
-      return r.text().then(function (t) {
-        if (/text\/html/i.test(ct) || /^\s*</.test(t)) throw new Error("sess\u00e3o n\u00e3o iniciada nesta p\u00e1gina");
-        try { var j = JSON.parse(t); recordShape(url, "json", j); return j; } catch (e) { throw new Error("resposta inesperada"); }
-      });
+  function readError(code, message, status) {
+    var error = new Error(message); error.code = code;
+    if (status != null) error.status = status;
+    return error;
+  }
+  function responseJSON(r, url) {
+    var ct = r.headers.get("content-type") || "";
+    return r.text().then(function (t) {
+      if (/text\/html/i.test(ct) || /^\s*</.test(t) || /acesso\.gov\.pt|loginForm/i.test(t))
+        throw readError("session_required", "A sess\u00e3o desta p\u00e1gina expirou. Faz login aqui e tenta de novo.", r.status);
+      if (!r.ok)
+        throw readError("official_http_" + r.status,
+          "A p\u00e1gina oficial respondeu com erro " + r.status + ". Tenta novamente dentro de momentos.", r.status);
+      if (!String(t || "").trim())
+        throw readError("empty_response", "A p\u00e1gina oficial devolveu uma resposta vazia. Atualiza a p\u00e1gina e tenta de novo.", r.status);
+      var j;
+      try { j = JSON.parse(t); }
+      catch (e) {
+        throw readError("invalid_json", "A p\u00e1gina oficial mudou o formato da resposta. A leitura foi interrompida sem guardar zeros.", r.status);
+      }
+      if (j && typeof j === "object" && !Array.isArray(j) &&
+          (j.success === false || j.sucesso === false || j.error === true))
+        throw readError("official_rejected", "A p\u00e1gina oficial recusou esta leitura. Atualiza a sess\u00e3o e tenta de novo.", r.status);
+      recordShape(url, "json", j); return j;
     });
+  }
+  function getJSON(url) {
+    return fetch(url, { credentials: "include", headers: { "Accept": "application/json" } })
+      .then(function (r) { return responseJSON(r, url); });
   }
 
   /* POST variant for the .api endpoints whose search form posts a JSON body (e.g. recibos consultar
@@ -1114,13 +1212,7 @@
   function postJSON(url, body) {
     return fetch(url, { method: "POST", credentials: "include",
       headers: { "Accept": "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify(body) }).then(function (r) {
-      var ct = r.headers.get("content-type") || "";
-      return r.text().then(function (t) {
-        if (/text\/html/i.test(ct) || /^\s*</.test(t)) throw new Error("sess\u00e3o n\u00e3o iniciada nesta p\u00e1gina");
-        try { var j = JSON.parse(t); recordShape(url, "json", j); return j; } catch (e) { throw new Error("resposta inesperada"); }
-      });
-    });
+      body: JSON.stringify(body) }).then(function (r) { return responseJSON(r, url); });
   }
 
   /* HTML-tolerant read for the cadastro/atividade pages (OutSystems, server-rendered - often not
@@ -1283,9 +1375,16 @@
       return Promise.all(anos.map(function (a) {
         return reAuditAno(a, {}).catch(function () { return null; });
       })).then(function (ra) {
+        var companies = marketCompanyYear(rows, year);
+        ra.forEach(function (audit) {
+          if (!audit) return;
+          companies = companies.concat(audit._market || []);
+          delete audit._market;
+        });
         return { data: { ano: year, totalFaturas: rows.length,
                          porClassificar: pend, atividades: byAct,
-                         reAudit: ra.filter(Boolean) }, source: u };
+                         reAudit: ra.filter(Boolean) }, source: u,
+                 market: { version: 1, companies: companies } };
       });
     });
   }
@@ -1357,20 +1456,34 @@
   }
   function readSituacao() {
     return getJSON("/geral/dividas?_=" + Date.now()).then(function (div) {
+      if (!div || typeof div !== "object" || Array.isArray(div) ||
+          (div.montanteTotal == null && div.nAtivasGeral == null && div.dataInfoObtida == null))
+        throw readError("unexpected_debts_shape",
+          "A Situa\u00e7\u00e3o fiscal mudou o formato das d\u00edvidas. A leitura foi interrompida sem assumir que o valor \u00e9 zero.");
       return Promise.all([
-        getJSON("/geral/coimas?_=" + Date.now()).catch(function () { return null; }),
-        getJSON("/geral/dashboard/agendaFiscal?_=" + Date.now()).catch(function () { return null; })
+        getJSON("/geral/coimas?_=" + Date.now()).then(function (value) { return { value: value }; })
+          .catch(function (error) { return { error: error }; }),
+        getJSON("/geral/dashboard/agendaFiscal?_=" + Date.now()).then(function (value) { return { value: value }; })
+          .catch(function (error) { return { error: error }; })
       ]).then(function (rest) {
         div = div || {};
-        var coi = rest[0] || {};
-        var ag = rest[1];
-        var agenda = Array.isArray(ag) ? ag : (ag && (ag.listaAgenda || ag.agenda || ag.lista)) || [];
+        var coi = rest[0].value;
+        var ag = rest[1].value;
+        var agenda = ag == null ? null : (Array.isArray(ag) ? ag : (ag && (ag.listaAgenda || ag.agenda || ag.lista)));
+        if (agenda != null && !Array.isArray(agenda)) agenda = null;
+        var avisos = [];
+        if (rest[0].error) avisos.push("N\u00e3o foi poss\u00edvel confirmar as coimas nesta leitura.");
+        else if (!coi || typeof coi !== "object" || Array.isArray(coi)) {
+          coi = null; avisos.push("A resposta das coimas teve um formato desconhecido; n\u00e3o foi tratada como zero.");
+        }
+        if (rest[1].error || agenda == null) avisos.push("N\u00e3o foi poss\u00edvel confirmar a agenda fiscal nesta leitura.");
         return { data: {
           dividas: { total: (div.montanteTotal != null ? div.montanteTotal : null),
                      n: (div.nAtivasGeral != null ? div.nAtivasGeral : null), em: div.dataInfoObtida || null },
-          coimas: { total: (coi.montanteTotal != null ? coi.montanteTotal : null),
-                    n: (coi.nAtivasGeral != null ? coi.nAtivasGeral : null) },
-          agenda: { n: agenda.length, proximos: agenda.slice(0, 5).map(pickAgenda) }
+          coimas: coi ? { total: (coi.montanteTotal != null ? coi.montanteTotal : null),
+                    n: (coi.nAtivasGeral != null ? coi.nAtivasGeral : null) } : null,
+          agenda: agenda ? { n: agenda.length, proximos: agenda.slice(0, 5).map(pickAgenda) } : null,
+          avisos: avisos
         }, source: "/geral/dividas + /geral/coimas + /geral/dashboard/agendaFiscal" };
       });
     });
@@ -1894,11 +2007,11 @@
     document.getElementById("efh-body").innerHTML = "A ler " + esc(cur.label) + "...";
     cur.read().then(function (res) {
       var s = profLoad();
-      s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data, source: res.source, shape: _shapes };
+      s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data,
+        source: res.source, shape: _shapes, market: res.market || null };
       profSave(s);
-      // Read OK -> go STRAIGHT to /perfil with the data (URL fragment, no server). This removes the
-      // separate "Guardar" click that was being missed: click bookmarklet -> read -> land on
-      // /perfil with this step ticked. A brief confirmation first so the jump is not a surprise.
+      // Read OK -> hand the result straight to /perfil through the nonce-bound browser channel.
+      // This removes the separate "Guardar" click that was being missed.
       var n = res.data && (res.data.porClassificar != null ? res.data.porClassificar + " por classificar"
              : (res.data.activos != null ? res.data.activos + " contrato(s) activo(s)"
              : (res.data.dividas ? ((res.data.dividas.n || 0) + " d\u00edvida(s)")
@@ -1910,7 +2023,7 @@
       document.getElementById("efh-body").innerHTML =
         '<div style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
         '.<br>A abrir a tua situa\u00e7\u00e3o...</div>';
-      setTimeout(function () { deliverProfile(cur.id, res.data, _shapes); }, 700);
+      setTimeout(function () { deliverProfile(cur.id, res.data, _shapes, res.market || null); }, 700);
     }).catch(function (e) {
       var s = profLoad();
       var msg = (e && e.message) || "erro";
@@ -1955,15 +2068,11 @@
         (isDone ? 'background:#eef;color:#034ad8;border:1px solid #cdd' : 'background:#034ad8;color:#fff;border:0') +
         ';border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">' +
         (isDone ? 'Reler ' : 'Ler ') + esc(cur.label) + '</button>';
-      // Once THIS partition is read, hand it to /perfil (via URL fragment - stays in the browser)
-      // so the profile assembles across origins. This is the only way to combine partitions.
+      // Once THIS partition is read, hand it to /perfil through the same nonce-bound channel used
+      // by the automatic flow. No fiscal value is placed in the URL.
       if (isDone) {
-        if (RUNTIME.extension === true)
-          h += ' <button type="button" id="fb-save-profile" style="display:inline-block;cursor:pointer;background:#128a3a;color:#fff;border:0;border-radius:6px;padding:9px 16px;font-weight:600">Guardar no perfil da extens\u00e3o \u2192</button>';
-        else
-          h += ' <a href="' + handoffUrl(cur.id, store.partitions[cur.id].data, store.partitions[cur.id].shape) + '" ' +
-            'style="display:inline-block;cursor:pointer;background:#128a3a;color:#fff;text-decoration:none;' +
-            'border-radius:6px;padding:9px 16px;font-weight:600">Guardar a minha situa\u00e7\u00e3o \u2192</a>';
+        h += ' <button type="button" id="fb-save-profile" style="display:inline-block;cursor:pointer;background:#128a3a;color:#fff;border:0;' +
+          'border-radius:6px;padding:9px 16px;font-weight:600">Guardar a minha situa\u00e7\u00e3o \u2192</button>';
       }
     } else {
       h += '<div style="color:#666;font-size:12px">Esta p\u00e1gina n\u00e3o \u00e9 uma das que lemos. Abre uma da lista acima.</div>';
@@ -1982,7 +2091,8 @@
       rb.disabled = true; rb.textContent = "A ler...";
       cur.read().then(function (res) {
         var s = profLoad();
-        s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data, source: res.source, shape: _shapes };
+        s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data,
+          source: res.source, shape: _shapes, market: res.market || null };
         profSave(s); profRender();
       }).catch(function (e) {
         var s = profLoad();
@@ -1993,7 +2103,7 @@
     var sp = document.getElementById("fb-save-profile");
     if (sp && cur) sp.onclick = function () {
       var saved = profLoad().partitions[cur.id];
-      if (saved) deliverProfile(cur.id, saved.data, saved.shape);
+      if (saved) deliverProfile(cur.id, saved.data, saved.shape, saved.market || null);
     };
     var rs = document.getElementById("fb-reset");
     // "apagar" = apagar TUDO o que o tool guardou nesta origem: a situacao fiscal E a configuracao

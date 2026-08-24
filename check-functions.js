@@ -62,7 +62,7 @@ const noRe = stripNonCode(src);
 const builtins = new Set(["if","for","while","switch","catch","return","typeof","function",
   "fetch","parseInt","parseFloat","alert","isNaN","String","Number","Boolean","Array","Object",
   "JSON","Math","Date","Promise","crypto","localStorage","document","window","console",
-  "setTimeout","encodeURIComponent","decodeURIComponent","URLSearchParams","DOMParser",
+  "setTimeout","clearTimeout","setInterval","clearInterval","encodeURIComponent","decodeURIComponent","URLSearchParams","DOMParser",
   "TextEncoder","Uint8Array","require","btoa","atob",
   // lowercase-initial globals (the scan only flags /^[a-z]/, so Set/Map/Error need no entry)
   "isFinite","encodeURI","decodeURI","structuredClone","queueMicrotask","prompt","confirm",

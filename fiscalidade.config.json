@@ -4,6 +4,7 @@
   "publicOrigin": "https://fiscalida.de",
   "apiBase": "https://fiscalida.de/api/v1",
   "bookmarkletInstallationEnabled": false,
+  "adminBookmarkletInstallationEnabled": true,
   "publicIndexingEnabled": false,
   "shapeEndpointIds": [
     "efatura.documents.v1",
@@ -27,9 +28,18 @@
     "property.assets.v1"
   ],
   "extension": {
-    "profileStorage": "chrome.storage.local",
+    "profileStorage": "fiscalida.de localStorage",
+    "profileTransport": "nonce-bound postMessage",
     "profileRetention": "end-of-local-day",
     "remoteCodeAllowed": false,
     "localDocumentSchemas": ["credit-responsibilities.v1"]
+  },
+  "marketIntake": {
+    "enabled": false,
+    "requiredForLocalCompletion": false,
+    "agreement": "market-v1",
+    "service": "isolated",
+    "retentionDays": 400,
+    "publicThreshold": 20
   }
 }

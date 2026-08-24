@@ -1,11 +1,15 @@
 node_modules/
 *.log
+__pycache__/
+*.py[cod]
 .DS_Store
 .wrangler/
 # per-machine permission grants, not project configuration
 .claude/settings.local.json
 dist/
+favorito-dev.html
 extension/tool.js
+extension/profile-contract.js
 extension/*.png
 extension/offers.json
 extension/fonts.css

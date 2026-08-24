@@ -1,18 +1,31 @@
 # Fiscalidade internal hardening plan
 
-Status: implemented and verified locally on 2026-08-22, then promoted to canonical `main`. Public
-release remains blocked by the deferred work below.
+Status: the original hardening landed on 2026-08-22. The canonical-profile refactor below is
+implemented locally on 2026-08-23 and is not deployed or submitted. Public release remains blocked.
 
 This is the repository copy of the approved internal-only plan. It is deliberately versioned so
 findings, decisions, tests and implementation commits do not exist only in chat history.
 
 ## Implementation result
 
+- `/perfil` is now the only profile/results hub. A shared contract orders all 13 SSO partitions,
+  exposes one next-source action, reuses one named official tab and returns a nonce-bound envelope
+  with `postMessage`. The website launcher and 13 competing action buttons are removed.
+- The extension bar has one functional action, “Ler e voltar à Fiscalidade”. The separately named
+  DEV build and self-contained DEV bookmarklet use the same contract and reader bytes.
+- Tax-status JSON errors distinguish expired sessions, HTTP errors, empty responses, invalid JSON
+  and unknown debt schemas. Optional coima/agenda failures remain unknown and never render as zero.
+- eFatura builds company/year market aggregates only for checksum-valid legal entities. The
+  mandatory exchange excludes buyer identity and individual invoices and is stated before intake.
+- `POST /api/v1/intake` is pinned to a separate origin and credentials. The isolated service has a
+  strict schema, double-HMAC dedupe, 400-day retention and a 20-contributor publication threshold;
+  it does not import, mount or write cae-db.
+- Production, the gated site and the Chrome Web Store draft were not changed.
+
 - `/consulta`, `/contrato`, the free-text feedback endpoint, sitemap and all active bookmarklet
   installation surfaces are removed. Every HTML page and response is noindexed for internal review.
-- The extension is Manifest V3 with five exact official hosts, bundled runtime/data, extension-owned
-  storage, end-of-day expiry and a two-step authorize/read flow. Its explicit 12-file ZIP allowlist
-  builds deterministically.
+- The extension is Manifest V3 with five exact official hosts and bundled runtime/data. Consent is
+  stored in extension storage; complete profile state lives on canonical `/perfil` until end of day.
 - The first-party API facade has a fixed HTTPS upstream, explicit route/method allowlist, 64 KiB body
   cap, minimized headers and bounded query handling. Contributions are separate and off by default.
 - e-Fatura reads split capped ranges until complete or fail visibly. Attributed states `R`, `B` and
@@ -73,13 +86,13 @@ findings, decisions, tests and implementation commits do not exist only in chat 
   analysis consent, and makes no remote request before that point.
 - Fonts, configuration, offers and runtime code are packaged with the extension. Remote code is
   forbidden.
-- Consent is separate for local analysis, legal-entity merchant feedback, response-schema
-  diagnostics, anonymous impact aggregates and household sharing.
+- Local page-read authorization remains explicit. The free profile separately requires a clearly
+  described market-v1 agreement; optional classifier and household features retain their choices.
 - User-NIF-derived identifiers and distinct-user counters are removed. Contributions never accept
   raw fiscal records. Merchant feedback is accepted only for conservative legal-entity NIF ranges;
   natural-person, sole-trader and ambiguous identifiers are rejected.
-- Extension profile data uses extension-owned storage and an extension-owned profile page. The
-  extension does not hand fiscal summaries through a public URL fragment.
+- Complete profile data uses Fiscalidade origin storage and end-of-day expiry. Packaged readers use
+  a nonce-bound browser message, not a URL fragment or an extension-owned duplicate profile.
 
 ## Correctness boundary
 
@@ -111,7 +124,7 @@ findings, decisions, tests and implementation commits do not exist only in chat 
 ## API boundary
 
 - `/api/v1` exposes only bucketed merchant-map reads, the reviewable CAE rule table,
-  privacy-preserving contributions, household aggregates and public aggregate statistics. The
+  privacy-preserving contributions, isolated market intake, household aggregates and public aggregate statistics. The
   retired `/consulta` company-lookup surface is not part of the contract.
 - Request bodies are bounded and schema-validated. Access logs redact identifiers and room keys;
   application code does not log request bodies.
@@ -137,5 +150,5 @@ findings, decisions, tests and implementation commits do not exist only in chat 
 
 ## Deferred public work
 
-Public DNS/cutover, sitemap/indexing, bookmarklet re-evaluation, Chrome Web Store upload or appeal,
-and public API availability remain explicitly out of scope until the internal checklist is green.
+Public DNS/cutover, sitemap/indexing, public bookmarklet distribution, Chrome Web Store upload or
+appeal, legal approval of market-v1 and public API availability remain explicitly out of scope.

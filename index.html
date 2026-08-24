@@ -157,7 +157,7 @@
   .sitmodule{margin:26px 0 0}
   .prog{margin:0 auto;max-width:860px}
   .plabel{text-align:center;font-weight:700;font-size:1.12rem;color:var(--pri-dark);margin-bottom:11px}
-  .segbar{display:grid;grid-template-columns:repeat(9,1fr);gap:5px}
+  .segbar{display:grid;grid-template-columns:repeat(13,1fr);gap:5px}
   .seg{height:27px;border:1px solid var(--hair-strong);border-radius:5px;background:#fff;
        display:flex;align-items:center;justify-content:center}
   .seg.on{background:var(--pri);border-color:var(--pri)}
@@ -499,12 +499,7 @@
     <span class="badge"><b>grátis</b>, sem contas</span>
   </div>
 
-  <!-- SITUAÇÃO module: a live, read-only mirror of /perfil's progress bar + 3-cell action frame,
-       same visual classes as perfil.html (segmented progress: .prog/.plabel/.segbar/.seg/.pcap;
-       action frame: .aframe/.acell/.selwrap) - hand-synced with that file, two origins, no shared
-       module. It only reads fb-profile-v1 from localStorage (same origin as /perfil) and never
-       writes to it. Empty state shows the full 3-cell frame; once at least one source is in, it
-       collapses to just the progress bar and a single CTA into /perfil, where the full flow lives. -->
+  <!-- Read-only progress mirror. /perfil is the only place that starts or guides an intake. -->
   <div class="sitmodule" id="sitmodule">
     <div class="prog">
       <div class="plabel" id="sit-plabel">0 de 13 fontes reunidas</div>
@@ -512,24 +507,9 @@
       <div class="pcap" id="sit-pcap">Os dados ficam neste navegador até ao fim do dia.</div>
     </div>
 
-    <div class="aframe" id="sit-empty" hidden>
-      <div class="acell"><div class="atitle">1. Preparar</div>
-        <a class="btn-primary" href="/extensao"><svg class="icon" aria-hidden="true"><use href="#i-external"/></svg>Adicionar ao Chrome</a>
-        <div class="acap">submetida à revisão da Chrome Web Store</div></div>
-      <div class="acell"><div class="atitle">2. Começar por</div>
-        <div class="selwrap"><svg class="icon" aria-hidden="true"><use href="#i-doc"/></svg>
-          <select id="sit-srcsel" aria-label="Fonte a abrir a seguir"></select>
-          <svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg></div></div>
-      <div class="acell"><div class="atitle" style="visibility:hidden" aria-hidden="true">&nbsp;</div>
-        <a class="btn-primary" id="sit-opensrc" target="_blank" rel="noopener" href="https://faturas.portaldasfinancas.gov.pt">
-        <svg class="icon" aria-hidden="true"><use href="#i-external"/></svg><span id="sit-opensrclabel">Abrir e-Fatura</span></a></div>
-    </div>
-    <p class="framecap" id="sit-emptycap" hidden>Na página oficial, carrega em <b>Analisar</b> na barra.
-      Os dados aparecem em <a href="/perfil">A minha situação</a>, só neste navegador.</p>
-
-    <div id="sit-cta" hidden style="text-align:center;margin-top:22px">
+    <div id="sit-cta" style="text-align:center;margin-top:22px">
       <a class="btn-primary" id="sit-continue" href="/perfil" style="max-width:420px">
-        <svg class="icon" aria-hidden="true"><use href="#i-user"/></svg>Continuar em A minha situação</a>
+        <svg class="icon" aria-hidden="true"><use href="#i-user"/></svg><span>Começar em A minha situação</span></a>
     </div>
 
     <p style="text-align:center;margin-top:14px"><a class="cta-alt" href="/perfil?exemplo=1">Ver um exemplo</a></p>
@@ -759,6 +739,7 @@
   </div>
 </div></footer>
 
+<script src="/profile-contract.js"></script>
 <script>
   // Set these two constants at deploy time.
   var GH  = "https://github.com/nobodykr/efatura-helper";
@@ -801,31 +782,12 @@
     }
   } catch (e) { /* leave everything visible */ }
 
-  // SITUAÇÃO module (read-only mirror of /perfil). PARTITIONS/SHORT below are a hand-kept mirror
-  // of perfil.html's own copy (itself a mirror of tool.js) - three files, two origins, no shared
-  // module. This block only READS fb-profile-v1 from localStorage; it never writes to it and never
-  // touches location.hash, so /perfil stays the only place a bookmarklet payload gets ingested.
+  // SITUAÇÃO module: read-only progress mirror. The shared contract defines the 13 partitions;
+  // /perfil remains the only surface that chooses and opens the next official source.
   (function(){
-    var PKEY = "fb-profile-v1";
-    var PARTITIONS = [
-      { id:"efatura", label:"e-Fatura", open:"https://faturas.portaldasfinancas.gov.pt/consultarDocumentosAdquirente.action" },
-      { id:"rendas", label:"Rendas (Imóveis)", open:"https://imoveis.portaldasfinancas.gov.pt/arrendamento/consultarContratos/locador" },
-      { id:"situacao", label:"Situação fiscal (dívidas e prazos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/geral/dashboard" },
-      { id:"atividade", label:"Atividade (cadastro e IVA)", open:"https://sitfiscal.portaldasfinancas.gov.pt/atividade/atividade/consultardeclaracoes" },
-      { id:"atividade_integrada", label:"Atividade exercida", open:"https://sitfiscal.portaldasfinancas.gov.pt/integrada/presentation" },
-      { id:"patrimonio", label:"Património predial (IMI)", open:"https://imoveis.portaldasfinancas.gov.pt/matrizesinter/web/consultar-patrimonio-predial" },
-      { id:"irs", label:"IRS (liquidações e reembolsos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/inffin/entrada.html" },
-      { id:"movfin", label:"Movimentos financeiros", open:"https://sitfiscal.portaldasfinancas.gov.pt/movfin/resumoCobranca" },
-      { id:"recibos", label:"Recibos verdes (atividade)", open:"https://irs.portaldasfinancas.gov.pt/recibos/portal/consultar" },
-      { id:"declaracoes", label:"Declarações de IRS", open:"https://irs.portaldasfinancas.gov.pt/app/consulta" },
-      { id:"deducoes", label:"Deduções oficiais", open:"https://irs.portaldasfinancas.gov.pt/consultarDespesasDeducoes.action" },
-      { id:"despesas_atividade", label:"Despesas da atividade", open:"https://irs.portaldasfinancas.gov.pt/app/dashboard-regime-simplificado" },
-      { id:"ss", label:"Segurança Social", open:"https://www.seg-social.pt/ptss/pssd/home" }
-    ];
-    var SHORT = { efatura:"e-Fatura", rendas:"Rendas", situacao:"Situação fiscal", atividade:"Atividade",
-      atividade_integrada:"Atividade exercida", patrimonio:"Património", irs:"IRS", movfin:"Movimentos financeiros",
-      recibos:"Recibos verdes", declaracoes:"Declarações de IRS", deducoes:"Deduções oficiais",
-      despesas_atividade:"Despesas da atividade", ss:"Segurança Social" };
+    var PKEY = "fb-profile-v2";
+    var CONTRACT = window.FISCALIDADE_PROFILE_CONTRACT;
+    var PARTITIONS = CONTRACT ? CONTRACT.partitions : [];
 
     function loadStore(){
       try {
@@ -840,8 +802,7 @@
       var mod = document.getElementById("sitmodule");
       if (!mod) return;
       var store = loadStore();
-      var done = PARTITIONS.filter(function(p){ return store.partitions[p.id] && store.partitions[p.id].status === "done"; });
-      var missing = PARTITIONS.filter(function(p){ return !(store.partitions[p.id] && store.partitions[p.id].status === "done"); });
+      var done = PARTITIONS.filter(function(p){ return store.partitions[p.id] && CONTRACT.isCompleteStatus(store.partitions[p.id].status); });
       var n = done.length, total = PARTITIONS.length;
 
       var lbl = n + " de " + total + " fontes reunidas";
@@ -859,33 +820,16 @@
         ? "Podes parar e continuar até ao fim do dia."
         : "Os dados ficam neste navegador até ao fim do dia.";
 
-      var empty = document.getElementById("sit-empty"), emptycap = document.getElementById("sit-emptycap"),
-          cta = document.getElementById("sit-cta");
-      if (n === 0){
-        empty.hidden = false; emptycap.hidden = false; cta.hidden = true;
-        var sel = document.getElementById("sit-srcsel");
-        sel.innerHTML = missing.map(function(p){ return '<option value="' + p.id + '">' + (SHORT[p.id] || p.label) + '</option>'; }).join("");
-        var openBtn = document.getElementById("sit-opensrc"), openLbl = document.getElementById("sit-opensrclabel");
-        var applySel = function(){
-          var p = PARTITIONS.filter(function(z){ return z.id === sel.value; })[0];
-          if (!p) return;
-          openBtn.setAttribute("href", p.open);
-          openLbl.textContent = "Abrir " + (SHORT[p.id] || p.label);
-        };
-        sel.onchange = applySel;
-        applySel();
-      } else {
-        empty.hidden = true; emptycap.hidden = true; cta.hidden = false;
-      }
+      var cta = document.querySelector("#sit-continue span");
+      if (cta) cta.textContent = n ? "Continuar em A minha situação" : "Começar em A minha situação";
     }
     renderSit();
     // Re-render if the bookmarklet lands in another tab, or when this tab regains focus - so the
-    // module never sits stale at 0/9 while the data is actually already saved.
+    // module never sits stale while the data is actually already saved.
     window.addEventListener("storage", function(e){ if (e.key === PKEY) renderSit(); });
     document.addEventListener("visibilitychange", function(){ if (!document.hidden) renderSit(); });
     window.addEventListener("focus", renderSit);
   })();
 </script>
-<script defer src="/launcher.js"></script>
 </body>
 </html>

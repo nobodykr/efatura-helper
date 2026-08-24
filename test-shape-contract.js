@@ -4,6 +4,7 @@ const fs = require("fs");
 
 const tool = fs.readFileSync("tool.js", "utf8");
 const profile = fs.readFileSync("perfil.html", "utf8");
+const contract = fs.readFileSync("profile-contract.js", "utf8");
 const runtime = JSON.parse(fs.readFileSync("fiscalidade.config.json", "utf8"));
 
 function between(source, start, end) {
@@ -24,19 +25,16 @@ function exact(label, values, expected) {
   }
 }
 
-const toolIds = ids(between(tool, "function shapeEndpointId", "function contributeProfileShapes"));
-const profileIds = ids(between(profile, "function endpointId", "function sendShare"));
-
-exact("tool", toolIds, runtime.shapeEndpointIds);
-exact("profile", profileIds, toolIds);
-if (fs.existsSync("../cae-db/fiscalidade_api.py")) {
-  const api = fs.readFileSync("../cae-db/fiscalidade_api.py", "utf8");
-  const apiIds = ids(between(api, "ENDPOINT_IDS = frozenset({", "})"));
-  exact("API", apiIds, toolIds);
-}
-for (const value of toolIds) {
+const contractIds = ids(between(contract, "var ENDPOINT_RULES", "var IDS"));
+exact("contract", contractIds, runtime.shapeEndpointIds);
+if (!/PROFILE_CONTRACT\.partitions/.test(tool) || !/src="\/profile-contract\.js"/.test(profile))
+  throw new Error("browser readers do not consume the shared profile contract");
+const market = fs.readFileSync("market/storage.py", "utf8");
+if (!/ENDPOINT_ID = re\.compile/.test(market) || !/_shape\(skeleton\)/.test(market))
+  throw new Error("isolated intake does not revalidate stable endpoint IDs and strip values");
+for (const value of contractIds) {
   if (/[0-9]{5,}/.test(value) || value.includes("/") || value.includes("?"))
     throw new Error(`unsafe endpoint ID: ${value}`);
 }
 
-console.log("shape contribution endpoint contract passed");
+console.log("shared shape endpoint and isolated sink contract passed");

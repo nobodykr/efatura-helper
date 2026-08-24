@@ -5,9 +5,6 @@ var ALLOWED_HOSTS = new Set([
   "faturas.portaldasfinancas.gov.pt", "imoveis.portaldasfinancas.gov.pt",
   "sitfiscal.portaldasfinancas.gov.pt", "irs.portaldasfinancas.gov.pt", "www.seg-social.pt"
 ]);
-var PARTITIONS = new Set(["efatura", "rendas", "situacao", "atividade", "atividade_integrada",
-  "irs", "movfin", "recibos", "declaracoes", "deducoes", "despesas_atividade", "ss", "patrimonio"]);
-var PROFILE_KEY = "fiscalidade-profile-v1";
 var CONSENT_KEY = "fiscalidade-consent-v1";
 var SETTINGS_KEY = "fiscalidade-settings-v1";
 var LEGACY_HIDE_KEY = "fiscalidade-bar-hidden-v1";
@@ -47,6 +44,9 @@ function tabAllowed(tab) {
   catch (e) { return false; }
 }
 function openInvoicePage() { openExtensionPage("invoices.html"); }
+function openPublicPage(path) {
+  chrome.tabs.create({ url: "https://fiscalida.de" + path });
+}
 function plainObject(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   var proto = Object.getPrototypeOf(value);
@@ -150,6 +150,8 @@ function runToolInTab(tabId, mode, sendResponse) {
         extension: true, extensionSettings: localSettings || {}
       });
     }, args: [mode, settings] }).then(function () {
+      return chrome.scripting.executeScript({ target: target, files: ["profile-contract.js"] });
+    }).then(function () {
       return chrome.scripting.executeScript({ target: target, files: ["tool.js"] });
     }).then(function () {
       if (sendResponse) sendResponse({ ok: true });
@@ -164,14 +166,15 @@ if (chrome.runtime.onInstalled) chrome.runtime.onInstalled.addListener(function 
 });
 
 if (chrome.action && chrome.action.onClicked) chrome.action.onClicked.addListener(function (tab) {
-  if (!tabAllowed(tab) || tab.id == null) { openExtensionPage("profile.html"); return; }
-  chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["bar.js"] });
+  if (!tabAllowed(tab) || tab.id == null) { openPublicPage("/perfil"); return; }
+  chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["profile-contract.js"] })
+    .then(function () { return chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["bar.js"] }); });
 });
 
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
   if (!msg || typeof msg.type !== "string") return;
-  if (msg.type === "fb-open-profile" && (senderAllowed(sender) || extensionSender(sender))) { openExtensionPage("profile.html"); return; }
-  if (msg.type === "fb-open-privacy" && (senderAllowed(sender) || extensionSender(sender))) { openExtensionPage("profile.html#privacy"); return; }
+  if (msg.type === "fb-open-profile" && (senderAllowed(sender) || extensionSender(sender))) { openPublicPage("/perfil"); return; }
+  if (msg.type === "fb-open-privacy" && (senderAllowed(sender) || extensionSender(sender))) { openPublicPage("/privacidade"); return; }
 
   if (msg.type === "fb-dashboard-refresh" && extensionSender(sender)) {
     chrome.tabs.query({ url: "https://faturas.portaldasfinancas.gov.pt/*" }, function (tabs) {
@@ -229,33 +232,7 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
   }
 
   if (msg.type === "fb-settings-clear") {
-    chrome.storage.local.remove([PROFILE_KEY, SETTINGS_KEY]);
+    chrome.storage.local.remove(SETTINGS_KEY);
     return;
-  }
-
-  if (msg.type === "fb-profile-save" && PARTITIONS.has(msg.partition) && plainObject(msg.data)) {
-    var dataSize = 0, shapeSize = 0;
-    try {
-      dataSize = JSON.stringify(msg.data).length;
-      shapeSize = msg.shape === undefined ? 0 : JSON.stringify(msg.shape).length;
-    } catch (e) { return; }
-    if (dataSize > 4 * 1024 * 1024 || shapeSize > 256 * 1024 ||
-        (msg.shape !== undefined && !plainObject(msg.shape))) return;
-    chrome.storage.local.get(PROFILE_KEY, function (stored) {
-      var p = stored && stored[PROFILE_KEY];
-      if (!p || p.version !== 1 || Date.now() >= Number(p.expiresAt || 0))
-        p = { version: 1, partitions: {}, expiresAt: endOfDay() };
-      p.partitions[msg.partition] = {
-        status: "done", fetchedAt: new Date().toISOString(), data: msg.data,
-        shape: msg.shape || {}
-      };
-      p.expiresAt = endOfDay();
-      try { if (JSON.stringify(p).length > 9 * 1024 * 1024) return; } catch (e) { return; }
-      chrome.storage.local.set({ [PROFILE_KEY]: p }, function () {
-        sendResponse({ ok: true });
-        openExtensionPage("profile.html");
-      });
-    });
-    return true;
   }
 });

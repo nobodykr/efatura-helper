@@ -6,11 +6,13 @@
  */
 import { allow } from "../../_lib/ratelimit.js";
 
-const MAX_BODY = 64 * 1024;
+const DEFAULT_MAX_BODY = 64 * 1024;
 const ROUTES = [
   { re: /^map\/buckets\/\d{3}$/, methods: ["GET"], bucket: "map", limit: 450 },
   { re: /^map\/rules$/, methods: ["GET"], bucket: "rules", limit: 180 },
   { re: /^contributions\/(merchant|shapes|impact)$/, methods: ["POST"], bucket: "contribution", limit: 80 },
+  // Separate service and database: this route never falls back to the CAE/company API origin.
+  { re: /^intake$/, methods: ["POST"], bucket: "market-intake", limit: 30, maxBody: 1024 * 1024, market: true },
   { re: /^households\/[a-f0-9]{32,128}$/, methods: ["GET", "PUT", "DELETE"], bucket: "household", limit: 180 },
   { re: /^stats(?:\/impact)?$/, methods: ["GET"], bucket: "stats", limit: 180 },
 ];
@@ -49,11 +51,12 @@ export async function onRequest(context) {
     });
 
   const declared = Number(request.headers.get("content-length") || 0);
+  const maxBody = route.maxBody || DEFAULT_MAX_BODY;
   if (!Number.isFinite(declared) || declared < 0)
     return new Response(JSON.stringify({ error: "bad_content_length" }), {
       status: 400, headers: cors(new Headers({ "content-type": "application/json" }), route.methods)
     });
-  if (declared > MAX_BODY)
+  if (declared > maxBody)
     return new Response(JSON.stringify({ error: "body_too_large" }), {
       status: 413, headers: cors(new Headers({ "content-type": "application/json" }), route.methods)
     });
@@ -65,13 +68,14 @@ export async function onRequest(context) {
         status: 415, headers: cors(new Headers({ "content-type": "application/json" }), route.methods)
       });
     body = await request.arrayBuffer();
-    if (body.byteLength > MAX_BODY)
+    if (body.byteLength > maxBody)
       return new Response(JSON.stringify({ error: "body_too_large" }), {
         status: 413, headers: cors(new Headers({ "content-type": "application/json" }), route.methods)
       });
   }
 
-  const upstreamBase = context.env && context.env.FISCALIDADE_API_ORIGIN;
+  const upstreamBase = context.env && (route.market
+    ? context.env.FISCALIDADE_MARKET_ORIGIN : context.env.FISCALIDADE_API_ORIGIN);
   if (!upstreamBase)
     return new Response(JSON.stringify({ error: "internal_preview_not_configured" }), {
       status: 503, headers: cors(new Headers({ "content-type": "application/json" }), route.methods)
@@ -98,9 +102,11 @@ export async function onRequest(context) {
   }
   const headers = new Headers({ "accept": "application/json" });
   if (body) headers.set("content-type", "application/json");
-  if (context.env.FISCALIDADE_API_CLIENT_ID && context.env.FISCALIDADE_API_CLIENT_SECRET) {
-    headers.set("cf-access-client-id", context.env.FISCALIDADE_API_CLIENT_ID);
-    headers.set("cf-access-client-secret", context.env.FISCALIDADE_API_CLIENT_SECRET);
+  const clientId = route.market ? context.env.FISCALIDADE_MARKET_CLIENT_ID : context.env.FISCALIDADE_API_CLIENT_ID;
+  const clientSecret = route.market ? context.env.FISCALIDADE_MARKET_CLIENT_SECRET : context.env.FISCALIDADE_API_CLIENT_SECRET;
+  if (clientId && clientSecret) {
+    headers.set("cf-access-client-id", clientId);
+    headers.set("cf-access-client-secret", clientSecret);
   }
 
   try {

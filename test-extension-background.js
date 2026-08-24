@@ -53,8 +53,9 @@ state["fiscalidade-settings-v1"] = { wide: true };
 listener({ type: "fb-run", mode: "profile" }, sender, () => {});
 
 setTimeout(() => {
-  if (executions.length !== 2 || !executions[0].func || executions[1].files[0] !== "tool.js")
-    throw new Error("consented injection sequence is not config then packaged tool.js");
+  if (executions.length !== 3 || !executions[0].func ||
+      executions[1].files[0] !== "profile-contract.js" || executions[2].files[0] !== "tool.js")
+    throw new Error("consented injection sequence is not config, contract, then packaged tool.js");
   if (executions[0].args[1].wide !== true) throw new Error("extension settings not passed to tool");
   const before = executions.length;
   listener({ type: "fb-run", mode: "profile" }, { tab: { id: 8, url: "https://example.com/" } }, () => {});

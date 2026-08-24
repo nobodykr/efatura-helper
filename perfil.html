@@ -100,10 +100,10 @@
             border-radius:8px;padding:7px 14px;color:var(--ink2);font-size:.94rem;background:#fff}
   .sub{color:var(--ink2);font-size:1.08rem;margin:0 auto;max-width:72ch}
 
-  /* Segmented progress: one track, nine cells, a white check in each filled cell. */
+  /* Segmented progress: one track, thirteen cells, a white check in each filled cell. */
   .prog{margin:26px auto 0;max-width:860px}
   .plabel{text-align:center;font-weight:700;font-size:1.12rem;color:var(--pri-dark);margin-bottom:11px}
-  .segbar{display:grid;grid-template-columns:repeat(9,1fr);gap:5px}
+  .segbar{display:grid;grid-template-columns:repeat(13,1fr);gap:5px}
   .seg{height:27px;border:1px solid var(--hair-strong);border-radius:5px;background:#fff;
        display:flex;align-items:center;justify-content:center}
   .seg.on{background:var(--pri);border-color:var(--pri)}
@@ -311,6 +311,10 @@
     a[href]:after{content:""}
   }
   .fde{background:linear-gradient(120deg,#1E88FF,#00C6D7);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .devtool{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 20px;
+    padding:12px 15px;border:1px dashed var(--pri);border-radius:10px;background:var(--pri-soft);font-size:.9rem}
+  .devtool a{color:var(--pri-dark);font-weight:700}
+  @media(max-width:600px){.devtool{align-items:flex-start;flex-direction:column;gap:6px}}
 </style>
 <meta name="license" content="PolyForm Noncommercial 1.0.0; (c) 2026 Diogo Andrade; origem fiscalida.de; ref fb-lic-63e7b7c353">
 </head>
@@ -386,10 +390,12 @@
   <a href="/auditoria">Base legal e fiscal</a>
   <a href="/sobre">Ajuda</a>
   <a href="/verificar">Verificar o código</a>
+  <a href="/favorito-dev">Favorito DEV</a>
   <a href="/privacidade">Privacidade</a>
   <a href="/termos">Termos</a>
 </div></div>
 <main class="wrap">
+  <div class="devtool"><span>Ferramenta interna para testar rapidamente as 13 fontes.</span><a href="/favorito-dev">Instalar favorito DEV</a></div>
   <div id="out"></div>
 </main>
 <!-- FOOTER: hand-synced across index.html, perfil.html, sobre.html, deducoes.html, auditoria.html,
@@ -436,13 +442,20 @@
   </div>
 </footer>
 
+<script src="/profile-contract.js"></script>
 <script>
 (function(){
-  var PKEY = "fb-profile-v1";
-  var SHAPES_KEY = "fb-profile-share-shapes";         // response-schema diagnostics opt-in
-  var IMPACT_KEY = "fb-profile-share-impact";         // aggregate impact opt-in
+  var CONTRACT = window.FISCALIDADE_PROFILE_CONTRACT;
+  if (!CONTRACT) throw new Error("profile contract unavailable");
+  var PKEY = "fb-profile-v2";
+  var LEGACY_PKEY = "fb-profile-v1";
+  var AGREEMENT_KEY = "fiscalidade-market-agreement-v1";
+  var ACTIVE_KEY = "fiscalidade-active-intake-v3";
   var CONFIRM_KEY = "fb-profile-extra-confirmed";     // gate: the result only shows after "Outras situacoes"
   var API = "https://fiscalida.de/api/v1";
+  // Optional market intake must never gate the local 0/13 progress. Keep this in sync with
+  // fiscalidade.config.json; enabling it later still leaves local completion browser-first.
+  var MARKET_INTAKE_ENABLED = false;
   // DEMO MODE (/perfil?exemplo=1): a fictitious profile shown so a first-time visitor can see the
   // payoff before installing anything. It lives ONLY in memory: load/save/loadExtra/saveExtra/
   // contribution choices/confirm all short-circuit to MEM below, ingestHash is skipped and no key -
@@ -455,8 +468,18 @@
   // this file may read fb-profile-extra-confirmed from localStorage or MEM.confirmed directly.
   // That is what keeps demo and real from ever disagreeing about the gate state.
   var MEM = { store:null, extra:{}, confirmed:true };
-  function shapesOn(){ if (DEMO) return false; try { return localStorage.getItem(SHAPES_KEY) === "1"; } catch(e){ return false; } }
-  function impactOn(){ if (DEMO) return false; try { return localStorage.getItem(IMPACT_KEY) === "1"; } catch(e){ return false; } }
+  function agreementOn(){
+    if (DEMO) return true;
+    try {
+      var saved = JSON.parse(localStorage.getItem(AGREEMENT_KEY) || "null");
+      return !!saved && saved.version === CONTRACT.agreementVersion && saved.accepted === true;
+    } catch(e){ return false; }
+  }
+  function setAgreement(){
+    localStorage.setItem(AGREEMENT_KEY, JSON.stringify({
+      version:CONTRACT.agreementVersion, accepted:true, acceptedAt:new Date().toISOString()
+    }));
+  }
   function isConfirmed(){ return DEMO ? MEM.confirmed : realConfirmed(); }
   function realConfirmed(){ try { return localStorage.getItem(CONFIRM_KEY) === "1"; } catch(e){ return false; } }
   function setConfirmed(v){
@@ -464,94 +487,7 @@
     try { if (v) localStorage.setItem(CONFIRM_KEY, "1"); else localStorage.removeItem(CONFIRM_KEY); } catch(e){}
   }
 
-  // OPT-IN, STRUCTURE-ONLY contribution. Sends the SHAPE skeletons of the AT/Seg-Social responses
-  // (field names + types, e.g. {aaData:[{...keys}], iTotalRecords:"number"}) so we can pin the schema
-  // of endpoints not yet parsed and build readers for them. By construction it carries NO values and
-  // NO name/NIF - only the skeleton the reader captured; the server further coerces every leaf to a
-  // type token. Fires only when the box is ticked. Fails silently: contributing is never a blocker.
-  function endpointId(url){
-    var s=String(url||"").split("?")[0];
-    var rules=[
-      [/obterDocumentosAdquirente/,"efatura.documents.v1"],[/consultarDespesasDeducoes/,"irs.deductions.v1"],
-      [/obterContratos\/locador/,"rents.contracts.v1"],[/obterRecibos\/locador/,"rents.receipts.v1"],
-      [/\/geral\/dividas/,"tax-status.debts.v1"],[/\/geral\/coimas/,"tax-status.fines.v1"],[/agendaFiscal/,"tax-status.calendar.v1"],
-      [/consultardeclaracoes/,"activity.declarations.v1"],[/integrada\/presentation/,"activity.integrated.v1"],
-      [/liquidacoesIRSDataTables/,"irs.liquidations.v1"],[/reembolsosDataTables/,"irs.refunds.v1"],
-      [/resumoCobranca/,"finance.movements.v1"],[/obtemDocumentosV2/,"receipts.green.v1"],
-      [/\/app\/consulta\/pesquisa/,"irs.declarations.v1"],
-      [/dashboard-regime-simplificado/,"activity.expenses.v1"],[/login\/personalData/,"social.profile.v1"],
-      [/payments\/current/,"social.payments.v1"],[/situacao-contributiva/,"social.contribution-status.v1"],
-      [/matrizesinter\/api\/patrimonio/,"property.assets.v1"]
-    ];
-    for(var i=0;i<rules.length;i++) if(rules[i][0].test(s)) return rules[i][1];
-    return null;
-  }
-  function sendShare(store){
-    if (!shapesOn()) return;
-    // Flatten to { endpointURL: skeleton } - the sink groups by endpoint (the URL is the schema key),
-    // NOT by partition. s.shape is already { endpointURL: skeleton }, so merge them across partitions.
-    var shapes = {};
-    PARTITIONS.forEach(function(p){
-      var s = store.partitions[p.id];
-      if (s && s.shape) Object.keys(s.shape).forEach(function(url){ var id=endpointId(url); if(id) shapes[id] = s.shape[url]; });
-    });
-    if (!Object.keys(shapes).length) return;
-    try {
-      fetch(API + "/contributions/shapes", { method:"POST", headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ consent:true, shapes:shapes }) }).catch(function(){});
-    } catch(e){}
-  }
-  // Aggregate impact report. No identifier is generated or accepted: the server increments an
-  // aggregate immediately and cannot count distinct people or link two reports to one browser.
-  function sendImpact(store){
-    if (!impactOn()) return;
-    var ef = assemble(store).detalhes.efatura;
-    if (!ef) return;
-    var total = 0;
-    var reports = 0;
-    (ef.reAudit||[]).forEach(function(x){
-      // Soma o ACONSELHADO (setor do CAE principal do emitente), NUNCA o maximo teorico: esse inclui
-      // setores secundarios e a propria pagina diz que "nao e uma recomendacao". Um contador publico
-      // alimentado pelo maximo teorico anunciaria dinheiro que nos proprios desaconselhamos.
-      var val = (x && x.recuperavelAconselhado != null) ? x.recuperavelAconselhado : 0;
-      if (val > 0){ var w = resubmissionWindows(x.ano); if (w.recover.open) { total += val; reports++; } }
-    });
-    if (!(total > 0)) return;
-    try {
-      fetch(API + "/contributions/impact", { method:"POST", headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ consent:true, recoverable:Math.round(total*100)/100, reports:reports }) }).catch(function(){});
-    } catch(e){}
-  }
-  // Mirrors the PARTITIONS list in tool.js (kept in sync by hand - two files, two origins, no
-  // shared module). id + where to go to read each one.
-  var PARTITIONS = [
-    { id:"efatura", label:"e-Fatura", open:"https://faturas.portaldasfinancas.gov.pt/consultarDocumentosAdquirente.action",
-      why:"As tuas faturas e o setor de dedução de cada uma." },
-    { id:"rendas", label:"Rendas (Imóveis)", open:"https://imoveis.portaldasfinancas.gov.pt/arrendamento/consultarContratos/locador",
-      why:"Contratos de arrendamento e recibos de renda - rendimentos da categoria F." },
-    { id:"situacao", label:"Situação fiscal (dívidas e prazos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/geral/dashboard",
-      why:"Dívidas e coimas em aberto, e os próximos prazos da agenda fiscal." },
-    { id:"atividade", label:"Atividade (cadastro e IVA)", open:"https://sitfiscal.portaldasfinancas.gov.pt/atividade/atividade/consultardeclaracoes",
-      why:"Declarações de início, alteração e cessação de atividade." },
-    { id:"atividade_integrada", label:"Atividade exercida (cadastro atual)", open:"https://sitfiscal.portaldasfinancas.gov.pt/integrada/presentation",
-      why:"CAE/CIRS, datas de início e cessação, contabilidade e enquadramento de IVA/IRS." },
-    { id:"patrimonio", label:"Património predial (IMI)", open:"https://imoveis.portaldasfinancas.gov.pt/matrizesinter/web/consultar-patrimonio-predial",
-      why:"Imóveis que possuis e o seu VPT - a base do IMI." },
-    { id:"irs", label:"IRS (liquidações e reembolsos)", open:"https://sitfiscal.portaldasfinancas.gov.pt/inffin/entrada.html",
-      why:"As liquidações de IRS de todos os anos e os reembolsos - o histórico fiscal." },
-    { id:"movfin", label:"Movimentos financeiros", open:"https://sitfiscal.portaldasfinancas.gov.pt/movfin/resumoCobranca",
-      why:"Todos os pagamentos e reembolsos, de todos os impostos e anos - a tua situação financeira num sítio." },
-    { id:"recibos", label:"Recibos verdes (atividade)", open:"https://irs.portaldasfinancas.gov.pt/recibos/portal/consultar",
-      why:"Recibos verdes emitidos - rendimentos da categoria B (trabalho independente)." },
-    { id:"declaracoes", label:"Declarações de IRS", open:"https://irs.portaldasfinancas.gov.pt/app/consulta",
-      why:"A declaração efetiva de cada ano, incluindo substituições." },
-    { id:"deducoes", label:"Deduções oficiais", open:"https://irs.portaldasfinancas.gov.pt/consultarDespesasDeducoes.action",
-      why:"Totais oficiais da AT por categoria e por ano concluído." },
-    { id:"despesas_atividade", label:"Despesas afetas à atividade", open:"https://irs.portaldasfinancas.gov.pt/app/dashboard-regime-simplificado",
-      why:"Despesas reconhecidas pela AT para o regime simplificado da categoria B." },
-    { id:"ss", label:"Segurança Social", open:"https://www.seg-social.pt/ptss/pssd/home",
-      why:"Situação contributiva e pagamentos - emprego, contribuições e prestações." }
-  ];
+  var PARTITIONS = CONTRACT.partitions;
 
   // Self-declared deductions/situations the AT endpoints do NOT expose to the bookmarklet. The
   // AUTHORITATIVE source for most of these is the Modelo 3 pre-fill / liquidacao (AT holds it,
@@ -619,12 +555,115 @@
     if (DEMO){ if (!MEM.store) MEM.store = demoStore(); return MEM.store; }
     try {
       var s = JSON.parse(localStorage.getItem(PKEY));
+      if (!s){
+        var legacy = JSON.parse(localStorage.getItem(LEGACY_PKEY) || "null");
+        if (legacy && legacy.partitions){
+          s = legacy;
+          s.version = 2;
+          localStorage.setItem(PKEY, JSON.stringify(s));
+          localStorage.removeItem(LEGACY_PKEY);
+        }
+      }
       if (!s) return {partitions:{}};
       if (s.expiresAt && Date.now() >= s.expiresAt){ localStorage.removeItem(PKEY); return {partitions:{}}; }
       return s;
     } catch(e){ return {partitions:{}}; }
   }
-  function save(p){ if (DEMO){ MEM.store = p; return; } try { p.expiresAt = endOfDayTs(); localStorage.setItem(PKEY, JSON.stringify(p)); } catch(e){} }
+  function save(p){
+    if (DEMO){ MEM.store = p; return; }
+    try { p.version = 2; p.expiresAt = endOfDayTs(); localStorage.setItem(PKEY, JSON.stringify(p)); } catch(e){}
+  }
+
+  var MARKET_SECRET_KEY = "fiscalidade-market-secret-v1";
+  function marketSecret(){
+    var existing = null;
+    try { existing = localStorage.getItem(MARKET_SECRET_KEY); } catch(e){}
+    if (/^[a-f0-9]{64}$/.test(existing || "")) return existing;
+    var bytes = new Uint8Array(32); crypto.getRandomValues(bytes);
+    existing = Array.prototype.map.call(bytes, function(x){ return ("0"+x.toString(16)).slice(-2); }).join("");
+    localStorage.setItem(MARKET_SECRET_KEY, existing);
+    return existing;
+  }
+  function bytesFromHex(hex){
+    var out = new Uint8Array(hex.length/2);
+    for (var i=0;i<out.length;i++) out[i] = parseInt(hex.slice(i*2,i*2+2),16);
+    return out;
+  }
+  function b64url(bytes){
+    var s=""; Array.prototype.forEach.call(new Uint8Array(bytes),function(x){s+=String.fromCharCode(x);});
+    return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
+  }
+  function scopedBrowserToken(scope){
+    return crypto.subtle.importKey("raw",bytesFromHex(marketSecret()),{name:"HMAC",hash:"SHA-256"},false,["sign"])
+      .then(function(key){ return crypto.subtle.sign("HMAC",key,new TextEncoder().encode(scope)); })
+      .then(b64url);
+  }
+  function scopedToken(nif, year){ return scopedBrowserToken("company-year-v1\u0000"+year+"\u0000"+nif); }
+  function validLegalNif(value){
+    var nif=String(value||""); if(!/^[56][0-9]{8}$/.test(nif)) return false;
+    var sum=0; for(var i=0;i<8;i++) sum+=Number(nif[i])*(9-i);
+    var digit=11-(sum%11); if(digit>=10) digit=0;
+    return digit===Number(nif[8]);
+  }
+  function intakeShapes(saved){
+    var out={};
+    Object.keys((saved&&saved.shape)||{}).forEach(function(url){
+      var id=CONTRACT.endpointId(url); if(id) out[id]=saved.shape[url];
+    });
+    Object.keys((saved&&saved.shapes)||{}).forEach(function(id){ if(CONTRACT.endpointId(id)||/^[a-z][a-z0-9.-]+\.v\d+$/.test(id)) out[id]=saved.shapes[id]; });
+    return out;
+  }
+  function intakeCompanies(saved){
+    var rows=((saved&&saved.market&&saved.market.companies)||[]).filter(function(row){
+      return row && validLegalNif(row.nif) && Number.isInteger(Number(row.year)) &&
+        Number(row.year)>=2000 && Number(row.year)<=2100;
+    });
+    return Promise.all(rows.map(function(row){
+      return scopedToken(String(row.nif||""),Number(row.year)).then(function(token){
+        return { nif:String(row.nif||""), year:Number(row.year), token:token,
+          invoiceCount:Number(row.invoiceCount||0), grossEur:Math.round(Number(row.grossEur||0)),
+          vatEur:Math.round(Number(row.vatEur||0)), sectorCounts:row.sectorCounts||{} };
+      });
+    }));
+  }
+  function submitIntake(partition){
+    if (DEMO) return Promise.resolve({ok:true});
+    if (!MARKET_INTAKE_ENABLED) return Promise.resolve({ok:true,disabled:true});
+    if (!agreementOn()) return Promise.reject(new Error("agreement_required"));
+    var store=load(), saved=store.partitions[partition];
+    if (!saved) return Promise.reject(new Error("partition_missing"));
+    saved.intake={status:"sending",attemptedAt:new Date().toISOString()}; save(store); render();
+    return Promise.all([intakeCompanies(saved),scopedBrowserToken("partition-month-v1\u0000"+partition+"\u0000"+
+      new Date().toISOString().slice(0,7))]).then(function(values){
+      return fetch(API+"/intake",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+        contract:1, agreement:CONTRACT.agreementVersion, partition:partition,
+        submissionToken:values[1], shapes:intakeShapes(saved), companies:values[0]
+      })});
+    }).then(function(response){
+      if(!response.ok) return response.json().catch(function(){return{};}).then(function(body){throw new Error(body.error||("http_"+response.status));});
+      return response.json();
+    }).then(function(receipt){
+      var latest=load(), row=latest.partitions[partition];
+      if(row){ row.intake={status:"accepted",acceptedAt:new Date().toISOString(),accepted:receipt.accepted||{}}; save(latest); }
+      render(partition); return receipt;
+    }).catch(function(error){
+      var latest=load(), row=latest.partitions[partition];
+      if(row){ row.intake={status:"error",error:String(error&&error.message||error),attemptedAt:new Date().toISOString()}; save(latest); }
+      render(); throw error;
+    });
+  }
+  function acceptEnvelope(envelope){
+    if(!CONTRACT.validEnvelope(envelope)) return Promise.reject(new Error("invalid_profile_envelope"));
+    var store=load();
+    store.partitions[envelope.partition]={status:envelope.status,
+      fetchedAt:envelope.capturedAt,data:envelope.data,shape:envelope.shapes||{},market:envelope.market||null,
+      intake:{status:MARKET_INTAKE_ENABLED?(agreementOn()?"pending":"agreement_required"):"disabled"}};
+    if(!store.consentedAt) store.consentedAt=new Date().toISOString();
+    save(store);
+    render(envelope.partition);
+    if(MARKET_INTAKE_ENABLED && agreementOn()) submitIntake(envelope.partition).catch(function(){});
+    return Promise.resolve({ok:true,intake:MARKET_INTAKE_ENABLED?"optional":"disabled"});
+  }
   // The fictitious profile behind ?exemplo=1. Same shape assemble() reads, deliberately round,
   // clearly labelled "Exemplo com dados fictícios" next to the H1, never mixed with a real store.
   function demoStore(){
@@ -685,12 +724,9 @@
     if (!known) return null;
     // optional debug SHAPE (keys+types, values redacted) - for validating the readers, no PII
     var shape = null; if (q.s){ var sr = b64d(q.s); if (sr){ try { shape = JSON.parse(sr); } catch(e){} } }
-    var store = load();
-    store.partitions[q.p] = { status:"done", fetchedAt:new Date().toISOString(), data:data, shape:shape };
-    if (!store.consentedAt) store.consentedAt = new Date().toISOString();
-    save(store);
     try { history.replaceState(null, "", location.pathname); } catch(e){ location.hash=""; }
-    return q.p;
+    return acceptEnvelope({contract:CONTRACT.version,partition:q.p,status:"done",capturedAt:new Date().toISOString(),data:data,shapes:shape||{}})
+      .then(function(){return q.p;});
   }
 
   function assemble(store){
@@ -963,9 +999,13 @@
     if (id==="rendas" && d.rendas) return (d.rendas.activos>0)
       ? { v: nb(d.rendas.activos)+' contrato(s) ativo(s)' } : { v:'Sem contratos ativos' };
     if (id==="situacao" && d.situacao){
-      x = d.situacao; var td=(x.dividas&&x.dividas.n)||0, tc=(x.coimas&&x.coimas.n)||0;
+      x = d.situacao;
+      var debtKnown=!!x.dividas && x.dividas.n!=null, finesKnown=!!x.coimas && x.coimas.n!=null;
+      var td=debtKnown?Number(x.dividas.n):null, tc=finesKnown?Number(x.coimas.n):null;
+      if(!debtKnown) return { v:'Dívidas por confirmar', cls:'bad' };
       if (td||tc) return { v:(td?esc(td)+' dívida(s)':'')+(td&&tc?', ':'')+(tc?esc(tc)+' coima(s)':''), cls:'bad' };
-      return { v:'Sem dívidas', cls:'good' };
+      if(!finesKnown) return { v:'Sem dívidas · coimas por confirmar' };
+      return { v:'Sem dívidas nem coimas', cls:'good' };
     }
     if (id==="atividade" && d.atividade){
       x = d.atividade;
@@ -1038,14 +1078,6 @@
     for (var i=0;i<PARTITIONS.length;i++) h += '<span class="seg'+(i<n?' on':'')+'">'+(i<n?ico('i-check'):'')+'</span>';
     return h+'</div>';
   }
-  // The source picker inside the action frame: lists what is still missing, e-Fatura first.
-  function srcSelect(missing){
-    return '<div class="selwrap">'+ico(meta(missing[0].id).icon, '')+
-      '<select id="srcsel" aria-label="Fonte a abrir a seguir">'+
-      missing.map(function(p){ return '<option value="'+esc(p.id)+'">'+esc(meta(p.id).short)+'</option>'; }).join('')+
-      '</select>'+ico('i-chevron')+'</div>';
-  }
-
   /* RELATÓRIO DE CORREÇÃO, EM PDF, SEM SERVIDOR E SEM BIBLIOTECA.
    *
    * Tudo o que aqui entra já está no browser (o perfil montado a partir do localStorage). O
@@ -1183,11 +1215,13 @@
   function render(justAdded){
     Array.prototype.forEach.call(document.querySelectorAll('#out details[data-acc]'), function(d){ ACC[d.getAttribute('data-acc')] = d.open; });
     var store = load();
-    var done = PARTITIONS.filter(function(p){ return store.partitions[p.id] && store.partitions[p.id].status==="done"; });
-    var missing = PARTITIONS.filter(function(p){ return !(store.partitions[p.id] && store.partitions[p.id].status==="done"); });
+    var done = PARTITIONS.filter(function(p){ return store.partitions[p.id] && CONTRACT.isCompleteStatus(store.partitions[p.id].status); });
+    var missing = PARTITIONS.filter(function(p){ return !(store.partitions[p.id] && CONTRACT.isCompleteStatus(store.partitions[p.id].status)); });
     var full = done.length === PARTITIONS.length;
     var prof = assemble(store);
     var confirmed = isConfirmed();
+    var agreed = !MARKET_INTAKE_ENABLED || agreementOn();
+    var next = CONTRACT.next(store);
 
     // HERO ---------------------------------------------------------------------------------
     var h = '<div class="hero"><div class="eyebrow">Área pessoal</div>'+
@@ -1213,22 +1247,31 @@
       : '')+'</div>';
     h += '</div>';   // /hero
 
-    // FRAME DE AÇÃO (só enquanto faltam fontes) ---------------------------------------------
-    if (!full){
+    // Mandatory, explicit exchange agreement. The tool remains inert until this button is used.
+    if (!DEMO && MARKET_INTAKE_ENABLED && !agreed){
+      h += '<div class="frame" style="margin-top:24px;padding:24px"><div class="eyebrow">Antes de começar</div>'+
+        '<h2 style="margin:7px 0 8px;color:var(--pri-dark)">Gratuito, em troca de dados de mercado minimizados</h2>'+
+        '<p class="w" style="font-size:.98rem">Para usar a ferramenta, concordas em enviar estruturas sem valores e, no e-Fatura, totais anuais por empresa: NIF de pessoa coletiva, ano, número de faturas, valores arredondados e setores. Não enviamos o teu nome, email, NIF/NISS, datas, números de documento nem faturas individuais.</p>'+
+        '<p class="w" style="font-size:.9rem">Usamos estes agregados apenas para melhorar a Fiscalidade. O teu perfil fiscal completo continua guardado neste navegador até ao fim do dia.</p>'+
+        '<button type="button" class="btn-primary" id="accept-market" style="max-width:520px;margin:18px auto 0">'+ico('i-check')+'Aceito e quero começar</button>'+
+        '<div class="linkrow"><a href="/privacidade">Ler exatamente o que é enviado</a></div></div>';
+    }
+
+    // One deterministic action while a source is missing. No source selector and no tab spray.
+    if (!full && (agreed || DEMO)){
       h += '<div class="frame aframe">'+
-        '<div class="acell"><div class="atitle">'+(done.length?'Já reuniste':'1. Preparar')+'</div>'+
+        '<div class="acell"><div class="atitle">'+(done.length?'Já reuniste':'Preparar')+'</div>'+
           (done.length
             ? '<div class="adone">'+done.map(function(p){ return esc(meta(p.id).short); }).join(' · ')+'</div>'
             : '<a class="btn-outline" href="/extensao">Ver estado da extensão</a><div class="acap">pré-visualização interna</div>')+
         '</div>'+
-        '<div class="acell"><div class="atitle">'+(done.length?'Próxima fonte':'2. Começar por')+'</div>'+
-          srcSelect(missing)+'</div>'+
+        '<div class="acell"><div class="atitle">Próximo passo</div>'+
+          '<div class="selwrap">'+ico(meta(next.id).icon)+'<strong style="margin:auto">'+esc(meta(next.id).short)+'</strong></div></div>'+
         '<div class="acell"><div class="atitle" style="visibility:hidden" aria-hidden="true">&nbsp;</div>'+
-          '<a class="btn-primary" id="opensrc" target="_blank" rel="noopener" href="'+missing[0].open+'">'+
-          ico('i-external')+'<span id="opensrclabel">'+(done.length?'Abrir e continuar':'Abrir '+esc(meta(missing[0].id).short))+'</span></a></div>'+
+          '<a class="btn-primary" id="opensrc" target="fiscalidade-oficial" href="'+next.open+'">'+
+            ico('i-external')+'<span>'+(done.length?'Continuar atualização':'Começar atualização')+'</span></a></div>'+
       '</div>';
-      if (!done.length)
-        h += '<p class="framecap">Na página oficial, carrega em Ler na barra da extensão. Os dados aparecem aqui.</p>';
+      h += '<p class="framecap">Faz o login na página oficial, carrega em “Ler e voltar à Fiscalidade” e regressas aqui. É sempre reutilizado o mesmo separador oficial.</p>';
     }
 
     // ESTADO VAZIO: o que dá para juntar a seguir --------------------------------------------
@@ -1465,12 +1508,10 @@
       '</summary><div class="fbody">'+
       '<div class="w" style="margin:14px 0 4px">A barra da extensão faz esta leitura apenas quando carregas nela.</div>';
     PARTITIONS.forEach(function(p){
-      var ok = store.partitions[p.id] && store.partitions[p.id].status==="done";
+      var ok = store.partitions[p.id] && CONTRACT.isCompleteStatus(store.partitions[p.id].status);
       h += '<div class="step"><div class="ic">'+ico(ok?'i-check-circle':meta(p.id).icon)+'</div><div class="bd">'+
         '<div class="t">'+esc(p.label)+'</div><div class="w">'+esc(p.why)+'</div>'+
-        '<div style="margin-top:7px"><a class="btn'+(ok?' ghost':'')+'" href="'+p.open+'" target="_blank" rel="noopener">'+
-        (ok?'Reler esta página':'Abrir e ler esta página')+'</a></div>'+
-        (ok?'':'<div class="w" style="margin-top:5px">Na página, carrega em Ler na barra da extensão. Lê a página e volta aqui sozinho.</div>')+
+        '<div class="w" style="margin-top:5px">'+(ok?'Leitura concluída.':'A atualização guiada abre esta fonte quando chegar a vez dela.')+'</div>'+
         '</div></div>';
     });
     if (done.length) h += '<div style="margin-top:14px;border-top:1px solid var(--hair);padding-top:12px">'+
@@ -1483,14 +1524,6 @@
             : '<a href="#" id="reset">Apagar os meus dados</a>')+'</div>';
     h += trustStrip();
 
-    // Independent opt-ins. A user may help validate schemas without publishing an impact total,
-    // or the reverse. Neither choice changes local analysis.
-    if (!DEMO && done.length) h += '<label class="optin">'+
-      '<input type="checkbox" id="share-shapes" '+(shapesOn()?'checked':'')+' style="margin-right:6px">'+
-      '<b>Diagnóstico de formatos:</b> enviar só nomes de campos e tipos, sem valores, URLs livres ou identificadores.</label>'+
-      '<label class="optin">'+
-      '<input type="checkbox" id="share-impact" '+(impactOn()?'checked':'')+' style="margin-right:6px">'+
-      '<b>Impacto agregado:</b> somar o total recuperável ao contador. Não cria nem envia um identificador de pessoa.</label>';
     // Debug: copy the response STRUCTURES (keys+types, values redacted) to validate the readers.
     // Only appears once at least one partition captured a shape. Safe to paste - carries no values.
     var haveShapes = PARTITIONS.some(function(p){ return store.partitions[p.id] && store.partitions[p.id].shape; });
@@ -1499,16 +1532,13 @@
     h += '<div class="w" style="margin-top:12px;font-size:.82rem">Os teus dados são apagados automaticamente ao fim do dia, aqui neste navegador.</div>';
 
     document.getElementById("out").innerHTML = h;
-    // Source picker: keeps the primary button pointing at the chosen source.
-    var sel = document.getElementById("srcsel"), openBtn = document.getElementById("opensrc");
-    if (sel && openBtn) sel.onchange = function(){
-      var p = PARTITIONS.filter(function(z){ return z.id === sel.value; })[0];
-      if (!p) return;
-      openBtn.setAttribute("href", p.open);
-      var lbl = document.getElementById("opensrclabel");
-      if (lbl && !done.length) lbl.textContent = "Abrir " + meta(p.id).short;
-      var uses = sel.parentNode.querySelectorAll("use");
-      if (uses.length) uses[0].setAttribute("href", "#" + meta(p.id).icon);
+    var accept=document.getElementById("accept-market");
+    if(accept) accept.onclick=function(){ setAgreement(); render(); };
+    var openBtn=document.getElementById("opensrc");
+    if(openBtn && next) openBtn.onclick=function(){
+      var bytes=new Uint8Array(16); crypto.getRandomValues(bytes);
+      var nonce=Array.prototype.map.call(bytes,function(x){return("0"+x.toString(16)).slice(-2);}).join("");
+      localStorage.setItem(ACTIVE_KEY,JSON.stringify({partition:next.id,nonce:nonce,expiresAt:Date.now()+30*60*1000}));
     };
     // THE GATE: confirming "Outras situações" is what unlocks the fiscal result. Editing the
     // deductions afterwards does NOT un-confirm; only "Apagar os meus dados" clears the flag.
@@ -1600,21 +1630,13 @@
       if (DEMO){ MEM.store = null; MEM.extra = {}; render(); return; }
       try{
         localStorage.removeItem(PKEY);
-        localStorage.removeItem(SHAPES_KEY);
-        localStorage.removeItem(IMPACT_KEY);
+        localStorage.removeItem(LEGACY_PKEY);
+        localStorage.removeItem(ACTIVE_KEY);
+        localStorage.removeItem(AGREEMENT_KEY);
+        localStorage.removeItem(MARKET_SECRET_KEY);
       }catch(e){}
       setConfirmed(false);                 // apagar os dados também apaga a confirmação do gate
       ACC = {}; render(); };
-    var sh = document.getElementById("share-shapes");
-    if (sh) sh.onchange = function(){
-      try { localStorage.setItem(SHAPES_KEY, sh.checked ? "1" : "0"); } catch(e){}
-      if (sh.checked) sendShare(load());
-    };
-    var im = document.getElementById("share-impact");
-    if (im) im.onchange = function(){
-      try { localStorage.setItem(IMPACT_KEY, im.checked ? "1" : "0"); } catch(e){}
-      if (im.checked) sendImpact(load());
-    };
   }
 
   // Re-render when another tab writes the profile (the bookmarklet may land in a different tab)
@@ -1624,6 +1646,78 @@
   window.addEventListener("storage", function(e){ if (e.key === PKEY) render(); });
   document.addEventListener("visibilitychange", function(){ if (!document.hidden) render(); });
   window.addEventListener("focus", function(){ render(); });
+
+  // Cross-origin browser-only handoff. The profile issues a one-time nonce only to the exact
+  // official origin for that partition. It supports both the guided /perfil start and a direct
+  // bookmarklet/extension run. Account data travels in postMessage, never in a URL or request.
+  try { window.name = "fiscalidade-perfil"; } catch(e){}
+  var activeSource = null, activeOrigin = null;
+  function handoffDiagnostic(stage, partition, code){
+    var log=window.__FISCALIDADE_HANDOFF_DIAGNOSTICS__||[];
+    log.push({at:new Date().toISOString(),stage:stage,partition:partition||null,code:code||null});
+    window.__FISCALIDADE_HANDOFF_DIAGNOSTICS__=log.slice(-20);
+  }
+  function randomHex16(){
+    var bytes=new Uint8Array(16); crypto.getRandomValues(bytes);
+    return Array.prototype.map.call(bytes,function(x){return("0"+x.toString(16)).slice(-2);}).join("");
+  }
+  function activeIntake(){
+    var active=null;
+    try { active=JSON.parse(localStorage.getItem(ACTIVE_KEY)||"null"); } catch(e){}
+    if(active && active.expiresAt>=Date.now()) return active;
+    try { localStorage.removeItem(ACTIVE_KEY); } catch(e){}
+    return null;
+  }
+  window.addEventListener("message", function(event){
+    if(!CONTRACT.officialOrigins.has(event.origin) || !event.data || typeof event.data.type!=="string") return;
+    var messagePartition=event.data.partition || (event.data.envelope && event.data.envelope.partition);
+    var sourceMeta=CONTRACT.partition(messagePartition);
+    if(!sourceMeta || new URL(sourceMeta.open).origin!==event.origin) return;
+    var active=activeIntake();
+    if(event.data.type===CONTRACT.helloType){
+      if(event.data.contract!==CONTRACT.version || !CONTRACT.validRequestId(event.data.requestId)){
+        handoffDiagnostic("rejected",messagePartition,"contract_mismatch"); return;
+      }
+      // A guided start already has partition+nonce. A direct start creates them here. A stale
+      // unfinished guided source may be replaced by an explicit run on another official source.
+      if(!active || active.partition!==messagePartition){
+        active={partition:messagePartition,nonce:randomHex16(),expiresAt:Date.now()+30*60*1000};
+      }
+      if(active.requestId && active.requestId!==event.data.requestId) return;
+      active.requestId=event.data.requestId; active.origin=event.origin;
+      localStorage.setItem(ACTIVE_KEY,JSON.stringify(active));
+      activeSource=event.source; activeOrigin=event.origin;
+      handoffDiagnostic("ready",active.partition,"source_bound");
+      event.source.postMessage({type:CONTRACT.readyType,contract:CONTRACT.version,
+        partition:active.partition,requestId:active.requestId,nonce:active.nonce},event.origin);
+      return;
+    }
+    if(event.data.type===CONTRACT.messageType){
+      if(!active || event.source!==activeSource || event.origin!==activeOrigin ||
+          event.data.requestId!==active.requestId || event.data.nonce!==active.nonce ||
+          !CONTRACT.validEnvelope(event.data.envelope) || event.data.envelope.partition!==active.partition){
+        handoffDiagnostic("rejected",messagePartition,"invalid_or_replayed_envelope");
+        if(event.source===activeSource) event.source.postMessage({type:CONTRACT.rejectedType,
+          partition:messagePartition,requestId:event.data.requestId,code:"invalid_or_replayed_envelope"},event.origin);
+        return;
+      }
+      var acceptedSource=event.source, acceptedOrigin=event.origin;
+      var acceptedPartition=active.partition, acceptedRequestId=active.requestId;
+      // Consume before persisting so a duplicate/replay cannot race a second local write.
+      try { localStorage.removeItem(ACTIVE_KEY); } catch(e){}
+      activeSource=null; activeOrigin=null;
+      acceptEnvelope(event.data.envelope).then(function(){
+        handoffDiagnostic("accepted",acceptedPartition,MARKET_INTAKE_ENABLED?"local_optional_intake":"local_only");
+        acceptedSource.postMessage({type:CONTRACT.acceptedType,partition:acceptedPartition,
+          requestId:acceptedRequestId,intake:MARKET_INTAKE_ENABLED?"optional":"disabled"},acceptedOrigin);
+        try { window.focus(); } catch(e){}
+      }).catch(function(){
+        handoffDiagnostic("rejected",acceptedPartition,"local_save_failed");
+        acceptedSource.postMessage({type:CONTRACT.rejectedType,partition:acceptedPartition,
+          requestId:acceptedRequestId,code:"local_save_failed"},acceptedOrigin);
+      });
+    }
+  });
 
   // Masthead menu (no framework): a plain toggle with aria-expanded, Escape closes.
   var mb = document.getElementById("menubtn"), menu = document.getElementById("site-menu");
@@ -1639,11 +1733,10 @@
     });
   }
 
-  var added = DEMO ? null : ingestHash();   // o exemplo nunca lê nem escreve armazenamento
-  render(added);
-  if (added) { sendShare(load()); sendImpact(load()); }   // a new partition arrived - contribute if opted in
+  var added = DEMO ? null : ingestHash();   // legacy fragment migration only
+  render();
+  if(added && typeof added.then==="function") added.catch(function(){});
 })();
 </script>
-<script defer src="/launcher.js"></script>
 </body>
 </html>

@@ -8,7 +8,7 @@
 <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png">
 <title>Privacidade | Fiscalidade</title>
-<meta name="description" content="Política de privacidade da Fiscalidade: leituras locais, opções de contribuição, retenção e eliminação.">
+<meta name="description" content="Política de privacidade da Fiscalidade: leituras locais, contribuição de mercado minimizada, retenção e eliminação.">
 <link rel="canonical" href="https://fiscalida.de/privacidade">
 <style>
   :root{--pri:#034ad8;--pri-dark:#021c51;--ink:#2B363C;--ink2:#4a5a63;--mute:#6b7780;--bg:#fff;--bg2:#f4f6f9;--bg3:#E1E4EA;--rule:#d5dae1;--green:#1E5A3A;--focus:#ff7a00;--r:6px;}
@@ -157,30 +157,38 @@
   <p>A extensão usa a sessão que já abriste nos portais oficiais. Não pede, lê, transmite nem guarda a password desses portais. Também não cria um login na Fiscalidade.</p>
 
   <h2>Onde ficam os dados</h2>
-  <p>O perfil criado pela extensão fica em <code>chrome.storage.local</code>, no teu dispositivo, e expira no fim do dia. A página de perfil da extensão permite apagá-lo imediatamente e revogar a autorização. A versão web usa armazenamento local da origem <code>fiscalida.de</code> com a mesma expiração diária. Estes perfis não são enviados para o nosso servidor.</p>
+  <p>O perfil fiscal completo fica no armazenamento local da origem <code>fiscalida.de</code>, neste dispositivo, e expira no fim do dia. Podes apagá-lo imediatamente em “A minha situação”. O perfil completo não é enviado para o nosso servidor. A extensão usa <code>chrome.storage.local</code> para a autorização e preferências locais; os resumos locais anteriores à migração também expiram no fim do dia.</p>
   <p>Quando abres o painel de faturas, a extensão guarda uma cópia normalizada das faturas em <code>chrome.storage.session</code>, apenas na memória da sessão da extensão. Essa cópia permite reabrir o painel sem enviar os dados a um servidor e é eliminada quando a extensão é recarregada, a sessão termina, revogas a autorização ou chega o fim do dia.</p>
 
   <h2>Pedidos necessários ao funcionamento</h2>
   <p>Quando inicias uma análise, o navegador faz pedidos à própria página oficial para obter os dados que essa sessão te permite consultar. Para sugerir setores, pede a <code>fiscalida.de</code> blocos do mapa público de atividades económicas e um ficheiro público de informação da ferramenta. Esses pedidos não incluem faturas, valores, datas, o teu NIF, NISS, nome ou identificador de conta.</p>
 
-  <h2>Contribuições opcionais, desligadas de origem</h2>
-  <p>A ferramenta funciona sem contribuir. Cada opção é separada e exige uma escolha explícita:</p>
+  <h2>Troca necessária para usar o perfil gratuito</h2>
+  <p>Antes de começares, a página “A minha situação” pede uma aceitação explícita. O perfil gratuito só conclui cada leitura depois de enviar estes dados minimizados:</p>
+  <ul>
+    <li><b>Em todas as fontes:</b> identificadores estáveis dos endpoints e estruturas em que os valores são substituídos pelo respetivo tipo. O servidor volta a remover valores inesperados antes de guardar.</li>
+    <li><b>No e-Fatura:</b> por pessoa coletiva e por ano, NIF da empresa, ano, número de faturas, total anual e IVA em euros inteiros, e contagens por setor. Só entram NIFs iniciados por 5 ou 6 que passem o dígito de controlo.</li>
+    <li><b>Para deduplicar tentativas:</b> tokens HMAC aleatórios e limitados à fonte/mês ou à empresa/ano. São criados a partir de um segredo aleatório do navegador, não do teu nome, email, NIF, NISS ou conta. O servidor volta a protegê-los com um segredo próprio.</li>
+  </ul>
+  <p>Não são enviados o teu nome, email, NIF ou NISS, datas, números de documento, nomes de emitentes, linhas de fatura nem valores de faturas individuais. Estes dados são usados apenas para melhorar a Fiscalidade, não para produtos empresariais, crédito, seguros, publicidade ou venda. Se não aceitares esta troca, a leitura guiada do perfil não começa.</p>
+
+  <h2>Outras contribuições opcionais, desligadas de origem</h2>
+  <p>As funções abaixo, quando disponíveis, continuam separadas e exigem uma escolha própria:</p>
   <ul>
     <li><b>Correção de atividade de uma empresa:</b> pode enviar o NIF de uma pessoa coletiva, o setor sugerido e o setor escolhido. NIFs de pessoas singulares, empresários em nome individual e prefixos ambíguos são recusados no navegador e no servidor. Não inclui a fatura, valor, data ou identidade do comprador.</li>
-    <li><b>Diagnóstico de formatos:</b> envia apenas identificadores estáveis de endpoints e estruturas em que cada valor foi substituído pelo respetivo tipo. O servidor volta a remover valores, chaves dinâmicas e números que possam ser identificadores, e agrega estruturas iguais.</li>
     <li><b>Impacto agregado:</b> envia totais globais de relatórios e valor recuperável. Não cria nem aceita um identificador de pessoa e agrega o contributo quando chega.</li>
     <li><b>Partilha do agregado:</b> envia apenas os totais usados por seis categorias de dedução, um identificador aleatório de membro e uma chave de sala aleatória. Quem tiver a chave pode consultar ou alterar a sala; trata-a como uma password e partilha-a apenas com o agregado.</li>
   </ul>
 
   <h2>Retenção e eliminação</h2>
   <p>Não existe uma conta Fiscalidade nem um perfil pessoal no servidor para reter ou apagar. Os perfis locais expiram no fim do dia ou podem ser apagados de imediato. As salas de agregado expiram 400 dias depois da última atualização; cada membro pode apagar a sua própria linha com a chave e o identificador guardados no dispositivo.</p>
-  <p>As correções de empresas, estruturas sem valores e totais de impacto são transformados em contagens agregadas. Não mantêm um registo por utilizador e podem ser conservados como estatística do projeto.</p>
+  <p>As observações minimizadas da troca gratuita ficam numa base separada da base de empresas e expiram 400 dias depois da última atualização. Repetir a mesma leitura atualiza a linha deduplicada em vez de aumentar a contagem. Um agregado empresa/ano não é disponibilizado enquanto não tiver pelo menos 20 tokens distintos. Estruturas sem valores são agrupadas pelo respetivo resumo criptográfico.</p>
 
   <h2>Registos técnicos de segurança</h2>
   <p>Pedidos dirigidos a endereços que não existem e que são usados de forma inequívoca por scanners automáticos podem originar um registo técnico com o endereço IP, caminho sem parâmetros, método, agente do navegador, país, rede e sinais de automatização fornecidos pela infraestrutura. O corpo, o referenciador, a cidade, cookies e dados fiscais não são recolhidos por este mecanismo. Durante a pré-visualização interna, estes registos são privados e usados apenas para detetar e bloquear abuso. A abertura ao público fica condicionada à ativação e verificação do limite de tamanho e da eliminação automática ao fim de 7 dias.</p>
 
   <h2>Sem venda, publicidade ou analítica na extensão</h2>
-  <p>Não vendemos dados, não apresentamos publicidade comportamental e não usamos os dados fiscais para crédito, seguros ou outros fins. A extensão não inclui analítica. As páginas públicas também estão sem analítica durante este lançamento controlado.</p>
+  <p>Não vendemos dados, não apresentamos publicidade comportamental e não usamos os dados fiscais para crédito, seguros, perfis empresariais ou outros fins. A contribuição obrigatória da versão gratuita serve apenas para melhorar a própria Fiscalidade. A extensão não inclui analítica. As páginas públicas também estão sem analítica durante este lançamento controlado.</p>
 
   <h2>Permissões da extensão</h2>
   <p>As permissões de anfitrião estão limitadas aos subdomínios oficiais concretos necessários às funções descritas acima. A permissão <code>storage</code> guarda consentimento, perfil local e a cópia temporária do painel; <code>scripting</code> executa o analisador apenas depois do teu clique. Todo o código executável é incluído no pacote da extensão; não é descarregado código remoto.</p>
@@ -248,6 +256,5 @@
     });
   })();
 </script>
-<script defer src="/launcher.js"></script>
 </body>
 </html>
