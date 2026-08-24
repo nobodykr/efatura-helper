@@ -68,7 +68,7 @@ So the order matters - commit tool.js BEFORE generating the manifest:
    robots/icons. Exact command:
    ```
    rsync -a --delete --delete-excluded \
-     --exclude extension --exclude dist --exclude node_modules --exclude .git \
+    --exclude extension --exclude dist --exclude market --exclude node_modules --exclude .git \
      --exclude .wrangler --exclude .github --exclude .claude \
      --exclude .gitignore --exclude .gitleaks.toml \
      --exclude '*.md' --exclude docs --exclude outreach --exclude LICENSE \
