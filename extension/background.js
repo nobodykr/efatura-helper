@@ -9,12 +9,24 @@ var CONSENT_KEY = "fiscalidade-consent-v1";
 var SETTINGS_KEY = "fiscalidade-settings-v1";
 var LEGACY_HIDE_KEY = "fiscalidade-bar-hidden-v1";
 var INVOICE_SNAPSHOT_KEY = "fatura-boa-invoice-snapshot-v1";
+var INVOICE_EXPIRY_ALARM = "fatura-boa-invoice-snapshot-expiry";
+
+function senderPage(sender) {
+  return new URL((sender && sender.url) || (sender && sender.tab && sender.tab.url));
+}
 
 function senderAllowed(sender) {
   try {
-    var url = new URL(sender && sender.tab && sender.tab.url);
-    return url.protocol === "https:" && ALLOWED_HOSTS.has(url.hostname);
+    var url = senderPage(sender);
+    var tabUrl = new URL(sender && sender.tab && sender.tab.url);
+    return sender && sender.id === chrome.runtime.id && sender.frameId === 0 &&
+      sender.tab && Number.isInteger(sender.tab.id) && url.protocol === "https:" &&
+      url.origin === tabUrl.origin && ALLOWED_HOSTS.has(url.hostname);
   }
+  catch (e) { return false; }
+}
+function senderEfatura(sender) {
+  try { return senderAllowed(sender) && senderPage(sender).hostname === "faturas.portaldasfinancas.gov.pt"; }
   catch (e) { return false; }
 }
 function extensionSender(sender) {
@@ -25,6 +37,25 @@ function extensionSender(sender) {
   catch (e) { return false; }
 }
 function endOfDay() { var d = new Date(); d.setHours(24, 0, 0, 0); return d.getTime(); }
+function clearInvoiceSnapshot(callback) {
+  if (!chrome.storage.session) { if (callback) callback(); return; }
+  chrome.storage.session.remove(INVOICE_SNAPSHOT_KEY, function () {
+    if (chrome.alarms) chrome.alarms.clear(INVOICE_EXPIRY_ALARM);
+    if (callback) callback();
+  });
+}
+function scheduleInvoiceExpiry(expiresAt) {
+  if (chrome.alarms && Number.isFinite(Number(expiresAt)))
+    chrome.alarms.create(INVOICE_EXPIRY_ALARM, { when: Number(expiresAt) });
+}
+function restoreInvoiceExpiry() {
+  if (!chrome.storage.session) return;
+  chrome.storage.session.get(INVOICE_SNAPSHOT_KEY, function (stored) {
+    var current = stored && stored[INVOICE_SNAPSHOT_KEY];
+    if (!current || Date.now() >= Number(current.expiresAt || 0)) clearInvoiceSnapshot();
+    else scheduleInvoiceExpiry(current.expiresAt);
+  });
+}
 function openExtensionPage(file) {
   var url = chrome.runtime.getURL(file);
   chrome.tabs.query({ url: chrome.runtime.getURL("*") }, function (tabs) {
@@ -76,6 +107,14 @@ function cleanString(value, max) {
   var out = String(value);
   return out.length <= max ? out : out.slice(0, max);
 }
+function cleanDocumentId(value) {
+  var out = cleanString(value, 120);
+  return out && !/[\u0000-\u001f\u007f]/.test(out) ? out : "";
+}
+function cleanInvoiceDate(value) {
+  var out = cleanString(value, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(out) ? out : "";
+}
 function cleanNumber(value) {
   if (value === null || value === undefined || value === "" || typeof value === "boolean") return null;
   var number = Number(value);
@@ -96,17 +135,20 @@ function cleanInvoiceSnapshot(input, sourceTabId) {
   for (var i = 0; i < input.invoices.length; i++) {
     var row = input.invoices[i];
     if (!plainObject(row)) return null;
+    var status = cleanString(row.status, 12).toUpperCase();
+    var sector = cleanString(row.sector, 3).toUpperCase();
+    var scope = cleanString(row.scope, 32).toLowerCase();
     invoices.push({
-      id: cleanString(row.id, 120),
-      date: cleanString(row.date, 32),
+      id: cleanDocumentId(row.id),
+      date: cleanInvoiceDate(row.date),
       issuerNif: cleanString(row.issuerNif, 24),
       issuerName: cleanString(row.issuerName, 300),
       totalCents: cleanNumber(row.totalCents),
       vatCents: cleanNumber(row.vatCents),
       taxBaseCents: cleanNumber(row.taxBaseCents),
-      status: cleanString(row.status, 12).toUpperCase(),
-      sector: cleanString(row.sector, 3).toUpperCase(),
-      scope: cleanString(row.scope, 32).toLowerCase(),
+      status: /^(?:P|R|B|E|A|C|O|N)$/.test(status) ? status : "",
+      sector: /^C[0-9]{2}$/.test(sector) ? sector : "",
+      scope: /^(?:profissional|parcial|pessoal)$/.test(scope) ? scope : "",
       activity: cleanString(row.activity, 160)
     });
   }
@@ -131,6 +173,19 @@ function cleanInvoiceSnapshot(input, sourceTabId) {
   catch (e) { return null; }
   return snapshot;
 }
+
+// Invoice rows are the most sensitive extension-owned data. Keep them inaccessible to content
+// scripts even if a future refactor changes Chrome's default storage.session access level.
+if (chrome.storage.session && chrome.storage.session.setAccessLevel) {
+  try {
+    var accessLevel = chrome.storage.session.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" });
+    if (accessLevel && accessLevel.catch) accessLevel.catch(function () {});
+  } catch (e) {}
+}
+restoreInvoiceExpiry();
+if (chrome.alarms && chrome.alarms.onAlarm) chrome.alarms.onAlarm.addListener(function (alarm) {
+  if (alarm && alarm.name === INVOICE_EXPIRY_ALARM) clearInvoiceSnapshot();
+});
 
 function runToolInTab(tabId, mode, sendResponse) {
   chrome.storage.local.get([CONSENT_KEY, SETTINGS_KEY], function (stored) {
@@ -186,10 +241,11 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
   }
   if (msg.type === "fb-return-to-efatura" && extensionSender(sender)) {
     var invoice = plainObject(msg.invoice) ? msg.invoice : null;
-    var documentId = invoice ? cleanString(invoice.id, 120) : "";
-    var documentDate = invoice ? cleanString(invoice.date, 32) : "";
+    var documentId = invoice ? cleanDocumentId(invoice.id) : "";
+    var documentDate = invoice ? cleanInvoiceDate(invoice.date) : "";
     chrome.storage.session.get(INVOICE_SNAPSHOT_KEY, function (stored) {
       var current = stored && stored[INVOICE_SNAPSHOT_KEY];
+      if (current && Date.now() >= Number(current.expiresAt || 0)) { clearInvoiceSnapshot(); current = null; }
       var preferredId = current && Number.isInteger(current.sourceTabId) ? current.sourceTabId : null;
       chrome.tabs.query({ url: "https://faturas.portaldasfinancas.gov.pt/*" }, function (tabs) {
         var tab = (tabs || []).filter(function (candidate) { return candidate.id === preferredId; })[0] ||
@@ -207,14 +263,20 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
   if (!senderAllowed(sender)) return;
 
   if (msg.type === "fb-run") {
-    runToolInTab(sender.tab && sender.tab.id, msg.mode === "profile" ? "profile" : msg.mode === "dashboard" ? "dashboard" : "classifier", sendResponse);
+    var mode = msg.mode === "profile" ? "profile" :
+      (senderEfatura(sender) && (msg.mode === "dashboard" || msg.mode === "classifier") ? msg.mode : null);
+    if (!mode) { sendResponse({ ok: false, error: "invalid_mode" }); return; }
+    runToolInTab(sender.tab && sender.tab.id, mode, sendResponse);
     return true;
   }
 
   if (msg.type === "fb-invoice-snapshot") {
+    if (!senderEfatura(sender)) { sendResponse({ ok: false, error: "invalid_sender" }); return; }
     var snapshot = cleanInvoiceSnapshot(msg.snapshot, sender.tab && sender.tab.id);
     if (!snapshot || !chrome.storage.session) { sendResponse({ ok: false, error: "invalid_snapshot" }); return; }
     chrome.storage.session.set({ [INVOICE_SNAPSHOT_KEY]: snapshot }, function () {
+      if (chrome.runtime.lastError) { sendResponse({ ok: false, error: "storage_failed" }); return; }
+      scheduleInvoiceExpiry(snapshot.expiresAt);
       sendResponse({ ok: true });
       openInvoicePage();
     });

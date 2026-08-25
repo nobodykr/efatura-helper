@@ -1,0 +1,67 @@
+name: fiscalidade-market
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "5m"
+    max-file: "2"
+
+services:
+  intake:
+    build:
+      context: ..
+      dockerfile: market/Dockerfile
+    image: fiscalidade-market:local
+    container_name: fiscalidade-market
+    restart: unless-stopped
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    group_add: ["999"]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 128
+    environment:
+      FISCALIDADE_MARKET_DB: /data/fiscalidade-market.db
+      FISCALIDADE_MARKET_PEPPER_FILE: /run/secrets/market-pepper
+      FISCALIDADE_MARKET_API_KEY_FILE: /run/secrets/market-api-key
+    volumes:
+      - market-data:/data
+      - /mnt/data/secrets/fiscalidade-market.pepper:/run/secrets/market-pepper:ro
+      - /mnt/data/secrets/fiscalidade-market-api.key:/run/secrets/market-api-key:ro
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=16m
+    expose: ["8080"]
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/health',timeout=3).status==200 else 1)\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks: [market]
+    logging: *logging
+
+  tunnel:
+    image: cloudflare/cloudflared@sha256:ba461b8aa9c042156dbd39c38657fe7431bafa063220eab8d5330a523863da9f
+    container_name: fiscalidade-market-tunnel
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    group_add: ["1000"]
+    security_opt: [no-new-privileges:true]
+    command: tunnel --no-autoupdate run --token-file /run/secrets/tunnel-token
+    volumes:
+      - /mnt/data/secrets/fiscalidade-market-tunnel.token:/run/secrets/tunnel-token:ro
+    depends_on:
+      intake:
+        condition: service_healthy
+    networks: [market]
+    logging: *logging
+
+networks:
+  market:
+    ipam:
+      config:
+        - subnet: 10.223.79.0/24
+
+volumes:
+  market-data: {}

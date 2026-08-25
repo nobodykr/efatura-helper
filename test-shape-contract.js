@@ -30,7 +30,10 @@ exact("contract", contractIds, runtime.shapeEndpointIds);
 if (!/PROFILE_CONTRACT\.partitions/.test(tool) || !/src="\/profile-contract\.js"/.test(profile))
   throw new Error("browser readers do not consume the shared profile contract");
 const market = fs.readFileSync("market/storage.py", "utf8");
-if (!/ENDPOINT_ID = re\.compile/.test(market) || !/_shape\(skeleton\)/.test(market))
+const marketIds = ids(between(market, "ENDPOINT_PARTITIONS = {", "}\nTOKEN"));
+exact("isolated market service", marketIds, runtime.shapeEndpointIds);
+if (!/endpoint not in ENDPOINT_PARTITIONS/.test(market) ||
+    !/ENDPOINT_PARTITIONS\[endpoint\] != partition/.test(market) || !/_shape\(skeleton\)/.test(market))
   throw new Error("isolated intake does not revalidate stable endpoint IDs and strip values");
 for (const value of contractIds) {
   if (/[0-9]{5,}/.test(value) || value.includes("/") || value.includes("?"))

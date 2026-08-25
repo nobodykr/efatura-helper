@@ -35,8 +35,8 @@
     "localDocumentSchemas": ["credit-responsibilities.v1"]
   },
   "marketIntake": {
-    "enabled": false,
-    "requiredForLocalCompletion": false,
+    "enabled": true,
+    "requiredForLocalCompletion": true,
     "agreement": "market-v1",
     "service": "isolated",
     "retentionDays": 400,

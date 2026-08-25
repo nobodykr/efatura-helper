@@ -17,6 +17,7 @@ Object.defineProperty(w, "localStorage", { configurable: true, value: {
   setItem() { pageStorageReads++; throw new Error("page storage before consent"); }
 }});
 const extensionState = {};
+w.open = function () { return { focus() {} }; };
 w.chrome = { runtime: { sendMessage() { messages++; } }, storage: { local: {
   get(keys, cb) { cb(Object.assign({}, extensionState)); },
   set(value, cb) { Object.assign(extensionState, value); writes++; if (cb) cb(); }

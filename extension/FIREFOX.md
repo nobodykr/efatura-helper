@@ -9,7 +9,7 @@ mechanical job later, not a rediscovery.
   background differs: Firefox uses `background.scripts` (or `background.service_worker` on
   recent versions) - ship a background that works on both, or branch the manifest.
 - **APIs used** (bar.js / background.js): `chrome.runtime`, `chrome.scripting.executeScript`,
-  `chrome.storage.local`. Firefox aliases these under `browser.*` but also polyfills `chrome.*`,
+  `chrome.storage.local`, `chrome.storage.session` and `chrome.alarms`. Firefox aliases these under `browser.*` but also polyfills `chrome.*`,
   so the current code likely runs unchanged. VERIFY `chrome.scripting` is available on the target
   Firefox (it is, from FF109+). No `chrome.*` promise/callback surprises in what we use.
 - **host_permissions** `https://*.portaldasfinancas.gov.pt/*` - same, Firefox honours it.

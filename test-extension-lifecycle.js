@@ -14,6 +14,7 @@ const state = {
   "fiscalidade-bar-hidden-v1": true
 };
 const messages = [], writes = [];
+w.open = function () { return { focus() {} }; };
 w.chrome = { runtime: { sendMessage(message) { messages.push(message); } }, storage: { local: {
   get(keys, callback) { callback(Object.assign({}, state)); },
   set(value, callback) { Object.assign(state, value); writes.push(value); if (callback) callback(); }
@@ -32,8 +33,12 @@ w.eval(src);
 assert(w.document.querySelectorAll("#fb-ext-bar").length === 1, "toolbar reopen duplicated the bar");
 const read = [...w.document.querySelectorAll("button")].find((button) => /Ler e voltar/.test(button.textContent));
 assert(read, "single guided read action missing after reopen");
+const invoices = [...w.document.querySelectorAll("button")].find((button) => /Painel de faturas/.test(button.textContent));
+assert(invoices, "e-Fatura invoice dashboard action missing after reopen");
 read.click();
 assert(messages.some((message) => message.type === "fb-run" && message.mode === "profile"), "guided action did not request a profile read");
-assert(![...w.document.querySelectorAll("button")].some((button) => /Painel de faturas|Adicionar ao perfil|Analisar faturas/.test(button.textContent)),
-  "duplicate e-Fatura actions survived in the bar");
+invoices.click();
+assert(messages.some((message) => message.type === "fb-run" && message.mode === "dashboard"), "invoice action did not request a dashboard read");
+assert(![...w.document.querySelectorAll("button")].some((button) => /Adicionar ao perfil|Analisar faturas/.test(button.textContent)),
+  "retired duplicate e-Fatura actions survived in the bar");
 console.log("  extension close and toolbar reopen lifecycle passed");

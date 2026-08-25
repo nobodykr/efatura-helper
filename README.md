@@ -19,13 +19,16 @@ public bookmarklet surface.
   profile is not accepted by Fiscalidade's contribution endpoints.
 - Before the extension's explicit authorization action, it does not read the official page, use
   the page's storage, inject `tool.js`, or issue a network request.
+- The e-Fatura bar exposes a separate `Painel de faturas` action. Individual invoice rows are
+  validated by the service worker, kept only in trusted-context `chrome.storage.session`, and
+  actively deleted by an end-of-day alarm; the review page renders them without HTML injection.
 - Canonical `/perfil` stores the complete profile in Fiscalidade origin storage until the end of
   the local day. The extension and DEV bookmarklet send it there only with a nonce-bound browser
   `postMessage`; fiscal values do not enter URL fragments or extension profile storage.
-- Optional market intake is currently disabled. Local source completion never depends on it, an
-  agreement, or an API response. If re-enabled later, it may send only value-free schemas and,
-  for eFatura, company/year aggregates for checksum-valid legal entities; never buyer identity or
-  individual invoices.
+- The free profile flow requires an explicit `market-v1` agreement. A source counts as complete
+  only after the isolated service accepts its allowlisted value-free schema and, for e-Fatura,
+  company/year aggregates for checksum-valid legal entities. The payload never contains buyer
+  identity, purchase dates, document identifiers, issuer names or individual invoice rows.
 - The market sink rejects unknown fields, re-HMACs browser-scoped dedupe tokens, expires raw rows
   after 400 days and releases no company/year aggregate below 20 contributors. It uses a service,
   database, origin and credentials separate from cae-db.
@@ -37,7 +40,8 @@ The direct policy intended for future store review is
 
 - [`tool.js`](tool.js): browser-side readers, classification logic and UI.
 - [`profile-contract.js`](profile-contract.js): one 13-source and browser-handoff contract.
-- [`extension/`](extension): Manifest V3 wrapper, one-action bar, local utilities and build.
+- [`extension/`](extension): Manifest V3 wrapper, guided profile action, local invoice-review
+  dashboard, local utilities and deterministic build.
 - [`functions/api/v1/[[path]].js`](functions/api/v1/[[path]].js): constrained same-origin API facade.
 - [`market/`](market): isolated, strict write-only market intake service and storage tests.
 - [`year_snapshots.json`](year_snapshots.json): per-income-year statutory rule snapshots.
@@ -65,6 +69,8 @@ The suite checks, among other contracts:
 
 - zero pre-consent network activity and zero pre-consent official-page reads;
 - exact extension host permissions, local executable assets and canonical browser-only handoff;
+- top-frame/same-extension message validation, e-Fatura-only invoice snapshots and active
+  end-of-day deletion of the temporary review snapshot;
 - complete paginated/date-split e-Fatura reads and explicit failure on an unsplittable cap;
 - treatment of attributed (`R`, `B`, `E`) versus pending (`P`) document states;
 - synchronization of public HTML, Markdown, calculation constants and legal snapshots;

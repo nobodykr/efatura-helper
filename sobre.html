@@ -218,8 +218,8 @@
     e sugere o setor certo. Onde um comerciante tem várias atividades (um hipermercado com farmácia,
     livraria e restaurante dentro, o que é mais comum do que parece), escolhe a que te dá mais dedução e
     que ainda tem espaço no teto anual. Tu revês e aprovas. Nada é submetido sem o teu clique.</p>
-  <p>É de graça e vai continuar a ser. Não vendo dados e não há conta para criar. As contribuições
-    mínimas descritas na política de privacidade são separadas, explícitas e desligadas de origem.
+  <p>É de graça e vai continuar a ser. Não vendo dados e não há conta para criar. O contributo
+    minimizado do perfil é explicado e aceite antes da leitura; as restantes contribuições são separadas e desligadas de origem.
     Se te poupar uma tarde e algum dinheiro no IRS, já valeu a pena.</p>
 
   <h2>O que já cobre</h2>
@@ -232,8 +232,8 @@
   </div>
   <p style="margin:14px 0 0"><b>Ainda em construção:</b> atividade e recibos verdes (categoria B) e
     regime de IVA. Estes números podem estar incompletos, por isso aparecem marcados para confirmares.
-    Se quiseres ajudar a cobrir mais situações, ativa apenas o diagnóstico de estruturas: envia
-    nomes de campos e tipos, sem valores nem identificadores.</p>
+    Cada leitura do perfil envia automaticamente apenas a estrutura conhecida: nomes de campos e
+    tipos, sem os respetivos valores nem identificadores pessoais.</p>
   <p><a class="cta" href="/perfil">Ver a minha situação</a></p>
 
   <h2 id="seguranca">Modelo de segurança completo</h2>
@@ -250,7 +250,7 @@
   <ul class="safe">
     <li>A ferramenta <b>corre dentro do teu navegador</b>, na página do e-Fatura onde <b>já estás autenticado</b>. Usa a sessão que já tens.</li>
     <li><b>Nunca escreves a password</b> em nada nosso. Não há campo de password. Não a vemos, não a guardamos, não existe.</li>
-    <li><b>As tuas faturas nunca saem do teu navegador.</b> Os valores, as datas e o que compraste não são aceites pelos nossos endpoints. A ferramenta descarrega apenas as fatias necessárias do mapa público. As contribuições opcionais e independentes podem enviar: uma correção sobre o NIF de uma pessoa coletiva; estruturas só com nomes de campos e tipos; totais de impacto; ou seis totais de agregado sob uma chave aleatória. Nunca enviam a fatura nem o teu NIF.</li>
+    <li><b>As linhas e datas das tuas faturas ficam no navegador.</b> O perfil gratuito exige estruturas sem valores e, no e-Fatura, agregados empresa/ano: NIF de pessoa coletiva, ano, contagens e totais arredondados. Nunca envia identidade do comprador, datas, documentos, nomes de emitentes, descrições ou faturas individuais. As correções, o impacto e a partilha de agregado continuam opcionais e independentes.</li>
     <li><b>Partilha de agregado, opcional e desligada por omissão.</b> Só faz sentido se entregarem o IRS em conjunto. Quem entrega em separado tem tetos próprios (cada pessoa tem o seu limite de 250 € em despesas gerais, por exemplo) e não deve ativar isto: os números já estão certos para ti. Se entregam em conjunto, a partilha junta os totais das duas contas: enviamos <b>apenas seis números</b> (quanto já usaste de cada teto), nunca faturas, comerciantes, datas ou valores. A chave é <b>gerada ao acaso no teu navegador</b> (256 bits): não é calculada a partir do teu NIF nem do teu email, que aqui nem sequer são lidos. Deixa a caixa vazia para criar um agregado, ou cola uma chave para te juntares a um. A chave é a senha: quem a tiver consegue ler e alterar esses números, por isso partilha-a só com o teu agregado.</li>
     <li><b>Código 100% visível e auditável.</b> Podes ler exatamente o que faz, <a id="gh" href="#" target="_blank" rel="noopener">no GitHub</a>, ou pedir a alguém que perceba para confirmar. Podes também <a href="/verificar">verificar</a> que o código que corre é o publicado.</li>
     <li><b>Nada é submetido, de todo.</b> Nesta versão a ferramenta só lê e analisa. Qualquer alteração à tua declaração é feita por ti, no e-Fatura.</li>
@@ -274,23 +274,23 @@
     <li><b>GET <code>obterDocumentosAdquirente</code></b>, no próprio e-Fatura, com a sessão que já
       tinhas aberta. É o mesmo pedido que a página faz sozinha. As faturas ficam no teu navegador: não
       passam por nenhum servidor meu.</li>
-    <li><b>Mais nada, a não ser que peças.</b> A partir daqui só há pedidos se <b>ativares</b> algo:
-      a partilha de agregado (opcional, envia seis números); a partilha para <b>melhorar as
-      sugestões</b>; o diagnóstico de estruturas; ou um total de impacto. Todas estão desligadas por
-      omissão e separadas entre si. Se não ativares nenhuma, não é enviada qualquer contribuição.</li>
+    <li><b>POST <code>fiscalida.de/api/v1/intake</code> no perfil gratuito.</b> Depois do acordo
+      explícito, cada fonte envia a sua estrutura sem valores. O e-Fatura acrescenta apenas os
+      agregados empresa/ano descritos acima. A fonte só fica concluída quando este pedido é aceite.
+      A partilha de agregado, as correções e o total de impacto continuam opcionais e separados.</li>
   </ol>
   <p class="warn">Por opção, <b>não existe nenhum pedido de escrita para a AT</b>: a decisão e o clique
     final são sempre teus. O código que submeteria está no repositório, desligado, e há um teste
     automático que falha se alguma vez passar a submeter.</p>
   <p class="note"><b>E as páginas da Fiscalidade?</b> Durante este lançamento controlado não carregam
     analítica, fontes remotas ou widgets de terceiros. A política de privacidade descreve
-    separadamente as leituras locais e cada contribuição opcional.</p>
+    separadamente a troca obrigatória do perfil e cada contribuição opcional.</p>
 
   <h2>O que a torna diferente</h2>
   <ul>
     <li><b>Nunca pede a password.</b> Corre na sessão que já tens aberta. As alternativas ou te pedem as credenciais (perigoso) ou te obrigam a meter tudo à mão (onde toda a gente erra). Aqui, nenhuma das duas.</li>
     <li><b>Lê as fontes oficiais.</b> Os números vêm do teu registo real no Estado, não de ti a adivinhar.</li>
-    <li><b>Os registos ficam no teu navegador.</b> Só são enviadas as contribuições mínimas que escolheres; uma correção de empresa pode incluir o NIF dessa pessoa coletiva, nunca o teu.</li>
+    <li><b>O perfil completo fica no teu navegador.</b> Só são enviados o contributo minimizado aceite antes da leitura e as opções adicionais que escolheres; uma correção de empresa pode incluir o NIF dessa pessoa coletiva, nunca o teu.</li>
     <li><b>É verificável.</b> O código é público e podes <a href="/verificar">confirmar</a> que o que corre é exatamente o código publicado.</li>
   </ul>
   <div class="pills">
@@ -311,10 +311,10 @@
     que usar a ferramenta a seguir. O mesmo para sugestões, dúvidas, ou se simplesmente não perceberes
     alguma coisa - se não se percebe, é problema meu, não teu.
   </p>
-  <p class="box"><b>Recolha direta desativada.</b> Abre um issue sem
+  <p class="box"><b>Formulário de contacto desativado.</b> Abre um issue sem
     incluir NIF, nomes, documentos, capturas da área autenticada, valores fiscais ou credenciais.
-    Para ajudar a cobrir um formato novo, usa apenas a opção de diagnóstico de estruturas, que envia
-    nomes de campos e tipos depois de a ativares.</p>
+    As estruturas necessárias para cobrir formatos novos são recolhidas pelo perfil sem os valores
+    das respostas.</p>
   <p class="note">
     Preferes o GitHub? Abre um <a id="ghissues" href="#" target="_blank" rel="noopener">issue</a>,
     ou fala comigo em <a href="https://diogoandrade.com" target="_blank" rel="noopener">diogoandrade.com</a>.

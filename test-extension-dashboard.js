@@ -10,8 +10,8 @@ const snapshot = {
   version: 1, year: 2026, fetchedAt: "2026-08-23T12:00:00.000Z", expiresAt: Date.now() + 60000,
   complete: true, mapUnavailable: false, issuerSectors: { "500000009": ["C03", "C99"] },
   invoices: [
-    { id: "a", date: "2026-08-20", issuerNif: "500000009", issuerName: "Farmácia & Companhia", totalCents: 1200, vatCents: 100, status: "P", sector: "", scope: "profissional", activity: "Consultoria" },
-    { id: "b", date: "2026-07-10", issuerNif: "500000009", issuerName: "Farmácia & Companhia", totalCents: 800, vatCents: 50, status: "R", sector: "C03", scope: "pessoal", activity: "" }
+    { id: "a", date: "2026-08-20", issuerNif: "500000009", issuerName: "Farmácia & Companhia <img id=invoice-xss>", totalCents: 1200, vatCents: 100, status: "P", sector: "", scope: "profissional", activity: "Consultoria" },
+    { id: "b", date: "2026-07-10", issuerNif: "500000009", issuerName: "Farmácia & Companhia <img id=invoice-xss>", totalCents: 800, vatCents: 50, status: "R", sector: "C03", scope: "pessoal", activity: "" }
   ]
 };
 let storageListener, messages = [], fetches = 0;
@@ -29,6 +29,7 @@ assert(storageListener, "dashboard did not listen for refreshed session snapshot
 assert(w.document.querySelectorAll(".issuer-card").length === 1, "issuer grouping failed");
 assert(/2 faturas lidas/.test(w.document.getElementById("snapshot-status").textContent), "snapshot status missing");
 assert(/Farmácia & Companhia/.test(w.document.getElementById("issuer-list").textContent), "issuer name not rendered safely");
+assert(!w.document.getElementById("invoice-xss") && /<img id=invoice-xss>/.test(w.document.getElementById("issuer-list").textContent), "invoice text reached the dashboard as HTML");
 assert(/C03 - Alojamento\/restauração/.test(w.document.getElementById("issuer-list").textContent), "C03 canonical sector label missing");
 assert(!w.document.querySelector("a[target='_blank']"), "dashboard still opens navigation in a new tab");
 w.document.getElementById("status-filter").value = "pending";

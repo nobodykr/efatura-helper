@@ -59,25 +59,36 @@
     if (target) try { target.focus(); } catch (e) {}
   }
 
+  function run(mode) { chrome.runtime.sendMessage({ type: "fb-run", mode: mode }); }
+
+  function authorizeAndRun(mode) {
+    var consent = { version: 1, localAnalysis: true, acknowledgedAt: new Date().toISOString() };
+    if (mode === "profile") openProfile();
+    chrome.storage.local.set({ [CONSENT_KEY]: consent }, function () { renderEnabled(); run(mode); });
+  }
+
   function renderConsent() {
     actions.textContent = "";
     summary.textContent = "não lê esta página antes da tua autorização";
     var allow = button("Ler e voltar à Fiscalidade", true);
     var privacy = button("Privacidade", false);
     allow.addEventListener("click", function () {
-      var consent = { version: 1, localAnalysis: true, acknowledgedAt: new Date().toISOString() };
       // Reserve/reuse the named profile tab while this click still has browser activation. The
       // account read is asynchronous, so opening it only after the read is vulnerable to popup
       // blocking (and to the Access gate taking a few seconds).
-      openProfile();
-      chrome.storage.local.set({ [CONSENT_KEY]: consent }, function () { renderEnabled(); run("profile"); });
+      authorizeAndRun("profile");
     });
-    privacy.addEventListener("click", function () { chrome.runtime.sendMessage({ type: "fb-open-privacy" }); });
     actions.appendChild(allow);
+    // The invoice dashboard is a separate, extension-owned local view. Let an e-Fatura user choose
+    // it as their first explicit read instead of forcing a profile read just to reveal the button.
+    if (part && part.id === "efatura") {
+      var invoices = button("Painel de faturas", false);
+      invoices.addEventListener("click", function () { authorizeAndRun("dashboard"); });
+      actions.appendChild(invoices);
+    }
+    privacy.addEventListener("click", function () { chrome.runtime.sendMessage({ type: "fb-open-privacy" }); });
     actions.appendChild(privacy);
   }
-
-  function run(mode) { chrome.runtime.sendMessage({ type: "fb-run", mode: mode }); }
 
   function renderEnabled() {
     actions.textContent = "";
@@ -92,6 +103,11 @@
     var main = button("Ler e voltar à Fiscalidade", true);
     main.addEventListener("click", function () { openProfile(); run("profile"); });
     actions.appendChild(main);
+    if (part.id === "efatura") {
+      var invoices = button("Painel de faturas", false);
+      invoices.addEventListener("click", function () { run("dashboard"); });
+      actions.appendChild(invoices);
+    }
     var profile = button("Voltar ao perfil", false);
     profile.addEventListener("click", openProfile); actions.appendChild(profile);
   }

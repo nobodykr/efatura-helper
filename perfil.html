@@ -7,7 +7,7 @@
 <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-icon.png" sizes="180x180" type="image/png">
 <title>A minha situação fiscal | Fiscalidade</title>
-<meta name="description" content="Vê a tua situação fiscal a partir dos documentos oficiais das Finanças. Tudo fica no teu navegador - nada é enviado.">
+<meta name="description" content="Vê a tua situação fiscal a partir das fontes oficiais. O perfil fica no navegador; a utilização gratuita inclui um contributo de mercado minimizado, sem identidade nem faturas individuais.">
 <!-- noindex: this is a personal working page, not content to rank. -->
 <meta name="robots" content="noindex,nofollow,noarchive">
 <link href="/fonts.css" rel="stylesheet">
@@ -453,9 +453,10 @@
   var ACTIVE_KEY = "fiscalidade-active-intake-v3";
   var CONFIRM_KEY = "fb-profile-extra-confirmed";     // gate: the result only shows after "Outras situacoes"
   var API = "https://fiscalida.de/api/v1";
-  // Optional market intake must never gate the local 0/13 progress. Keep this in sync with
-  // fiscalidade.config.json; enabling it later still leaves local completion browser-first.
-  var MARKET_INTAKE_ENABLED = false;
+  // The minimized market contribution is the explicit exchange for the free profile flow. A
+  // source reaches the 0/13 completion count only after the isolated intake service accepts its
+  // allowlisted, value-free schema and (for e-Fatura only) company/year aggregates.
+  var MARKET_INTAKE_ENABLED = true;
   // DEMO MODE (/perfil?exemplo=1): a fictitious profile shown so a first-time visitor can see the
   // payoff before installing anything. It lives ONLY in memory: load/save/loadExtra/saveExtra/
   // contribution choices/confirm all short-circuit to MEM below, ingestHash is skipped and no key -
@@ -523,8 +524,22 @@
       ask:"Despesas específicas da pessoa com deficiência no ano (saúde/educação próprias)? As regras do art. 87.º diferem das normais.",
       nota:"Dá uma dedução fixa por pessoa (múltiplo do IAS) e permite despesas de saúde/educação da pessoa com deficiência fora dos tetos normais. Varia com o caso - guarda o valor e confirma na declaração." }
   ];
-  function loadExtra(){ if (DEMO) return MEM.extra; try { return JSON.parse(localStorage.getItem(EXTRA_KEY)) || {}; } catch(e){ return {}; } }
-  function saveExtra(e){ if (DEMO){ MEM.extra = e; return; } try { localStorage.setItem(EXTRA_KEY, JSON.stringify(e)); } catch(e2){} }
+  function loadExtra(){
+    if (DEMO) return MEM.extra;
+    try {
+      var saved=JSON.parse(localStorage.getItem(EXTRA_KEY))||{};
+      if(saved.expiresAt && Date.now()>=saved.expiresAt){ localStorage.removeItem(EXTRA_KEY); return {}; }
+      if(saved.data && typeof saved.data==="object") return saved.data;
+      // One-time migration of the old unexpired wrapper-less format; it may live only until the
+      // next local midnight from this read, never indefinitely again.
+      if(Object.keys(saved).length) localStorage.setItem(EXTRA_KEY,JSON.stringify({data:saved,expiresAt:endOfDayTs()}));
+      return saved;
+    } catch(e){ return {}; }
+  }
+  function saveExtra(e){
+    if (DEMO){ MEM.extra = e; return; }
+    try { localStorage.setItem(EXTRA_KEY,JSON.stringify({data:e,expiresAt:endOfDayTs()})); } catch(e2){}
+  }
   // Estimate the dedução à coleta from a typed amount. Green + number only when the rule is pinned
   // (DRE-verified rate/cap); otherwise capture the value but tell them to confirm - never invent a %.
   function recLine(x, v, age) {
@@ -565,13 +580,20 @@
         }
       }
       if (!s) return {partitions:{}};
-      if (s.expiresAt && Date.now() >= s.expiresAt){ localStorage.removeItem(PKEY); return {partitions:{}}; }
+      if (s.expiresAt && Date.now() >= s.expiresAt){
+        localStorage.removeItem(PKEY); localStorage.removeItem(EXTRA_KEY);
+        localStorage.removeItem(CONFIRM_KEY); localStorage.removeItem(ACTIVE_KEY);
+        return {partitions:{}};
+      }
       return s;
     } catch(e){ return {partitions:{}}; }
   }
   function save(p){
-    if (DEMO){ MEM.store = p; return; }
-    try { p.version = 2; p.expiresAt = endOfDayTs(); localStorage.setItem(PKEY, JSON.stringify(p)); } catch(e){}
+    if (DEMO){ MEM.store = p; return true; }
+    try {
+      p.version = 2; p.expiresAt = endOfDayTs(); localStorage.setItem(PKEY, JSON.stringify(p));
+      return true;
+    } catch(e){ return false; }
   }
 
   var MARKET_SECRET_KEY = "fiscalidade-market-secret-v1";
@@ -605,64 +627,143 @@
     var digit=11-(sum%11); if(digit>=10) digit=0;
     return digit===Number(nif[8]);
   }
-  function intakeShapes(saved){
+  function intakeError(code){ var error=new Error(code); error.code=code; return error; }
+  function sanitizeShape(value, depth){
+    depth=depth||0;
+    if(depth>6) return "...";
+    if(value==null) return null;
+    if(Array.isArray(value)){
+      if(value.length>3) throw intakeError("invalid_schema");
+      return value.map(function(child){ return sanitizeShape(child,depth+1); });
+    }
+    if(typeof value==="object"){
+      var keys=Object.keys(value), out={};
+      if(keys.length>80) throw intakeError("invalid_schema");
+      keys.forEach(function(key){
+        if(!/^[A-Za-z0-9_.:/-]{1,96}$/.test(key)) throw intakeError("invalid_schema");
+        out[key]=sanitizeShape(value[key],depth+1);
+      });
+      return out;
+    }
+    if(typeof value==="string")
+      return /^(?:str(?:\([0-9]+\))?|number|boolean|undefined|\.\.\.|x[0-9]+)$/.test(value)?value:"string";
+    if(typeof value==="boolean") return "boolean";
+    if(typeof value==="number" && Number.isFinite(value)) return "number";
+    throw intakeError("invalid_schema");
+  }
+  function intakeShapes(saved, partition){
     var out={};
     Object.keys((saved&&saved.shape)||{}).forEach(function(url){
-      var id=CONTRACT.endpointId(url); if(id) out[id]=saved.shape[url];
+      var id=CONTRACT.endpointId(url)||(CONTRACT.isEndpointId(url)?url:null);
+      if(id && CONTRACT.endpointPartition(id)===partition) out[id]=sanitizeShape(saved.shape[url],0);
     });
-    Object.keys((saved&&saved.shapes)||{}).forEach(function(id){ if(CONTRACT.endpointId(id)||/^[a-z][a-z0-9.-]+\.v\d+$/.test(id)) out[id]=saved.shapes[id]; });
+    Object.keys((saved&&saved.shapes)||{}).forEach(function(id){
+      if(CONTRACT.isEndpointId(id) && CONTRACT.endpointPartition(id)===partition)
+        out[id]=sanitizeShape(saved.shapes[id],0);
+    });
     return out;
   }
-  function intakeCompanies(saved){
-    var rows=((saved&&saved.market&&saved.market.companies)||[]).filter(function(row){
-      return row && validLegalNif(row.nif) && Number.isInteger(Number(row.year)) &&
-        Number(row.year)>=2000 && Number(row.year)<=2100;
-    });
-    return Promise.all(rows.map(function(row){
+  function intakeCompanies(saved, partition){
+    if(partition!=="efatura") return Promise.resolve([]);
+    var rows=(saved&&saved.market&&saved.market.companies)||[];
+    if(!Array.isArray(rows) || rows.length>5000) return Promise.reject(intakeError("invalid_market_data"));
+    var clean=[];
+    for(var r=0;r<rows.length;r++){
+      var row=rows[r]||{}, year=Number(row.year), count=Number(row.invoiceCount);
+      var gross=Math.round(Number(row.grossEur)), vat=Math.round(Number(row.vatEur));
+      if(!validLegalNif(row.nif) || !Number.isInteger(year) || year<2000 || year>2100 ||
+          !Number.isInteger(count) || count<0 || count>1000000 || !Number.isFinite(gross) ||
+          !Number.isFinite(vat) || Math.abs(gross)>1000000000 || Math.abs(vat)>1000000000 ||
+          !row.sectorCounts || typeof row.sectorCounts!=="object" || Array.isArray(row.sectorCounts))
+        return Promise.reject(intakeError("invalid_market_data"));
+      var sectors={}, sum=0, keys=Object.keys(row.sectorCounts);
+      if(keys.length>100) return Promise.reject(intakeError("invalid_market_data"));
+      for(var k=0;k<keys.length;k++){
+        var sector=keys[k], sectorCount=Number(row.sectorCounts[sector]);
+        if(!/^(?:C[0-9]{2}|UNCLASSIFIED)$/.test(sector) || !Number.isInteger(sectorCount) ||
+            sectorCount<0 || sectorCount>count) return Promise.reject(intakeError("invalid_market_data"));
+        sectors[sector]=sectorCount; sum+=sectorCount;
+      }
+      if(sum!==count) return Promise.reject(intakeError("invalid_market_data"));
+      clean.push({nif:String(row.nif),year:year,invoiceCount:count,grossEur:gross,vatEur:vat,sectorCounts:sectors});
+    }
+    return Promise.all(clean.map(function(row){
       return scopedToken(String(row.nif||""),Number(row.year)).then(function(token){
-        return { nif:String(row.nif||""), year:Number(row.year), token:token,
-          invoiceCount:Number(row.invoiceCount||0), grossEur:Math.round(Number(row.grossEur||0)),
-          vatEur:Math.round(Number(row.vatEur||0)), sectorCounts:row.sectorCounts||{} };
+        return {nif:row.nif,year:row.year,token:token,invoiceCount:row.invoiceCount,
+          grossEur:row.grossEur,vatEur:row.vatEur,sectorCounts:row.sectorCounts};
       });
     }));
   }
   function submitIntake(partition){
     if (DEMO) return Promise.resolve({ok:true});
-    if (!MARKET_INTAKE_ENABLED) return Promise.resolve({ok:true,disabled:true});
-    if (!agreementOn()) return Promise.reject(new Error("agreement_required"));
+    if (!MARKET_INTAKE_ENABLED) return Promise.reject(intakeError("intake_disabled"));
+    if (!agreementOn()) return Promise.reject(intakeError("agreement_required"));
     var store=load(), saved=store.partitions[partition];
-    if (!saved) return Promise.reject(new Error("partition_missing"));
-    saved.intake={status:"sending",attemptedAt:new Date().toISOString()}; save(store); render();
-    return Promise.all([intakeCompanies(saved),scopedBrowserToken("partition-month-v1\u0000"+partition+"\u0000"+
+    if (!saved) return Promise.reject(intakeError("partition_missing"));
+    var shapes;
+    try { shapes=intakeShapes(saved,partition); }
+    catch(error){
+      saved.status="pending"; saved.intake={status:"error",code:"invalid_schema",attemptedAt:new Date().toISOString()};
+      save(store); render(); return Promise.reject(intakeError("invalid_schema"));
+    }
+    var shapeCount=Object.keys(shapes).length;
+    if(!shapeCount){
+      saved.status="pending"; saved.intake={status:"error",code:"schema_required",attemptedAt:new Date().toISOString()};
+      save(store); render(); return Promise.reject(intakeError("schema_required"));
+    }
+    var attemptId=randomHex16();
+    saved.intake={status:"sending",attemptId:attemptId,attemptedAt:new Date().toISOString()};
+    if(!save(store)) return Promise.reject(intakeError("local_save_failed"));
+    render();
+    var controller=typeof AbortController!=="undefined"?new AbortController():null;
+    var timeout=setTimeout(function(){ if(controller) controller.abort(); },20000);
+    var expectedCompanies=0;
+    return Promise.all([intakeCompanies(saved,partition),scopedBrowserToken("partition-month-v1\u0000"+partition+"\u0000"+
       new Date().toISOString().slice(0,7))]).then(function(values){
-      return fetch(API+"/intake",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+      expectedCompanies=values[0].length;
+      return fetch(API+"/intake",{method:"POST",headers:{"Content-Type":"application/json"},
+        signal:controller?controller.signal:undefined,body:JSON.stringify({
         contract:1, agreement:CONTRACT.agreementVersion, partition:partition,
-        submissionToken:values[1], shapes:intakeShapes(saved), companies:values[0]
+        submissionToken:values[1], shapes:shapes, companies:values[0]
       })});
     }).then(function(response){
-      if(!response.ok) return response.json().catch(function(){return{};}).then(function(body){throw new Error(body.error||("http_"+response.status));});
+      if(!response.ok){
+        if(response.status===429) throw intakeError("intake_rate_limited");
+        if(response.status>=500) throw intakeError("intake_unavailable");
+        throw intakeError("intake_rejected");
+      }
       return response.json();
     }).then(function(receipt){
+      if(!receipt || receipt.ok!==true || !receipt.accepted ||
+          receipt.accepted.shapes!==shapeCount || receipt.accepted.companies!==expectedCompanies)
+        throw intakeError("invalid_intake_receipt");
       var latest=load(), row=latest.partitions[partition];
-      if(row){ row.intake={status:"accepted",acceptedAt:new Date().toISOString(),accepted:receipt.accepted||{}}; save(latest); }
+      if(row && row.intake && row.intake.attemptId===attemptId){
+        row.status=row.completionStatus||"done"; delete row.completionStatus;
+        row.intake={status:"accepted",acceptedAt:new Date().toISOString(),accepted:receipt.accepted};
+        if(!save(latest)) throw intakeError("local_save_failed");
+      }
       render(partition); return receipt;
     }).catch(function(error){
+      var code=error&&error.code;
+      if(!code) code=(error&&error.name)==="AbortError"?"intake_timeout":"intake_unavailable";
       var latest=load(), row=latest.partitions[partition];
-      if(row){ row.intake={status:"error",error:String(error&&error.message||error),attemptedAt:new Date().toISOString()}; save(latest); }
-      render(); throw error;
-    });
+      if(row && row.intake && row.intake.attemptId===attemptId){
+        row.status="pending"; row.intake={status:"error",code:code,attemptedAt:new Date().toISOString()}; save(latest);
+      }
+      render(); throw intakeError(code);
+    }).finally(function(){ clearTimeout(timeout); });
   }
   function acceptEnvelope(envelope){
     if(!CONTRACT.validEnvelope(envelope)) return Promise.reject(new Error("invalid_profile_envelope"));
+    if(MARKET_INTAKE_ENABLED && !agreementOn()) return Promise.reject(intakeError("agreement_required"));
     var store=load();
-    store.partitions[envelope.partition]={status:envelope.status,
+    store.partitions[envelope.partition]={status:"pending",completionStatus:envelope.status,
       fetchedAt:envelope.capturedAt,data:envelope.data,shape:envelope.shapes||{},market:envelope.market||null,
-      intake:{status:MARKET_INTAKE_ENABLED?(agreementOn()?"pending":"agreement_required"):"disabled"}};
+      intake:{status:"pending"}};
     if(!store.consentedAt) store.consentedAt=new Date().toISOString();
-    save(store);
-    render(envelope.partition);
-    if(MARKET_INTAKE_ENABLED && agreementOn()) submitIntake(envelope.partition).catch(function(){});
-    return Promise.resolve({ok:true,intake:MARKET_INTAKE_ENABLED?"optional":"disabled"});
+    if(!save(store)) return Promise.reject(intakeError("local_save_failed"));
+    return submitIntake(envelope.partition).then(function(){ return {ok:true,intake:"required"}; });
   }
   // The fictitious profile behind ?exemplo=1. Same shape assemble() reads, deliberately round,
   // clearly labelled "Exemplo com dados fictícios" next to the H1, never mixed with a real store.
@@ -1004,15 +1105,15 @@
       var td=debtKnown?Number(x.dividas.n):null, tc=finesKnown?Number(x.coimas.n):null;
       if(!debtKnown) return { v:'Dívidas por confirmar', cls:'bad' };
       if (td||tc) return { v:(td?esc(td)+' dívida(s)':'')+(td&&tc?', ':'')+(tc?esc(tc)+' coima(s)':''), cls:'bad' };
-      if(!finesKnown) return { v:'Sem dívidas · coimas por confirmar' };
+      if(!finesKnown) return { v:'Sem dívidas - coimas por confirmar' };
       return { v:'Sem dívidas nem coimas', cls:'good' };
     }
     if (id==="atividade" && d.atividade){
       x = d.atividade;
-      if (x.estadoAtual==="aberta") return { v:'Atividade aberta'+(x.regimeIva?' · '+esc(x.regimeIva):'') };
-      if (x.estadoAtual==="cessada" && x.ultimaDeclaracaoTipo==="inicio-ou-reinicio") return { v:'Cessada agora · início/reinício declarado' };
+      if (x.estadoAtual==="aberta") return { v:'Atividade aberta'+(x.regimeIva?' - '+esc(x.regimeIva):'') };
+      if (x.estadoAtual==="cessada" && x.ultimaDeclaracaoTipo==="inicio-ou-reinicio") return { v:'Cessada agora - início/reinício declarado' };
       if (x.estadoAtual==="cessada") return { v:'Atividade cessada' };
-      if (x.ultimaDeclaracaoTipo==="inicio-ou-reinicio") return { v:'Início/reinício declarado · data por confirmar' };
+      if (x.ultimaDeclaracaoTipo==="inicio-ou-reinicio") return { v:'Início/reinício declarado - data por confirmar' };
       return { v: x.declaracoes ? 'Estado por confirmar' : 'Sem declarações encontradas' };
     }
     if (id==="atividade_integrada" && d.atividade){
@@ -1020,13 +1121,13 @@
       if (x.disponivel===false) return { v:'Não exposta nesta conta' };
       if (x.estadoAtual==="aberta") return { v:'Atividade aberta' };
       if (x.estadoAtual==="agendada" || x.proximoInicio) return { v:'Início/reinício futuro no cadastro' };
-      if (x.estadoAtual==="cessada") return { v:x.proximoInicio?'Cessada agora · início futuro no cadastro':'Atividade cessada' };
+      if (x.estadoAtual==="cessada") return { v:x.proximoInicio?'Cessada agora - início futuro no cadastro':'Atividade cessada' };
       return { v:'Estado por confirmar' };
     }
     if (id==="patrimonio" && d.patrimonio) return (d.patrimonio.imoveis>0)
       ? { v: nb(d.patrimonio.imoveis)+' imóvel(eis)' } : { v:'Sem imóveis' };
     if (id==="irs" && d.irs) return { v: nb(d.irs.liquidacoes)+' liquidações'+
-      (d.irs.reembolsos!=null?' · '+esc(d.irs.reembolsos)+' reembolso(s)':'') };
+      (d.irs.reembolsos!=null?' - '+esc(d.irs.reembolsos)+' reembolso(s)':'') };
     if (id==="movfin" && d.movfin) return { v: nb(d.movfin.movimentos)+' documento(s)' };
     if (id==="recibos" && d.recibos) return (d.recibos.recibosVerdes>0)
       ? { v: nb(d.recibos.recibosVerdes)+' emitido(s)' } : { v:'Sem recibos verdes' };
@@ -1054,7 +1155,7 @@
     var dedYear = dedYears && Object.keys(dedYears).sort().reverse()[0];
     var dedOf = dedYear ? dedYears[dedYear] : null;
     if (dedOf && dedOf.total > 0)
-      h += trow('i-receipt-euro','Deduções à coleta', { v:'<b>&euro;'+esc(dedOf.total.toFixed(2).replace('.', ','))+'</b> · valor oficial da AT' });
+      h += trow('i-receipt-euro','Deduções à coleta', { v:'<b>&euro;'+esc(dedOf.total.toFixed(2).replace('.', ','))+'</b> - valor oficial da AT' });
     if (d.rendas && d.rendas.activos > 0) h += trow('i-home','Rendas', factFor('rendas', d));
     if (d.situacao) h += trow('i-bank','Situação fiscal', factFor('situacao', d));
     if (d.patrimonio && d.patrimonio.imoveis > 0) h += trow('i-home','Património', factFor('patrimonio', d));
@@ -1222,6 +1323,9 @@
     var confirmed = isConfirmed();
     var agreed = !MARKET_INTAKE_ENABLED || agreementOn();
     var next = CONTRACT.next(store);
+    var intakeRow = next && store.partitions[next.id];
+    var intakeBlocked = !!(intakeRow && intakeRow.status === "pending" && intakeRow.intake &&
+      (intakeRow.intake.status === "sending" || intakeRow.intake.status === "error"));
 
     // HERO ---------------------------------------------------------------------------------
     var h = '<div class="hero"><div class="eyebrow">Área pessoal</div>'+
@@ -1257,12 +1361,25 @@
         '<div class="linkrow"><a href="/privacidade">Ler exatamente o que é enviado</a></div></div>';
     }
 
+    if (!DEMO && agreed && intakeBlocked){
+      if(intakeRow.intake.status === "sending"){
+        h += '<div class="frame" style="margin-top:24px;padding:24px;text-align:center">'+
+          '<div class="eyebrow">A concluir esta fonte</div><h2 style="margin:7px 0 8px;color:var(--pri-dark)">A enviar o contributo minimizado...</h2>'+
+          '<p class="w">Só a estrutura sem valores e os agregados permitidos são enviados. Esta fonte conta no progresso depois de o serviço confirmar a receção.</p></div>';
+      } else {
+        h += '<div class="frame" style="margin-top:24px;padding:24px;text-align:center">'+
+          '<div class="eyebrow">Contributo por concluir</div><h2 style="margin:7px 0 8px;color:var(--pri-dark)">Esta fonte ainda não ficou concluída</h2>'+
+          '<p class="w">A leitura completa continua apenas neste navegador, mas o contributo minimizado não foi aceite. Podes tentar enviá-lo novamente sem voltar a ler a página oficial.</p>'+
+          '<button type="button" class="btn-primary" id="retry-intake" style="max-width:520px;margin:18px auto 0">'+ico('i-external')+'Tentar envio novamente</button></div>';
+      }
+    }
+
     // One deterministic action while a source is missing. No source selector and no tab spray.
-    if (!full && (agreed || DEMO)){
+    if (!full && (agreed || DEMO) && !intakeBlocked){
       h += '<div class="frame aframe">'+
         '<div class="acell"><div class="atitle">'+(done.length?'Já reuniste':'Preparar')+'</div>'+
           (done.length
-            ? '<div class="adone">'+done.map(function(p){ return esc(meta(p.id).short); }).join(' · ')+'</div>'
+            ? '<div class="adone">'+done.map(function(p){ return esc(meta(p.id).short); }).join(' - ')+'</div>'
             : '<a class="btn-outline" href="/extensao">Ver estado da extensão</a><div class="acap">pré-visualização interna</div>')+
         '</div>'+
         '<div class="acell"><div class="atitle">Próximo passo</div>'+
@@ -1271,7 +1388,7 @@
           '<a class="btn-primary" id="opensrc" target="fiscalidade-oficial" href="'+next.open+'">'+
             ico('i-external')+'<span>'+(done.length?'Continuar atualização':'Começar atualização')+'</span></a></div>'+
       '</div>';
-      h += '<p class="framecap">Faz o login na página oficial, carrega em “Ler e voltar à Fiscalidade” e regressas aqui. É sempre reutilizado o mesmo separador oficial.</p>';
+      h += '<p class="framecap">Faz o login na página oficial, carrega em "Ler e voltar à Fiscalidade" e regressas aqui. É sempre reutilizado o mesmo separador oficial.</p>';
     }
 
     // ESTADO VAZIO: o que dá para juntar a seguir --------------------------------------------
@@ -1504,7 +1621,7 @@
     // do rodapé de ações e o destino do link "Ver as 13 fontes" do estado vazio.
     h += '<details class="frow" id="fontes" data-acc="fontes"'+(ACC.fontes?' open':'')+'><summary>'+
       '<span class="flabel">'+ico('i-doc')+'As treze fontes</span>'+
-      '<span class="fdesc">'+done.length+' de '+PARTITIONS.length+' reunidas · abre cada página oficial</span>'+chev()+
+      '<span class="fdesc">'+done.length+' de '+PARTITIONS.length+' reunidas - abre cada página oficial</span>'+chev()+
       '</summary><div class="fbody">'+
       '<div class="w" style="margin:14px 0 4px">A barra da extensão faz esta leitura apenas quando carregas nela.</div>';
     PARTITIONS.forEach(function(p){
@@ -1534,6 +1651,11 @@
     document.getElementById("out").innerHTML = h;
     var accept=document.getElementById("accept-market");
     if(accept) accept.onclick=function(){ setAgreement(); render(); };
+    var retryIntake=document.getElementById("retry-intake");
+    if(retryIntake && next) retryIntake.onclick=function(){
+      retryIntake.disabled=true; retryIntake.textContent="A enviar...";
+      submitIntake(next.id).catch(function(){});
+    };
     var openBtn=document.getElementById("opensrc");
     if(openBtn && next) openBtn.onclick=function(){
       var bytes=new Uint8Array(16); crypto.getRandomValues(bytes);
@@ -1634,6 +1756,7 @@
         localStorage.removeItem(ACTIVE_KEY);
         localStorage.removeItem(AGREEMENT_KEY);
         localStorage.removeItem(MARKET_SECRET_KEY);
+        localStorage.removeItem(EXTRA_KEY);
       }catch(e){}
       setConfirmed(false);                 // apagar os dados também apaga a confirmação do gate
       ACC = {}; render(); };
@@ -1707,14 +1830,18 @@
       try { localStorage.removeItem(ACTIVE_KEY); } catch(e){}
       activeSource=null; activeOrigin=null;
       acceptEnvelope(event.data.envelope).then(function(){
-        handoffDiagnostic("accepted",acceptedPartition,MARKET_INTAKE_ENABLED?"local_optional_intake":"local_only");
+        handoffDiagnostic("accepted",acceptedPartition,"required_intake_accepted");
         acceptedSource.postMessage({type:CONTRACT.acceptedType,partition:acceptedPartition,
-          requestId:acceptedRequestId,intake:MARKET_INTAKE_ENABLED?"optional":"disabled"},acceptedOrigin);
+          requestId:acceptedRequestId,intake:"required"},acceptedOrigin);
         try { window.focus(); } catch(e){}
-      }).catch(function(){
-        handoffDiagnostic("rejected",acceptedPartition,"local_save_failed");
+      }).catch(function(error){
+        var code=error&&error.code;
+        if(["agreement_required","schema_required","intake_rate_limited","intake_timeout",
+            "intake_unavailable","intake_rejected","invalid_intake_receipt","invalid_market_data",
+            "invalid_schema","local_save_failed"].indexOf(code)<0) code="intake_unavailable";
+        handoffDiagnostic("rejected",acceptedPartition,code);
         acceptedSource.postMessage({type:CONTRACT.rejectedType,partition:acceptedPartition,
-          requestId:acceptedRequestId,code:"local_save_failed"},acceptedOrigin);
+          requestId:acceptedRequestId,code:code},acceptedOrigin);
       });
     }
   });

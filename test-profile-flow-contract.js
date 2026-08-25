@@ -12,12 +12,21 @@ assert(/target="fiscalidade-oficial"/.test(profile), "guided source tab is not r
 assert(/fiscalidade-intake-ready-v3/.test(contract) && /requestId/.test(profile + tool) && /nonce/.test(profile + tool),
   "nonce/request-bound browser handoff missing");
 assert(!/handoffUrl\(|location\.href\s*=\s*handoff/.test(tool), "new handoff can still put fiscal data in a URL fragment");
-assert(/MARKET_INTAKE_ENABLED\s*=\s*false/.test(profile), "optional market intake is not explicitly disabled");
-assert(/status:envelope\.status/.test(profile), "local completion still depends on market intake");
+assert(/MARKET_INTAKE_ENABLED\s*=\s*true/.test(profile), "mandatory minimized market intake is not enabled");
+assert(/status:"pending",completionStatus:envelope\.status/.test(profile) &&
+  /row\.status=row\.completionStatus\|\|"done"/.test(profile),
+  "source completion is not gated on an accepted intake receipt");
+assert(/schema_required/.test(profile) && /retry-intake/.test(profile),
+  "missing schema or failed intake cannot be recovered safely");
+assert(/CONTRACT\.isEndpointId/.test(profile) && /sanitizeShape/.test(profile),
+  "browser intake does not allowlist endpoint IDs and sanitize shape leaves before transmission");
+assert(/EXTRA_KEY[\s\S]*expiresAt:endOfDayTs\(\)/.test(profile) &&
+  /removeItem\(EXTRA_KEY\)/.test(profile), "self-declared fiscal extras do not expire with the profile");
 assert(/Cross-Origin-Opener-Policy:\s*same-origin-allow-popups/.test(headers), "site headers would sever the official-tab handoff");
 assert(/submissionToken/.test(profile) && /company-year-v1/.test(profile), "scoped market dedupe tokens missing");
-assert(/Ler e voltar à Fiscalidade/.test(bar) && !/Painel de faturas|Adicionar ao perfil|Analisar faturas/.test(bar),
-  "extension bar still has duplicate workflow actions");
+assert(/Ler e voltar à Fiscalidade/.test(bar) && /Painel de faturas/.test(bar) &&
+  !/Adicionar ao perfil|Analisar faturas/.test(bar),
+  "extension bar does not separate the canonical profile action from the local invoice dashboard");
 for (const page of pages) assert(!/launcher\.js/.test(readFileSync(page, "utf8")), `${page} still loads the website launcher`);
 assert(!require("fs").existsSync("launcher.js"), "website launcher file survived");
-console.log("  canonical profile, single action, reusable tab and shared handoff contract passed");
+console.log("  canonical profile, separate local dashboard, reusable tab and shared handoff contract passed");

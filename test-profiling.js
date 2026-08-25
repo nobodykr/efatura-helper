@@ -40,7 +40,7 @@ function mkEnv(host, flag, fetchImpl, path) {
       setTimeout(function () {
         window.dispatchEvent(new window.MessageEvent("message", { origin:"https://fiscalida.de",
           source:profileTarget, data:{ type:CONTRACT.acceptedType, partition:message.partition,
-            requestId:message.requestId, intake:"disabled" } }));
+            requestId:message.requestId, intake:"required" } }));
       }, 0);
     }
   };

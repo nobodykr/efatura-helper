@@ -62,28 +62,30 @@
   ];
 
   var ENDPOINT_RULES = [
-    [/obterDocumentosAdquirente/, "efatura.documents.v1"],
-    [/consultarDespesasDeducoes/, "irs.deductions.v1"],
-    [/obterContratos\/locador/, "rents.contracts.v1"],
-    [/obterRecibos\/locador/, "rents.receipts.v1"],
-    [/\/geral\/dividas/, "tax-status.debts.v1"],
-    [/\/geral\/coimas/, "tax-status.fines.v1"],
-    [/agendaFiscal/, "tax-status.calendar.v1"],
-    [/consultardeclaracoes/, "activity.declarations.v1"],
-    [/integrada\/presentation/, "activity.integrated.v1"],
-    [/liquidacoesIRSDataTables/, "irs.liquidations.v1"],
-    [/reembolsosDataTables/, "irs.refunds.v1"],
-    [/resumoCobranca/, "finance.movements.v1"],
-    [/obtemDocumentosV2/, "receipts.green.v1"],
-    [/\/app\/consulta\/pesquisa/, "irs.declarations.v1"],
-    [/dashboard-regime-simplificado/, "activity.expenses.v1"],
-    [/login\/personalData/, "social.profile.v1"],
-    [/payments\/current/, "social.payments.v1"],
-    [/situacao-contributiva/, "social.contribution-status.v1"],
-    [/matrizesinter\/api\/patrimonio/, "property.assets.v1"]
+    [/obterDocumentosAdquirente/, "efatura.documents.v1", "efatura"],
+    [/consultarDespesasDeducoes/, "irs.deductions.v1", "deducoes"],
+    [/obterContratos\/locador/, "rents.contracts.v1", "rendas"],
+    [/obterRecibos\/locador/, "rents.receipts.v1", "rendas"],
+    [/\/geral\/dividas/, "tax-status.debts.v1", "situacao"],
+    [/\/geral\/coimas/, "tax-status.fines.v1", "situacao"],
+    [/agendaFiscal/, "tax-status.calendar.v1", "situacao"],
+    [/consultardeclaracoes/, "activity.declarations.v1", "atividade"],
+    [/integrada\/presentation/, "activity.integrated.v1", "atividade_integrada"],
+    [/liquidacoesIRSDataTables/, "irs.liquidations.v1", "irs"],
+    [/reembolsosDataTables/, "irs.refunds.v1", "irs"],
+    [/resumoCobranca/, "finance.movements.v1", "movfin"],
+    [/obtemDocumentosV2/, "receipts.green.v1", "recibos"],
+    [/\/app\/consulta\/pesquisa/, "irs.declarations.v1", "declaracoes"],
+    [/dashboard-regime-simplificado/, "activity.expenses.v1", "despesas_atividade"],
+    [/login\/personalData/, "social.profile.v1", "ss"],
+    [/payments\/current/, "social.payments.v1", "ss"],
+    [/situacao-contributiva/, "social.contribution-status.v1", "ss"],
+    [/matrizesinter\/api\/patrimonio/, "property.assets.v1", "patrimonio"]
   ];
 
   var IDS = new Set(PARTITIONS.map(function (item) { return item.id; }));
+  var ENDPOINT_IDS = new Set(ENDPOINT_RULES.map(function (rule) { return rule[1]; }));
+  var ENDPOINT_PARTITIONS = new Map(ENDPOINT_RULES.map(function (rule) { return [rule[1], rule[2]]; }));
   var OFFICIAL_ORIGINS = new Set(PARTITIONS.map(function (item) { return "https://" + item.host; }));
   var DONE = new Set(["done", "unavailable"]);
 
@@ -147,6 +149,8 @@
     ids: IDS,
     officialOrigins: OFFICIAL_ORIGINS,
     endpointId: endpointId,
+    isEndpointId: function (id) { return ENDPOINT_IDS.has(id); },
+    endpointPartition: function (id) { return ENDPOINT_PARTITIONS.get(id) || null; },
     partition: partition,
     next: next,
     current: current,

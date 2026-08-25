@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Fiscalidade | A tua situação fiscal, das fontes oficiais (grátis, sem password)</title>
-<meta name="description" content="Pré-visualização interna de uma ferramenta verificável que lê o teu próprio registo nas Finanças e na Segurança Social, na tua sessão e sem password. Os registos fiscais são processados localmente; contribuições mínimas e separadas são opcionais.">
+<meta name="description" content="Pré-visualização interna de uma ferramenta verificável que lê o teu próprio registo nas Finanças e na Segurança Social, na tua sessão e sem password. O perfil é local; o modo gratuito inclui um contributo de mercado minimizado.">
 <link rel="canonical" href="https://fiscalida.de/">
 <!-- Diogo's DA monogram, same mark as diogoandrade.com. There was no favicon at all before, so
      every tab showed the browser default and /favicon.ico returned 404. Regenerate the raster
@@ -54,7 +54,7 @@
  {"@type":"Question","name":"E seguro? Pede a password das Financas?",
   "acceptedAnswer":{"@type":"Answer","text":"Nunca pede credenciais. A ferramenta corre no navegador, na pagina do e-Fatura onde o utilizador ja fez login, e reutiliza essa sessao. Se algum site pedir a password das Financas, e burla e deve ser fechado. O codigo e publico e auditavel."}},
  {"@type":"Question","name":"As minhas faturas sao enviadas para algum servidor?",
-  "acceptedAnswer":{"@type":"Answer","text":"Nao. As faturas sao lidas e classificadas dentro do navegador. Nada do que la nelas e recebido, guardado ou enviado, excepto o que o proprio utilizador decidir partilhar, sempre sem valores nem datas."}}
+  "acceptedAnswer":{"@type":"Answer","text":"As linhas e datas de faturas ficam no navegador. O perfil gratuito envia, depois de acordo explicito, apenas estruturas sem valores e agregados anuais por empresa, sem identidade do comprador, datas, documentos ou faturas individuais."}}
 ]}
 </script>
 <link href="/fonts.css" rel="stylesheet">
@@ -560,7 +560,7 @@
     <div class="card"><div class="ci"><svg class="icon" aria-hidden="true"><use href="#i-users"/></svg><h3>Agregado, se quiseres</h3></div>
       <p>Casais que entregam o IRS em conjunto podem juntar os totais. Opcional, desligado por omissão.</p></div>
     <div class="card"><div class="ci"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg><h3>Tudo no teu navegador</h3></div>
-      <p>Nada das tuas faturas sai do teu computador. A ferramenta lê e sugere; submetes tu.</p></div>
+      <p>As linhas e datas das tuas faturas ficam no computador. A ferramenta lê e sugere; submetes tu.</p></div>
   </div>
   <p class="note" style="margin-top:16px">Cobre também rendas, situação fiscal, património e IMI, e
     o histórico de IRS. Detalhe completo, incluindo o que ainda está em desenvolvimento, em
@@ -587,14 +587,15 @@
   <ul class="safe">
     <li>Corre <b>dentro do teu navegador</b>, na página do e-Fatura onde <b>já estás autenticado</b>.
       Não há campo de password: não a vemos, não a guardamos, não existe.</li>
-    <li><b>As tuas faturas nunca saem do navegador.</b> Valores, datas, o que compraste - nada disso
-      é recebido nem enviado. Só sai o que ativares tu mesmo, e sempre sem valores nem datas.</li>
+    <li><b>As linhas e datas das tuas faturas ficam no navegador.</b> O perfil gratuito envia apenas,
+      depois de acordo explícito, estruturas sem valores e agregados empresa/ano: sem identidade do
+      comprador, datas, documentos, descrições ou faturas individuais.</li>
     <li>Código <b>100% aberto e verificável</b>: podes ler exatamente o que faz
       <a id="gh" href="#" target="_blank" rel="noopener">no GitHub</a>, ou confirmar que o que corre
       é o código publicado.</li>
   </ul>
   <p>Nada disto devia pedir-te confiança às cegas. Há um registo passo a passo de cada pedido de
-    rede que a ferramenta faz, o que é opcional, e o que nunca acontece nesta versão.</p>
+    rede que a ferramenta faz, o que é exigido no perfil, o que é opcional e o que nunca é enviado.</p>
   <p><a class="cta-alt" href="/sobre#seguranca">Ler o modelo de segurança completo -></a></p>
 </section>
 
@@ -628,7 +629,7 @@
   <h2>Apoia esta ferramenta <span class="note">(sem custo nenhum para ti)</span></h2>
   <p>
     Isto é gratuito e vai continuar a ser: sem contas, sem subscrições, sem anúncios, e as tuas
-    faturas nunca saem do teu navegador. Se te poupou tempo ou dinheiro e quiseres retribuir, abrir
+    linhas e datas de faturas ficam no teu navegador. Se te poupou tempo ou dinheiro e quiseres retribuir, abrir
     uma conta Revolut pelo link abaixo dá-me uma pequena comissão.
   </p>
   <p>

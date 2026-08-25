@@ -52,13 +52,33 @@ class MarketStoreTest(unittest.TestCase):
         with self.assertRaisesRegex(IntakeError, "unknown_fields"):
             self.store.ingest(payload)
 
+    def test_requires_known_schema_for_the_matching_source(self):
+        payload = self.payload()
+        payload["shapes"] = {}
+        with self.assertRaisesRegex(IntakeError, "bad_shapes"):
+            self.store.ingest(payload)
+        payload = self.payload()
+        payload["shapes"] = {"invented.endpoint.v1": {"field": "number"}}
+        with self.assertRaisesRegex(IntakeError, "bad_endpoint"):
+            self.store.ingest(payload)
+        payload = self.payload()
+        payload["shapes"] = {"rents.contracts.v1": {"field": "number"}}
+        with self.assertRaisesRegex(IntakeError, "endpoint_partition_mismatch"):
+            self.store.ingest(payload)
+
     def test_shape_values_are_coerced(self):
         payload = self.payload()
-        payload["shapes"] = {"efatura.documents.v1": {"unsafe": "a real value"}}
+        payload["shapes"] = {"efatura.documents.v1": {
+            "unsafe": "a real value",
+            "purchaseDate": "2026-08-25",
+            "documentId": 123456789,
+            "buyer": True,
+        }}
         self.store.ingest(payload)
         with self.store._connect() as connection:
             encoded = connection.execute("SELECT shape_json FROM shape_observation").fetchone()[0]
-        self.assertEqual(encoded, '{"unsafe":"string"}')
+        self.assertEqual(encoded,
+                         '{"buyer":"boolean","documentId":"number","purchaseDate":"string","unsafe":"string"}')
 
 
 if __name__ == "__main__":

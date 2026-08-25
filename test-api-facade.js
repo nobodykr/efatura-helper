@@ -34,6 +34,8 @@ const source = limiter + "\n" + facade;
   assert((await call("contributions/impact", "POST", large)).status === 413, "body cap not enforced");
   assert((await call("intake", "POST", large, { FISCALIDADE_API_ORIGIN: "https://cae.invalid" })).status === 503,
     "market intake fell back to the CAE API origin");
+  assert((await call("intake", "POST", "{}", { FISCALIDADE_MARKET_ORIGIN: "https://market.invalid" })).status === 503,
+    "market intake forwarded without its dedicated facade credential");
   const tooLargeIntake = JSON.stringify({ value: "x".repeat(1024 * 1024 + 1) });
   assert((await call("intake", "POST", tooLargeIntake)).status === 413, "market intake body cap not enforced");
 
@@ -64,11 +66,16 @@ const source = limiter + "\n" + facade;
   const marketEnv = {
     FISCALIDADE_API_ORIGIN: "https://internal-api.invalid",
     FISCALIDADE_MARKET_ORIGIN: "https://market-api.invalid/private",
+    FISCALIDADE_MARKET_KEY: "dedicated-market-key",
     FISCALIDADE_MARKET_CLIENT_ID: "market-id", FISCALIDADE_MARKET_CLIENT_SECRET: "market-secret"
   };
-  await call("intake", "POST", "{}", marketEnv);
+  const marketResponse = await call("intake", "POST", "{}", marketEnv);
   assert(forwarded.url === "https://market-api.invalid/api/v1/intake", "intake did not use its isolated origin");
   assert(forwarded.init.headers.get("cf-access-client-id") === "market-id", "dedicated market credential not applied");
+  assert(forwarded.init.headers.get("x-fiscalidade-market-key") === "dedicated-market-key",
+    "dedicated market API key not applied server-side");
+  assert(marketResponse.headers.get("access-control-allow-origin") === "https://fiscalida.de",
+    "browser market intake is not pinned to the profile origin");
   global.fetch = originalFetch;
   console.log("  API facade allowlist and header boundary passed");
 })().catch((error) => { console.error(error); process.exit(1); });

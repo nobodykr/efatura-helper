@@ -8,8 +8,9 @@ This is a static site: `index.html` + `tool.js`. Host it anywhere that serves fi
 
 **Runtime dependencies:** read-only merchant-map routes use the existing configured API. The new
 `POST /api/v1/intake` route must use `FISCALIDADE_MARKET_ORIGIN` and its own optional Access
-credentials; it deliberately never falls back to `FISCALIDADE_API_ORIGIN` or cae-db. It is disabled
-and optional for local profile completion until the isolated service and cleanup are verified.
+credentials; it deliberately never falls back to `FISCALIDADE_API_ORIGIN` or cae-db. The free
+profile flow deliberately blocks source completion unless this isolated service accepts the
+minimized contribution, so deployment health is a release requirement.
 
 ## Before you deploy tool.js
 

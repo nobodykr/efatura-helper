@@ -17,13 +17,17 @@ const ROUTES = [
   { re: /^stats(?:\/impact)?$/, methods: ["GET"], bucket: "stats", limit: 180 },
 ];
 
-function cors(headers, methods = ["GET"]) {
-  headers.set("access-control-allow-origin", "*");
+function cors(headers, methods = ["GET"], origin = "*") {
+  headers.set("access-control-allow-origin", origin);
   headers.set("access-control-allow-methods", methods.concat("OPTIONS").join(", "));
   headers.set("access-control-allow-headers", "content-type");
   headers.set("x-robots-tag", "noindex, nofollow, noarchive");
   headers.set("x-content-type-options", "nosniff");
   return headers;
+}
+
+function routeCors(headers, route) {
+  return cors(headers, route.methods, route.market ? "https://fiscalida.de" : "*");
 }
 
 export async function onRequest(context) {
@@ -35,10 +39,10 @@ export async function onRequest(context) {
       status: 404, headers: cors(new Headers({ "content-type": "application/json" }))
     });
   if (request.method === "OPTIONS")
-    return new Response(null, { status: 204, headers: cors(new Headers(), route.methods) });
+    return new Response(null, { status: 204, headers: routeCors(new Headers(), route) });
   if (!route.methods.includes(request.method))
     return new Response(JSON.stringify({ error: "method_not_allowed" }), {
-      status: 405, headers: cors(new Headers({ "content-type": "application/json", "allow": route.methods.join(", ") }), route.methods)
+      status: 405, headers: routeCors(new Headers({ "content-type": "application/json", "allow": route.methods.join(", ") }), route)
     });
 
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";
@@ -47,30 +51,30 @@ export async function onRequest(context) {
   });
   if (!rate.ok)
     return new Response(JSON.stringify({ error: "rate_limited" }), {
-      status: 429, headers: cors(new Headers({ "content-type": "application/json", "retry-after": "60" }), route.methods)
+      status: 429, headers: routeCors(new Headers({ "content-type": "application/json", "retry-after": "60" }), route)
     });
 
   const declared = Number(request.headers.get("content-length") || 0);
   const maxBody = route.maxBody || DEFAULT_MAX_BODY;
   if (!Number.isFinite(declared) || declared < 0)
     return new Response(JSON.stringify({ error: "bad_content_length" }), {
-      status: 400, headers: cors(new Headers({ "content-type": "application/json" }), route.methods)
+      status: 400, headers: routeCors(new Headers({ "content-type": "application/json" }), route)
     });
   if (declared > maxBody)
     return new Response(JSON.stringify({ error: "body_too_large" }), {
-      status: 413, headers: cors(new Headers({ "content-type": "application/json" }), route.methods)
+      status: 413, headers: routeCors(new Headers({ "content-type": "application/json" }), route)
     });
 
   let body;
   if (request.method === "POST" || request.method === "PUT") {
     if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get("content-type") || ""))
       return new Response(JSON.stringify({ error: "json_required" }), {
-        status: 415, headers: cors(new Headers({ "content-type": "application/json" }), route.methods)
+        status: 415, headers: routeCors(new Headers({ "content-type": "application/json" }), route)
       });
     body = await request.arrayBuffer();
     if (body.byteLength > maxBody)
       return new Response(JSON.stringify({ error: "body_too_large" }), {
-        status: 413, headers: cors(new Headers({ "content-type": "application/json" }), route.methods)
+        status: 413, headers: routeCors(new Headers({ "content-type": "application/json" }), route)
       });
   }
 
@@ -78,7 +82,7 @@ export async function onRequest(context) {
     ? context.env.FISCALIDADE_MARKET_ORIGIN : context.env.FISCALIDADE_API_ORIGIN);
   if (!upstreamBase)
     return new Response(JSON.stringify({ error: "internal_preview_not_configured" }), {
-      status: 503, headers: cors(new Headers({ "content-type": "application/json" }), route.methods)
+      status: 503, headers: routeCors(new Headers({ "content-type": "application/json" }), route)
     });
   let upstream;
   try {
@@ -87,7 +91,7 @@ export async function onRequest(context) {
     upstream = new URL("/api/v1/" + raw, base);
   } catch {
     return new Response(JSON.stringify({ error: "internal_preview_not_configured" }), {
-      status: 503, headers: cors(new Headers({ "content-type": "application/json" }), route.methods)
+      status: 503, headers: routeCors(new Headers({ "content-type": "application/json" }), route)
     });
   }
   const incoming = new URL(request.url);
@@ -96,12 +100,20 @@ export async function onRequest(context) {
     const member = incoming.searchParams.get("member") || "";
     if (keys.length !== 1 || keys[0] !== "member" || !/^[A-Za-z0-9_-]{8,64}$/.test(member))
       return new Response(JSON.stringify({ error: "bad_member" }), {
-        status: 400, headers: cors(new Headers({ "content-type": "application/json" }), route.methods)
+        status: 400, headers: routeCors(new Headers({ "content-type": "application/json" }), route)
       });
     upstream.searchParams.set("member", member);
   }
   const headers = new Headers({ "accept": "application/json" });
   if (body) headers.set("content-type", "application/json");
+  if (route.market) {
+    const marketKey = context.env.FISCALIDADE_MARKET_KEY;
+    if (!marketKey)
+      return new Response(JSON.stringify({ error: "internal_preview_not_configured" }), {
+        status: 503, headers: routeCors(new Headers({ "content-type": "application/json" }), route)
+      });
+    headers.set("x-fiscalidade-market-key", marketKey);
+  }
   const clientId = route.market ? context.env.FISCALIDADE_MARKET_CLIENT_ID : context.env.FISCALIDADE_API_CLIENT_ID;
   const clientSecret = route.market ? context.env.FISCALIDADE_MARKET_CLIENT_SECRET : context.env.FISCALIDADE_API_CLIENT_SECRET;
   if (clientId && clientSecret) {
@@ -114,10 +126,10 @@ export async function onRequest(context) {
     const out = new Headers();
     for (const name of ["content-type", "cache-control", "etag", "retry-after"])
       if (response.headers.has(name)) out.set(name, response.headers.get(name));
-    return new Response(response.body, { status: response.status, headers: cors(out, route.methods) });
+    return new Response(response.body, { status: response.status, headers: routeCors(out, route) });
   } catch {
     return new Response(JSON.stringify({ error: "upstream_unavailable" }), {
-      status: 502, headers: cors(new Headers({ "content-type": "application/json" }), route.methods)
+      status: 502, headers: routeCors(new Headers({ "content-type": "application/json" }), route)
     });
   }
 }

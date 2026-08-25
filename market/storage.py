@@ -16,7 +16,27 @@ PARTITIONS = {
     "efatura", "rendas", "situacao", "atividade", "atividade_integrada", "patrimonio",
     "irs", "movfin", "recibos", "declaracoes", "deducoes", "despesas_atividade", "ss",
 }
-ENDPOINT_ID = re.compile(r"^[a-z][a-z0-9.-]{1,63}\.v[0-9]+$")
+ENDPOINT_PARTITIONS = {
+    "efatura.documents.v1": "efatura",
+    "irs.deductions.v1": "deducoes",
+    "rents.contracts.v1": "rendas",
+    "rents.receipts.v1": "rendas",
+    "tax-status.debts.v1": "situacao",
+    "tax-status.fines.v1": "situacao",
+    "tax-status.calendar.v1": "situacao",
+    "activity.declarations.v1": "atividade",
+    "activity.integrated.v1": "atividade_integrada",
+    "irs.liquidations.v1": "irs",
+    "irs.refunds.v1": "irs",
+    "finance.movements.v1": "movfin",
+    "receipts.green.v1": "recibos",
+    "irs.declarations.v1": "declaracoes",
+    "activity.expenses.v1": "despesas_atividade",
+    "social.profile.v1": "ss",
+    "social.payments.v1": "ss",
+    "social.contribution-status.v1": "ss",
+    "property.assets.v1": "patrimonio",
+}
 TOKEN = re.compile(r"^[A-Za-z0-9_-]{43,86}$")
 SECTOR = re.compile(r"^(?:C[0-9]{2}|UNCLASSIFIED)$")
 
@@ -96,12 +116,14 @@ def validate(payload: Any) -> Intake:
     if not isinstance(submission, str) or not TOKEN.fullmatch(submission):
         raise IntakeError("bad_submission_token")
     raw_shapes = payload.get("shapes", {})
-    if not isinstance(raw_shapes, dict) or len(raw_shapes) > 25:
+    if not isinstance(raw_shapes, dict) or not 1 <= len(raw_shapes) <= 25:
         raise IntakeError("bad_shapes")
     shapes = {}
     for endpoint, skeleton in raw_shapes.items():
-        if not isinstance(endpoint, str) or not ENDPOINT_ID.fullmatch(endpoint):
+        if not isinstance(endpoint, str) or endpoint not in ENDPOINT_PARTITIONS:
             raise IntakeError("bad_endpoint")
+        if ENDPOINT_PARTITIONS[endpoint] != partition:
+            raise IntakeError("endpoint_partition_mismatch")
         shapes[endpoint] = _shape(skeleton)
 
     raw_companies = payload.get("companies", [])

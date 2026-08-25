@@ -163,14 +163,11 @@
   <h2>Pedidos necessários ao funcionamento</h2>
   <p>Quando inicias uma análise, o navegador faz pedidos à própria página oficial para obter os dados que essa sessão te permite consultar. Para sugerir setores, pede a <code>fiscalida.de</code> blocos do mapa público de atividades económicas e um ficheiro público de informação da ferramenta. Esses pedidos não incluem faturas, valores, datas, o teu NIF, NISS, nome ou identificador de conta.</p>
 
-  <h2>Troca necessária para usar o perfil gratuito</h2>
-  <p>Antes de começares, a página “A minha situação” pede uma aceitação explícita. O perfil gratuito só conclui cada leitura depois de enviar estes dados minimizados:</p>
-  <ul>
-    <li><b>Em todas as fontes:</b> identificadores estáveis dos endpoints e estruturas em que os valores são substituídos pelo respetivo tipo. O servidor volta a remover valores inesperados antes de guardar.</li>
-    <li><b>No e-Fatura:</b> por pessoa coletiva e por ano, NIF da empresa, ano, número de faturas, total anual e IVA em euros inteiros, e contagens por setor. Só entram NIFs iniciados por 5 ou 6 que passem o dígito de controlo.</li>
-    <li><b>Para deduplicar tentativas:</b> tokens HMAC aleatórios e limitados à fonte/mês ou à empresa/ano. São criados a partir de um segredo aleatório do navegador, não do teu nome, email, NIF, NISS ou conta. O servidor volta a protegê-los com um segredo próprio.</li>
-  </ul>
-  <p>Não são enviados o teu nome, email, NIF ou NISS, datas, números de documento, nomes de emitentes, linhas de fatura nem valores de faturas individuais. Estes dados são usados apenas para melhorar a Fiscalidade, não para produtos empresariais, crédito, seguros, publicidade ou venda. Se não aceitares esta troca, a leitura guiada do perfil não começa.</p>
+  <h2>Contributo minimizado do modo gratuito</h2>
+  <p>Antes de começares o perfil de 13 fontes, apresentamos um acordo explícito: a utilização gratuita exige um contributo minimizado por cada fonte. Uma fonte só conta como concluída depois de o serviço isolado confirmar a receção. Se não concordares, o perfil guiado não inicia. O painel local de revisão de faturas é uma função separada e não faz este envio.</p>
+  <p>De cada fonte enviamos apenas o identificador técnico de uma resposta conhecida e a sua estrutura sem valores: nomes de campos, tipos, comprimentos aproximados de texto e contagens de elementos. O navegador aceita apenas os identificadores de resposta publicados para essa fonte e substitui qualquer valor inesperado pelo respetivo tipo antes do pedido.</p>
+  <p>No e-Fatura enviamos também agregados por empresa e ano: NIF de pessoa coletiva com checksum válido e prefixo 5 ou 6, ano civil, número de faturas, totais bruto e IVA arredondados ao euro e contagens por setor. Não enviamos o teu nome, email, NIF ou NISS, datas de compra, números de documento, nomes de emitentes, descrições do que compraste, linhas de fatura ou valores de uma fatura individual.</p>
+  <p>O pedido inclui tokens aleatórios derivados no navegador e limitados à fonte/mês ou à empresa/ano, usados apenas para tornar uma repetição idempotente e contar contribuidores distintos. Não existe um token global de conta. O serviço aplica uma segunda validação, converte novamente folhas de estrutura em tipos e guarda os contributos numa base separada da base de atividades económicas.</p>
 
   <h2>Outras contribuições opcionais, desligadas de origem</h2>
   <p>As funções abaixo, quando disponíveis, continuam separadas e exigem uma escolha própria:</p>
@@ -182,16 +179,16 @@
 
   <h2>Retenção e eliminação</h2>
   <p>Não existe uma conta Fiscalidade nem um perfil pessoal no servidor para reter ou apagar. Os perfis locais expiram no fim do dia ou podem ser apagados de imediato. As salas de agregado expiram 400 dias depois da última atualização; cada membro pode apagar a sua própria linha com a chave e o identificador guardados no dispositivo.</p>
-  <p>As observações minimizadas da troca gratuita ficam numa base separada da base de empresas e expiram 400 dias depois da última atualização. Repetir a mesma leitura atualiza a linha deduplicada em vez de aumentar a contagem. Um agregado empresa/ano não é disponibilizado enquanto não tiver pelo menos 20 tokens distintos. Estruturas sem valores são agrupadas pelo respetivo resumo criptográfico.</p>
+  <p>As observações de estruturas e os agregados empresa/ano expiram 400 dias após a última atualização. Um agregado de empresa/ano só pode ser disponibilizado depois de, pelo menos, 20 tokens de contribuidores distintos. A aplicação de intake não guarda o endereço IP nas tabelas de contributos nem regista o corpo do pedido; a infraestrutura recebe necessariamente o IP para encaminhar e limitar abuso, como em qualquer pedido web.</p>
 
   <h2>Registos técnicos de segurança</h2>
   <p>Pedidos dirigidos a endereços que não existem e que são usados de forma inequívoca por scanners automáticos podem originar um registo técnico com o endereço IP, caminho sem parâmetros, método, agente do navegador, país, rede e sinais de automatização fornecidos pela infraestrutura. O corpo, o referenciador, a cidade, cookies e dados fiscais não são recolhidos por este mecanismo. Durante a pré-visualização interna, estes registos são privados e usados apenas para detetar e bloquear abuso. A abertura ao público fica condicionada à ativação e verificação do limite de tamanho e da eliminação automática ao fim de 7 dias.</p>
 
   <h2>Sem venda, publicidade ou analítica na extensão</h2>
-  <p>Não vendemos dados, não apresentamos publicidade comportamental e não usamos os dados fiscais para crédito, seguros, perfis empresariais ou outros fins. A contribuição obrigatória da versão gratuita serve apenas para melhorar a própria Fiscalidade. A extensão não inclui analítica. As páginas públicas também estão sem analítica durante este lançamento controlado.</p>
+  <p>Não vendemos dados, não apresentamos publicidade comportamental e não usamos os dados fiscais para crédito, seguros, decisões sobre pessoas ou publicidade. O contributo acima é obrigatório apenas para concluir as fontes do perfil gratuito e é apresentado antes da leitura; as correções, o impacto e a partilha de agregado mantêm escolhas separadas. A extensão não inclui analítica. As páginas públicas também estão sem analítica durante este lançamento controlado.</p>
 
   <h2>Permissões da extensão</h2>
-  <p>As permissões de anfitrião estão limitadas aos subdomínios oficiais concretos necessários às funções descritas acima. A permissão <code>storage</code> guarda consentimento, perfil local e a cópia temporária do painel; <code>scripting</code> executa o analisador apenas depois do teu clique. Todo o código executável é incluído no pacote da extensão; não é descarregado código remoto.</p>
+  <p>As permissões de anfitrião estão limitadas aos subdomínios oficiais concretos necessários às funções descritas acima. A permissão <code>storage</code> guarda consentimento, preferências e a cópia temporária do painel; <code>alarms</code> agenda apenas a eliminação dessa cópia no fim do dia; <code>scripting</code> executa o analisador apenas depois do teu clique. Todo o código executável é incluído no pacote da extensão; não é descarregado código remoto.</p>
 
   <h2>Alterações</h2>
   <p>Qualquer alteração material a estas práticas exige atualizar esta página e a data abaixo antes de uma nova publicação da extensão.</p>
@@ -199,7 +196,7 @@
   <h2>Contacto</h2>
   <p>Pedidos ou dúvidas sobre privacidade: abre um issue no <a href="https://github.com/nobodykr/efatura-helper/issues" target="_blank" rel="noopener">GitHub</a>, sem incluir NIF, nomes, documentos, capturas da área autenticada, valores fiscais ou credenciais. Antes da disponibilização pública, esta política deve estar acessível diretamente neste endereço, sem login nem redirecionamento para uma página geral.</p>
 
-  <p class="upd">Última atualização: 23 de agosto de 2026.</p>
+  <p class="upd">Última atualização: 25 de agosto de 2026.</p>
 </main>
 <!-- FOOTER: hand-synced across index.html, perfil.html, sobre.html, deducoes.html, auditoria.html,
      privacidade.html, termos.html, verificar.html - same markup everywhere (static files, no

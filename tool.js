@@ -64,7 +64,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.08.25.1";
+  var FB_VERSION = "2026.08.25.2";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -1102,17 +1102,26 @@
           event.data.requestId === requestId) {
         finished = true; clearInterval(retryTimer); clearTimeout(timeoutTimer);
         window.removeEventListener("message", onMessage);
-        profileDiagnostic("accepted", pid, event.data.intake || "local");
+        profileDiagnostic("accepted", pid, event.data.intake || "required");
         try { target.focus(); } catch (e) {}
-        profileMessage("efh-ok", "Leitura conclu\u00edda.", "Ficou guardada localmente no teu perfil Fiscalidade.");
+        profileMessage("efh-ok", "Leitura conclu\u00edda.",
+          "O perfil completo ficou neste navegador e o contributo minimizado foi aceite.");
       }
       if (event.data.type === contract.rejectedType && event.data.partition === pid &&
           event.data.requestId === requestId) {
         finished = true; clearInterval(retryTimer); clearTimeout(timeoutTimer);
         window.removeEventListener("message", onMessage);
-        profileDiagnostic("rejected", pid, event.data.code || "profile_rejected");
-        profileMessage("efh-warn", "O perfil recusou esta leitura.",
-          "Confirma que o perfil e o favorito/extens\u00e3o DEV t\u00eam a mesma vers\u00e3o e tenta outra vez.");
+        var rejection = event.data.code || "profile_rejected";
+        profileDiagnostic("rejected", pid, rejection);
+        if (rejection === "agreement_required")
+          profileMessage("efh-warn", "Falta aceitar a troca do modo gratuito.",
+            "No perfil Fiscalidade, l\u00ea e aceita o contributo minimizado; depois volta aqui e tenta outra vez.");
+        else if (rejection === "schema_required")
+          profileMessage("efh-warn", "N\u00e3o foi recolhida a estrutura necess\u00e1ria.",
+            "Atualiza o favorito ou a extens\u00e3o DEV e repete a leitura nesta p\u00e1gina oficial.");
+        else
+          profileMessage("efh-warn", "N\u00e3o foi poss\u00edvel concluir esta fonte.",
+            "O perfil completo n\u00e3o foi enviado. Abre o perfil Fiscalidade e tenta novamente o contributo minimizado.");
       }
     }
     function hello() {
@@ -1164,13 +1173,30 @@
     if (typeof v === "string") return v.length > 40 ? "str(" + v.length + ")" : "str";
     return typeof v;   // number / boolean
   }
+  function htmlSkeleton(value) {
+    // HTML readers expose structure through element/form-field names only. Never retain text,
+    // attributes such as value/href, exact document length or a DOM id that may contain a token.
+    try {
+      var doc = new DOMParser().parseFromString(String(value || ""), "text/html");
+      var tags = {}, fields = {};
+      Array.prototype.forEach.call(doc.querySelectorAll("form,input,select,textarea,button,table,thead,tbody,tr,th,td,a"), function (el) {
+        var tag = String(el.tagName || "").toLowerCase();
+        if (tag) tags[tag] = (tags[tag] || 0) + 1;
+        if (!/^(?:input|select|textarea|button)$/.test(tag)) return;
+        var name = String(el.getAttribute("name") || "").replace(/\d{5,}/g, ":id").replace(/[\[\]]/g, ".");
+        if (/^[A-Za-z0-9_.:-]{1,80}$/.test(name)) fields[tag + ":" + name] = "str";
+      });
+      Object.keys(tags).forEach(function (tag) { tags[tag] = "x" + tags[tag]; });
+      return { document: { tags: tags, fields: fields } };
+    } catch (e) { return { document: "str" }; }
+  }
   function recordShape(url, kind, val) {
     // The URL is the schema key, but some paths embed identifiers (NISS/NIF, e.g.
     // /posicao-atual/<NISS>/situacao-contributiva). Redact any long digit run to :id BEFORE the
     // shape is captured - so an identifier never enters the skeleton, and every user's copy of that
     // endpoint collapses to one key for aggregation. (Query string already dropped.)
     var key = String(url).split("?")[0].replace(/\d{5,}/g, ":id");
-    if (kind === "html") _shapes[key] = { html: true, len: (val || "").length, comprovativo: (String(val).match(/\/comprovativo\//g) || []).length };
+    if (kind === "html") _shapes[key] = htmlSkeleton(val);
     else _shapes[key] = skeleton(val);
   }
 
@@ -1338,6 +1364,7 @@
   function readAtividadeExercida() {
     var html = document.documentElement ? document.documentElement.outerHTML : "";
     if (/Atividade em IVA|Atividade em IRS|Tipo de Contabilidade|CAE Principal|CIRS/i.test(html)) {
+      recordShape("/integrada/presentation", "html", html);
       return Promise.resolve({ data: parseAtividadeExercida(html), source: "/integrada/presentation::ecraActividade" });
     }
     var links = document.querySelectorAll("a[href]"), href = null;
@@ -1353,6 +1380,7 @@
     }
     // A second live account legitimately had no ecraActividade link. Absence is UNKNOWN/not exposed,
     // never proof of a closed activity.
+    recordShape("/integrada/presentation", "html", html);
     return Promise.resolve({ data: { disponivel: false,
       avisos: ["A AT n\u00e3o disponibilizou o ecr\u00e3 Atividade Exercida nesta conta; estado desconhecido."] },
       source: "/integrada/presentation (ecraActividade n\u00e3o exposto)" });
@@ -1985,7 +2013,7 @@
       'oficiais das Finan\u00e7as, na sess\u00e3o que j\u00e1 tens aberta. L\u00eas uma p\u00e1gina de cada vez.</p>' +
       '<ul style="margin:0 0 12px 18px;padding:0;line-height:1.5">' +
       '<li>N\u00e3o te pede, nem v\u00ea, a password.</li>' +
-      '<li>Os dados <b>ficam s\u00f3 neste navegador</b> - nada \u00e9 enviado.</li>' +
+      '<li>O perfil completo fica neste navegador. No modo gratuito, o perfil envia apenas estruturas sem valores e, no e-Fatura, agregados empresa/ano sem identidade do comprador, datas ou faturas individuais.</li>' +
       '<li>S\u00f3 leitura: nada \u00e9 submetido \u00e0s Finan\u00e7as.</li>' +
       '</ul>' +
       '<button type="button" id="fb-prof-go" style="cursor:pointer;background:#034ad8;color:#fff;border:0;' +
