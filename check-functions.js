@@ -66,7 +66,9 @@ const builtins = new Set(["if","for","while","switch","catch","return","typeof",
   "TextEncoder","Uint8Array","require","btoa","atob",
   // lowercase-initial globals (the scan only flags /^[a-z]/, so Set/Map/Error need no entry)
   "isFinite","encodeURI","decodeURI","structuredClone","queueMicrotask","prompt","confirm",
-  "escape","unescape","navigator","location","sessionStorage","performance"]);
+  "escape","unescape","navigator","location","sessionStorage","performance",
+  // Promise executor callbacks are locally supplied callables, not global function declarations.
+  "resolve","reject"]);
 const bad = new Set();
 for (const m of noRe.matchAll(/(^|[^.\w$])([a-z][A-Za-z0-9_$]*)\s*\(/g)) {
   const n = m[2];

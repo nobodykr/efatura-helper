@@ -66,17 +66,27 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
   const integratedHub = "https://sitfiscal.portaldasfinancas.gov.pt/integrada/presentation";
   await integratedPage.goto(integratedHub);
   await integratedPage.evaluate((bookmarklet) => { location.href = bookmarklet; }, href);
-  await integratedPage.waitForFunction(() => {
-    const store = JSON.parse(localStorage.getItem("fb-profile-v1") || "{}");
-    const row = store.partitions && store.partitions.atividade_integrada;
-    return row && row.status === "done" && row.shape && row.shape["/integrada/presentation"];
-  }, null, { timeout:15000 });
+  try {
+    await integratedPage.waitForFunction(() => {
+      const store = JSON.parse(localStorage.getItem("fb-profile-v1") || "{}");
+      const row = store.partitions && store.partitions.atividade_integrada;
+      return row && row.status === "done" && row.shape && row.shape["/integrada/presentation"];
+    }, null, { timeout:15000 });
+  } catch (error) {
+    const diagnostic = await integratedPage.evaluate(() => ({
+      panel:document.getElementById("efh-body") && document.getElementById("efh-body").innerText,
+      store:localStorage.getItem("fb-profile-v1"), handoff:window.__FISCALIDADE_HANDOFF_DIAGNOSTICS__ || null,
+      target:window.__FISCALIDADE_PROFILE_TARGET__ ? { closed:window.__FISCALIDADE_PROFILE_TARGET__.closed } : null
+    }));
+    throw new Error("integrated one-click timeout: " + JSON.stringify({ diagnostic,
+      pages:context.pages().map((page) => page.url()), requests:requests.slice(integratedStart) }));
+  }
   if (integratedPage.url() !== integratedHub)
     throw new Error("integrated bookmarklet replaced its own page and still needs a second click");
   const bridgeRequests = requests.slice(integratedStart);
   if (!bridgeRequests.some((url) => /sitfiscal\.portaldasfinancas\.gov\.pt\/integrada\/presentation.*targetScreen=ecraActividade/.test(url)))
     throw new Error("reserved profile tab did not perform the signed top-level activity read");
-  if (bridgeRequests.filter((url) => url.startsWith("https://fiscalida.de/perfil")).length < 2)
+  if (bridgeRequests.filter((url) => url.startsWith("https://fiscalida.de/perfil")).length < 1)
     throw new Error("signed activity bridge did not return to the profile tab");
   await browser.close();
   console.log("  actual dragged installer href loads current assets and completes signed activity in one click");

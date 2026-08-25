@@ -19,7 +19,7 @@ if (versions.files?.['tool.js']?.integrity !== toolSri)
 const asset = 'https://faturas.diogoandrade.com';
 const javascript = `javascript:(function(){` +
   `if(!/^(?:(?:faturas|imoveis|sitfiscal|irs)\\.portaldasfinancas\\.gov\\.pt|www\\.seg-social\\.pt)$/.test(location.host)){alert('Abre uma pagina oficial das Financas ou da Seguranca Social e faz login.');return}` +
-  `window.__FISCALIDADE_PROFILE_TARGET__=window.open('https://fiscalida.de/perfil','fiscalidade-perfil');window.__FB_PROFILE=1;` +
+  `var p=window.open('about:blank','fiscalidade-perfil');window.__FISCALIDADE_PROFILE_TARGET__=p;try{p.document.title='Fiscalidade';p.document.body.textContent='Fiscalidade: a ler esta fonte oficial...';p.document.body.style.cssText='font:600 16px system-ui;color:#021c51;padding:40px'}catch(e){}window.__FB_PROFILE=1;` +
   `window.__FISCALIDADE_CONFIG__=Object.assign({},window.__FISCALIDADE_CONFIG__||{},{publicOrigin:'https://fiscalida.de',apiBase:'https://fiscalida.de/api/v1',channel:'dev-bookmarklet',remoteCodeAllowed:false});` +
   `var d=document.getElementById('fb-loader-status');if(!d){d=document.createElement('div');d.id='fb-loader-status';d.style.cssText='position:fixed;top:12px;right:12px;z-index:2147483647;padding:10px 14px;background:#021c51;color:#fff;border-radius:6px;font:600 13px system-ui';document.documentElement.appendChild(d)}d.textContent='Fiscalidade: a carregar...';` +
   `function l(u,i,n,f){var s=document.createElement('script');s.charset='utf-8';s.crossOrigin='anonymous';s.integrity=i;s.onload=f;s.onerror=function(){d.style.background='#8b1e1e';d.textContent='Fiscalidade: erro a carregar '+n};s.src=u;document.documentElement.appendChild(s)}` +

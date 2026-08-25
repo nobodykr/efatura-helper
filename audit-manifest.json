@@ -1,7 +1,7 @@
 {
-  "_generated": "make-audit.mjs a partir de deducoes.html + tool.js + year_snapshots.json + legal_sources.json (versão do tool.js 2026.08.25.3)",
+  "_generated": "make-audit.mjs a partir de deducoes.html + tool.js + year_snapshots.json + legal_sources.json (versão do tool.js 2026.08.25.4)",
   "_disclaimer": "GERADO automaticamente do código e das fontes, não curado. Cada linha é verificável: siga a fonte legal (DRE) e confirme o valor. Correr test-audit-sync.js garante que este ficheiro não desviou do código.",
-  "tool_version": "2026.08.25.3",
+  "tool_version": "2026.08.25.4",
   "rows": [
     {
       "code": "C01",
