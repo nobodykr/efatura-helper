@@ -65,6 +65,7 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
     "https://faturas.portaldasfinancas.gov.pt/consultarDocumentosAdquirente.action", "fiscalidade-oficial"));
   const officialPage = await officialOpened;
   await officialPage.waitForLoadState("domcontentloaded");
+  const officialClosed = officialPage.waitForEvent("close", { timeout:5000 });
   await officialPage.evaluate((bookmarklet) => { location.href = bookmarklet; }, href);
   await officialPage.waitForSelector("#efh-panel", { timeout:15000 });
   const panel = await officialPage.locator("#efh-panel").innerText();
@@ -89,6 +90,7 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
     const store = JSON.parse(localStorage.getItem("fb-profile-v2") || "{}");
     return store.partitions && store.partitions.efatura && store.partitions.efatura.status === "done";
   }, null, { timeout:5000 });
+  await officialClosed;
 
   // Start the exceptional integrated flow with a clean profile so the progress assertion is exact.
   await firstProfile.evaluate(() => {
@@ -101,7 +103,6 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
   // navigation. A bookmarklet cannot survive replacing its document. The first click must clearly
   // announce that exceptional continuation in /perfil and navigate the official tab; the second
   // click must then reach accepted and move /perfil from 0/13 to 1/13.
-  await officialPage.close();
   const integratedStart = requests.length;
   const integratedHub = "https://sitfiscal.portaldasfinancas.gov.pt/integrada/presentation";
   const integratedOpened = context.waitForEvent("page");
@@ -119,6 +120,7 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
   const bridgeRequests = requests.slice(integratedStart);
   if (!bridgeRequests.some((url) => /sitfiscal\.portaldasfinancas\.gov\.pt\/integrada\/presentation.*targetScreen=ecraActividade/.test(url)))
     throw new Error("first click did not perform the signed top-level activity navigation");
+  const integratedClosed = integratedPage.waitForEvent("close", { timeout:5000 });
   await integratedPage.evaluate((bookmarklet) => { location.href = bookmarklet; }, href);
   await integratedPage.waitForFunction(() => {
     const store = JSON.parse(localStorage.getItem("fb-profile-v1") || "{}");
@@ -132,6 +134,7 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
   }, null, { timeout:5000 });
   if (!/1 de 13 fontes reunidas/.test(await continuationProfile.locator(".plabel").innerText()))
     throw new Error("profile did not move to 1/13 after the accepted second click");
+  await integratedClosed;
 
   // An arbitrary official tab has no reliable profile-owned WindowProxy under COOP. It must stop
   // before reading and explain the guided start, never enter another endless "A concluir" state.
@@ -143,6 +146,7 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
   await unownedPage.waitForTimeout(300);
   if (!/Comeca em fiscalida\.de\/perfil/.test(guardMessage) || await unownedPage.locator("#efh-panel").count())
     throw new Error("unowned official tab was read instead of being redirected to the guided start");
+  if (unownedPage.isClosed()) throw new Error("a stopped/unowned official tab was closed without an accepted receipt");
   await browser.close();
   console.log("  dragged bookmarklet accepts e-Fatura in one click and signed activity in one explicit continuation");
 })().catch((error) => { console.error(error); process.exit(1); });

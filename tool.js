@@ -64,7 +64,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.08.25.5";
+  var FB_VERSION = "2026.08.25.6";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -1067,6 +1067,14 @@
     var body = document.getElementById("efh-body");
     if (body) body.innerHTML = '<div class="' + css + '"><b>' + title + '</b> ' + detail + '</div>';
   }
+  function closeGuidedOfficialAfterAccepted() {
+    // Only tabs created by /perfil are eligible. Keep every failed/pending tab open so login or a
+    // retry remains possible; close only after the profile has acknowledged the intake receipt.
+    try {
+      if (window.name !== "fiscalidade-oficial" || !window.opener || window.opener.closed) return;
+      setTimeout(function () { try { window.close(); } catch (e) {} }, 900);
+    } catch (e) {}
+  }
   function deliverProfile(pid, data, shape, market) {
     var contract = PROFILE_CONTRACT;
     var requestId = profileRequestId();
@@ -1117,6 +1125,7 @@
         try { target.focus(); } catch (e) {}
         profileMessage("efh-ok", "Leitura conclu\u00edda.",
           "O perfil completo ficou neste navegador e o contributo minimizado foi aceite.");
+        closeGuidedOfficialAfterAccepted();
       }
       if (event.data.type === contract.rejectedType && event.data.partition === pid &&
           event.data.requestId === requestId) {
@@ -1849,24 +1858,73 @@
    * despesas efetivamente afetas \u00e0 atividade (art. 31 n.13): pessoal, rendas, VPT de im\u00f3veis afetos,
    * outras. Esta p\u00e1gina mostra o que a AT j\u00e1 tem, com o "valor a considerar" j\u00e1 calculado.
    * Mesmo padr\u00e3o (e mesma armadilha) da p\u00e1gina das dedu\u00e7\u00f5es: HTML server-rendered e ano STATEFUL. */
+  function parseDespesasAtividadeHtml(html) {
+    var raw = String(html || ""), t = "";
+    try {
+      var contentDoc = new DOMParser().parseFromString(raw, "text/html");
+      Array.prototype.forEach.call(contentDoc.querySelectorAll("script,style,noscript"), function (node) {
+        if (node.parentNode) node.parentNode.removeChild(node);
+      });
+      t = (contentDoc.body && contentDoc.body.textContent) || contentDoc.textContent || "";
+    } catch (e) {
+      t = raw.replace(/<[^>]+>/g, " ").replace(/&nbsp;?/g, " ").replace(/&euro;/g, "\u20ac");
+    }
+    t = t.replace(/\s+/g, " ");
+    if (!/Despesas Afetas [\u00e0a] Atividade/i.test(t)) return null;
+    var num = function (s) { return +String(s).replace(/\./g, "").replace(",", ".") || 0; };
+    var cats = {}, m;
+    var re = /(Despesas com pessoal|Rendas de im[\u00f3o]veis|Outras despesas|Valor patrimonial tribut[\u00e1a]rio|Import[\u00e2a]ncias)[^0-9]{0,80}([\d.]+,\d{2})\s*\u20ac\s*Valor a considerar[^0-9]{0,60}([\d.]+,\d{2})\s*\u20ac/g;
+    while ((m = re.exec(t)) !== null)
+      cats[m[1].replace(/\s+/g, " ").trim()] = { valor: num(m[2]), considerar: num(m[3]) };
+    var ano = (t.match(/Ano\s+(20\d{2})\s+Esta p[\u00e1a]gina/) || t.match(/\bAno\s+(20\d{2})\b/) || [])[1] || null;
+    if (!Object.keys(cats).length) return { ano: ano ? +ano : null, categorias: {}, vazio: true };
+    return { ano: ano ? +ano : null, categorias: cats,
+             nota: "despesas afetas \u00e0 atividade (art. 31.\u00ba n.13 CIRS) - relevantes s\u00f3 no regime simplificado" };
+  }
+  function despesasAtividadeLoginDocument(html, responseUrl) {
+    if (/^https:\/\/acesso\.gov\.pt(?:\/|$)/i.test(String(responseUrl || ""))) return true;
+    try {
+      var loginDoc = new DOMParser().parseFromString(String(html || ""), "text/html");
+      var forms = loginDoc.querySelectorAll("form");
+      for (var i = 0; i < forms.length; i++) {
+        var marker = [forms[i].getAttribute("id"), forms[i].getAttribute("name"),
+          forms[i].getAttribute("action")].join(" ");
+        if (/loginForm|acesso\.gov\.pt/i.test(marker)) return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+  function despesasAtividadeVisibleHtml() {
+    // The user is already on this server-rendered page. Read that DOM first: a same-origin fetch can
+    // be redirected independently by the portal. Remove our widget clone so its source label cannot
+    // be mistaken for the official page heading.
+    try {
+      var root = document.documentElement.cloneNode(true);
+      var panel = root.querySelector("#efh-panel");
+      if (panel && panel.parentNode) panel.parentNode.removeChild(panel);
+      return root.outerHTML || "";
+    } catch (e) { return ""; }
+  }
   function readDespesasAtividade() {
-    return fetch("/app/dashboard-regime-simplificado", { credentials: "include" })
-      .then(function (r) { return r.text(); })
-      .then(function (html) {
-        if (/acesso\.gov\.pt|loginForm/i.test(html))
-          throw readError("session_required", "A sess\u00e3o desta p\u00e1gina expirou. Faz login aqui e tenta de novo.");
-        recordShape("/app/dashboard-regime-simplificado", "html", html);
-        var t = html.replace(/<[^>]+>/g, " ").replace(/&nbsp;?/g, " ").replace(/&euro;/g, "\u20ac").replace(/\s+/g, " ");
-        if (!/Despesas Afetas [\u00e0a] Atividade/i.test(t)) return null;
-        var num = function (s) { return +String(s).replace(/\./g, "").replace(",", ".") || 0; };
-        var cats = {}, m;
-        var re = /(Despesas com pessoal|Rendas de im[\u00f3o]veis|Outras despesas|Valor patrimonial tribut[\u00e1a]rio|Import[\u00e2a]ncias)[^0-9]{0,80}([\d.]+,\d{2})\s*\u20ac\s*Valor a considerar[^0-9]{0,60}([\d.]+,\d{2})\s*\u20ac/g;
-        while ((m = re.exec(t)) !== null)
-          cats[m[1].replace(/\s+/g, " ").trim()] = { valor: num(m[2]), considerar: num(m[3]) };
-        var ano = (t.match(/Ano\s+(20\d{2})\s+Esta p[\u00e1a]gina/) || t.match(/\bAno\s+(20\d{2})\b/) || [])[1] || null;
-        if (!Object.keys(cats).length) return { ano: ano ? +ano : null, categorias: {}, vazio: true };
-        return { ano: ano ? +ano : null, categorias: cats,
-                 nota: "despesas afetas \u00e0 atividade (art. 31.\u00ba n.13 CIRS) - relevantes s\u00f3 no regime simplificado" };
+    var url = "/app/dashboard-regime-simplificado";
+    var visibleHtml = despesasAtividadeVisibleHtml();
+    var visibleData = parseDespesasAtividadeHtml(visibleHtml);
+    if (visibleData) {
+      recordShape(url, "html", visibleHtml);
+      return Promise.resolve(visibleData);
+    }
+    return fetch(url, { credentials: "include" })
+      .then(function (r) {
+        return r.text().then(function (html) {
+          var data = parseDespesasAtividadeHtml(html);
+          // Valid page content wins over harmless login-related script or shell text. Only an actual
+          // login form or a redirect to acesso.gov.pt means this page's session has expired.
+          if (data) { recordShape(url, "html", html); return data; }
+          if (despesasAtividadeLoginDocument(html, r.url))
+            throw readError("session_required", "A sess\u00e3o desta p\u00e1gina expirou. Faz login aqui e tenta de novo.");
+          recordShape(url, "html", html);
+          return null;
+        });
       });
   }
 

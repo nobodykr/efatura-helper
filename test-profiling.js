@@ -303,6 +303,43 @@ function hasHandoffShape(w, partition) {
     store.partitions.atividade_integrada && store.partitions.atividade_integrada.data.estadoAtual === "aberta" &&
     hasHandoffShape(w, "atividade_integrada"));
 
+  // 4c-7. This page is server-rendered and its shell can mention loginForm/acesso.gov.pt even when
+  //       the authenticated expense content is present. Prefer the visible official DOM, remove
+  //       our own panel before matching, and only classify an actual login form as logged out.
+  let activityFetches = 0;
+  const noActivityFetch = () => { activityFetches++; return Promise.reject(new Error("visible DOM should win")); };
+  w = mkEnv("irs.portaldasfinancas.gov.pt", true, noActivityFetch, "/app/dashboard-regime-simplificado");
+  w.document.body.innerHTML = "<main>Ano 2025 Esta p&aacute;gina Despesas Afetas &agrave; Atividade " +
+    "Despesas com pessoal 1.234,56 &euro; Valor a considerar 987,65 &euro;</main>" +
+    "<script>window.loginFormReference='https://acesso.gov.pt';</script>";
+  eval(SRC); await wait();
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("activity expenses use the already-visible authenticated page", activityFetches === 0 &&
+    store.partitions.despesas_atividade && store.partitions.despesas_atividade.status === "done");
+  ok("activity expenses ignore harmless login shell references", store.partitions.despesas_atividade &&
+    store.partitions.despesas_atividade.data.categorias["Despesas com pessoal"].valor === 1234.56 &&
+    store.partitions.despesas_atividade.data.categorias["Despesas com pessoal"].considerar === 987.65);
+
+  const activityHtmlWithShellReference = () => Promise.resolve({ ok:true, url:"https://irs.portaldasfinancas.gov.pt/app/dashboard-regime-simplificado",
+    headers:{ get:() => "text/html" }, text:() => Promise.resolve("<html><body>Ano 2025 Esta p&aacute;gina " +
+      "Despesas Afetas &agrave; Atividade Outras despesas 300,00 &euro; Valor a considerar 150,00 &euro;" +
+      "<script>var loginForm='https://acesso.gov.pt';</script></body></html>") });
+  w = mkEnv("irs.portaldasfinancas.gov.pt", true, activityHtmlWithShellReference, "/app/dashboard-regime-simplificado");
+  eval(SRC); await wait();
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("valid fetched expense content wins over harmless login shell references",
+    store.partitions.despesas_atividade && store.partitions.despesas_atividade.status === "done" &&
+    store.partitions.despesas_atividade.data.categorias["Outras despesas"].considerar === 150);
+
+  const activityLogin = () => Promise.resolve({ ok:true, url:"https://acesso.gov.pt/login",
+    headers:{ get:() => "text/html" }, text:() => Promise.resolve("<html><body><form id='loginForm' action='https://acesso.gov.pt/login'></form></body></html>") });
+  w = mkEnv("irs.portaldasfinancas.gov.pt", true, activityLogin, "/app/dashboard-regime-simplificado");
+  eval(SRC); await wait();
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("an actual activity-expenses login document remains a loud retryable error",
+    (!store.partitions.despesas_atividade || store.partitions.despesas_atividade.status === "pending") &&
+    /N.o consegui ler/.test(w.document.getElementById("efh-body").textContent) && w.__handoffs.length === 0);
+
   // 4d. patrimonio: SAME host as rendas (imoveis) but a /matrizesinter path -> host+path matching
   //     must pick patrimonio, NOT rendas. Proves the disambiguation.
   w = mkEnv("imoveis.portaldasfinancas.gov.pt", true, fetchOK, "/matrizesinter/web/consultar-patrimonio-predial");

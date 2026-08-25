@@ -1,6 +1,6 @@
 # Bookmarklet handoff and signed AT navigation
 
-Status: accepted design for bookmarklet release `2026.08.25.5` (2026-08-25)
+Status: accepted design for bookmarklet release `2026.08.25.6` (2026-08-25)
 
 This document records why the Fiscalidade bookmarklet has one exceptional two-click source, what
 failed before it, and which tests must pass before this flow is changed again.
@@ -14,6 +14,8 @@ failed before it, and which tests must pass before this flow is changed again.
   signed detail screen. The profile displays a prominent instruction. The user clicks the same
   bookmarklet once more on that signed screen; the read and handoff then complete automatically.
 - There is no Save/Guardar action. No required control may be placed below the 13-source list.
+- After `/perfil` acknowledges the minimized intake receipt, the profile-owned official tab closes
+  automatically. A pending, rejected or failed read stays open so the user can log in or retry.
 - Account values remain out of URLs and out of the website request. The complete envelope travels
   only through the nonce-bound `postMessage` channel. The separate mandatory market intake still
   receives only its allowlisted minimized payload.
@@ -69,6 +71,7 @@ Never restore the blank-tab bridge merely because its DOM read or schema asserti
 6. The profile persists it as pending, submits the minimized intake and waits for its receipt.
 7. The profile replies `accepted`; the official local row records the accepted handoff.
 8. The profile progress increases immediately after the receipt.
+9. The named official tab closes after a short success delay; `/perfil` remains in view.
 
 ### Atividade Exercida
 
@@ -95,14 +98,35 @@ the real `perfil.html` and the production `Cross-Origin-Opener-Policy`. It must 
 - `/perfil` owns and opens the named official tab used by the test;
 - e-Fatura reaches `handoff.status === "accepted"` in one click;
 - `/perfil` stores e-Fatura as complete;
+- the successful profile-owned e-Fatura tab closes only after that accepted receipt;
 - the first integrated click navigates the official tab to the signed screen;
 - `/perfil` shows `#signed-continuation` with both "same bookmarklet again" and "no Guardar" copy;
 - the second click reaches accepted;
-- `/perfil` clears the continuation state and displays `1 de 13 fontes reunidas`.
+- `/perfil` clears the continuation state and displays `1 de 13 fontes reunidas`;
+- the successful integrated tab closes, while an unowned/stopped tab remains open.
 
 `test-profiling.js` separately pins schema capture, stale `schema_required` rereads and both phases of
-the integrated flow. `test-profile-partitions.js` pins the top-level continuation design. A local DOM
+the integrated flow. It also pins the activity-expenses reader against a portal shell that mentions
+`loginForm`/`acesso.gov.pt` despite containing authenticated data, and distinguishes that from an
+actual login form. `test-profile-partitions.js` pins the top-level continuation design. A local DOM
 read, a `done` row without accepted handoff, or a pending profile row is never sufficient evidence.
+
+## Activity-expenses session detection
+
+`/app/dashboard-regime-simplificado` is server-rendered. Its authenticated document can still carry
+login-related script or shell text, so a bare substring search for `loginForm` or `acesso.gov.pt` is
+not proof that the session expired. Release `2026.08.25.5` performed that check before looking for
+the expense content and could reject a valid page.
+
+The reader now uses this order:
+
+1. clone the already-visible official DOM and remove `#efh-panel` so the widget cannot match itself;
+2. decode the document as HTML, discard script/style text and parse authenticated expense content;
+3. only if the visible content is absent, fetch the same-origin page and parse valid content first;
+4. classify session expiry only when the response URL is on `acesso.gov.pt` or the returned document
+   contains an actual login form whose id/name/action identifies it as such.
+
+Unknown HTML still cannot invent expense values. Real login failures remain visible and retryable.
 
 ## Investigation checklist
 

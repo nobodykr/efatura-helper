@@ -32,6 +32,10 @@ assert(/Ler e voltar à Fiscalidade/.test(bar) && /Painel de faturas/.test(bar) 
 assert(/RUNTIME\.channel === "dev-bookmarklet"/.test(tool) && /bookmarklet: true/.test(tool) &&
   !/fb-save-profile/.test(tool) && /markProfileHandoff/.test(tool),
   "bookmarklet still requires a second consent/save click or cannot auto-retry its handoff");
+assert(/function closeGuidedOfficialAfterAccepted\(\)/.test(tool) &&
+  /acceptedType[\s\S]*closeGuidedOfficialAfterAccepted\(\)[\s\S]*rejectedType/.test(tool) &&
+  /window\.name !== "fiscalidade-oficial"/.test(tool),
+  "profile-owned official tab is not closed strictly after an accepted receipt");
 assert(/__FISCALIDADE_PROFILE_TARGET__/.test(bar + readFileSync("build-bookmarklet-dev.mjs", "utf8") + tool),
   "bookmarklet/extension do not preserve the user-activated profile tab for the async handoff");
 assert(/continuationType/.test(readFileSync("profile-contract.js", "utf8")) &&
