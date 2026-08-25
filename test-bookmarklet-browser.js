@@ -56,8 +56,15 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
   if (!href.startsWith("javascript:") || href.length > 4000 || /[\r\n]/.test(href))
     throw new Error(`installer href is not a small bookmarklet (${href.length} chars)`);
 
-  const officialPage = await context.newPage();
-  await officialPage.goto("https://faturas.portaldasfinancas.gov.pt/consultarDocumentosAdquirente.action");
+  // Model the real guided flow: /perfil opens and owns the named official tab. With the production
+  // opener policy this direction of the relationship is what keeps the nonce channel available.
+  const profileStart = await context.newPage();
+  await profileStart.goto("https://fiscalida.de/perfil");
+  const officialOpened = context.waitForEvent("page");
+  await profileStart.evaluate(() => window.open(
+    "https://faturas.portaldasfinancas.gov.pt/consultarDocumentosAdquirente.action", "fiscalidade-oficial"));
+  const officialPage = await officialOpened;
+  await officialPage.waitForLoadState("domcontentloaded");
   await officialPage.evaluate((bookmarklet) => { location.href = bookmarklet; }, href);
   await officialPage.waitForSelector("#efh-panel", { timeout:15000 });
   const panel = await officialPage.locator("#efh-panel").innerText();
@@ -76,7 +83,7 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
   } catch (error) {
     throw new Error("e-Fatura handoff never reached accepted: " + await officialPage.locator("#efh-body").innerText());
   }
-  const firstProfile = context.pages().find((page) => page.url().startsWith("https://fiscalida.de/perfil"));
+  const firstProfile = profileStart;
   if (!firstProfile) throw new Error("profile tab did not open after the e-Fatura read");
   await firstProfile.waitForFunction(() => {
     const store = JSON.parse(localStorage.getItem("fb-profile-v2") || "{}");
@@ -94,15 +101,16 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
   // navigation. A bookmarklet cannot survive replacing its document. The first click must clearly
   // announce that exceptional continuation in /perfil and navigate the official tab; the second
   // click must then reach accepted and move /perfil from 0/13 to 1/13.
-  for (const page of context.pages())
-    if (page !== installerPage && page !== officialPage) await page.close();
+  await officialPage.close();
   const integratedStart = requests.length;
-  const integratedPage = await context.newPage();
   const integratedHub = "https://sitfiscal.portaldasfinancas.gov.pt/integrada/presentation";
-  await integratedPage.goto(integratedHub);
+  const integratedOpened = context.waitForEvent("page");
+  await firstProfile.evaluate((url) => window.open(url, "fiscalidade-oficial"), integratedHub);
+  const integratedPage = await integratedOpened;
+  await integratedPage.waitForLoadState("domcontentloaded");
   await integratedPage.evaluate((bookmarklet) => { location.href = bookmarklet; }, href);
   await integratedPage.waitForURL(/targetScreen=ecraActividade/, { timeout:15000 });
-  const continuationProfile = context.pages().find((page) => page.url().startsWith("https://fiscalida.de/perfil"));
+  const continuationProfile = firstProfile;
   if (!continuationProfile) throw new Error("profile tab did not open for the signed activity continuation");
   await continuationProfile.waitForSelector("#signed-continuation", { timeout:5000 });
   const instruction = await continuationProfile.locator("#signed-continuation").innerText();
@@ -124,6 +132,17 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
   }, null, { timeout:5000 });
   if (!/1 de 13 fontes reunidas/.test(await continuationProfile.locator(".plabel").innerText()))
     throw new Error("profile did not move to 1/13 after the accepted second click");
+
+  // An arbitrary official tab has no reliable profile-owned WindowProxy under COOP. It must stop
+  // before reading and explain the guided start, never enter another endless "A concluir" state.
+  const unownedPage = await context.newPage();
+  await unownedPage.goto("https://faturas.portaldasfinancas.gov.pt/consultarDocumentosAdquirente.action");
+  let guardMessage = "";
+  unownedPage.once("dialog", async (dialog) => { guardMessage = dialog.message(); await dialog.accept(); });
+  await unownedPage.evaluate((bookmarklet) => { location.href = bookmarklet; }, href);
+  await unownedPage.waitForTimeout(300);
+  if (!/Comeca em fiscalida\.de\/perfil/.test(guardMessage) || await unownedPage.locator("#efh-panel").count())
+    throw new Error("unowned official tab was read instead of being redirected to the guided start");
   await browser.close();
   console.log("  dragged bookmarklet accepts e-Fatura in one click and signed activity in one explicit continuation");
 })().catch((error) => { console.error(error); process.exit(1); });

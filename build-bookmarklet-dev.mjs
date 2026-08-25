@@ -19,7 +19,7 @@ if (versions.files?.['tool.js']?.integrity !== toolSri)
 const asset = 'https://faturas.diogoandrade.com';
 const javascript = `javascript:(function(){` +
   `if(!/^(?:(?:faturas|imoveis|sitfiscal|irs)\\.portaldasfinancas\\.gov\\.pt|www\\.seg-social\\.pt)$/.test(location.host)){alert('Abre uma pagina oficial das Financas ou da Seguranca Social e faz login.');return}` +
-  `window.__FISCALIDADE_PROFILE_TARGET__=window.open('https://fiscalida.de/perfil','fiscalidade-perfil');window.__FB_PROFILE=1;` +
+  `if(window.name!=='fiscalidade-oficial'||!window.opener||window.opener.closed){window.open('https://fiscalida.de/perfil','fiscalidade-perfil');alert('Comeca em fiscalida.de/perfil e usa o botao Comecar ou Continuar atualizacao. Depois carrega neste favorito no separador oficial que a Fiscalidade abriu.');return}window.__FISCALIDADE_PROFILE_TARGET__=window.opener;window.__FB_PROFILE=1;` +
   `window.__FISCALIDADE_CONFIG__=Object.assign({},window.__FISCALIDADE_CONFIG__||{},{publicOrigin:'https://fiscalida.de',apiBase:'https://fiscalida.de/api/v1',channel:'dev-bookmarklet',remoteCodeAllowed:false});` +
   `var d=document.getElementById('fb-loader-status');if(!d){d=document.createElement('div');d.id='fb-loader-status';d.style.cssText='position:fixed;top:12px;right:12px;z-index:2147483647;padding:10px 14px;background:#021c51;color:#fff;border-radius:6px;font:600 13px system-ui';document.documentElement.appendChild(d)}d.textContent='Fiscalidade: a carregar...';` +
   `function l(u,i,n,f){var s=document.createElement('script');s.charset='utf-8';s.crossOrigin='anonymous';s.integrity=i;s.onload=f;s.onerror=function(){d.style.background='#8b1e1e';d.textContent='Fiscalidade: erro a carregar '+n};s.src=u;document.documentElement.appendChild(s)}` +
@@ -39,7 +39,7 @@ const installer = `<!doctype html><html lang="pt"><meta charset="utf-8">` +
   `.back{color:#034ad8}code{word-break:break-all}.note{padding:12px 14px;background:#f3f6fa;border-radius:6px}` +
   `</style><main><p><a class="back" href="/perfil">Voltar ao perfil</a></p>` +
   `<h1>Favorito Fiscalidade DEV</h1><p>Versão <b>${release}</b> · contrato ${contractVersion}</p>` +
-  `<p>Arrasta o botão azul para a barra de favoritos. Depois abre uma das 13 fontes oficiais, faz login e carrega no favorito.</p>` +
+  `<p>Arrasta o botão azul para a barra de favoritos. Depois volta a <a href="/perfil">/perfil</a>, carrega em Começar/Continuar atualização e usa o favorito no separador oficial que a Fiscalidade abriu.</p>` +
   `<p><a class="fav" href="${escaped}">Ler e voltar à Fiscalidade - DEV</a></p>` +
   `<p class="note">O favorito abre/reutiliza <code>fiscalida.de/perfil</code>. Se o acesso gated pedir autenticação, conclui-a nesse separador; a leitura tenta ligar-se durante 120 segundos.</p>` +
   `<p>Diagnóstico sem dados: SHA-256 do URL <code>${digest}</code></p>` +
