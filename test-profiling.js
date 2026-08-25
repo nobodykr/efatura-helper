@@ -11,14 +11,16 @@ const CONTRACT = require("./profile-contract.js");
 let failures = 0;
 function ok(name, cond) { console.log((cond ? "  PASS " : "  FAIL ") + name); if (!cond) failures++; }
 
-function mkEnv(host, flag, fetchImpl, path) {
+function mkEnv(host, flag, fetchImpl, path, options) {
+  options = options || {};
   const dom = new JSDOM(`<!doctype html><body></body>`, { url: "https://" + host + (path || "/x") });
   const { window } = dom;
   global.window = window; global.document = window.document;
   // tool.js reads the official host/path and hands the result to a named /perfil window. Model the
   // v3 ready/envelope/accepted channel without exposing the payload to a URL or a server.
-  const loc = { host: host, hash: "", pathname: path || "/x" };
-  Object.defineProperty(loc, "href", { get() { return "https://" + host + "/x"; } });
+  let currentHref = "https://" + host + (path || "/x");
+  const loc = { host: host, hash: "", pathname: path || "/x", origin: "https://" + host };
+  Object.defineProperty(loc, "href", { get() { return currentHref; }, set(value) { currentHref = String(value); } });
   global.location = loc;
   global.localStorage = { _d: {}, getItem(k) { return this._d[k] ?? null; }, setItem(k, v) { this._d[k] = String(v); }, removeItem(k) { delete this._d[k]; } };
   window.localStorage = global.localStorage;
@@ -28,7 +30,24 @@ function mkEnv(host, flag, fetchImpl, path) {
   window.FISCALIDADE_PROFILE_CONTRACT = CONTRACT;
   window.__handoffs = [];
   const profileDom = new JSDOM("", { url:"https://fiscalida.de/perfil" });
-  const profileTarget = profileDom.window;
+  let profileTarget = profileDom.window;
+  if (options.bridgeHtml) {
+    let targetHref = "https://fiscalida.de/perfil", targetDocument = profileDom.window.document;
+    const navigations = [];
+    function navigate(value) {
+      targetHref = String(value); navigations.push(targetHref);
+      if (new URL(targetHref).origin === "https://" + host) {
+        targetDocument = new JSDOM(options.bridgeHtml, { url:targetHref }).window.document;
+        Object.defineProperty(targetDocument, "readyState", { get() { return "complete"; } });
+      } else targetDocument = profileDom.window.document;
+    }
+    const targetLocation = {
+      get href() { return targetHref; }, set href(value) { navigate(value); },
+      get origin() { return new URL(targetHref).origin; }, replace(value) { navigate(value); }
+    };
+    profileTarget = { closed:false, location:targetLocation, get document() { return targetDocument; },
+      focus() {}, __navigations:navigations };
+  }
   profileTarget.postMessage = function (message) {
     if (message.type === CONTRACT.helloType) setTimeout(function () {
       window.dispatchEvent(new window.MessageEvent("message", { origin:"https://fiscalida.de",
@@ -47,6 +66,7 @@ function mkEnv(host, flag, fetchImpl, path) {
     }
   };
   window.open = function () { return profileTarget; };
+  window.__FISCALIDADE_PROFILE_TARGET__ = profileTarget;
   window.__profileDom = profileDom;
   if (flag) {
     window.__FB_PROFILE = 1;
@@ -92,6 +112,13 @@ function fetchOK(u) {
 }
 
 function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
+function hasHandoffShape(w, partition) {
+  const handoff = w.__handoffs.find(h => h.partition === partition);
+  return !!handoff && Object.keys(handoff.shapes || {}).some(url => {
+    const id = CONTRACT.endpointId(url) || (CONTRACT.isEndpointId(url) ? url : null);
+    return id && CONTRACT.endpointPartition(id) === partition;
+  });
+}
 
 (async () => {
   // 1. no flag -> classifier path, no profiling consent key touched
@@ -212,6 +239,8 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
     store.partitions.atividade_integrada.data.estadoAtual === "cessada" &&
     store.partitions.atividade_integrada.data.proximoInicio === "2099-01-01" &&
     store.partitions.atividade_integrada.data.cessada === true);
+  ok("integrated cadastro handoff includes its allowlisted DOM schema",
+    hasHandoffShape(w, "atividade_integrada"));
 
   w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/integrada/presentation");
   w.document.body.innerHTML = "<div>Atividade em IRS Data de Início 2020-01-01 Data de Cessação 2021-01-01 " +
@@ -231,6 +260,35 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
     store.partitions.atividade_integrada.data.estadoAtual === "agendada" &&
     store.partitions.atividade_integrada.data.proximoInicio === "2099-01-01" &&
     store.partitions.atividade_integrada.data.cessada === null);
+
+  // A schema_required result from an older favorite must be reread, not retried forever with the
+  // same empty envelope.
+  w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/integrada/presentation");
+  w.document.body.innerHTML = "<div>Atividade em IVA Data de Início 2024-01-01 Tipo de Contabilidade Não organizada</div>";
+  global.localStorage.setItem("fb-profile-v1", JSON.stringify({ partitions:{ atividade_integrada:{
+    status:"done", fetchedAt:"2026-08-24T00:00:00.000Z", data:{estadoAtual:"desconhecida"}, shape:{},
+    handoff:{status:"error",code:"schema_required"}
+  } } }));
+  eval(SRC); await wait();
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("stale empty-schema result is reread automatically",
+    store.partitions.atividade_integrada.data.estadoAtual === "aberta" && hasHandoffShape(w, "atividade_integrada"));
+
+  // On the integrated hub the signed activity screen needs a top-level GET. The reserved profile
+  // tab is used as that temporary top-level bridge, so one bookmarklet click performs the read and
+  // returns the tab to /perfil without replacing this official page.
+  w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/integrada/presentation", {
+    bridgeHtml:"<!doctype html><body>Atividade em IRS Data de Início 2023-01-01 Tipo de Contabilidade Não organizada</body>"
+  });
+  w.document.body.innerHTML = "<a href='/integrada/presentation?targetScreen=ecraActividade&hmac=fixture'>Atividade exercida</a>";
+  eval(SRC); await wait(1200);
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("signed integrated screen completes from one bookmarklet click",
+    store.partitions.atividade_integrada && store.partitions.atividade_integrada.data.estadoAtual === "aberta" &&
+    hasHandoffShape(w, "atividade_integrada"));
+  ok("signed-screen bridge returns to profile after the read",
+    w.__FISCALIDADE_PROFILE_TARGET__.__navigations.some(url => /targetScreen=ecraActividade/.test(url)) &&
+    w.__FISCALIDADE_PROFILE_TARGET__.__navigations.some(url => url === "https://fiscalida.de/perfil"));
 
   // 4d. patrimonio: SAME host as rendas (imoveis) but a /matrizesinter path -> host+path matching
   //     must pick patrimonio, NOT rendas. Proves the disambiguation.

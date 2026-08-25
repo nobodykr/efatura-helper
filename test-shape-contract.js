@@ -6,6 +6,7 @@ const tool = fs.readFileSync("tool.js", "utf8");
 const profile = fs.readFileSync("perfil.html", "utf8");
 const contract = fs.readFileSync("profile-contract.js", "utf8");
 const runtime = JSON.parse(fs.readFileSync("fiscalidade.config.json", "utf8"));
+const browserContract = require("./profile-contract.js");
 
 function between(source, start, end) {
   const a = source.indexOf(start);
@@ -39,5 +40,11 @@ for (const value of contractIds) {
   if (/[0-9]{5,}/.test(value) || value.includes("/") || value.includes("?"))
     throw new Error(`unsafe endpoint ID: ${value}`);
 }
+if (browserContract.endpointId("/integrada/presentation") !== "activity.integrated.v1")
+  throw new Error("integrated activity DOM route is not allowlisted");
+if (browserContract.endpointId("/movfin/filtraMeusDocumentos.web") !== "finance.movements.v1")
+  throw new Error("actual financial-movements HTML route is not allowlisted");
+if (browserContract.endpointId("/app/dashboard-regime-simplificado") !== "activity.expenses.v1")
+  throw new Error("activity-expenses HTML route is not allowlisted");
 
 console.log("shared shape endpoint and isolated sink contract passed");

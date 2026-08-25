@@ -4,12 +4,12 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 
 const root = (file) => new URL('./' + file, import.meta.url).pathname;
-const manifest = JSON.parse(readFileSync(root('extension/manifest.dev.json'), 'utf8'));
-const release = manifest.version_name;
 const contract = readFileSync(root('profile-contract.js'), 'utf8');
 const contractVersion = Number((contract.match(/version:\s*(\d+)/) || [])[1]);
 if (!Number.isInteger(contractVersion)) throw new Error('profile contract version not found');
 const tool = readFileSync(root('tool.js'), 'utf8');
+const release = (tool.match(/FB_VERSION\s*=\s*"([^"]+)"/) || [])[1];
+if (!release) throw new Error('tool version not found');
 const versions = JSON.parse(readFileSync(root('versions.json'), 'utf8'));
 const sri = (source) => 'sha384-' + createHash('sha384').update(source).digest('base64');
 const toolSri = sri(tool);

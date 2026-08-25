@@ -73,7 +73,7 @@
     [/integrada\/presentation/, "activity.integrated.v1", "atividade_integrada"],
     [/liquidacoesIRSDataTables/, "irs.liquidations.v1", "irs"],
     [/reembolsosDataTables/, "irs.refunds.v1", "irs"],
-    [/resumoCobranca/, "finance.movements.v1", "movfin"],
+    [/movfin\/(?:resumoCobranca|filtraMeusDocumentos)/, "finance.movements.v1", "movfin"],
     [/obtemDocumentosV2/, "receipts.green.v1", "recibos"],
     [/\/app\/consulta\/pesquisa/, "irs.declarations.v1", "declaracoes"],
     [/dashboard-regime-simplificado/, "activity.expenses.v1", "despesas_atividade"],

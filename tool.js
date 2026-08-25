@@ -64,7 +64,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.08.25.3";
+  var FB_VERSION = "2026.08.25.4";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -1130,7 +1130,9 @@
             "No perfil Fiscalidade, l\u00ea e aceita o contributo minimizado; depois volta aqui e tenta outra vez.");
         else if (rejection === "schema_required")
           profileMessage("efh-warn", "N\u00e3o foi recolhida a estrutura necess\u00e1ria.",
-            "Atualiza o favorito ou a extens\u00e3o DEV e repete a leitura nesta p\u00e1gina oficial.");
+            EXTENSION_MODE
+              ? "Atualiza a extens\u00e3o DEV e repete a leitura nesta p\u00e1gina oficial."
+              : "Instala de novo o favorito DEV e carrega nele nesta p\u00e1gina; a leitura ser\u00e1 repetida, n\u00e3o apenas reenviada.");
         else
           profileMessage("efh-warn", "N\u00e3o foi poss\u00edvel concluir esta fonte.",
             "O perfil completo n\u00e3o foi enviado. Abre o perfil Fiscalidade e tenta novamente o contributo minimizado.");
@@ -1217,6 +1219,14 @@
     var key = String(url).split("?")[0].replace(/\d{5,}/g, ":id");
     if (kind === "html") _shapes[key] = htmlSkeleton(val);
     else _shapes[key] = skeleton(val);
+  }
+  function hasPartitionShape(partition, shapes) {
+    var contract = PROFILE_CONTRACT;
+    if (!contract || !contract.endpointId || !contract.endpointPartition) return false;
+    return Object.keys(shapes || {}).some(function (url) {
+      var id = contract.endpointId(url) || (contract.isEndpointId && contract.isEndpointId(url) ? url : null);
+      return !!id && contract.endpointPartition(id) === partition;
+    });
   }
 
   /* RULE 3 (SPEC): a wrong session or missing permission on AT returns 200 + an HTML redirect,
@@ -1393,8 +1403,61 @@
     }
     if (href) {
       // The portal rejects this signed screen as a background fetch; it must be a top-level GET.
-      // Navigate read-only, then the user clicks the extension once more on the resulting screen.
-      location.href = href;
+      // Keep the official hub alive and use the tab already reserved by the bookmarklet as a
+      // temporary top-level bridge. Once its signed screen loads, same-origin access lets this
+      // page read it, then the bridge returns to /perfil for the ordinary nonce-bound handoff.
+      // This preserves the one user click: a bookmarklet cannot survive replacing its own page.
+      var target = window.__FISCALIDADE_PROFILE_TARGET__;
+      var signed = null;
+      try {
+        signed = new URL(href, location.href);
+        if (signed.origin !== location.origin || !/ecraActividade/i.test(signed.href)) signed = null;
+      } catch (e) {}
+      if (target && !target.closed && signed) {
+        return new Promise(function (resolve, reject) {
+          var finished = false, started = Date.now(), timer;
+          function finish(error, bridgedHtml) {
+            if (finished) return;
+            finished = true; clearInterval(timer);
+            if (error) { reject(error); return; }
+            recordShape("/integrada/presentation", "html", bridgedHtml);
+            try { target.location.replace(PROF_SITE); }
+            catch (e) { try { target.location.href = PROF_SITE; } catch (e2) {} }
+            resolve({ data: parseAtividadeExercida(bridgedHtml),
+              source: "/integrada/presentation::ecraActividade (top-level bridge)" });
+          }
+          function inspectBridge() {
+            if (target.closed) {
+              finish(readError("profile_window_closed", "O separador da Fiscalidade foi fechado durante a leitura."));
+              return;
+            }
+            if (Date.now() - started > 45000) {
+              finish(readError("signed_screen_timeout", "O ecr\u00e3 assinado da AT n\u00e3o abriu a tempo. Tenta novamente."));
+              return;
+            }
+            try {
+              if (target.location.origin !== location.origin || target.document.readyState !== "complete") return;
+              var bridgedHtml = target.document.documentElement ? target.document.documentElement.outerHTML : "";
+              if (/acesso\.gov\.pt|loginForm/i.test(bridgedHtml)) {
+                finish(readError("session_required", "A sess\u00e3o desta p\u00e1gina expirou. Faz login aqui e tenta de novo."));
+                return;
+              }
+              if (!/Atividade em IVA|Atividade em IRS|Tipo de Contabilidade|CAE Principal|CIRS/i.test(bridgedHtml))
+                return;
+              finish(null, bridgedHtml);
+            } catch (e) {
+              // Cross-origin while /perfil is leaving or the signed page is still loading.
+            }
+          }
+          try { target.location.href = signed.href; }
+          catch (e) { finish(readError("signed_screen_blocked", "O navegador bloqueou o ecr\u00e3 assinado da AT. Tenta novamente.")); return; }
+          timer = setInterval(inspectBridge, 150);
+          inspectBridge();
+        });
+      }
+      // Last-resort compatibility for a browser that did not preserve the reserved tab. Replacing
+      // this page necessarily ends bookmarklet execution, so a second click is unavoidable there.
+      location.href = signed ? signed.href : href;
       return new Promise(function () {});
     }
     // A second live account legitimately had no ecraActividade link. Absence is UNKNOWN/not exposed,
@@ -1582,8 +1645,11 @@
     var u = "/movfin/filtraMeusDocumentos.web?imposto=&exercicio=&tipoDocumento=&filtro=999&_=" + Date.now();
     return fetch(u, { credentials: "include", headers: { "X-Requested-With": "XMLHttpRequest" } })
       .then(function (r) { return r.text(); }).then(function (t) {
+        if (/acesso\.gov\.pt|loginForm/i.test(t))
+          throw readError("session_required", "A sess\u00e3o desta p\u00e1gina expirou. Faz login aqui e tenta de novo.");
         var docp = new DOMParser().parseFromString(t, "text/html");
         var table = docp.querySelector("#tabela_documentos") || docp.querySelector("table");
+        if (!table) throw readError("format_changed", "A AT mudou o formato dos movimentos financeiros. A leitura foi interrompida sem guardar zeros.");
         var cols = [];
         if (table) Array.prototype.forEach.call(table.querySelectorAll("th"), function (th) {
           var x = (th.textContent || "").replace(/\s+/g, " ").trim(); if (x) cols.push(x);
@@ -1793,6 +1859,9 @@
     return fetch("/app/dashboard-regime-simplificado", { credentials: "include" })
       .then(function (r) { return r.text(); })
       .then(function (html) {
+        if (/acesso\.gov\.pt|loginForm/i.test(html))
+          throw readError("session_required", "A sess\u00e3o desta p\u00e1gina expirou. Faz login aqui e tenta de novo.");
+        recordShape("/app/dashboard-regime-simplificado", "html", html);
         var t = html.replace(/<[^>]+>/g, " ").replace(/&nbsp;?/g, " ").replace(/&euro;/g, "\u20ac").replace(/\s+/g, " ");
         if (!/Despesas Afetas [\u00e0a] Atividade/i.test(t)) return null;
         var num = function (s) { return +String(s).replace(/\./g, "").replace(",", ".") || 0; };
@@ -2051,8 +2120,11 @@
   function autoReadCurrent(cur) {
     if (_autoRead[cur.id]) return profRender();
     _autoRead[cur.id] = 1;
+    _shapes = {};
     document.getElementById("efh-body").innerHTML = "A ler " + esc(cur.label) + "...";
     cur.read().then(function (res) {
+      if (!hasPartitionShape(cur.id, _shapes))
+        throw readError("schema_not_captured", "A estrutura desta p\u00e1gina n\u00e3o foi reconhecida. A leitura local n\u00e3o foi aceite como conclu\u00edda.");
       var s = profLoad();
       s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data,
         source: res.source, shape: _shapes, market: res.market || null,
@@ -2138,7 +2210,10 @@
     var rb = document.getElementById("fb-read");
     if (rb && cur) rb.onclick = function () {
       rb.disabled = true; rb.textContent = "A ler...";
+      _shapes = {};
       cur.read().then(function (res) {
+        if (!hasPartitionShape(cur.id, _shapes))
+          throw readError("schema_not_captured", "A estrutura desta p\u00e1gina n\u00e3o foi reconhecida. A leitura local n\u00e3o foi aceite como conclu\u00edda.");
         var s = profLoad();
         s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data,
           source: res.source, shape: _shapes, market: res.market || null,
@@ -2176,9 +2251,15 @@
   function runProfiling() {
     if (!profConsent()) return profConsentGate();
     var cur = currentPartition(), store = profLoad();
+    var cached = cur && store.partitions[cur.id];
+    var staleSchema = cached && cached.status === "done" &&
+      (!hasPartitionShape(cur.id, cached.shape) ||
+       (cached.handoff && (cached.handoff.code === "schema_required" || cached.handoff.code === "invalid_schema")));
     // On a known partition not yet read this session, read it AUTOMATICALLY. Otherwise just show
-    // the checklist (e.g. an AT page we do not read, or one already collected).
-    if (cur && !(store.partitions[cur.id] && store.partitions[cur.id].status === "done"))
+    // the checklist (e.g. an AT page we do not read, or one already collected). A cached result
+    // without a currently allowlisted schema is not retryable: reread it with this version instead
+    // of resending the same empty envelope forever.
+    if (cur && (!cached || cached.status !== "done" || staleSchema))
       autoReadCurrent(cur);
     // If the official page was read but the browser handoff or mandatory intake failed, another
     // bookmarklet click retries automatically with the already-local reading. The user never has
