@@ -56,6 +56,7 @@
 
   function openProfile() {
     var target = window.open("https://fiscalida.de/perfil", "fiscalidade-perfil");
+    window.__FISCALIDADE_PROFILE_TARGET__ = target;
     if (target) try { target.focus(); } catch (e) {}
   }
 

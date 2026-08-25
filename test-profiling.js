@@ -38,15 +38,20 @@ function mkEnv(host, flag, fetchImpl, path) {
     if (message.type === CONTRACT.messageType) {
       window.__handoffs.push(message.envelope);
       setTimeout(function () {
+        const rejected = window.__profileReply === "rejected";
         window.dispatchEvent(new window.MessageEvent("message", { origin:"https://fiscalida.de",
-          source:profileTarget, data:{ type:CONTRACT.acceptedType, partition:message.partition,
-            requestId:message.requestId, intake:"required" } }));
+          source:profileTarget, data:{ type:rejected ? CONTRACT.rejectedType : CONTRACT.acceptedType,
+            partition:message.partition, requestId:message.requestId,
+            intake:rejected ? undefined : "required", code:rejected ? "intake_unavailable" : undefined } }));
       }, 0);
     }
   };
   window.open = function () { return profileTarget; };
   window.__profileDom = profileDom;
-  if (flag) window.__FB_PROFILE = 1; else { try { delete window.__FB_PROFILE; } catch (e) {} }
+  if (flag) {
+    window.__FB_PROFILE = 1;
+    window.__FISCALIDADE_CONFIG__ = { channel:"dev-bookmarklet", remoteCodeAllowed:false };
+  } else { try { delete window.__FB_PROFILE; } catch (e) {} }
   return window;
 }
 
@@ -95,27 +100,40 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   eval(SRC); await wait();
   ok("no flag: classifier runs (no fb-prof consent gate)", !w.document.getElementById("fb-prof-go"));
 
-  // 2. flag on e-Fatura -> consent gate, nothing stored yet
+  // 2. The gated bookmarklet click is already the explicit page-read action. The one mandatory
+  //    market agreement lives on /perfil, so no origin-specific second confirmation appears.
   w = mkEnv("faturas.portaldasfinancas.gov.pt", true, fetchOK);
   eval(SRC); await wait();
-  ok("flag: consent gate shown", !!w.document.getElementById("fb-prof-go"));
-  ok("flag: nothing stored before accept", global.localStorage.getItem("fb-profile-v1") == null);
+  ok("bookmarklet: no redundant page-origin consent gate", !w.document.getElementById("fb-prof-go"));
 
-  // 3. accept -> AUTO-reads e-Fatura -> stored -> nonce-bound /perfil handoff
-  w.document.getElementById("fb-prof-go").click(); await wait();
+  // 3. The click AUTO-reads e-Fatura -> stores locally -> nonce-bound /perfil handoff.
   let store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("e-Fatura auto-read + stored as done", store.partitions && store.partitions.efatura && store.partitions.efatura.status === "done");
   ok("e-Fatura counts parsed (2 pending of 3)", store.partitions.efatura.data.porClassificar === 2 && store.partitions.efatura.data.totalFaturas === 3);
   ok("e-Fatura uses the v3 browser handoff", w.__handoffs.some(h => h.partition === "efatura" && h.contract === 3));
+  ok("accepted handoff is remembered on the official origin", store.partitions.efatura.handoff.status === "accepted");
+
+  // 3b. A rejected intake leaves the already-local read available. Clicking the bookmarklet again
+  //     retries its handoff automatically; it does not show or require a buried Guardar button.
+  w = mkEnv("faturas.portaldasfinancas.gov.pt", true, fetchOK);
+  w.__profileReply = "rejected";
+  eval(SRC); await wait();
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  const firstCapturedAt = store.partitions.efatura.fetchedAt;
+  ok("failed handoff is retained for automatic retry", store.partitions.efatura.handoff.status === "error");
+  w.__profileReply = "accepted";
+  eval(SRC); await wait();
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("second bookmarklet click auto-retries without rereading",
+    w.__handoffs.length === 2 && store.partitions.efatura.fetchedAt === firstCapturedAt &&
+    store.partitions.efatura.handoff.status === "accepted" && !w.document.getElementById("fb-save-profile"));
 
   // 4. On Imoveis (a DIFFERENT origin) the browser gives fresh localStorage - modelled by mkEnv's
-  //    new _d each call, which is exactly the same-origin policy. So: consent asked again, then the
-  //    rendas read populates THIS origin's store and hands off. Cross-origin assembly is a known
-  //    limit that the canonical /perfil browser handoff bridges.
+  //    new _d each call, which is exactly the same-origin policy. The bookmarklet invocation still
+  //    auto-reads without a second consent and hands off through canonical /perfil.
   w = mkEnv("imoveis.portaldasfinancas.gov.pt", true, fetchOK, "/arrendamento/consultarContratos/locador");
   eval(SRC); await wait();
-  ok("cross-origin: consent asked again on Imoveis (separate localStorage)", !!w.document.getElementById("fb-prof-go"));
-  w.document.getElementById("fb-prof-go").click(); await wait();
+  ok("cross-origin: no duplicate consent on Imoveis", !w.document.getElementById("fb-prof-go"));
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("rendas auto-read + stored as done", store.partitions.rendas && store.partitions.rendas.status === "done");
   ok("rendas: 1 active contract", store.partitions.rendas.data.activos === 1);
@@ -131,7 +149,6 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   // 4c. situacao fiscal partition (sitfiscal /geral): reads dividas/coimas/agenda, hands off
   w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/geral/dashboard");
   eval(SRC); await wait();
-  w.document.getElementById("fb-prof-go").click(); await wait();
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("situacao picked on /geral (not irs)", store.partitions.situacao && store.partitions.situacao.status === "done" && !store.partitions.irs);
   ok("situacao: 0 dividas, 1 agenda item", store.partitions.situacao.data.dividas.n === 0 && store.partitions.situacao.data.agenda.n === 1);
@@ -140,7 +157,6 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   // 4c-2. IRS partition: SAME host as situacao (sitfiscal) but /inffin path -> picks irs
   w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/inffin/entrada.html");
   eval(SRC); await wait();
-  w.document.getElementById("fb-prof-go").click(); await wait();
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("irs picked on /inffin (not situacao)", store.partitions.irs && store.partitions.irs.status === "done" && !store.partitions.situacao);
   ok("irs: 3 liquidacoes, 1 reembolso", store.partitions.irs.data.liquidacoes === 3 && store.partitions.irs.data.reembolsos === 1);
@@ -148,7 +164,6 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   // 4c-3. recibos verdes (SIRE, irs host): Cat B signal
   w = mkEnv("irs.portaldasfinancas.gov.pt", true, fetchOK, "/recibos/portal");
   eval(SRC); await wait();
-  w.document.getElementById("fb-prof-go").click(); await wait();
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("recibos auto-read + stored", store.partitions.recibos && store.partitions.recibos.status === "done");
   ok("recibos: 2 recibos verdes", store.partitions.recibos.data.recibosVerdes === 2);
@@ -161,8 +176,7 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   //       must NEVER be stored (PII). estado + payment count only.
   w = mkEnv("www.seg-social.pt", true, fetchOK, "/ptss/pssd/home");
   eval(SRC); await wait();
-  ok("SS: profiling activates on seg-social.pt (host guard widened)", !!w.document.getElementById("fb-prof-go"));
-  w.document.getElementById("fb-prof-go").click(); await wait();
+  ok("SS: profiling auto-reads on seg-social.pt", !w.document.getElementById("fb-prof-go"));
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("SS auto-read + stored", store.partitions.ss && store.partitions.ss.status === "done");
   ok("SS estado REGULARIZADA, 1 pagamento", store.partitions.ss.data.estado === "REGULARIZADA" && store.partitions.ss.data.pagamentosCorrentes === 1);
@@ -179,7 +193,6 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   //       restart may be scheduled for the future, so the list must not claim open OR closed.
   w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/atividade/atividade/consultardeclaracoes");
   eval(SRC); await wait();
-  w.document.getElementById("fb-prof-go").click(); await wait();
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("atividade read + stored", store.partitions.atividade && store.partitions.atividade.status === "done");
   ok("declaration history does not infer current state", store.partitions.atividade.data.cessada === null);
@@ -194,7 +207,6 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   w.document.body.innerHTML = "<div>Atividade em IVA Data de Início 2020-01-01 Data de Cessação 2021-01-01 " +
     "Data de Início 2099-01-01 Tipo de Contabilidade Não organizada</div>";
   eval(SRC); await wait();
-  w.document.getElementById("fb-prof-go").click(); await wait();
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("future restart remains scheduled, not currently open",
     store.partitions.atividade_integrada.data.estadoAtual === "cessada" &&
@@ -205,7 +217,6 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   w.document.body.innerHTML = "<div>Atividade em IRS Data de Início 2020-01-01 Data de Cessação 2021-01-01 " +
     "Data de Início 2022-01-01 Tipo de Contabilidade Não organizada</div>";
   eval(SRC); await wait();
-  w.document.getElementById("fb-prof-go").click(); await wait();
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("later effective restart overrides historical cessation",
     store.partitions.atividade_integrada.data.estadoAtual === "aberta" &&
@@ -215,7 +226,6 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/integrada/presentation");
   w.document.body.innerHTML = "<div>Atividade em IVA Data de Início 2099-01-01 Tipo de Contabilidade Não organizada</div>";
   eval(SRC); await wait();
-  w.document.getElementById("fb-prof-go").click(); await wait();
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("future-only cadastro is scheduled and cannot trigger current Cat B",
     store.partitions.atividade_integrada.data.estadoAtual === "agendada" &&
@@ -226,7 +236,6 @@ function wait(ms) { return new Promise(r => setTimeout(r, ms || 900)); }
   //     must pick patrimonio, NOT rendas. Proves the disambiguation.
   w = mkEnv("imoveis.portaldasfinancas.gov.pt", true, fetchOK, "/matrizesinter/web/consultar-patrimonio-predial");
   eval(SRC); await wait();
-  w.document.getElementById("fb-prof-go").click(); await wait();
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("patrimonio picked (not rendas) on /matrizesinter path", store.partitions.patrimonio && store.partitions.patrimonio.status === "done" && !store.partitions.rendas);
   ok("patrimonio: 1 imovel parsed", store.partitions.patrimonio.data.imoveis === 1 && store.partitions.patrimonio.data.lista[0].artigo === "1234");

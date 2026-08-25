@@ -83,6 +83,8 @@ function wait(ms=40) { return new Promise((resolve) => setTimeout(resolve, ms));
   const acceptedReady = replies.find((reply) => reply.message.type === CONTRACT.readyType && reply.message.requestId === acceptedId);
   dispatch({ type:CONTRACT.messageType, partition:"efatura", requestId:acceptedId,
     nonce:acceptedReady.message.nonce, envelope:envelope() });
+  assert(/1 de 13 fontes lidas · a confirmar/.test(dom.window.document.body.textContent),
+    "locally read source was not reflected immediately while intake was pending");
   await wait(80);
 
   let saved = JSON.parse(dom.window.localStorage.getItem("fb-profile-v2"));
@@ -126,7 +128,8 @@ function wait(ms=40) { return new Promise((resolve) => setTimeout(resolve, ms));
   saved = JSON.parse(dom.window.localStorage.getItem("fb-profile-v2"));
   assert(saved.partitions.efatura.status === "pending" && saved.partitions.efatura.intake.code === "intake_unavailable",
     "failed intake incorrectly completed the source");
-  assert(/0 de 13 fontes reunidas/.test(dom.window.document.body.textContent), "failed intake still counted in progress");
+  assert(/1 de 13 fontes lidas · a confirmar/.test(dom.window.document.body.textContent),
+    "failed intake hid the already-local reading instead of exposing its pending state");
   assert(replies.some((reply) => reply.message.type === CONTRACT.rejectedType &&
     reply.message.requestId === failedId && reply.message.code === "intake_unavailable"),
     "official source did not receive intake failure");

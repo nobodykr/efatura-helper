@@ -42,7 +42,9 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
   await officialPage.evaluate((bookmarklet) => { location.href = bookmarklet; }, href);
   await officialPage.waitForSelector("#efh-panel", { timeout:15000 });
   const panel = await officialPage.locator("#efh-panel").innerText();
-  if (!/Fatura Boa/.test(panel) || !/password/.test(panel)) throw new Error("current tool panel did not execute");
+  if (!/Fatura Boa/.test(panel)) throw new Error("current tool panel did not execute");
+  if (await officialPage.locator("#fb-prof-go").count())
+    throw new Error("gated bookmarklet still asks for a redundant page-origin confirmation");
   if (!requests.some((url) => url.startsWith("https://faturas.diogoandrade.com/profile-contract.js")) ||
       !requests.some((url) => url.startsWith("https://faturas.diogoandrade.com/tool.js")))
     throw new Error("bookmarklet did not load both current browser assets");

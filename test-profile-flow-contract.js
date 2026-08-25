@@ -16,6 +16,8 @@ assert(/MARKET_INTAKE_ENABLED\s*=\s*true/.test(profile), "mandatory minimized ma
 assert(/status:"pending",completionStatus:envelope\.status/.test(profile) &&
   /row\.status=row\.completionStatus\|\|"done"/.test(profile),
   "source completion is not gated on an accepted intake receipt");
+assert(/fontes lidas · a confirmar/.test(profile) && /seg\.wait/.test(profile),
+  "profile does not show an immediate pending-read state while required intake is confirmed");
 assert(/schema_required/.test(profile) && /retry-intake/.test(profile),
   "missing schema or failed intake cannot be recovered safely");
 assert(/CONTRACT\.isEndpointId/.test(profile) && /sanitizeShape/.test(profile),
@@ -27,6 +29,11 @@ assert(/submissionToken/.test(profile) && /company-year-v1/.test(profile), "scop
 assert(/Ler e voltar à Fiscalidade/.test(bar) && /Painel de faturas/.test(bar) &&
   !/Adicionar ao perfil|Analisar faturas/.test(bar),
   "extension bar does not separate the canonical profile action from the local invoice dashboard");
+assert(/RUNTIME\.channel === "dev-bookmarklet"/.test(tool) && /bookmarklet: true/.test(tool) &&
+  !/fb-save-profile/.test(tool) && /markProfileHandoff/.test(tool),
+  "bookmarklet still requires a second consent/save click or cannot auto-retry its handoff");
+assert(/__FISCALIDADE_PROFILE_TARGET__/.test(bar + readFileSync("build-bookmarklet-dev.mjs", "utf8") + tool),
+  "bookmarklet/extension do not preserve the user-activated profile tab for the async handoff");
 for (const page of pages) assert(!/launcher\.js/.test(readFileSync(page, "utf8")), `${page} still loads the website launcher`);
 assert(!require("fs").existsSync("launcher.js"), "website launcher file survived");
 console.log("  canonical profile, separate local dashboard, reusable tab and shared handoff contract passed");

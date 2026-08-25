@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Fatura Boa DEV",
-  "version": "0.8.0.5",
-  "version_name": "0.8.0-dev.6",
+  "version": "0.8.0.6",
+  "version_name": "0.8.0-dev.7",
   "description": "Versão de desenvolvimento da Fatura Boa, instalada separadamente para testar a leitura guiada.",
   "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" },
   "permissions": ["scripting", "storage", "alarms"],

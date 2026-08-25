@@ -26,9 +26,9 @@
    * clicked on, so each is visited in turn.
    *
    * This flag is a FEATURE FLAG, not a security boundary: the code is public and the flag is
-   * copyable. That is fine because every byte of profile data stays in this browser and nothing
-   * is submitted - there is nothing on our side to protect. It exists to keep an unfinished
-   * feature off the public tool while we test, and comes out in one line when it ships. */
+   * copyable. The complete fiscal profile stays in the browser; after the one explicit /perfil
+   * agreement, only allowlisted value-free shapes and permitted company/year aggregates enter the
+   * mandatory isolated market intake. The flag keeps this gated flow off the public classifier. */
   var PROFILING = !!(window.__FB_PROFILE);
   // Profiling reads Portal das Financas AND Seguranca Social (seg-social.pt) - both official
   // state portals where the user is already logged in.
@@ -64,7 +64,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.08.25.2";
+  var FB_VERSION = "2026.08.25.3";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -927,20 +927,15 @@
 
   /* =========================  PROFILING (SPEC-profiling.md)  =========================
    * Self-contained. Reuses only `panel` (already rendered), `esc`, and `year` from above; it
-   * never touches the classifier's state. Data goes to its OWN localStorage keys and stays in the
-   * browser. Kept as one block so the boundary with the classifier is obvious - a step toward the
-   * engine/UI separation the review flagged. */
+   * never touches the classifier's state. The complete result uses its OWN localStorage keys and a
+   * browser-only handoff to /perfil; only the separately minimized market envelope is submitted by
+   * /perfil after agreement. Kept as one block so the classifier boundary stays obvious. */
   var PROF_KEY = "fb-profile-v1";          // versioned so a schema change can't misread old data
   var PROF_CONSENT = "fb-profile-consent-v1";
 
-  /* KNOWN CONSTRAINT (found during v0 build). AT's partitions are DIFFERENT ORIGINS -
-   * faturas / imoveis / sitfiscal.portaldasfinancas.gov.pt - so localStorage written on one is
-   * invisible to the others (same-origin policy). This overlay therefore reads and shows the
-   * profile PER ORIGIN; it cannot by itself assemble one profile across partitions. True
-   * cross-partition assembly needs a decision (SPEC open item): either a collector page on our
-   * origin that each partition read pushes to via URL fragment (nothing to a server, survives
-   * storage partitioning), or a Domain=.portaldasfinancas.gov.pt cookie (shared across subdomains
-   * but sent to AT). Until that lands, v0 is a correct per-partition reader, not a combiner. */
+  /* AT's partitions are DIFFERENT ORIGINS, so each official origin keeps only its own temporary
+   * reading. Cross-partition assembly is canonical on /perfil and receives each complete result
+   * through the request/nonce-bound postMessage handoff below; fiscal values never enter a URL. */
 
   // Each partition lives on its OWN host. `read` returns a Promise -> {data, source}, or rejects
   // with an Error whose message is shown to the user. To add a partition (patrimonio, dividas,
@@ -1047,6 +1042,14 @@
     try { p.expiresAt = profExpiry(); localStorage.setItem(PROF_KEY, JSON.stringify(p)); } catch (e) {}
   }
 
+  function markProfileHandoff(pid, status, code) {
+    var store = profLoad(), row = store.partitions && store.partitions[pid];
+    if (!row) return;
+    row.handoff = { status: status, at: new Date().toISOString() };
+    if (code) row.handoff.code = code;
+    profSave(store);
+  }
+
   /* CROSS-PARTITION HANDOFF. /perfil and the official portal are different origins. The reader
    * opens/reuses the named profile window, asks it for a one-time nonce, then sends a strictly
    * versioned envelope with postMessage. No fiscal value enters a URL or an HTTP request. */
@@ -1078,8 +1081,15 @@
     }
     var target = null;
     try {
-      target = window.open(PROF_SITE, "fiscalidade-perfil");
-      if (!target && window.opener && !window.opener.closed) target = window.opener;
+      // The bookmarklet/extension reserves this named tab inside the user's click. Reuse that
+      // exact WindowProxy after the asynchronous read so popup blocking cannot turn Guardar into
+      // a second manual step, and do not unnecessarily reload an already-ready /perfil page.
+      target = window.__FISCALIDADE_PROFILE_TARGET__;
+      if (!target || target.closed) target = (window.opener && !window.opener.closed) ? window.opener : null;
+      // Backward compatibility for an already-installed July loader that reserved the named tab
+      // but did not retain its WindowProxy. Looking up an existing name does not reload /perfil.
+      if (!target) target = window.open("", "fiscalidade-perfil");
+      try { if (target && target.location.href === "about:blank") target.location.replace(PROF_SITE); } catch (e2) {}
     } catch (e) {}
     if (!target) {
       profileDiagnostic("blocked", pid, "profile_window_unavailable");
@@ -1102,6 +1112,7 @@
           event.data.requestId === requestId) {
         finished = true; clearInterval(retryTimer); clearTimeout(timeoutTimer);
         window.removeEventListener("message", onMessage);
+        markProfileHandoff(pid, "accepted");
         profileDiagnostic("accepted", pid, event.data.intake || "required");
         try { target.focus(); } catch (e) {}
         profileMessage("efh-ok", "Leitura conclu\u00edda.",
@@ -1112,6 +1123,7 @@
         finished = true; clearInterval(retryTimer); clearTimeout(timeoutTimer);
         window.removeEventListener("message", onMessage);
         var rejection = event.data.code || "profile_rejected";
+        markProfileHandoff(pid, "error", rejection);
         profileDiagnostic("rejected", pid, rejection);
         if (rejection === "agreement_required")
           profileMessage("efh-warn", "Falta aceitar a troca do modo gratuito.",
@@ -1137,6 +1149,7 @@
       if (finished) return;
       clearInterval(retryTimer);
       window.removeEventListener("message", onMessage);
+      markProfileHandoff(pid, "error", "no_matching_profile");
       profileDiagnostic("timeout", pid, "no_matching_profile");
       profileMessage("efh-warn", "O perfil n\u00e3o respondeu em 120 segundos.",
         "Conclui o acesso a fiscalida.de, deixa /perfil aberto e volta a carregar no favorito. A leitura n\u00e3o foi enviada.");
@@ -1147,6 +1160,12 @@
     // The extension's first-run gate is stored in chrome.storage.local before tool.js can be
     // injected. Do not duplicate profile state or consent in an official-portal origin.
     if (EXTENSION_MODE) return { ok: true, extension: true };
+    // The gated DEV bookmarklet itself is the explicit per-page read action. The mandatory market
+    // agreement was already accepted once on /perfil before the guided flow opened this source.
+    // Asking again here stored a separate consent on every official origin and made the user press
+    // a second, redundant button after every bookmarklet click.
+    if (PROFILING && RUNTIME.channel === "dev-bookmarklet" && RUNTIME.remoteCodeAllowed === false)
+      return { ok: true, bookmarklet: true };
     try { return JSON.parse(localStorage.getItem(PROF_CONSENT) || "null"); } catch (e) { return null; }
   }
   function currentPartition() {
@@ -2036,7 +2055,8 @@
     cur.read().then(function (res) {
       var s = profLoad();
       s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data,
-        source: res.source, shape: _shapes, market: res.market || null };
+        source: res.source, shape: _shapes, market: res.market || null,
+        handoff: { status: "pending", at: new Date().toISOString() } };
       profSave(s);
       // Read OK -> hand the result straight to /perfil through the nonce-bound browser channel.
       // This removes the separate "Guardar" click that was being missed.
@@ -2051,7 +2071,7 @@
       document.getElementById("efh-body").innerHTML =
         '<div style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
         '.<br>A abrir a tua situa\u00e7\u00e3o...</div>';
-      setTimeout(function () { deliverProfile(cur.id, res.data, _shapes, res.market || null); }, 700);
+      deliverProfile(cur.id, res.data, _shapes, res.market || null);
     }).catch(function (e) {
       var s = profLoad();
       var msg = (e && e.message) || "erro";
@@ -2072,10 +2092,23 @@
   function profRender() {
     var store = profLoad(), cur = currentPartition();
     var done = PARTITIONS.filter(function (p) { return store.partitions[p.id] && store.partitions[p.id].status === "done"; });
+    var isDone = !!(cur && store.partitions[cur.id] && store.partitions[cur.id].status === "done");
 
     var h = '<div style="font-size:15px;font-weight:700;margin:0 0 8px">A tua situa\u00e7\u00e3o fiscal ' +
-            '<span style="font-weight:400;color:#555">(' + done.length + '/' + PARTITIONS.length + ')</span></div>' +
-            '<div style="margin:0 0 12px">';
+            '<span style="font-weight:400;color:#555">(' + done.length + '/' + PARTITIONS.length + ')</span></div>';
+    // Keep the only useful actions visible at the top of the scrollable widget. An accepted read
+    // needs no Guardar button: delivery already happened automatically.
+    if (cur) {
+      h += '<div style="position:sticky;top:0;z-index:2;background:#fff;border:1px solid #d5dae1;' +
+        'border-radius:8px;padding:10px;margin:0 0 12px;display:flex;gap:8px;flex-wrap:wrap">' +
+        (isDone ? '<button type="button" id="fb-open-profile" style="cursor:pointer;background:#128a3a;color:#fff;border:0;' +
+          'border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">Voltar \u00e0 minha situa\u00e7\u00e3o \u2192</button>' : '') +
+        '<button type="button" id="fb-read" style="cursor:pointer;' +
+        (isDone ? 'background:#eef;color:#034ad8;border:1px solid #cdd' : 'background:#034ad8;color:#fff;border:0') +
+        ';border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">' +
+        (isDone ? 'Reler ' : 'Ler ') + esc(cur.label) + '</button></div>';
+    }
+    h += '<div style="margin:0 0 12px">';
     PARTITIONS.forEach(function (p) {
       var st = store.partitions[p.id], ok = st && st.status === "done", here = cur && cur.id === p.id;
       h += '<div style="display:flex;gap:8px;align-items:baseline;padding:6px 0;border-top:1px solid #eef">' +
@@ -2090,19 +2123,7 @@
     });
     h += '</div>';
 
-    if (cur) {
-      var isDone = store.partitions[cur.id] && store.partitions[cur.id].status === "done";
-      h += '<button type="button" id="fb-read" style="cursor:pointer;' +
-        (isDone ? 'background:#eef;color:#034ad8;border:1px solid #cdd' : 'background:#034ad8;color:#fff;border:0') +
-        ';border-radius:6px;padding:9px 16px;font:inherit;font-weight:600">' +
-        (isDone ? 'Reler ' : 'Ler ') + esc(cur.label) + '</button>';
-      // Once THIS partition is read, hand it to /perfil through the same nonce-bound channel used
-      // by the automatic flow. No fiscal value is placed in the URL.
-      if (isDone) {
-        h += ' <button type="button" id="fb-save-profile" style="display:inline-block;cursor:pointer;background:#128a3a;color:#fff;border:0;' +
-          'border-radius:6px;padding:9px 16px;font-weight:600">Guardar a minha situa\u00e7\u00e3o \u2192</button>';
-      }
-    } else {
+    if (!cur) {
       h += '<div style="color:#666;font-size:12px">Esta p\u00e1gina n\u00e3o \u00e9 uma das que lemos. Abre uma da lista acima.</div>';
     }
 
@@ -2120,18 +2141,23 @@
       cur.read().then(function (res) {
         var s = profLoad();
         s.partitions[cur.id] = { status: "done", fetchedAt: new Date().toISOString(), data: res.data,
-          source: res.source, shape: _shapes, market: res.market || null };
-        profSave(s); profRender();
+          source: res.source, shape: _shapes, market: res.market || null,
+          handoff: { status: "pending", at: new Date().toISOString() } };
+        profSave(s);
+        document.getElementById("efh-body").innerHTML = '<b>\u2713 Leitura atualizada.</b> A concluir automaticamente...';
+        deliverProfile(cur.id, res.data, _shapes, res.market || null);
       }).catch(function (e) {
         var s = profLoad();
         s.partitions[cur.id] = { status: "pending", error: "N\u00e3o deu para ler: " + ((e && e.message) || "erro") + ". Confirma o login nesta p\u00e1gina.", fetchedAt: new Date().toISOString() };
         profSave(s); profRender();
       });
     };
-    var sp = document.getElementById("fb-save-profile");
-    if (sp && cur) sp.onclick = function () {
-      var saved = profLoad().partitions[cur.id];
-      if (saved) deliverProfile(cur.id, saved.data, saved.shape, saved.market || null);
+    var sp = document.getElementById("fb-open-profile");
+    if (sp) sp.onclick = function () {
+      try {
+        var target = window.__FISCALIDADE_PROFILE_TARGET__ || window.open(PROF_SITE, "fiscalidade-perfil");
+        if (target) target.focus();
+      } catch (e) {}
     };
     var rs = document.getElementById("fb-reset");
     // "apagar" = apagar TUDO o que o tool guardou nesta origem: a situacao fiscal E a configuracao
@@ -2154,7 +2180,17 @@
     // the checklist (e.g. an AT page we do not read, or one already collected).
     if (cur && !(store.partitions[cur.id] && store.partitions[cur.id].status === "done"))
       autoReadCurrent(cur);
-    else
+    // If the official page was read but the browser handoff or mandatory intake failed, another
+    // bookmarklet click retries automatically with the already-local reading. The user never has
+    // to hunt for a separate Guardar button below the 13-source checklist.
+    else if (cur && store.partitions[cur.id] && store.partitions[cur.id].status === "done" &&
+             (!store.partitions[cur.id].handoff || store.partitions[cur.id].handoff.status !== "accepted")) {
+      document.getElementById("efh-body").innerHTML =
+        '<div style="font-size:14px"><b>A concluir ' + esc(cur.label) + '...</b><br>' +
+        'A leitura j\u00e1 est\u00e1 neste navegador; a ligar automaticamente \u00e0 tua situa\u00e7\u00e3o.</div>';
+      deliverProfile(cur.id, store.partitions[cur.id].data, store.partitions[cur.id].shape,
+        store.partitions[cur.id].market || null);
+    } else
       profRender();
   }
   /* ======================  end PROFILING  ====================== */

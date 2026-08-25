@@ -107,7 +107,9 @@
   .seg{height:27px;border:1px solid var(--hair-strong);border-radius:5px;background:#fff;
        display:flex;align-items:center;justify-content:center}
   .seg.on{background:var(--pri);border-color:var(--pri)}
+  .seg.wait{background:var(--pri-soft);border:2px solid var(--pri)}
   .seg .icon{width:15px;height:15px;color:#fff;stroke-width:3}
+  .seg.wait .icon{color:var(--pri)}
   .pcap{text-align:center;color:var(--mute);font-size:.96rem;margin-top:11px}
 
   /* Ingest confirmation: a green status pill, centred under the progress. */
@@ -1174,9 +1176,17 @@
       '<div class="titem">'+ico('i-clock')+'<span>Apagados ao fim do dia</span></div>'+
     '</div>';
   }
-  function segbar(n){
-    var h = '<div class="segbar" role="img" aria-label="'+n+' de '+PARTITIONS.length+' fontes reunidas">';
-    for (var i=0;i<PARTITIONS.length;i++) h += '<span class="seg'+(i<n?' on':'')+'">'+(i<n?ico('i-check'):'')+'</span>';
+  function segbar(store, doneCount, readCount){
+    var label = readCount>doneCount
+      ? readCount+' de '+PARTITIONS.length+' fontes lidas; '+(readCount-doneCount)+' a confirmar'
+      : doneCount+' de '+PARTITIONS.length+' fontes reunidas';
+    var h = '<div class="segbar" role="img" aria-label="'+label+'">';
+    for (var i=0;i<PARTITIONS.length;i++) {
+      var row=store.partitions[PARTITIONS[i].id];
+      var complete=row&&CONTRACT.isCompleteStatus(row.status);
+      var waiting=row&&row.status==="pending"&&CONTRACT.isCompleteStatus(row.completionStatus);
+      h += '<span class="seg'+(complete?' on':waiting?' wait':'')+'">'+(complete?ico('i-check'):waiting?ico('i-clock'):'')+'</span>';
+    }
     return h+'</div>';
   }
   /* RELATÓRIO DE CORREÇÃO, EM PDF, SEM SERVIDOR E SEM BIBLIOTECA.
@@ -1317,6 +1327,11 @@
     Array.prototype.forEach.call(document.querySelectorAll('#out details[data-acc]'), function(d){ ACC[d.getAttribute('data-acc')] = d.open; });
     var store = load();
     var done = PARTITIONS.filter(function(p){ return store.partitions[p.id] && CONTRACT.isCompleteStatus(store.partitions[p.id].status); });
+    var pendingReads = PARTITIONS.filter(function(p){
+      var row=store.partitions[p.id];
+      return row && row.status==="pending" && CONTRACT.isCompleteStatus(row.completionStatus);
+    });
+    var readCount = done.length + pendingReads.length;
     var missing = PARTITIONS.filter(function(p){ return !(store.partitions[p.id] && CONTRACT.isCompleteStatus(store.partitions[p.id].status)); });
     var full = done.length === PARTITIONS.length;
     var prof = assemble(store);
@@ -1333,15 +1348,18 @@
       (DEMO ? '<span class="demochip">Exemplo com dados fictícios</span>' : '')+'</div>'+
       '<p class="sub">'+(full
         ? 'Informação reunida das treze fontes oficiais.'
-        : (done.length
+        : (readCount
             ? 'O teu resumo aparece à medida que juntas cada fonte.'
             : 'No computador, reúne informação das Finanças e da Segurança Social sem dar a tua password.'))+'</p>';
 
     // PROGRESSO ----------------------------------------------------------------------------
-    h += '<div class="prog"><div class="plabel">'+done.length+' de '+PARTITIONS.length+' fontes reunidas</div>'+
-      segbar(done.length)+
-      (full ? '' : '<div class="pcap">'+(done.length
-        ? 'Podes parar e continuar até ao fim do dia.'
+    h += '<div class="prog" aria-live="polite"><div class="plabel">'+(pendingReads.length
+      ? readCount+' de '+PARTITIONS.length+' fontes lidas · a confirmar'
+      : done.length+' de '+PARTITIONS.length+' fontes reunidas')+'</div>'+
+      segbar(store,done.length,readCount)+
+      (full ? '' : '<div class="pcap">'+(pendingReads.length
+        ? 'A leitura já ficou neste navegador. A confirmar automaticamente o contributo minimizado obrigatório.'
+        : done.length ? 'Podes parar e continuar até ao fim do dia.'
         : 'Os dados ficam neste navegador até ao fim do dia.')+'</div>')+'</div>';
 
     // Confirmação de leitura (verde) - substitui o antigo #banner.
@@ -1365,7 +1383,7 @@
       if(intakeRow.intake.status === "sending"){
         h += '<div class="frame" style="margin-top:24px;padding:24px;text-align:center">'+
           '<div class="eyebrow">A concluir esta fonte</div><h2 style="margin:7px 0 8px;color:var(--pri-dark)">A enviar o contributo minimizado...</h2>'+
-          '<p class="w">Só a estrutura sem valores e os agregados permitidos são enviados. Esta fonte conta no progresso depois de o serviço confirmar a receção.</p></div>';
+          '<p class="w">Não tens de carregar em mais nada. Só a estrutura sem valores e os agregados permitidos são enviados; a fonte fica reunida assim que o serviço confirmar a receção.</p></div>';
       } else {
         h += '<div class="frame" style="margin-top:24px;padding:24px;text-align:center">'+
           '<div class="eyebrow">Contributo por concluir</div><h2 style="margin:7px 0 8px;color:var(--pri-dark)">Esta fonte ainda não ficou concluída</h2>'+

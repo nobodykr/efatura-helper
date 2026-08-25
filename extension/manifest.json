@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Fatura Boa",
-  "version": "0.8.0.3",
-  "version_name": "0.8.2",
+  "version": "0.8.0.4",
+  "version_name": "0.8.3",
   "description": "Revê faturas e reúne a tua situação fiscal a partir das páginas oficiais, localmente e só quando pedires.",
   "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" },
   "permissions": ["scripting", "storage", "alarms"],
