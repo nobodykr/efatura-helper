@@ -24,9 +24,9 @@ for (const id of splitIds) {
 const activityBlock = (tool.match(/function readAtividade\(\)[\s\S]*?\n  }\n\n  \/\* "Atividade Exercida"/) || [""])[0];
 check(activityBlock && !/readAtividadeExercida\s*\(/.test(activityBlock),
   "declarations reader does not cross into the PFAP activity session");
-check(/target\.location\.href\s*=\s*signed\.href/.test(tool) &&
-      /location\.href\s*=\s*signed\s*\?\s*signed\.href\s*:\s*href/.test(tool),
-  "signed integrated activity screen uses a one-click top-level bridge with navigation fallback");
+check(/continueToSignedActivity\("atividade_integrada"/.test(tool) &&
+      /setTimeout\(function \(\) \{ location\.href = href; \}, 650\)/.test(tool),
+  "signed integrated activity screen announces and performs its explicit continuation navigation");
 check(/disponivel:\s*false[\s\S]*estado desconhecido/.test(tool),
   "missing integrated activity menu remains unknown");
 check(/cessada:\s*null[\s\S]*ultimaDeclaracaoTipo/.test(activityBlock),

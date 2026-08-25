@@ -6,6 +6,7 @@ const { readFileSync } = require("fs");
 const installer = readFileSync("favorito-dev.html", "utf8");
 const contract = readFileSync("profile-contract.js", "utf8");
 const tool = readFileSync("tool.js", "utf8");
+const profile = readFileSync("perfil.html", "utf8");
 const options = { args:["--no-sandbox"] };
 if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
 
@@ -24,9 +25,18 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
     if (url.startsWith("https://faturas.diogoandrade.com/tool.js"))
       return route.fulfill({ status:200, contentType:"application/javascript; charset=utf-8", body:tool,
         headers:{ "access-control-allow-origin":"*", "cross-origin-resource-policy":"cross-origin" } });
+    if (url === "https://fiscalida.de/profile-contract.js")
+      return route.fulfill({ status:200, contentType:"application/javascript; charset=utf-8", body:contract });
+    if (url === "https://fiscalida.de/api/v1/intake") {
+      const body = route.request().postDataJSON();
+      return route.fulfill({ status:200, contentType:"application/json", body:JSON.stringify({ ok:true,
+        accepted:{ shapes:Object.keys(body.shapes || {}).length, companies:(body.companies || []).length } }) });
+    }
     if (url.startsWith("https://fiscalida.de/perfil"))
-      return route.fulfill({ contentType:"text/html; charset=utf-8", body:"<!doctype html><title>Perfil</title>",
+      return route.fulfill({ contentType:"text/html; charset=utf-8", body:profile,
         headers:{ "cross-origin-opener-policy":"same-origin-allow-popups" } });
+    if (url.includes("faturas.portaldasfinancas.gov.pt/json/obterDocumentosAdquirente.action"))
+      return route.fulfill({ contentType:"application/json", body:JSON.stringify({ linhas:[], totalElementos:0 }) });
     if (url.startsWith("https://faturas.portaldasfinancas.gov.pt/"))
       return route.fulfill({ contentType:"text/html; charset=utf-8", body:"<!doctype html><body>e-Fatura</body>" });
     if (url.startsWith("https://sitfiscal.portaldasfinancas.gov.pt/integrada/presentation")) {
@@ -40,6 +50,8 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
 
   const installerPage = await context.newPage();
   await installerPage.goto("https://fiscalida.de/favorito-dev");
+  await installerPage.evaluate(() => localStorage.setItem("fiscalidade-market-agreement-v1",
+    JSON.stringify({ version:"market-v1", accepted:true, acceptedAt:new Date().toISOString() })));
   const href = await installerPage.locator(".fav").evaluate((anchor) => anchor.href);
   if (!href.startsWith("javascript:") || href.length > 4000 || /[\r\n]/.test(href))
     throw new Error(`installer href is not a small bookmarklet (${href.length} chars)`);
@@ -55,10 +67,33 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
   if (!requests.some((url) => url.startsWith("https://faturas.diogoandrade.com/profile-contract.js")) ||
       !requests.some((url) => url.startsWith("https://faturas.diogoandrade.com/tool.js")))
     throw new Error("bookmarklet did not load both current browser assets");
+  try {
+    await officialPage.waitForFunction(() => {
+      const store = JSON.parse(localStorage.getItem("fb-profile-v1") || "{}");
+      return store.partitions && store.partitions.efatura && store.partitions.efatura.handoff &&
+        store.partitions.efatura.handoff.status === "accepted";
+    }, null, { timeout:15000 });
+  } catch (error) {
+    throw new Error("e-Fatura handoff never reached accepted: " + await officialPage.locator("#efh-body").innerText());
+  }
+  const firstProfile = context.pages().find((page) => page.url().startsWith("https://fiscalida.de/perfil"));
+  if (!firstProfile) throw new Error("profile tab did not open after the e-Fatura read");
+  await firstProfile.waitForFunction(() => {
+    const store = JSON.parse(localStorage.getItem("fb-profile-v2") || "{}");
+    return store.partitions && store.partitions.efatura && store.partitions.efatura.status === "done";
+  }, null, { timeout:5000 });
+
+  // Start the exceptional integrated flow with a clean profile so the progress assertion is exact.
+  await firstProfile.evaluate(() => {
+    localStorage.removeItem("fb-profile-v2");
+    localStorage.removeItem("fiscalidade-active-intake-v3");
+    localStorage.removeItem("fiscalidade-signed-navigation-v1");
+  });
 
   // The integrated activity detail rejects a background fetch and requires a signed top-level
-  // navigation. The bookmarklet must complete it with the already-reserved profile tab, without
-  // replacing its official hub page or requiring a second bookmarklet click.
+  // navigation. A bookmarklet cannot survive replacing its document. The first click must clearly
+  // announce that exceptional continuation in /perfil and navigate the official tab; the second
+  // click must then reach accepted and move /perfil from 0/13 to 1/13.
   for (const page of context.pages())
     if (page !== installerPage && page !== officialPage) await page.close();
   const integratedStart = requests.length;
@@ -66,28 +101,29 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
   const integratedHub = "https://sitfiscal.portaldasfinancas.gov.pt/integrada/presentation";
   await integratedPage.goto(integratedHub);
   await integratedPage.evaluate((bookmarklet) => { location.href = bookmarklet; }, href);
-  try {
-    await integratedPage.waitForFunction(() => {
-      const store = JSON.parse(localStorage.getItem("fb-profile-v1") || "{}");
-      const row = store.partitions && store.partitions.atividade_integrada;
-      return row && row.status === "done" && row.shape && row.shape["/integrada/presentation"];
-    }, null, { timeout:15000 });
-  } catch (error) {
-    const diagnostic = await integratedPage.evaluate(() => ({
-      panel:document.getElementById("efh-body") && document.getElementById("efh-body").innerText,
-      store:localStorage.getItem("fb-profile-v1"), handoff:window.__FISCALIDADE_HANDOFF_DIAGNOSTICS__ || null,
-      target:window.__FISCALIDADE_PROFILE_TARGET__ ? { closed:window.__FISCALIDADE_PROFILE_TARGET__.closed } : null
-    }));
-    throw new Error("integrated one-click timeout: " + JSON.stringify({ diagnostic,
-      pages:context.pages().map((page) => page.url()), requests:requests.slice(integratedStart) }));
-  }
-  if (integratedPage.url() !== integratedHub)
-    throw new Error("integrated bookmarklet replaced its own page and still needs a second click");
+  await integratedPage.waitForURL(/targetScreen=ecraActividade/, { timeout:15000 });
+  const continuationProfile = context.pages().find((page) => page.url().startsWith("https://fiscalida.de/perfil"));
+  if (!continuationProfile) throw new Error("profile tab did not open for the signed activity continuation");
+  await continuationProfile.waitForSelector("#signed-continuation", { timeout:5000 });
+  const instruction = await continuationProfile.locator("#signed-continuation").innerText();
+  if (!/mais uma vez no mesmo favorito/.test(instruction) || !/Não procures Guardar/.test(instruction))
+    throw new Error("signed activity continuation is not explicit enough for the user");
   const bridgeRequests = requests.slice(integratedStart);
   if (!bridgeRequests.some((url) => /sitfiscal\.portaldasfinancas\.gov\.pt\/integrada\/presentation.*targetScreen=ecraActividade/.test(url)))
-    throw new Error("reserved profile tab did not perform the signed top-level activity read");
-  if (bridgeRequests.filter((url) => url.startsWith("https://fiscalida.de/perfil")).length < 1)
-    throw new Error("signed activity bridge did not return to the profile tab");
+    throw new Error("first click did not perform the signed top-level activity navigation");
+  await integratedPage.evaluate((bookmarklet) => { location.href = bookmarklet; }, href);
+  await integratedPage.waitForFunction(() => {
+    const store = JSON.parse(localStorage.getItem("fb-profile-v1") || "{}");
+    const row = store.partitions && store.partitions.atividade_integrada;
+    return row && row.handoff && row.handoff.status === "accepted";
+  }, null, { timeout:15000 });
+  await continuationProfile.waitForFunction(() => {
+    const store = JSON.parse(localStorage.getItem("fb-profile-v2") || "{}");
+    const row = store.partitions && store.partitions.atividade_integrada;
+    return row && row.status === "done" && !localStorage.getItem("fiscalidade-signed-navigation-v1");
+  }, null, { timeout:5000 });
+  if (!/1 de 13 fontes reunidas/.test(await continuationProfile.locator(".plabel").innerText()))
+    throw new Error("profile did not move to 1/13 after the accepted second click");
   await browser.close();
-  console.log("  actual dragged installer href loads current assets and completes signed activity in one click");
+  console.log("  dragged bookmarklet accepts e-Fatura in one click and signed activity in one explicit continuation");
 })().catch((error) => { console.error(error); process.exit(1); });

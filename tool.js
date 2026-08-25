@@ -64,7 +64,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.08.25.4";
+  var FB_VERSION = "2026.08.25.5";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -1390,6 +1390,44 @@
         return out;
   }
 
+  function continueToSignedActivity(pid, href) {
+    var contract = PROFILE_CONTRACT;
+    var target = window.__FISCALIDADE_PROFILE_TARGET__;
+    var requestId = profileRequestId();
+    var finished = false, attempts = 0, retryTimer = null, fallbackTimer = null;
+    profileMessage("efh-warn", "A AT precisa de mudar de ecr\u00e3.",
+      "O ecr\u00e3 assinado vai abrir agora. Quando abrir, carrega uma segunda vez neste mesmo favorito. N\u00e3o existe nenhum bot\u00e3o Guardar escondido.");
+    function cleanup() {
+      if (retryTimer) clearInterval(retryTimer);
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+      window.removeEventListener("message", onMessage);
+    }
+    function navigate() {
+      if (finished) return;
+      finished = true; cleanup();
+      // Give the profile instruction enough time to paint before this official tab changes page.
+      setTimeout(function () { location.href = href; }, 650);
+    }
+    function onMessage(event) {
+      if (!target || event.origin !== PUBLIC_ORIGIN || event.source !== target || !event.data) return;
+      if (event.data.type === contract.continuationAckType && event.data.partition === pid &&
+          event.data.requestId === requestId) navigate();
+    }
+    function announce() {
+      attempts++;
+      try {
+        if (target && !target.closed && contract && contract.continuationType)
+          target.postMessage({ type: contract.continuationType, contract: contract.version,
+            partition: pid, requestId: requestId }, PUBLIC_ORIGIN);
+      } catch (e) {}
+      if (attempts >= 20) navigate();
+    }
+    window.addEventListener("message", onMessage);
+    announce();
+    retryTimer = setInterval(announce, 200);
+    fallbackTimer = setTimeout(navigate, 4500);
+  }
+
   function readAtividadeExercida() {
     var html = document.documentElement ? document.documentElement.outerHTML : "";
     if (/Atividade em IVA|Atividade em IRS|Tipo de Contabilidade|CAE Principal|CIRS/i.test(html)) {
@@ -1403,61 +1441,17 @@
     }
     if (href) {
       // The portal rejects this signed screen as a background fetch; it must be a top-level GET.
-      // Keep the official hub alive and use the tab already reserved by the bookmarklet as a
-      // temporary top-level bridge. Once its signed screen loads, same-origin access lets this
-      // page read it, then the bridge returns to /perfil for the ordinary nonce-bound handoff.
-      // This preserves the one user click: a bookmarklet cannot survive replacing its own page.
-      var target = window.__FISCALIDADE_PROFILE_TARGET__;
       var signed = null;
       try {
         signed = new URL(href, location.href);
         if (signed.origin !== location.origin || !/ecraActividade/i.test(signed.href)) signed = null;
       } catch (e) {}
-      if (target && !target.closed && signed) {
-        return new Promise(function (resolve, reject) {
-          var finished = false, started = Date.now(), timer;
-          function finish(error, bridgedHtml) {
-            if (finished) return;
-            finished = true; clearInterval(timer);
-            if (error) { reject(error); return; }
-            recordShape("/integrada/presentation", "html", bridgedHtml);
-            try { target.location.replace(PROF_SITE); }
-            catch (e) { try { target.location.href = PROF_SITE; } catch (e2) {} }
-            resolve({ data: parseAtividadeExercida(bridgedHtml),
-              source: "/integrada/presentation::ecraActividade (top-level bridge)" });
-          }
-          function inspectBridge() {
-            if (target.closed) {
-              finish(readError("profile_window_closed", "O separador da Fiscalidade foi fechado durante a leitura."));
-              return;
-            }
-            if (Date.now() - started > 45000) {
-              finish(readError("signed_screen_timeout", "O ecr\u00e3 assinado da AT n\u00e3o abriu a tempo. Tenta novamente."));
-              return;
-            }
-            try {
-              if (target.location.origin !== location.origin || target.document.readyState !== "complete") return;
-              var bridgedHtml = target.document.documentElement ? target.document.documentElement.outerHTML : "";
-              if (/acesso\.gov\.pt|loginForm/i.test(bridgedHtml)) {
-                finish(readError("session_required", "A sess\u00e3o desta p\u00e1gina expirou. Faz login aqui e tenta de novo."));
-                return;
-              }
-              if (!/Atividade em IVA|Atividade em IRS|Tipo de Contabilidade|CAE Principal|CIRS/i.test(bridgedHtml))
-                return;
-              finish(null, bridgedHtml);
-            } catch (e) {
-              // Cross-origin while /perfil is leaving or the signed page is still loading.
-            }
-          }
-          try { target.location.href = signed.href; }
-          catch (e) { finish(readError("signed_screen_blocked", "O navegador bloqueou o ecr\u00e3 assinado da AT. Tenta novamente.")); return; }
-          timer = setInterval(inspectBridge, 150);
-          inspectBridge();
-        });
-      }
-      // Last-resort compatibility for a browser that did not preserve the reserved tab. Replacing
-      // this page necessarily ends bookmarklet execution, so a second click is unavoidable there.
-      location.href = signed ? signed.href : href;
+      // A bookmarklet cannot survive replacing its own top-level document. Keep the direct /perfil
+      // channel intact, announce the one exceptional continuation step there, then navigate this
+      // official tab. The next explicit bookmarklet click reads the signed DOM and completes the
+      // ordinary browser-only handoff. This is intentionally two clicks rather than a fragile
+      // popup bridge that can read locally but lose postMessage when COOP changes origin.
+      continueToSignedActivity("atividade_integrada", signed ? signed.href : href);
       return new Promise(function () {});
     }
     // A second live account legitimately had no ecraActividade link. Absence is UNKNOWN/not exposed,

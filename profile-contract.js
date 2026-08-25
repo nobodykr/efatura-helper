@@ -145,6 +145,8 @@
     messageType: "fiscalidade-profile-envelope-v3",
     acceptedType: "fiscalidade-intake-accepted-v3",
     rejectedType: "fiscalidade-intake-rejected-v3",
+    continuationType: "fiscalidade-signed-navigation-v3",
+    continuationAckType: "fiscalidade-signed-navigation-ack-v3",
     partitions: Object.freeze(PARTITIONS.map(function (item) { return Object.freeze(item); })),
     ids: IDS,
     officialOrigins: OFFICIAL_ORIGINS,

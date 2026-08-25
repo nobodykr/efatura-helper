@@ -34,6 +34,10 @@ assert(/RUNTIME\.channel === "dev-bookmarklet"/.test(tool) && /bookmarklet: true
   "bookmarklet still requires a second consent/save click or cannot auto-retry its handoff");
 assert(/__FISCALIDADE_PROFILE_TARGET__/.test(bar + readFileSync("build-bookmarklet-dev.mjs", "utf8") + tool),
   "bookmarklet/extension do not preserve the user-activated profile tab for the async handoff");
+assert(/continuationType/.test(readFileSync("profile-contract.js", "utf8")) &&
+  /signed-continuation/.test(profile) && /mais uma vez no mesmo favorito/.test(profile) &&
+  /N.o procures Guardar/.test(profile),
+  "signed AT continuation is not explicit and pinned in the canonical profile UI");
 for (const page of pages) assert(!/launcher\.js/.test(readFileSync(page, "utf8")), `${page} still loads the website launcher`);
 assert(!require("fs").existsSync("launcher.js"), "website launcher file survived");
 console.log("  canonical profile, separate local dashboard, reusable tab and shared handoff contract passed");

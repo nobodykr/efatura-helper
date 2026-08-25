@@ -29,6 +29,7 @@ function mkEnv(host, flag, fetchImpl, path, options) {
   global.FISCALIDADE_PROFILE_CONTRACT = CONTRACT;
   window.FISCALIDADE_PROFILE_CONTRACT = CONTRACT;
   window.__handoffs = [];
+  window.__continuations = [];
   const profileDom = new JSDOM("", { url:"https://fiscalida.de/perfil" });
   let profileTarget = profileDom.window;
   if (options.bridgeHtml) {
@@ -49,6 +50,14 @@ function mkEnv(host, flag, fetchImpl, path, options) {
       focus() {}, __navigations:navigations };
   }
   profileTarget.postMessage = function (message) {
+    if (message.type === CONTRACT.continuationType) {
+      window.__continuations.push(message);
+      setTimeout(function () {
+        window.dispatchEvent(new window.MessageEvent("message", { origin:"https://fiscalida.de",
+          source:profileTarget, data:{ type:CONTRACT.continuationAckType, partition:message.partition,
+            requestId:message.requestId } }));
+      }, 0);
+    }
     if (message.type === CONTRACT.helloType) setTimeout(function () {
       window.dispatchEvent(new window.MessageEvent("message", { origin:"https://fiscalida.de",
         source:profileTarget, data:{ type:CONTRACT.readyType, partition:message.partition,
@@ -274,21 +283,25 @@ function hasHandoffShape(w, partition) {
   ok("stale empty-schema result is reread automatically",
     store.partitions.atividade_integrada.data.estadoAtual === "aberta" && hasHandoffShape(w, "atividade_integrada"));
 
-  // On the integrated hub the signed activity screen needs a top-level GET. The reserved profile
-  // tab is used as that temporary top-level bridge, so one bookmarklet click performs the read and
-  // returns the tab to /perfil without replacing this official page.
-  w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/integrada/presentation", {
-    bridgeHtml:"<!doctype html><body>Atividade em IRS Data de Início 2023-01-01 Tipo de Contabilidade Não organizada</body>"
-  });
+  // On the integrated hub the signed activity screen needs a top-level GET. A bookmarklet cannot
+  // survive replacing its own document, so the profile is warned and this official tab navigates;
+  // one explicit second bookmarklet click on the signed screen completes the ordinary handoff.
+  w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/integrada/presentation");
   w.document.body.innerHTML = "<a href='/integrada/presentation?targetScreen=ecraActividade&hmac=fixture'>Atividade exercida</a>";
   eval(SRC); await wait(1200);
+  ok("integrated hub announces the exceptional second click to the profile",
+    w.__continuations.some(message => message.partition === "atividade_integrada"));
+  ok("integrated hub performs the signed top-level navigation without a false local completion",
+    /targetScreen=ecraActividade/.test(global.location.href) && w.__handoffs.length === 0);
+
+  w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK,
+    "/integrada/presentation?targetScreen=ecraActividade&hmac=fixture");
+  w.document.body.innerHTML = "<div>Atividade em IRS Data de Início 2023-01-01 Tipo de Contabilidade Não organizada</div>";
+  eval(SRC); await wait();
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
-  ok("signed integrated screen completes from one bookmarklet click",
+  ok("second bookmarklet click completes the signed integrated source",
     store.partitions.atividade_integrada && store.partitions.atividade_integrada.data.estadoAtual === "aberta" &&
     hasHandoffShape(w, "atividade_integrada"));
-  ok("signed-screen bridge returns to profile after the read",
-    w.__FISCALIDADE_PROFILE_TARGET__.__navigations.some(url => /targetScreen=ecraActividade/.test(url)) &&
-    w.__FISCALIDADE_PROFILE_TARGET__.__navigations.some(url => url === "https://fiscalida.de/perfil"));
 
   // 4d. patrimonio: SAME host as rendas (imoveis) but a /matrizesinter path -> host+path matching
   //     must pick patrimonio, NOT rendas. Proves the disambiguation.

@@ -48,6 +48,9 @@ The direct policy intended for future store review is
 - [`DEDUCOES.md`](DEDUCOES.md): reviewable description of the active deduction model.
 - [`docs/INTERNAL-HARDENING-PLAN.md`](docs/INTERNAL-HARDENING-PLAN.md): implementation and release
   boundary for this audit.
+- [`docs/BOOKMARKLET-SIGNED-NAVIGATION.md`](docs/BOOKMARKLET-SIGNED-NAVIGATION.md): accepted
+  bookmarklet handoff state machine, the signed AT two-click exception, the failed blank-tab bridge
+  and the browser regressions required before changing it.
 
 The public company map remains a read-only dependency in the sibling `cae-db` repository. The new
 market intake does not import or write cae-db. The strict offline PDF reader used for internal
@@ -78,6 +81,8 @@ The suite checks, among other contracts:
 - fixed-origin API forwarding, request-size limits and header minimization;
 - absence of retired `/consulta`, `/contrato`, sitemap and bookmarklets outside the gated internal
   installer.
+- end-to-end bookmarklet acceptance on both origins: ordinary e-Fatura in one click and the signed
+  Atividade Exercida source after one clearly announced continuation click.
 
 ## Release boundary
 

@@ -453,6 +453,7 @@
   var LEGACY_PKEY = "fb-profile-v1";
   var AGREEMENT_KEY = "fiscalidade-market-agreement-v1";
   var ACTIVE_KEY = "fiscalidade-active-intake-v3";
+  var CONTINUATION_KEY = "fiscalidade-signed-navigation-v1";
   var CONFIRM_KEY = "fb-profile-extra-confirmed";     // gate: the result only shows after "Outras situacoes"
   var API = "https://fiscalida.de/api/v1";
   // The minimized market contribution is the explicit exchange for the free profile flow. A
@@ -482,6 +483,26 @@
     localStorage.setItem(AGREEMENT_KEY, JSON.stringify({
       version:CONTRACT.agreementVersion, accepted:true, acceptedAt:new Date().toISOString()
     }));
+  }
+  var continuationSource = null;
+  function continuationState(){
+    if (DEMO) return null;
+    var saved=null;
+    try { saved=JSON.parse(localStorage.getItem(CONTINUATION_KEY)||"null"); } catch(e){}
+    if(saved && saved.expiresAt>Date.now() && CONTRACT.partition(saved.partition)) return saved;
+    try { localStorage.removeItem(CONTINUATION_KEY); } catch(e){}
+    return null;
+  }
+  function setContinuation(partition){
+    try { localStorage.setItem(CONTINUATION_KEY,JSON.stringify({partition:partition,
+      startedAt:new Date().toISOString(),expiresAt:Date.now()+10*60*1000})); } catch(e){}
+  }
+  function clearContinuation(partition){
+    var saved=continuationState();
+    if(!saved || !partition || saved.partition===partition){
+      try { localStorage.removeItem(CONTINUATION_KEY); } catch(e){}
+      continuationSource=null;
+    }
   }
   function isConfirmed(){ return DEMO ? MEM.confirmed : realConfirmed(); }
   function realConfirmed(){ try { return localStorage.getItem(CONFIRM_KEY) === "1"; } catch(e){ return false; } }
@@ -585,6 +606,7 @@
       if (s.expiresAt && Date.now() >= s.expiresAt){
         localStorage.removeItem(PKEY); localStorage.removeItem(EXTRA_KEY);
         localStorage.removeItem(CONFIRM_KEY); localStorage.removeItem(ACTIVE_KEY);
+        localStorage.removeItem(CONTINUATION_KEY);
         return {partitions:{}};
       }
       return s;
@@ -759,6 +781,9 @@
   function acceptEnvelope(envelope){
     if(!CONTRACT.validEnvelope(envelope)) return Promise.reject(new Error("invalid_profile_envelope"));
     if(MARKET_INTAKE_ENABLED && !agreementOn()) return Promise.reject(intakeError("agreement_required"));
+    // Reaching an envelope means the required second bookmarklet click happened. Remove the
+    // navigation instruction even if the isolated intake later needs its own retry UI.
+    clearContinuation(envelope.partition);
     var store=load();
     store.partitions[envelope.partition]={status:"pending",completionStatus:envelope.status,
       fetchedAt:envelope.capturedAt,data:envelope.data,shape:envelope.shapes||{},market:envelope.market||null,
@@ -1337,6 +1362,7 @@
     var prof = assemble(store);
     var confirmed = isConfirmed();
     var agreed = !MARKET_INTAKE_ENABLED || agreementOn();
+    var continuation = continuationState();
     var next = CONTRACT.next(store);
     var intakeRow = next && store.partitions[next.id];
     var intakeBlocked = !!(intakeRow && intakeRow.status === "pending" && intakeRow.intake &&
@@ -1369,6 +1395,20 @@
       : '')+'</div>';
     h += '</div>';   // /hero
 
+    // One AT source uses a signed, top-level-only screen. A bookmarklet cannot continue executing
+    // after that official tab replaces its document, so make the single exceptional second click
+    // impossible to miss here. This state contains no account value or URL, only the partition id.
+    if (!DEMO && continuation){
+      h += '<div class="frame" id="signed-continuation" aria-live="assertive" style="margin-top:24px;padding:24px;'+
+        'border:3px solid var(--pri);background:var(--pri-soft);text-align:center">'+
+        '<div class="eyebrow">Só nesta fonte: falta um segundo clique</div>'+
+        '<h2 style="margin:7px 0 8px;color:var(--pri-dark)">A AT abriu o ecrã assinado de Atividade Exercida</h2>'+
+        '<p style="font-size:1.02rem;margin:0 auto;max-width:720px">Volta ao separador das Finanças e carrega <b>mais uma vez no mesmo favorito “Ler e voltar à Fiscalidade”</b>. Depois disso a leitura e a confirmação são automáticas.</p>'+
+        '<p class="w" style="margin:9px 0 0">Não procures Guardar: não existe nenhum botão escondido no fim da lista.</p>'+
+        (continuationSource ? '<button type="button" class="btn-primary" id="focus-signed-source" style="max-width:520px;margin:18px auto 0">'+ico('i-external')+'Voltar ao ecrã oficial</button>' : '')+
+        '</div>';
+    }
+
     // Mandatory, explicit exchange agreement. The tool remains inert until this button is used.
     if (!DEMO && MARKET_INTAKE_ENABLED && !agreed){
       h += '<div class="frame" style="margin-top:24px;padding:24px"><div class="eyebrow">Antes de começar</div>'+
@@ -1393,7 +1433,7 @@
     }
 
     // One deterministic action while a source is missing. No source selector and no tab spray.
-    if (!full && (agreed || DEMO) && !intakeBlocked){
+    if (!full && (agreed || DEMO) && !intakeBlocked && !continuation){
       h += '<div class="frame aframe">'+
         '<div class="acell"><div class="atitle">'+(done.length?'Já reuniste':'Preparar')+'</div>'+
           (done.length
@@ -1669,6 +1709,8 @@
     document.getElementById("out").innerHTML = h;
     var accept=document.getElementById("accept-market");
     if(accept) accept.onclick=function(){ setAgreement(); render(); };
+    var focusSigned=document.getElementById("focus-signed-source");
+    if(focusSigned) focusSigned.onclick=function(){ try { continuationSource.focus(); } catch(e){} };
     var retryIntake=document.getElementById("retry-intake");
     if(retryIntake && next) retryIntake.onclick=function(){
       retryIntake.disabled=true; retryIntake.textContent="A enviar...";
@@ -1772,6 +1814,7 @@
         localStorage.removeItem(PKEY);
         localStorage.removeItem(LEGACY_PKEY);
         localStorage.removeItem(ACTIVE_KEY);
+        localStorage.removeItem(CONTINUATION_KEY);
         localStorage.removeItem(AGREEMENT_KEY);
         localStorage.removeItem(MARKET_SECRET_KEY);
         localStorage.removeItem(EXTRA_KEY);
@@ -1814,6 +1857,21 @@
     var messagePartition=event.data.partition || (event.data.envelope && event.data.envelope.partition);
     var sourceMeta=CONTRACT.partition(messagePartition);
     if(!sourceMeta || new URL(sourceMeta.open).origin!==event.origin) return;
+    if(event.data.type===CONTRACT.continuationType){
+      if(event.data.contract!==CONTRACT.version || !CONTRACT.validRequestId(event.data.requestId)){
+        handoffDiagnostic("rejected",messagePartition,"continuation_contract_mismatch"); return;
+      }
+      // This carries no account data: only a partition id saying that the signed AT screen now
+      // needs the one unavoidable second bookmarklet click. Keep the source WindowProxy in memory
+      // so the prominent button can focus the correct official tab.
+      continuationSource=event.source;
+      setContinuation(messagePartition);
+      handoffDiagnostic("continuation",messagePartition,"signed_top_level_required");
+      render();
+      event.source.postMessage({type:CONTRACT.continuationAckType,contract:CONTRACT.version,
+        partition:messagePartition,requestId:event.data.requestId},event.origin);
+      return;
+    }
     var active=activeIntake();
     if(event.data.type===CONTRACT.helloType){
       if(event.data.contract!==CONTRACT.version || !CONTRACT.validRequestId(event.data.requestId)){
