@@ -41,7 +41,7 @@ services:
     logging: *logging
 
   tunnel:
-    image: cloudflare/cloudflared@sha256:ba461b8aa9c042156dbd39c38657fe7431bafa063220eab8d5330a523863da9f
+    image: cloudflare/cloudflared@sha256:072c067d25ccbe61d46e18f0d0723255f2bb5304f7317caa95b27031520ff92c
     container_name: fiscalidade-market-tunnel
     restart: on-failure
     read_only: true
