@@ -1,6 +1,6 @@
 {
-  "_checked": "2026-07-31",
-  "_method": "render + verificacao de conteudo dos expect[] (nao apenas HTTP 200): confirma que o artigo, a taxa e o teto continuam na pagina oficial.",
+  "_checked": "2026-10-01",
+  "_method": "renderização + verificação de conteúdo dos expect[] (não apenas HTTP 200): confirma que o artigo, a taxa e o teto continuam na página oficial.",
   "sources": [
     {
       "id": "cirs-78b",

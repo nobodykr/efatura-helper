@@ -13,7 +13,7 @@ services:
       dockerfile: market/Dockerfile
     image: fiscalidade-market:local
     container_name: fiscalidade-market
-    restart: unless-stopped
+    restart: on-failure
     init: true
     read_only: true
     cap_drop: [ALL]
@@ -43,7 +43,7 @@ services:
   tunnel:
     image: cloudflare/cloudflared@sha256:ba461b8aa9c042156dbd39c38657fe7431bafa063220eab8d5330a523863da9f
     container_name: fiscalidade-market-tunnel
-    restart: unless-stopped
+    restart: on-failure
     read_only: true
     cap_drop: [ALL]
     group_add: ["1000"]
