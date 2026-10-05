@@ -81,8 +81,12 @@ So the order matters - commit tool.js BEFORE generating the manifest:
      --exclude run-tests.mjs --exclude check-functions.js --exclude escape-tool.js \
      --exclude package.json --exclude package-lock.json \
      . /tmp/fb-deploy/
-   npx wrangler@4.125.0 pages deploy /tmp/fb-deploy --project-name=efatura-helper --branch=main
+   cd /tmp/fb-deploy && npx wrangler@4.125.0 pages deploy . --project-name=efatura-helper --branch=main
    ```
+   Run wrangler from INSIDE the filtered copy. It bundles Functions from `./functions` of the current
+   directory, not from the directory it uploads: run from a checkout that is behind main, it ships that
+   checkout's old Functions with the new static files and still reports success (05/10/2026). After the
+   deploy, probe a route whose behaviour changed instead of trusting "Deployment complete".
    NEVER drop a runtime data file from this list by adding a broad `*.json` exclude - versions.json,
    audit-manifest.json, audit-freshness.json, offers.json, cae_sectors.json, legal_sources.json,
    cirs_atividades.json and year_snapshots.json are all fetched live. Verify at /verificar (served
