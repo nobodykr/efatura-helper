@@ -7,6 +7,10 @@
 import { allow } from "../../_lib/ratelimit.js";
 
 const DEFAULT_MAX_BODY = 64 * 1024;
+// Only fiscalida.de sits behind the Access gate. The same function also answers on
+// efatura-helper.pages.dev and faturas.diogoandrade.com, which are public, so any other host
+// gets the same 404 as the root catch-all before a route or upstream is ever considered.
+const CANONICAL_HOST = "fiscalida.de";
 const ROUTES = [
   { re: /^map\/buckets\/\d{3}$/, methods: ["GET"], bucket: "map", limit: 450 },
   { re: /^map\/rules$/, methods: ["GET"], bucket: "rules", limit: 180 },
@@ -32,6 +36,11 @@ function routeCors(headers, route) {
 
 export async function onRequest(context) {
   const request = context.request;
+  if (new URL(request.url).hostname !== CANONICAL_HOST)
+    return new Response(JSON.stringify({ error: "not_found" }), {
+      status: 404, headers: { "content-type": "application/json", "cache-control": "no-store",
+        "x-content-type-options": "nosniff", "x-robots-tag": "noindex, nofollow, noarchive" }
+    });
   const raw = Array.isArray(context.params.path) ? context.params.path.join("/") : String(context.params.path || "");
   const route = ROUTES.find((r) => r.re.test(raw));
   if (!route)

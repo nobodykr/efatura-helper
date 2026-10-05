@@ -11,11 +11,11 @@ const source = limiter + "\n" + facade;
 
 (async () => {
   const mod = await import("data:text/javascript;base64," + Buffer.from(source).toString("base64"));
-  async function call(path, method = "GET", body, env = {}) {
+  async function call(path, method = "GET", body, env = {}, host = "fiscalida.de") {
     const init = { method, headers: { cookie: "must-not-forward", authorization: "must-not-forward" } };
     if (body !== undefined) { init.body = body; init.headers["content-type"] = "application/json"; }
     return mod.onRequest({
-      request: new Request("https://fiscalida.de/api/v1/" + path + "?member=member_123", init),
+      request: new Request("https://" + host + "/api/v1/" + path + "?member=member_123", init),
       params: { path: path.split("/") }, env
     });
   }
@@ -76,6 +76,14 @@ const source = limiter + "\n" + facade;
     "dedicated market API key not applied server-side");
   assert(marketResponse.headers.get("access-control-allow-origin") === "https://fiscalida.de",
     "browser market intake is not pinned to the profile origin");
+  forwarded = undefined;
+  for (const host of ["efatura-helper.pages.dev", "abc123.efatura-helper.pages.dev", "faturas.diogoandrade.com"]) {
+    for (const [path, method, body] of [["stats", "GET"], ["map/rules", "GET"], ["intake", "POST", "{}"]]) {
+      const response = await call(path, method, body, { ...env, ...marketEnv }, host);
+      assert(response.status === 404, `${host}/api/v1/${path} reached the facade outside the Access gate`);
+    }
+  }
+  assert(forwarded === undefined, "a non-canonical host was proxied upstream");
   global.fetch = originalFetch;
   console.log("  API facade allowlist and header boundary passed");
 })().catch((error) => { console.error(error); process.exit(1); });
