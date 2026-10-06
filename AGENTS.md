@@ -16,6 +16,10 @@ Market service: `python3 -m unittest market.test_storage`.
 ## Runs
 Containers `fiscalidade-market` and `fiscalidade-market-tunnel`, compose in `market/docker-compose.yml`.
 
+## Merge
+A PR that changes `tool.js` merges with a merge commit, never a squash: `versions.json`
+`source_commit` is the branch commit that last changed `tool.js` and it must land on main as is.
+
 ## Deploy
 Level 1 procedure. Never compose in `market/` (the hook blocks it; security restarts go through
 `agent-prod-recreate`). The static site is deployed by hand with wrangler per DEPLOY.md.
