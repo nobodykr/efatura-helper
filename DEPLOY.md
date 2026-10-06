@@ -76,7 +76,7 @@ So the order matters - commit tool.js BEFORE generating the manifest:
     --exclude extension --exclude dist --exclude market --exclude node_modules --exclude .git \
      --exclude .wrangler --exclude .github --exclude .claude \
      --exclude .gitignore --exclude .gitleaks.toml \
-     --exclude '*.md' --exclude docs --exclude outreach --exclude LICENSE \
+     --exclude '*.md' --exclude docs --exclude outreach --exclude fixtures --exclude LICENSE \
      --exclude 'test-*.js' --exclude 'make-*.mjs' --exclude 'build-*.mjs' \
      --exclude run-tests.mjs --exclude check-functions.js --exclude escape-tool.js \
      --exclude package.json --exclude package-lock.json \
@@ -88,8 +88,10 @@ So the order matters - commit tool.js BEFORE generating the manifest:
    checkout's old Functions with the new static files and still reports success (05/10/2026). After the
    deploy, probe a route whose behaviour changed instead of trusting "Deployment complete".
    NEVER drop a runtime data file from this list by adding a broad `*.json` exclude - versions.json,
-   audit-manifest.json, audit-freshness.json, offers.json, cae_sectors.json, legal_sources.json,
-   cirs_atividades.json and year_snapshots.json are all fetched live. Verify at /verificar (served
+   audit-manifest.json, audit-freshness.json, offers.json, cae_sectors.json, legal_sources.json
+   and year_snapshots.json are all fetched live. cirs_atividades.json is NOT read by any code: it
+   is a published reference table (separate `cae` and `cirs` lists), shipped with the other data
+   files. `fixtures/` holds test-only data and stays out of the deploy. Verify at /verificar (served
    tool.js must hash to the published integrity) and that versions.json `repo` is nobodykr, not a fork.
 
 The commit hash in versions.json is the public commitment: content-addressed, so it can't be moved or

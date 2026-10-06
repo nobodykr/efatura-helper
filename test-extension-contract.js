@@ -16,6 +16,10 @@ assert(JSON.stringify(manifest.content_scripts[0].matches) === JSON.stringify(ex
 assert(JSON.stringify(manifest.permissions) === JSON.stringify(["scripting", "storage", "alarms"]), "extension permissions exceed the reviewed set");
 assert(manifest.content_security_policy?.extension_pages === "script-src 'self'; object-src 'none';", "extension pages are missing the hardened CSP");
 assert(!JSON.stringify(manifest).includes("https://*."), "wildcard subdomain permission found");
+// The extension docs are copied into later builds (Firefox port, store listing): a wildcard host
+// written there would come back as a permission, so it is banned in extension/*.md too.
+readdirSync("extension").filter((f) => f.endsWith(".md")).forEach((f) =>
+  assert(!readFileSync("extension/" + f, "utf8").includes("https://*."), "wildcard subdomain host in extension/" + f));
 assert(manifest.background.service_worker === "background.js", "unexpected background entrypoint");
 assert(runtime.environment === "production", "runtime is not production");
 assert(runtime.publicOrigin === "https://fiscalida.de", "canonical origin mismatch");

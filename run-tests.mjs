@@ -10,6 +10,17 @@ import { spawnSync } from "child_process";
 const PERFIL = new Set(["test-deadlines.js", "test-obligations.js", "test-render.js"]); // assert on perfil.html
 const BROWSER = new Set(["test-bookmarklet-browser.js", "test-network.js"]); // needs Playwright/chromium
 
+// favorito-dev.html is a gitignored build output that two checks read, and it pins tool.js by SRI,
+// so a copy left from an earlier FB_VERSION is as wrong as a missing one. Rebuild it on every run.
+const build = spawnSync("node", ["build-bookmarklet-dev.mjs"], { encoding: "utf8" });
+if (build.status !== 0) {
+  console.log("  FAIL build-bookmarklet-dev.mjs (favorito-dev.html could not be generated; run `npm run build:dev` to see why)");
+  const lines = ((build.stdout || "") + (build.stderr || "")).trim().split("\n");
+  const why = lines.filter((l) => /^\w*Error\b/.test(l));
+  console.log((why.length ? why : lines.slice(-6)).map((l) => "       " + l).join("\n"));
+  process.exit(1);
+}
+
 const tests = readdirSync(".").filter((f) => /^test-.*\.js$/.test(f)).sort();
 const checks = tests.map((t) => ({
   name: t,
@@ -28,7 +39,7 @@ for (const c of checks) {
   if (ok) {
     console.log("  ok   " + c.name);
   } else if (c.browser && allowBrowserSkip && /chromium|playwright|executable doesn't exist/i.test(out)) {
-    console.log("  skip " + c.name + "  (needs a browser: npx playwright install chromium)");
+    console.log("  skip " + c.name + "  (needs a browser: npx playwright-core install chromium)");
     skipped++;
   } else {
     console.log("  FAIL " + c.name);

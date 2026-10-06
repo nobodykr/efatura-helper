@@ -62,10 +62,12 @@ Run the full suite with a real Chromium executable available:
 
 ```bash
 npm install
-CHROME_PATH=/path/to/chromium npm test
+npx playwright-core install chromium   # or point CHROME_PATH=/path/to/chromium at your own build
+npm test
 ```
 
-`npm test` fails if the browser privacy check cannot run. For a deliberately incomplete local
+`npm test` regenerates the gated `favorito-dev.html` itself and fails if the browser privacy check
+cannot run. For a deliberately incomplete local
 unit-only pass, use `npm run test:unit`; its output is labelled incomplete.
 
 The suite checks, among other contracts:

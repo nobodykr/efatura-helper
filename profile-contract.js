@@ -137,6 +137,20 @@
     return true;
   }
 
+  /* Normalized class of the official IVA "Enquadramento" text from the signed Atividade Exercida
+   * screen. The class only drives the obligation wording; the official text itself is always kept
+   * and shown verbatim. Anything not recognised is "outro", never a guess. */
+  var IVA_REGIME_CLASSES = ["isento_art53", "isento_art9", "normal_mensal", "normal_trimestral", "outro"];
+  function ivaRegimeClass(text) {
+    if (typeof text !== "string" || !text.trim()) return null;
+    var t = " " + text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ") + " ";
+    if (/ (?:art|artigo) 53 /.test(t) || / 53 o? /.test(t) && /isen/.test(t)) return "isento_art53";
+    if (/ (?:art|artigo) 9 /.test(t) || / 9 o? /.test(t) && /isen/.test(t)) return "isento_art9";
+    if (/ mensal /.test(t)) return "normal_mensal";
+    if (/ trimestral /.test(t)) return "normal_trimestral";
+    return "outro";
+  }
   var contract = Object.freeze({
     version: 3,
     agreementVersion: "market-v1",
@@ -158,6 +172,8 @@
     current: current,
     validRequestId: validRequestId,
     isCompleteStatus: function (status) { return DONE.has(status); },
+    ivaRegimeClasses: Object.freeze(IVA_REGIME_CLASSES.slice()),
+    ivaRegimeClass: ivaRegimeClass,
     validEnvelope: validEnvelope
   });
 

@@ -22,6 +22,7 @@ global.EXTRAS = eval(src.slice(src.indexOf("var EXTRAS ="), src.indexOf("];", sr
 let _extra = {};
 global.loadExtra = () => _extra;
 eval(grab("agendaMatch"));
+eval(grab("ivaRegimeNaoLido"));
 eval(grab("deriveObligations"));
 
 function titles(obs) { return obs.map(o => o.titulo); }
@@ -44,6 +45,25 @@ ok("IRS annual present", T.includes("Entregar a declaração de IRS"));
 ok("e-Fatura validation present", T.some(t => /Validar faturas/.test(t)));
 ok("Cat B -> Anexo B", T.includes("IRS - Anexo B"));
 ok("Cat B -> IVA", T.some(t => /IVA/.test(t)));
+// No activity screen read: the IVA item is a stated unknown, never the generic "salvo isencao" guess.
+ok("Cat B without a read regime -> regime por confirmar, no generic line",
+  T.includes("IVA - regime por confirmar") && !obs.some(o => /salvo isen/i.test(o.titulo + " " + o.porque)));
+// The stored class picks the wording; the official text is quoted as is (no contract needed).
+function ivaItem(at) {
+  const r = deriveObligations({ categorias: [{ cat: "B" }], detalhes: { atividade: at } });
+  return r.find(o => /^IVA/.test(o.titulo));
+}
+const a53 = ivaItem({ estadoAtual: "aberta", enquadramentoIva: "Texto oficial sintético A", enquadramentoIvaClasse: "isento_art53" });
+const a9 = ivaItem({ estadoAtual: "aberta", enquadramentoIva: "Texto oficial sintético B", enquadramentoIvaClasse: "isento_art9" });
+ok("art. 53 and art. 9 get different wording", a53.titulo !== a9.titulo && a53.porque !== a9.porque &&
+  /art\. 53\.º/.test(a53.titulo) && /art\. 9\.º/.test(a9.titulo));
+ok("official text quoted verbatim in the item", a53.porque.includes('"Texto oficial sintético A"'));
+const other = ivaItem({ estadoAtual: "aberta", enquadramentoIva: "Texto oficial sintético C" });
+ok("text without class (no contract here) -> confirm the obligation", other.titulo === "IVA - confirmar a obrigação" &&
+  other.porque.includes('"Texto oficial sintético C"'));
+const missing = ivaItem({ estadoAtual: "aberta" });
+ok("open activity without Enquadramento -> Regime de IVA não lido", /Regime de IVA não lido/.test(missing.porque) &&
+  !/salvo isen/i.test(missing.porque));
 ok("Cat B -> Seguranca Social trimestral", T.some(t => /Segurança Social - trimestral/.test(t)));
 ok("Cat F -> Anexo F", T.includes("IRS - Anexo F"));
 ok("Cat F -> recibos de renda", T.some(t => /recibos de renda/.test(t)));

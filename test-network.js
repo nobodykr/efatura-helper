@@ -6,7 +6,9 @@
 //   node test-network.js tool.js
 const { chromium } = require("playwright-core");
 const { readFileSync } = require("fs");
-const EXE = process.env.CHROME_PATH || "/usr/bin/chromium"; // override with CHROME_PATH=... (was a hardcoded ~/.cache path, which leaked a username and only ran on one machine)
+// CHROME_PATH overrides; otherwise the chromium that playwright-core itself installs (`npx playwright-core
+// install chromium`). Never a hardcoded home-directory path: that leaks a username.
+const EXE = process.env.CHROME_PATH || chromium.executablePath();
 const rows = [{ estadoBeneficio: "P", nifEmitente: "500000009", nomeEmitente: "Pingo Doce", valorTotal: 20000,
                 valorTotalIva: 1200, dataEmissaoDocumento: "2026-06-01", idDocumento: "p1" }];
 (async () => {
