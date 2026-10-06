@@ -2,6 +2,7 @@
 // regression that source-level tests missed: a dragged HTML href is URL-normalized before use.
 const { chromium } = require("playwright-core");
 const { readFileSync } = require("fs");
+const { ecraAtividade } = require("./fixtures/ecra-atividade.js");
 
 const installer = readFileSync("favorito-dev.html", "utf8");
 const contract = readFileSync("profile-contract.js", "utf8");
@@ -42,7 +43,9 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
     if (url.startsWith("https://sitfiscal.portaldasfinancas.gov.pt/integrada/presentation")) {
       const signed = /targetScreen=ecraActividade/.test(url);
       return route.fulfill({ contentType:"text/html; charset=utf-8", body:signed
-        ? "<!doctype html><body>Atividade em IRS Data de Início 2023-01-01 Tipo de Contabilidade Não organizada</body>"
+        // Real-shaped signed screen (synthetic values). An open activity needs its Enquadramento em
+        // IVA, or the step correctly stays incomplete.
+        ? "<!doctype html><body>" + ecraAtividade({ iva:"Texto sintético de enquadramento", inicio:"2023-01-01" }) + "</body>"
         : "<!doctype html><body><a href='/integrada/presentation?targetScreen=ecraActividade&amp;hmac=browser-fixture'>Atividade exercida</a></body>" });
     }
     return route.abort();
