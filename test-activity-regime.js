@@ -164,6 +164,35 @@ const CASES = [
     ok("[cessada] an empty <dd> stays null instead of taking the next panel title", row && row.data.tipoSujeito === null, JSON.stringify(row && row.data.tipoSujeito));
   }
 
+  // The IVA panel's dated sub-regimes (Reembolso Mensal, IVA de Caixa, ...) have their own
+  // Data de Inicio. A filled one after the cessation is not a restart: the activity stays cessada.
+  {
+    officialTab(ecraAtividade({ iva: null, irs: null, inicio: "2001-01-01", cessacao: "2002-01-01",
+      regimes: { caixa: { inicio: "2003-01-01" } } }));
+    eval(SRC); await wait();
+    const row = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}").partitions.atividade_integrada;
+    const d = (row && row.data) || {};
+    ok("[cessada + IVA de caixa] stays cessada", row && row.status === "done" && d.estadoAtual === "cessada" && d.cessada === true, JSON.stringify(row));
+    ok("[cessada + IVA de caixa] start is the first panel's own date", d.inicio === "2001-01-01" &&
+      JSON.stringify(d.inicios) === JSON.stringify(["2001-01-01"]), JSON.stringify(d.inicios));
+    ok("[cessada + IVA de caixa] cessations from the IVA and IRS panels", d.cessacao === "2002-01-01" &&
+      JSON.stringify(d.cessacoes) === JSON.stringify(["2002-01-01"]), JSON.stringify(d.cessacoes));
+  }
+
+  // Every sub-regime filled, one in the future, on an open activity: no extra start and no
+  // scheduled restart.
+  {
+    officialTab(ecraAtividade({ iva: "Normal Trimestral (texto sintético)", irs: null, inicio: "2001-01-01",
+      regimes: { reembolso: { inicio: "2004-01-01", fim: "2005-01-01" }, caixa: { inicio: "2099-01-01" },
+                 omitido4: { inicio: "2006-01-01" }, omitido5: { inicio: "2007-01-01", fim: "2008-01-01" } } }));
+    eval(SRC); await wait();
+    const row = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}").partitions.atividade_integrada;
+    const d = (row && row.data) || {};
+    ok("[aberta + sub-regimes] open, start from the first panel only", row && row.status === "done" &&
+      d.estadoAtual === "aberta" && d.inicio === "2001-01-01" && JSON.stringify(d.inicios) === JSON.stringify(["2001-01-01"]), JSON.stringify(d.inicios));
+    ok("[aberta + sub-regimes] a future sub-regime start is not a scheduled restart", d.proximoInicio === null, d.proximoInicio);
+  }
+
   // /perfil with a row from an OLDER reader (open, done, no Enquadramento): visible message, never
   // the generic line. And with the screen not offered (disponivel:false) plus Cat. B from recibos:
   // a stated unknown, never the generic line either.

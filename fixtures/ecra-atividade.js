@@ -6,8 +6,9 @@
 // probe withheld because they contain digits are stood in by "Rotulo omitido n". Panel titles other
 // than "Atividade em IVA" / "Atividade em IRS" were not collected and are placeholders too.
 //
-//   ecraAtividade({ iva, irs, inicio, cessacao, tipoSujeito, contabilidade, codigos })
-// `iva` / `irs` are the Enquadramento texts; null renders an empty <dd>.
+//   ecraAtividade({ iva, irs, inicio, cessacao, tipoSujeito, contabilidade, codigos, regimes })
+// `iva` / `irs` are the Enquadramento texts; null renders an empty <dd>. `regimes` fills the dated
+// sub-regimes of the IVA panel: { reembolso, caixa, omitido4, omitido5 }, each { inicio, fim }.
 function ecraAtividade(o) {
   o = o || {};
   const v = (x) => (x == null ? "" : String(x));
@@ -16,6 +17,7 @@ function ecraAtividade(o) {
   const panel = (title, body) => '<div class="panel panel-default"><div class="panel-heading">' +
     '<div class="panel-title">' + title + '</div></div><div class="panel-body"><dl class="dl-horizontal">' +
     body + "</dl></div></div>";
+  const rg = (k, campo) => (o.regimes && o.regimes[k] && o.regimes[k][campo]) || "";
   const codigos = o.codigos || [
     ["CIRS Principal", "0001", "DESCRICAO SINTETICA A", "2001-01-01"],
     ["CAE Secundário 1", "00002", "DESCRICAO SINTETICA B", "2001-01-01"],
@@ -53,12 +55,13 @@ function ecraAtividade(o) {
       pair("Importações", "") + pair("Exportações", "") +
       head("Transações Intracomunitárias") + pair("Aquisições", "") + pair("Transmissões", "") +
       head("Regime de Reembolso Mensal de IVA") + pair("Situação", "") +
-      pair("Data de Início", "") + pair("Data de Fim", "") +
-      head("Regime de IVA de Caixa") + pair("Data de Início", "") + pair("Data de Fim", "") +
-      pair("Motivo de Exclusão", "") +
-      head("Rotulo omitido 4") + pair("Data de Início", "") + pair("Data de Fim", "") +
-      pair("Motivo de Cancelamento", "") +
-      head("Rotulo omitido 5") + pair("Data de Início", "") + pair("Data de Fim", "") + pair("Motivo", "")) +
+      pair("Data de Início", rg("reembolso", "inicio")) + pair("Data de Fim", rg("reembolso", "fim")) +
+      head("Regime de IVA de Caixa") + pair("Data de Início", rg("caixa", "inicio")) +
+      pair("Data de Fim", rg("caixa", "fim")) + pair("Motivo de Exclusão", "") +
+      head("Rotulo omitido 4") + pair("Data de Início", rg("omitido4", "inicio")) +
+      pair("Data de Fim", rg("omitido4", "fim")) + pair("Motivo de Cancelamento", "") +
+      head("Rotulo omitido 5") + pair("Data de Início", rg("omitido5", "inicio")) +
+      pair("Data de Fim", rg("omitido5", "fim")) + pair("Motivo", "")) +
     panel("Atividade em IRS",
       pair("Enquadramento", o.irs) + pair("Data de Enquadramento", "2001-01-01") +
       pair("Data de Fim de Enquadramento", "") + pair("Regime de Tributação", "") +
