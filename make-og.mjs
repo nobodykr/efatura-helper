@@ -2,16 +2,17 @@
 //
 //   node make-og.mjs
 //
-// Rendered from HTML with the Playwright chromium already installed on the homeserver, rather
-// than drawn with an image library, so the card uses exactly the same palette and typeface as
-// the site. Re-run it if the wording or the brand colour changes; the PNG is committed, so this
-// is not part of any build.
+// Rendered from HTML with a headless chromium, rather than drawn with an image library, so the
+// card uses exactly the same palette as the site. Re-run it if the wording or the brand colour
+// changes; the PNG is committed, so this is not part of any build.
 //
-// There is no build step for this site and no image tooling on the box (no PIL, no ImageMagick),
-// which is why this borrows the browser from fiscal-monitor's node_modules.
-import { chromium } from '/mnt/data/apps/fiscal-monitor/node_modules/playwright-core/index.mjs';
+// Renders with playwright-core's chromium - there is no PIL or ImageMagick here, and this site has
+// no build step. CHROME_PATH overrides; otherwise the chromium that playwright-core itself
+// installs (`npx playwright-core install chromium`). Never a hardcoded home-directory path: that
+// leaks a username.
+import { chromium } from 'playwright-core';
 
-const EXE = '/home/diogo/.cache/ms-playwright/chromium-1228/chrome-linux64/chrome';
+const EXE = process.env.CHROME_PATH || chromium.executablePath();
 const OUT = new URL('./assets/og.png', import.meta.url).pathname;
 
 const html = `<!doctype html><html lang="pt"><head><meta charset="utf-8">
