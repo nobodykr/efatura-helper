@@ -193,6 +193,26 @@ const CASES = [
     ok("[aberta + sub-regimes] a future sub-regime start is not a scheduled restart", d.proximoInicio === null, d.proximoInicio);
   }
 
+  // Portal chrome with its own panel and <dt>/<dd> pairs ahead of the activity panels: the start
+  // still comes from the activity's Data de Inicio, so an open activity stays open (and the
+  // required-regime guard still applies).
+  {
+    const chrome = '<header><div class="panel-title">Cabecalho sintetico</div>' +
+      "<dl><dt>Sessao</dt><dd>sintetica</dd><dt>Perfil</dt><dd>sintetico</dd></dl></header>";
+    officialTab(chrome + ecraAtividade({ iva: "Normal Mensal (texto sintético)", irs: null, inicio: "2001-01-01",
+      regimes: { caixa: { inicio: "2003-01-01" } } }));
+    eval(SRC); await wait();
+    const row = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}").partitions.atividade_integrada;
+    const d = (row && row.data) || {};
+    ok("[cromo do portal] open, start from the activity panel", row && row.status === "done" &&
+      d.estadoAtual === "aberta" && JSON.stringify(d.inicios) === JSON.stringify(["2001-01-01"]), JSON.stringify(row));
+    officialTab(chrome + ecraAtividade({ iva: null, irs: null, inicio: "2001-01-01" }));
+    eval(SRC); await wait();
+    const semRegime = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}").partitions.atividade_integrada;
+    ok("[cromo do portal] open without Enquadramento is still regime_iva_nao_lido",
+      !!semRegime && semRegime.status === "pending" && semRegime.code === "regime_iva_nao_lido", JSON.stringify(semRegime));
+  }
+
   // /perfil with a row from an OLDER reader (open, done, no Enquadramento): visible message, never
   // the generic line. And with the screen not offered (disponivel:false) plus Cat. B from recibos:
   // a stated unknown, never the generic line either.
