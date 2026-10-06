@@ -129,6 +129,7 @@ const CASES = [
     const page = await renderPerfil({ partitions: { atividade_integrada: { status: "done", fetchedAt: new Date().toISOString(), data: env ? env.data : data, intake: { status: "accepted" } } } });
     ok(tag + "perfil renders without runtime errors", page.errors.length === 0, page.errors.join(" | ").slice(0, 160));
     ok(tag + "perfil shows the official IVA text exactly", page.text.includes(c.iva), page.text.slice(0, 200));
+    ok(tag + "'O que ja sabemos' row carries the official text", page.text.includes("Atividade aberta - IVA: " + c.iva));
     ok(tag + "obligation title follows the class", page.text.includes(c.titulo));
     ok(tag + "obligation quotes the official text", page.text.includes('Enquadramento em IVA na AT: "' + c.iva + '"'));
     ok(tag + "obligation wording for the class", c.diz.test(page.text));
