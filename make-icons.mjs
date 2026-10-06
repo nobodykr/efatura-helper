@@ -6,12 +6,14 @@
 // its own; these exist because Safari wants a PNG and every browser still probes /favicon.ico,
 // which was returning 404.
 //
-// Uses the Playwright chromium already on the box - there is no PIL or ImageMagick here, and this
-// site has no build step, so the outputs are committed.
-import { chromium } from '/mnt/data/apps/fiscal-monitor/node_modules/playwright-core/index.mjs';
+// Renders with playwright-core's chromium - there is no PIL or ImageMagick here, and this site has
+// no build step, so the outputs are committed. CHROME_PATH overrides; otherwise the chromium that
+// playwright-core itself installs (`npx playwright-core install chromium`). Never a hardcoded
+// home-directory path: that leaks a username.
+import { chromium } from 'playwright-core';
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const EXE = '/home/diogo/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome';
+const EXE = process.env.CHROME_PATH || chromium.executablePath();
 const here = (f) => new URL('./' + f, import.meta.url).pathname;
 
 // strip the leading comment so the SVG starts with <svg
