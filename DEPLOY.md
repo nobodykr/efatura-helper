@@ -66,7 +66,10 @@ So the order matters - commit tool.js BEFORE generating the manifest:
    audit-manifest.json for /auditoria (fails loud via test-audit-sync.js if it drifts).
 4. Commit versions.json + audit-manifest.json, then `git push` to nobodykr - the push is what makes
    `source_commit` resolve on GitHub (no separate `git push --tags` step to forget).
-5. Deploy from a FILTERED copy. Two reasons to filter: `extension/`+`dist/` must never reach the
+5. Rebuild the gated DEV favorite first: `node build-bookmarklet-dev.mjs`. `favorito-dev.html` is
+   gitignored but IS deployed (it matches `*.html`), and it pins tool.js by SRI, so a copy left from
+   an earlier FB_VERSION ships a favorite that refuses to load the new tool.js.
+6. Deploy from a FILTERED copy. Two reasons to filter: `extension/`+`dist/` must never reach the
    public site, AND the docs / tests / build scripts must not be publicly served (they leak the
    architecture - the cae-db split, endpoint shapes, this very deploy command). Only runtime files
    go up: tool.js, *.html, all data *.json, metrics.js, fonts, functions/, _headers, _routes.json,
