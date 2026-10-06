@@ -235,7 +235,12 @@ function hasHandoffShape(w, partition) {
   ok("latest accepted restart is retained without an effective-date guess",
     store.partitions.atividade.data.ultimaDeclaracaoTipo === "inicio-ou-reinicio" &&
     store.partitions.atividade.data.ultimaDeclaracaoAceite === true);
-  ok("atividade IVA regime parsed (trimestral)", /trimestr/i.test(store.partitions.atividade.data.regimeIva || ""));
+  // The declarations fixture still carries "periodicidade trimestral". The live page has no regime
+  // text at all; the regime is read only from the signed Atividade Exercida Enquadramento, so this
+  // history list must never produce one (test-activity-regime.js covers the real source).
+  ok("declarations list never guesses an IVA regime",
+    !("regimeIva" in store.partitions.atividade.data) &&
+    !/trimestr/i.test(JSON.stringify(store.partitions.atividade.data)));
 
   // 4c-6. The integrated cadastro compares the latest EFFECTIVE dates. A future start must not
   //       make the account currently open; once a later start is effective it overrides history.
@@ -252,7 +257,8 @@ function hasHandoffShape(w, partition) {
     hasHandoffShape(w, "atividade_integrada"));
 
   w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/integrada/presentation");
-  w.document.body.innerHTML = "<div>Atividade em IRS Data de Início 2020-01-01 Data de Cessação 2021-01-01 " +
+  w.document.body.innerHTML = "<div>Atividade em IVA Enquadramento Texto sintético de enquadramento Data de Enquadramento 2022-01-01 " +
+    "Atividade em IRS Data de Início 2020-01-01 Data de Cessação 2021-01-01 " +
     "Data de Início 2022-01-01 Tipo de Contabilidade Não organizada</div>";
   eval(SRC); await wait();
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
@@ -260,6 +266,9 @@ function hasHandoffShape(w, partition) {
     store.partitions.atividade_integrada.data.estadoAtual === "aberta" &&
     store.partitions.atividade_integrada.data.inicio === "2022-01-01" &&
     store.partitions.atividade_integrada.data.cessada === false);
+  ok("plain-text layout: Enquadramento em IVA kept verbatim with its class",
+    store.partitions.atividade_integrada.data.enquadramentoIva === "Texto sintético de enquadramento" &&
+    store.partitions.atividade_integrada.data.enquadramentoIvaClasse === "outro");
 
   w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/integrada/presentation");
   w.document.body.innerHTML = "<div>Atividade em IVA Data de Início 2099-01-01 Tipo de Contabilidade Não organizada</div>";
@@ -273,7 +282,8 @@ function hasHandoffShape(w, partition) {
   // A schema_required result from an older favorite must be reread, not retried forever with the
   // same empty envelope.
   w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK, "/integrada/presentation");
-  w.document.body.innerHTML = "<div>Atividade em IVA Data de Início 2024-01-01 Tipo de Contabilidade Não organizada</div>";
+  w.document.body.innerHTML = "<div>Atividade em IVA Enquadramento Texto sintético de enquadramento Data de Enquadramento 2024-01-01 " +
+    "Data de Início 2024-01-01 Tipo de Contabilidade Não organizada</div>";
   global.localStorage.setItem("fb-profile-v1", JSON.stringify({ partitions:{ atividade_integrada:{
     status:"done", fetchedAt:"2026-08-24T00:00:00.000Z", data:{estadoAtual:"desconhecida"}, shape:{},
     handoff:{status:"error",code:"schema_required"}
@@ -296,7 +306,8 @@ function hasHandoffShape(w, partition) {
 
   w = mkEnv("sitfiscal.portaldasfinancas.gov.pt", true, fetchOK,
     "/integrada/presentation?targetScreen=ecraActividade&hmac=fixture");
-  w.document.body.innerHTML = "<div>Atividade em IRS Data de Início 2023-01-01 Tipo de Contabilidade Não organizada</div>";
+  w.document.body.innerHTML = "<div>Atividade em IVA Enquadramento Texto sintético de enquadramento Data de Enquadramento 2023-01-01 " +
+    "Atividade em IRS Data de Início 2023-01-01 Tipo de Contabilidade Não organizada</div>";
   eval(SRC); await wait();
   store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
   ok("second bookmarklet click completes the signed integrated source",

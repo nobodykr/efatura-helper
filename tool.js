@@ -64,7 +64,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.08.25.6";
+  var FB_VERSION = "2026.10.06.1";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -953,7 +953,8 @@
       pathHint: "/geral",
       open: "https://sitfiscal.portaldasfinancas.gov.pt/geral/dashboard",
       why: "D\u00edvidas e coimas em aberto, e os pr\u00f3ximos prazos da agenda fiscal.", read: readSituacao },
-    // Cadastro / atividade (dainter). Authoritative Cat B + IVA-regime source; also open-vs-cessada.
+    // Cadastro / atividade (dainter). Declaration history only; the IVA regime comes from the
+    // Enquadramento of `atividade_integrada` below.
     { id: "atividade", label: "Atividade (cadastro e IVA)", host: "sitfiscal.portaldasfinancas.gov.pt",
       pathHint: "/atividade",
       open: "https://sitfiscal.portaldasfinancas.gov.pt/atividade/atividade/consultardeclaracoes",
@@ -1321,23 +1322,18 @@
           }
         } catch (e) {}
       }
-      // The current IVA regime usually is NOT on this declarations page - it lives on the
-      // "Atividade Exercida" screen of the Situacao Fiscal Integrada. Only report a regime if this
-      // page happens to state it; otherwise leave null and say where to look. Never guess.
-      var regime = /isen[c\u00e7][a\u00e3]o.*53|artigo 53|regime de isen/.test(low) ? "isento (art. 53.o)"
-                 : /periodicidade mensal|iva mensal/.test(low) ? "IVA mensal"
-                 : /periodicidade trimestr|iva trimestr/.test(low) ? "IVA trimestral"
-                 : null;
+      // The IVA regime is NOT on this declarations page (a live read showed no regime text at all).
+      // It is read only from the Enquadramento of the signed "Atividade Exercida" screen
+      // (`atividade_integrada`), never guessed from this history list.
       // The effective date exists in the official receipt, which this browser reader deliberately
       // does not download or parse. A recent start row can therefore be current OR scheduled.
       var avisos = ["a lista de declara\u00e7\u00f5es n\u00e3o prova o estado atual nem a data de efic\u00e1cia"];
       if (ultimaTipo === "inicio-ou-reinicio" && temCessacao)
         avisos.push("h\u00e1 in\u00edcio/rein\u00edcio declarado ap\u00f3s historial de cessa\u00e7\u00e3o; confirmar o comprovativo");
-      if (!regime) avisos.push("regime de IVA n\u00e3o consta aqui - ver 'Atividade Exercida' na Situa\u00e7\u00e3o Fiscal Integrada");
       // The authoritative "Atividade Exercida" screen is a DIFFERENT PFAP SSO partition. It is an
       // explicit profile step (`atividade_integrada`) and cannot be fetched from this DAInter
       // session merely because both apps share the sitfiscal host.
-      return { data: { declaracoes: n, cessada: null, regimeIva: regime,
+      return { data: { declaracoes: n, cessada: null,
                        inicioOuReinicioDeclarado: temInicio, cessacaoDeclarada: temCessacao,
                        ultimaDeclaracaoTipo: ultimaTipo, ultimaDeclaracaoAceite: ultimaAceite,
                        avisos: avisos },
@@ -1369,16 +1365,64 @@
                  cessada: estado === "cessada" ? true : (estado === "aberta" ? false : null) };
   }
 
+  /* Label/value pairs of the signed screen. The live screen is a series of panels: a .panel-title
+   * names the section ("Atividade em IVA", "Atividade em IRS") and <dt>/<dd> pairs hold label and
+   * value. Reading the DOM keeps the official text verbatim (entities decoded, whitespace collapsed)
+   * and stops a value from running into the next panel or label. Entries in document order. */
+  function atividadeCampos(html) {
+    var campos = [];
+    try {
+      var doc = new DOMParser().parseFromString(html, "text/html");
+      var nodes = doc.querySelectorAll(".panel-title, dt, dd"), seccao = "", label = null;
+      for (var i = 0; i < nodes.length; i++) {
+        var el = nodes[i], t = (el.textContent || "").replace(/\s+/g, " ").trim();
+        if (el.tagName === "DT") { label = t.replace(/:$/, ""); continue; }
+        if (el.tagName === "DD") {
+          if (label) campos.push({ seccao: seccao, label: label, valor: t || null });
+          label = null; continue;
+        }
+        seccao = t; label = null;
+      }
+    } catch (e) {}
+    return campos;
+  }
+  // The value of the first matching pair: null when the label is there with an empty <dd> (the
+  // official screen says nothing), undefined when the label is not in the DOM at all.
+  function atividadeCampo(campos, seccaoRe, label) {
+    for (var i = 0; i < campos.length; i++)
+      if (campos[i].label === label && (!seccaoRe || seccaoRe.test(campos[i].seccao))) return campos[i].valor;
+    return undefined;
+  }
+  function decodeHtmlText(s) {
+    try { return new DOMParser().parseFromString("<p>" + s, "text/html").body.textContent; }
+    catch (e) { return s; }
+  }
+
   function parseAtividadeExercida(html) {
         var txt = html.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ");
-        var pick = function (re) { var x = txt.match(re); return x ? x[1].trim() : null; };
+        var pick = function (re) { var x = txt.match(re); return x ? (decodeHtmlText(x[1]).replace(/\s+/g, " ").trim() || null) : null; };
+        var campos = atividadeCampos(html);
+        // Each field: the <dt>/<dd> pair when the label is in the DOM (an empty <dd> stays null, it
+        // never borrows the next label), else the same label order in plain text.
+        var campo = function (seccaoRe, label, re) {
+          var v = atividadeCampo(campos, seccaoRe, label);
+          return v !== undefined ? v : pick(re);
+        };
+        var enq = function (seccao) {
+          return campo(new RegExp("^Atividade em " + seccao + "\\b", "i"), "Enquadramento",
+            new RegExp("Atividade em " + seccao + "\\s+Enquadramento\\s+((?:(?!Data de |Atividade em )[^]){1,120}?)\\s+Data de Enquadramento", "i"));
+        };
+        var enquadramentoIva = enq("IVA");
         // The screen can contain historical dates in both IVA and IRS sections. Compare the newest
         // effective start and cessation; "any cessation exists" permanently misclassifies restarts.
         var inic = (txt.match(/Data de In[i\u00ed]cio(?: de Atividade)?\s+(\d{4}-\d{2}-\d{2})/gi) || [])
           .map(function (s) { return (s.match(/(\d{4}-\d{2}-\d{2})/) || [])[1]; }).filter(Boolean);
         var cess = (txt.match(/Data de Cessa[\u00e7c][\u00e3a]o\s+(\d{4}-\d{2}-\d{2})/gi) || [])
           .map(function (s) { return (s.match(/(\d{4}-\d{2}-\d{2})/) || [])[1]; }).filter(Boolean);
-        var motivos = (txt.match(/Motivo de Cessa[\u00e7c][\u00e3a]o\s+([^]{3,40}?)\s+(?:NIF|Nome|Op[\u00e7c]|Data|Consultas)/gi) || [])
+        // An empty Motivo is followed by the next label, which the plain-text pattern would take as
+        // the motive; the <dt>/<dd> pairs say exactly which motives are filled in.
+        var motivosDd = campos.filter(function (c) { return /^Motivo de Cessa[\u00e7c][\u00e3a]o$/i.test(c.label); });
+        var motivos = motivosDd.length ? motivosDd.map(function (c) { return c.valor; }).filter(Boolean) : (txt.match(/Motivo de Cessa[\u00e7c][\u00e3a]o\s+([^]{3,40}?)\s+(?:NIF|Nome|Op[\u00e7c]|Data|Consultas)/gi) || [])
           .map(function (s) { return s.replace(/Motivo de Cessa[\u00e7c][\u00e3a]o\s+/i, "").trim(); });
         var temporal = atividadeTemporal(inic, cess);
         var out = {
@@ -1386,10 +1430,13 @@
           cessacao: temporal.cessacao, cessacoes: temporal.cessacoes,
           proximoInicio: temporal.proximoInicio, estadoAtual: temporal.estadoAtual,
           cessada: temporal.cessada, motivosCessacao: motivos,
-          enquadramentoIva: pick(/Atividade em IVA\s+Enquadramento\s+([^]{3,30}?)\s+Data de Enquadramento/i),
-          enquadramentoIrs: pick(/Atividade em IRS\s+Enquadramento\s+([^]{3,30}?)\s+Data de Enquadramento/i),
-          tipoSujeito: pick(/Tipo de Sujeito Passivo\s+([^]{3,60}?)\s+(?:Contabilidade|Tipo de Contab)/i),
-          contabilidade: pick(/Tipo de Contabilidade\s+(N[\u00e3a]o organizada|Organizada)/i),
+          // Official text, verbatim. The class next to it only drives the obligation wording.
+          enquadramentoIva: enquadramentoIva,
+          enquadramentoIvaClasse: (PROFILE_CONTRACT && PROFILE_CONTRACT.ivaRegimeClass)
+            ? PROFILE_CONTRACT.ivaRegimeClass(enquadramentoIva) : null,
+          enquadramentoIrs: enq("IRS"),
+          tipoSujeito: campo(null, "Tipo de Sujeito Passivo", /Tipo de Sujeito Passivo\s+([^]{3,60}?)\s+(?:Contabilidade|Tipo de Contab)/i),
+          contabilidade: campo(null, "Tipo de Contabilidade", /Tipo de Contabilidade\s+(N[\u00e3a]o organizada|Organizada)/i),
           codigos: []
         };
         // "CAE Principal 47125 DESCRICAO 2025-01-01" / "CIRS Secundario 1 1332 ..." etc.
@@ -1441,7 +1488,14 @@
     var html = document.documentElement ? document.documentElement.outerHTML : "";
     if (/Atividade em IVA|Atividade em IRS|Tipo de Contabilidade|CAE Principal|CIRS/i.test(html)) {
       recordShape("/integrada/presentation", "html", html);
-      return Promise.resolve({ data: parseAtividadeExercida(html), source: "/integrada/presentation::ecraActividade" });
+      var lida = parseAtividadeExercida(html);
+      // The IVA regime is REQUIRED for an open activity: without it the obligations cannot say
+      // which IVA duty applies, so the step stays incomplete instead of falling back to a generic
+      // line. Not open (cessada/agendada/desconhecida) is a stated unknown, not a failure.
+      if (lida.estadoAtual === "aberta" && !lida.enquadramentoIva)
+        return Promise.reject(readError("regime_iva_nao_lido",
+          "Regime de IVA n\u00e3o lido: a atividade est\u00e1 aberta, mas o Enquadramento em IVA n\u00e3o foi encontrado neste ecr\u00e3"));
+      return Promise.resolve({ data: lida, source: "/integrada/presentation::ecraActividade" });
     }
     var links = document.querySelectorAll("a[href]"), href = null;
     for (var i = 0; i < links.length; i++) {
@@ -2136,7 +2190,14 @@
         : (at.estadoAtual || (at.cessada === true ? "cessada" : (at.cessada === false ? "aberta" : "por confirmar")));
       h += '<div style="font-size:12px;color:#333;margin:2px 0">Atividade: <b>' + esc(estado) + '</b>' +
            (at.declaracoes ? ' (' + esc(at.declaracoes) + ' declara\u00e7\u00e3o/\u00f5es)' : '') +
-           (at.regimeIva ? ', IVA: <b>' + esc(at.regimeIva) + '</b>' : '') + '.</div>';
+           '.</div>';
+      // The official Enquadramento texts, exactly as the AT states them.
+      if (at.enquadramentoIva)
+        h += '<div style="font-size:12px;color:#333;margin:2px 0 2px 8px">Enquadramento em IVA: <b>' + esc(at.enquadramentoIva) + '</b></div>';
+      else if (at.estadoAtual === "aberta" && at.disponivel !== false)
+        h += '<div style="font-size:11px;color:#c8102e;margin-left:8px">Regime de IVA n\u00e3o lido.</div>';
+      if (at.enquadramentoIrs)
+        h += '<div style="font-size:12px;color:#333;margin:2px 0 2px 8px">Enquadramento em IRS: <b>' + esc(at.enquadramentoIrs) + '</b></div>';
       (at.avisos || []).forEach(function (a) { h += '<div style="font-size:11px;color:#8a6100">\u26a0 ' + esc(a) + '</div>'; });
     }
     if (d.ss) {
@@ -2200,7 +2261,21 @@
       var s = profLoad();
       var msg = (e && e.message) || "erro";
       s.partitions[cur.id] = { status: "pending", error: msg, fetchedAt: new Date().toISOString() };
+      if (e && e.code) s.partitions[cur.id].code = e.code;
       profSave(s);
+      if (e && e.code === "regime_iva_nao_lido") {
+        // Re-reading the same signed DOM would give the same answer: go back to the hub so the
+        // signed screen is opened afresh, then the bookmarklet is clicked again there.
+        document.getElementById("efh-body").innerHTML =
+          '<div style="background:#fdecec;border:1px solid #c8102e;border-radius:6px;padding:12px;font-size:13px;color:#5a0000">' +
+          '<b>Regime de IVA n\u00e3o lido.</b><br>A atividade est\u00e1 aberta, mas o Enquadramento em IVA n\u00e3o foi encontrado neste ecr\u00e3. ' +
+          'Este passo fica por concluir: sem o regime n\u00e3o d\u00e1 para dizer que obriga\u00e7\u00e3o de IVA tens.</div>' +
+          '<div style="margin-top:10px"><button type="button" id="fb-retry" style="cursor:pointer;background:#034ad8;color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;font-weight:600">Tentar de novo</button>' +
+          ' <span style="color:#666;font-size:12px">(volta \u00e0 Situa\u00e7\u00e3o Fiscal Integrada; depois carrega outra vez no favorito)</span></div>';
+        var rr = document.getElementById("fb-retry");
+        if (rr) rr.onclick = function () { location.href = cur.open; };
+        return;
+      }
       // Loud, on-screen failure - no console needed. Say exactly what went wrong and what to do.
       document.getElementById("efh-body").innerHTML =
         '<div style="background:#fdecec;border:1px solid #c8102e;border-radius:6px;padding:12px;font-size:13px;color:#5a0000">' +
@@ -2275,7 +2350,10 @@
         deliverProfile(cur.id, res.data, _shapes, res.market || null);
       }).catch(function (e) {
         var s = profLoad();
-        s.partitions[cur.id] = { status: "pending", error: "N\u00e3o deu para ler: " + ((e && e.message) || "erro") + ". Confirma o login nesta p\u00e1gina.", fetchedAt: new Date().toISOString() };
+        s.partitions[cur.id] = { status: "pending", fetchedAt: new Date().toISOString(),
+          error: (e && e.code === "regime_iva_nao_lido") ? e.message + ". Volta \u00e0 Situa\u00e7\u00e3o Fiscal Integrada e carrega outra vez no favorito."
+            : "N\u00e3o deu para ler: " + ((e && e.message) || "erro") + ". Confirma o login nesta p\u00e1gina." };
+        if (e && e.code) s.partitions[cur.id].code = e.code;
         profSave(s); profRender();
       });
     };

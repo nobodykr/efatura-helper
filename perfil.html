@@ -824,7 +824,7 @@
       rendas:{ status:"done", data:{ contratos:0, activos:0, recibos:0 } },
       situacao:{ status:"done", data:{ dividas:{n:0}, coimas:{n:0}, agenda:{ n:2, proximos:[
         { data:"25/02", desc:"Validar faturas no e-Fatura" }, { data:"30/06", desc:"Entregar a declaração de IRS" } ] } } },
-      atividade:{ status:"done", data:{ declaracoes:0, cessada:null, regimeIva:null } },
+      atividade:{ status:"done", data:{ declaracoes:0, cessada:null } },
       atividade_integrada:{ status:"done", data:{ disponivel:false } },
       patrimonio:{ status:"done", data:{ imoveis:1, lista:[{ artigo:"U-0000", freguesia:"(exemplo)" }] } },
       irs:{ status:"done", data:{ liquidacoes:3, reembolsos:1, porAno:[] } },
@@ -958,8 +958,11 @@
       var at=d.atividade, est=at.estadoAtual==="agendada"?"início/reinício agendado (ainda não aberto)":
         (at.estadoAtual||(at.cessada===true?"cessada":(at.cessada===false?"aberta":"por confirmar")));
       h += '<div class="kv">Atividade: <b>'+esc(est)+'</b>'+
-           (at.declaracoes?' ('+esc(at.declaracoes)+' declaração/ões)':'')+
-           (at.regimeIva?', IVA: <b>'+esc(at.regimeIva)+'</b>':'')+'.</div>';
+           (at.declaracoes?' ('+esc(at.declaracoes)+' declaração/ões)':'')+'.</div>';
+      // The official Enquadramento texts, exactly as the AT states them.
+      if (at.enquadramentoIva) h += '<div class="kv">Enquadramento em IVA: <b>'+esc(at.enquadramentoIva)+'</b></div>';
+      else if (ivaRegimeNaoLido(at)) h += '<div class="warn">⚠ Regime de IVA não lido.</div>';
+      if (at.enquadramentoIrs) h += '<div class="kv">Enquadramento em IRS: <b>'+esc(at.enquadramentoIrs)+'</b></div>';
       (at.avisos||[]).forEach(function(a){ h += '<div class="warn">⚠ '+esc(a)+'</div>'; });
     }
     if (d.ss){
@@ -1053,6 +1056,11 @@
     }
     return null;
   }
+  // Open activity read from the signed screen without its Enquadramento em IVA. Current readers
+  // refuse to complete that step; this catches a row from an older reader.
+  function ivaRegimeNaoLido(at){
+    return !!at && !at.enquadramentoIva && at.estadoAtual==="aberta" && at.disponivel!==false;
+  }
   function deriveObligations(prof){
     var cats = {}; prof.categorias.forEach(function(c){ cats[c.cat]=1; });
     var d = prof.detalhes, ob = [];
@@ -1063,14 +1071,30 @@
       (d.efatura.porClassificar||0)+" por classificar - contam para as deduções à coleta. Prazo habitual: 25 de fevereiro.", ["fatura","despesa"]);
     if (cats.B){
       add("IRS - Anexo B", "Tens atividade aberta / recibos verdes (categoria B).", ["irs"]);
-      // Use the real IVA regime from the atividade cadastro when we have it, instead of the generic line.
-      var reg = d.atividade && d.atividade.regimeIva;
-      if (reg && /isento/i.test(reg))
-        add("IVA - isento (art. 53.º)", "Cadastro indica isenção do art. 53.º CIVA: sem entrega periódica de IVA (confirmar).", ["iva"]);
-      else if (reg)
-        add("IVA - " + reg, "Cadastro indica " + reg + ": entrega periódica de IVA.", ["iva"]);
+      // The IVA duty follows the official Enquadramento em IVA of the signed Atividade Exercida
+      // screen, quoted exactly. Its class only picks the wording. Without it there is no generic
+      // "salvo isenção" guess: the item says the regime was not read, or is unknown.
+      var at = d.atividade || {};
+      var oficial = at.enquadramentoIva;
+      var classe = at.enquadramentoIvaClasse ||
+        (oficial && typeof CONTRACT!=="undefined" && CONTRACT && CONTRACT.ivaRegimeClass ? CONTRACT.ivaRegimeClass(oficial) : (oficial ? "outro" : null));
+      var cita = oficial ? 'Enquadramento em IVA na AT: "'+oficial+'". ' : '';
+      if (classe==="isento_art53")
+        add("IVA - isento (art. 53.º CIVA)", cita+"Regime especial de isenção do art. 53.º: sem declaração periódica de IVA e sem IVA liquidado nas faturas, que indicam o motivo da isenção (art. 53.º). Se o volume de negócios ultrapassar o limite legal, o enquadramento muda.", ["iva"]);
+      else if (classe==="isento_art9")
+        add("IVA - isento (art. 9.º CIVA)", cita+"Isenção do art. 9.º pela natureza da atividade, sem direito à dedução do IVA suportado: sem declaração periódica de IVA enquanto só praticares operações isentas, e as faturas indicam o motivo da isenção (art. 9.º).", ["iva"]);
+      else if (classe==="normal_mensal")
+        add("IVA - declaração periódica mensal", cita+"Regime normal mensal: entregar a declaração periódica de IVA de cada mês e pagar o imposto apurado.", ["iva"]);
+      else if (classe==="normal_trimestral")
+        add("IVA - declaração periódica trimestral", cita+"Regime normal trimestral: entregar a declaração periódica de IVA de cada trimestre e pagar o imposto apurado.", ["iva"]);
+      else if (classe)
+        add("IVA - confirmar a obrigação", cita+"Este enquadramento não está entre os que reconhecemos: confirma a obrigação de IVA que dele resulta.", ["iva"]);
+      else if (ivaRegimeNaoLido(at))
+        add("IVA - regime de IVA não lido", "Regime de IVA não lido: a Atividade exercida está aberta, mas o Enquadramento em IVA não foi lido. Volta a ler o passo Atividade exercida.", ["iva"]);
       else
-        add("IVA (periódico)", "Atividade aberta: salvo isenção do art. 53.º CIVA, há entrega de IVA (trimestral ou mensal).", ["iva"]);
+        add("IVA - regime por confirmar", at.disponivel===false
+          ? "A AT não disponibilizou o ecrã Atividade exercida nesta conta: o regime de IVA é desconhecido. Confirma o teu enquadramento em IVA na Situação Fiscal Integrada."
+          : "O regime de IVA ainda não foi lido. Lê o passo Atividade exercida para saber a obrigação de IVA.", ["iva"]);
       add("Segurança Social - trimestral", "Trabalhador independente: declaração trimestral e contribuições.", ["seguran","contribu","trimestr"]);
     }
     if (cats.F){
@@ -1137,7 +1161,7 @@
     }
     if (id==="atividade" && d.atividade){
       x = d.atividade;
-      if (x.estadoAtual==="aberta") return { v:'Atividade aberta'+(x.regimeIva?' - '+esc(x.regimeIva):'') };
+      if (x.estadoAtual==="aberta") return { v:'Atividade aberta'+(x.enquadramentoIva?' - IVA: '+esc(x.enquadramentoIva):'') };
       if (x.estadoAtual==="cessada" && x.ultimaDeclaracaoTipo==="inicio-ou-reinicio") return { v:'Cessada agora - início/reinício declarado' };
       if (x.estadoAtual==="cessada") return { v:'Atividade cessada' };
       if (x.ultimaDeclaracaoTipo==="inicio-ou-reinicio") return { v:'Início/reinício declarado - data por confirmar' };
@@ -1146,7 +1170,8 @@
     if (id==="atividade_integrada" && d.atividade){
       x=d.atividade;
       if (x.disponivel===false) return { v:'Não exposta nesta conta' };
-      if (x.estadoAtual==="aberta") return { v:'Atividade aberta' };
+      if (ivaRegimeNaoLido(x)) return { v:'Atividade aberta - Regime de IVA não lido', cls:'bad' };
+      if (x.estadoAtual==="aberta") return { v:'Atividade aberta - IVA: '+esc(x.enquadramentoIva) };
       if (x.estadoAtual==="agendada" || x.proximoInicio) return { v:'Início/reinício futuro no cadastro' };
       if (x.estadoAtual==="cessada") return { v:x.proximoInicio?'Cessada agora - início futuro no cadastro':'Atividade cessada' };
       return { v:'Estado por confirmar' };

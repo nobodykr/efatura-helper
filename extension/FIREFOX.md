@@ -12,7 +12,10 @@ mechanical job later, not a rediscovery.
   `chrome.storage.local`, `chrome.storage.session` and `chrome.alarms`. Firefox aliases these under `browser.*` but also polyfills `chrome.*`,
   so the current code likely runs unchanged. VERIFY `chrome.scripting` is available on the target
   Firefox (it is, from FF109+). No `chrome.*` promise/callback surprises in what we use.
-- **host_permissions** `https://*.portaldasfinancas.gov.pt/*` - same, Firefox honours it.
+- **host_permissions** - the same 5 explicit hosts as `manifest.json`, never a wildcard subdomain
+  (`test-extension-contract.js` enforces it): `https://faturas.portaldasfinancas.gov.pt/*`,
+  `https://imoveis.portaldasfinancas.gov.pt/*`, `https://sitfiscal.portaldasfinancas.gov.pt/*`,
+  `https://irs.portaldasfinancas.gov.pt/*`, `https://www.seg-social.pt/*`. Firefox honours them.
 - **Content script** injection model is the same.
 
 ## Build + distribute
