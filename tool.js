@@ -64,7 +64,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.10.06.2";
+  var FB_VERSION = "2026.10.06.3";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -1415,16 +1415,16 @@
         var enquadramentoIva = enq("IVA");
         // The screen can contain historical dates in both IVA and IRS sections. Compare the newest
         // effective start and cessation; "any cessation exists" permanently misclassifies restarts.
-        // With <dt>/<dd> pairs the dates are scoped: the activity start is the first panel's own
-        // Data de Inicio, cessations are the Data de Cessacao of the IVA and IRS panels. The IVA
-        // panel also carries dated sub-regimes (Reembolso Mensal, IVA de Caixa, ...) with their own
-        // Data de Inicio/Data de Fim; those are not activity starts.
+        // With <dt>/<dd> pairs the dates are scoped: the activity start is the first Data de Inicio
+        // outside the Atividade em panels (not the first pair of the page, so portal chrome with its
+        // own pairs cannot hide it), cessations are the Data de Cessacao of the IVA and IRS panels.
+        // The IVA panel also carries dated sub-regimes (Reembolso Mensal, IVA de Caixa, ...) with
+        // their own Data de Inicio/Data de Fim; those are not activity starts.
         var isoDe = function (v) { var d = (v || "").match(/\d{4}-\d{2}-\d{2}/); return d ? d[0] : null; };
         var inicioRe = /^Data de In[i\u00ed]cio(?: de Atividade)?$/i, cessRe = /^Data de Cessa[\u00e7c][\u00e3a]o$/i;
         var datasDd = campos.some(function (c) { return inicioRe.test(c.label) || cessRe.test(c.label); });
-        var primeira = campos.length ? campos[0].seccao : "";
         var inic = datasDd ? campos.filter(function (c) {
-          return c.seccao === primeira && !/^Atividade em /i.test(c.seccao) && inicioRe.test(c.label);
+          return !/^Atividade em /i.test(c.seccao) && inicioRe.test(c.label);
         }).slice(0, 1).map(function (c) { return isoDe(c.valor); }).filter(Boolean) : (txt.match(/Data de In[i\u00ed]cio(?: de Atividade)?\s+(\d{4}-\d{2}-\d{2})/gi) || [])
           .map(function (s) { return (s.match(/(\d{4}-\d{2}-\d{2})/) || [])[1]; }).filter(Boolean);
         var cess = datasDd ? campos.filter(function (c) {
