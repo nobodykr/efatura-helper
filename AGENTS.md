@@ -10,7 +10,8 @@ minimized contributions. Static site on Cloudflare Pages (`index.html`, `tool.js
 `tool.js` must stay pure ASCII. Read README.md for the privacy boundary and DEPLOY.md for the runbook.
 
 ## Test
-`npm test` (node run-tests.mjs; needs a browser, a missing one fails the run).
+`npm test` (node run-tests.mjs; needs a browser, a missing one fails the run). A fresh worktree has
+no `node_modules`: run `npm ci` first, or about 30 checks fail on `Cannot find module 'jsdom'`.
 Market service: `python3 -m unittest market.test_storage`.
 
 ## Runs
