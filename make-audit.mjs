@@ -42,6 +42,13 @@ const rendasAno = {};
 const raM = tool.match(/RENDAS_CAP_ANO = \{([^}]*)\}/);
 if (raM) for (const [, y, v] of raM[1].matchAll(/(\d{4}): (\d+)/g)) rendasAno[y] = Number(v);
 const potCap = Number((tool.match(/POT_CAP = (\d+)/) || [])[1]);
+const setorDesde = {};
+const sdM = tool.match(/SETOR_DESDE = \{([^}]*)\}/);
+if (sdM) for (const [, c, y] of sdM[1].matchAll(/(C\d+): (\d{4})/g)) setorDesde[c] = Number(y);
+const taxaAno = {};
+const taM = tool.match(/TAXA_ANO = \{((?:[^{}]|\{[^}]*\})*)\}/);
+if (taM) for (const [, c, body] of taM[1].matchAll(/(C\d+): \{([^}]*)\}/g))
+  for (const [, y, v] of body.matchAll(/(\d{4}): ([\d.]+)/g)) (taxaAno[c] ||= {})[y] = Number(v);
 // Sector names come from tool.js SECTORS (properly accented via \u escapes), not the accent-less
 // deducoes.html cells, so the public /auditoria page reads correctly in Portuguese.
 const sectors = {};
@@ -163,16 +170,16 @@ for (const key of ruleKeys) {
     if (r.derived) perYear[y].derived = r.derived;
     if (r.unit === "cae") perYear[y].dre_text = r.dre_text || [];
     const src = srcById[r.source_id];
-    if (!src) { drift.push(`regra ${key} ${y}: source_id ${r.source_id} nao existe em legal_sources.json`); continue; }
+    if (!src) { drift.push(`regra ${key} ${y}: source_id ${r.source_id} não existe em legal_sources.json`); continue; }
     if (r.in_force === false) {
       // Did not exist in that year's wording: no value, a later start date, and an absence check on DRE.
-      if (r.value !== null) drift.push(`regra ${key} ${y}: nao existia mas tem valor ${JSON.stringify(r.value)}`);
-      if (!(r.in_force_from > `${y}-12-31`)) drift.push(`regra ${key} ${y}: nao existia mas in_force_from ${r.in_force_from} nao e posterior ao ano`);
-      if (!((src.expect_absent_by_year || {})[y] || []).length) drift.push(`regra ${key} ${y}: nao existia sem expect_absent_by_year em ${src.id}`);
+      if (r.value !== null) drift.push(`regra ${key} ${y}: não existia mas tem valor ${JSON.stringify(r.value)}`);
+      if (!(r.in_force_from > `${y}-12-31`)) drift.push(`regra ${key} ${y}: não existia mas in_force_from ${r.in_force_from} não é posterior ao ano`);
+      if (!((src.expect_absent_by_year || {})[y] || []).length) drift.push(`regra ${key} ${y}: não existia sem expect_absent_by_year em ${src.id}`);
       continue;
     }
     if (r.verified !== true) {
-      if (r.value !== null) drift.push(`regra ${key} ${y}: nao verificada mas tem valor ${JSON.stringify(r.value)}`);
+      if (r.value !== null) drift.push(`regra ${key} ${y}: não verificada mas tem valor ${JSON.stringify(r.value)}`);
       continue;
     }
     // A past year is read from that year's wording (expect_by_year), never from today's page, unless
@@ -183,24 +190,24 @@ for (const key of ruleKeys) {
     if (!(r.dre_text || []).length) drift.push(`regra ${key} ${y}: verificada sem dre_text`);
     for (const t of r.dre_text || [])
       if (!pool.some((e) => e.includes(normTxt(t))))
-        drift.push(`regra ${key} ${y}: "${t}" nao esta nos expect de ${src.id} - o verify_sources nao o confirma`);
+        drift.push(`regra ${key} ${y}: "${t}" não está nos expect de ${src.id} - o verify_sources não o confirma`);
     const said = normTxt((r.dre_text || []).join(" | "));
     if (r.derived) {
       // A value computed from several DRE strings: each string is checked, then the arithmetic.
       const dv = r.derived;
       if (dv.kind === "phase_in") {
-        if (!hasPrinted(said, dv.to, r.unit)) drift.push(`regra ${key} ${y}: destino ${dv.to} nao aparece no dre_text`);
+        if (!hasPrinted(said, dv.to, r.unit)) drift.push(`regra ${key} ${y}: destino ${dv.to} não aparece no dre_text`);
         const fromRule = RULE_YEARS[dv.from_year] && RULE_YEARS[dv.from_year][dv.from_rule];
         if (!fromRule || fromRule.verified !== true || fromRule.value !== dv.from)
-          drift.push(`regra ${key} ${y}: origem ${dv.from_year}.${dv.from_rule} nao confirma ${dv.from}`);
-      } else if (!hasPrinted(said, dv.base, r.unit)) drift.push(`regra ${key} ${y}: base ${dv.base} nao aparece no dre_text`);
+          drift.push(`regra ${key} ${y}: origem ${dv.from_year}.${dv.from_rule} não confirma ${dv.from}`);
+      } else if (!hasPrinted(said, dv.base, r.unit)) drift.push(`regra ${key} ${y}: base ${dv.base} não aparece no dre_text`);
       for (const t of dv.texts || []) {
         const ts = srcById[t.source_id] || {};
         const tpool = [].concat(ts.expect || [], (ts.expect_by_year || {})[y] || [], t.on ? (ts.expect_on_date || {})[t.on] || [] : []).map(normTxt);
-        if (!tpool.some((e) => e.includes(normTxt(t.text)))) drift.push(`regra ${key} ${y}: "${t.text}" nao esta nos expect de ${t.source_id}`);
+        if (!tpool.some((e) => e.includes(normTxt(t.text)))) drift.push(`regra ${key} ${y}: "${t.text}" não está nos expect de ${t.source_id}`);
       }
       const pct = dv.kind === "phase_in" ? dv.share_pct : dv.rate_pct;
-      if (!(dv.texts || []).some((t) => normTxt(t.text).includes(normTxt(pct + " %")))) drift.push(`regra ${key} ${y}: taxa ${pct} % nao aparece nos textos`);
+      if (!(dv.texts || []).some((t) => normTxt(t.text).includes(normTxt(pct + " %")))) drift.push(`regra ${key} ${y}: taxa ${pct} % não aparece nos textos`);
       const value = dv.kind === "phase_in" ? Math.round((dv.from + dv.share_pct / 100 * (dv.to - dv.from)) * 100) / 100
         : Math.round(dv.base * (100 + dv.rate_pct)) / 100;
       if (value !== r.value) drift.push(`regra ${key} ${y}: ${dv.formula} != ${r.value}`);
@@ -209,13 +216,13 @@ for (const key of ruleKeys) {
         for (const token of String(codes).split(/\s+/)) {
           const found = /^\d+$/.test(token) ? new RegExp(`(^|\\D)${token}(?!\\d)`).test(said)
             : new RegExp(`\\bseccao ${normTxt(token)}\\b`).test(said);
-          if (!found) drift.push(`regra ${key} ${y}: entrada CAE da alinea ${alinea}) nao aparece no dre_text`);
+          if (!found) drift.push(`regra ${key} ${y}: entrada CAE da alínea ${alinea}) não aparece no dre_text`);
         }
     } else for (const forms of printed(r))
       if (!forms.some((p) => {
         p = normTxt(p);
         return r.unit === "EUR" ? new RegExp(`(^|\\D)${p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?!\\d)`).test(said) : said.includes(p);
-      })) drift.push(`regra ${key} ${y}: valor ${forms.join(" ou ")} nao aparece no dre_text`);
+      })) drift.push(`regra ${key} ${y}: valor ${forms.join(" ou ")} não aparece no dre_text`);
   }
   const src = first && srcById[first.source_id];
   ruleRows.push({ key, article: first ? first.article : null, source_id: first ? first.source_id : null,
@@ -236,7 +243,8 @@ const SECTOR_ALINEAS = { C01: ["a"], C02: ["b"], C03: ["c"], C04: ["d"], C09: ["
 const personal = [];
 for (const code of Object.keys(ceil).sort()) for (const y of ["2023", "2024", "2025", "2026"]) {
   const rs = RULE_YEARS[y], rateRule = rs[RATE_KEY[code]], capRule = rs[CAP_KEY[code]];
-  const toolValue = { rate_pct: Math.round(ceil[code].rate * 100), cap_eur: code === "C07" ? rendasAno[y] : ceil[code].base === "iva" ? potCap : ceil[code].cap };
+  const toolRate = (taxaAno[code] || {})[y] ?? ceil[code].rate;
+  const toolValue = { rate_pct: Math.round(toolRate * 100), cap_eur: code === "C07" ? rendasAno[y] : ceil[code].base === "iva" ? potCap : ceil[code].cap };
   const registryValue = { rate_pct: rateRule.value, cap_eur: capRule.value };
   const ruleKeys = [RATE_KEY[code], CAP_KEY[code]];
   const rules = [rateRule, capRule];
@@ -249,7 +257,7 @@ for (const code of Object.keys(ceil).sort()) for (const y of ["2023", "2024", "2
   const alineas = y === "2023" && code === "C11" ? ["f"] : SECTOR_ALINEAS[code];
   if (alineas) {
     const sectorRule = rs.cirs78f_1_setores;
-    toolValue.sector_in_force = true;
+    toolValue.sector_in_force = !(setorDesde[code] > Number(y));
     registryValue.sector_in_force = alineas.some((a) => Object.hasOwn(sectorRule.value, a));
     ruleKeys.push("cirs78f_1_setores"); rules.push(sectorRule);
   }
@@ -257,7 +265,7 @@ for (const code of Object.keys(ceil).sort()) for (const y of ["2023", "2024", "2
   const match = JSON.stringify(toolValue) === JSON.stringify(registryValue);
   personal.push({ code, sector: sectors[code] || rows[code]?.nome || code, year: y, tool_value: toolValue,
     registry_value: registryValue, rule_key: ruleKeys.join(" + "), verified, match });
-  if (!verified) drift.push(`${code} ${y}: comparacao pessoal usa uma regra por verificar`);
+  if (!verified) drift.push(`${code} ${y}: comparação pessoal usa uma regra por verificar`);
   if (toolValue.rate_pct !== registryValue.rate_pct)
     drift.push(`${code} ${y}: tool.js aplica ${toolValue.rate_pct}% mas o registo diz ${registryValue.rate_pct}% (${rateRule.article.replace(/^CIRS /, "")})`);
   if (toolValue.cap_eur !== registryValue.cap_eur)
@@ -266,7 +274,7 @@ for (const code of Object.keys(ceil).sort()) for (const y of ["2023", "2024", "2
     drift.push(`${code} ${y}: limite por sujeito passivo difere entre tool.js e o registo (${rules[2].article.replace(/^CIRS /, "")})`);
   if (toolValue.sector_in_force !== registryValue.sector_in_force) {
     const labels = alineas.map((a) => a + ")").join(alineas.length > 1 ? ", " : "");
-    drift.push(`${code} ${y}: setor nao existia nesse ano (78.º-F n.º 1 ${labels} so desde 2026)`);
+    drift.push(`${code} ${y}: setor não existia nesse ano (78.º-F n.º 1 ${labels} só desde 2026)`);
   }
 }
 
@@ -294,7 +302,7 @@ if (e26 && e26.verified) {
   const said = normTxt(pool.join(" | "));
   e26.continente.forEach(([limit, rate], i) => {
     for (const p of [limit === null ? null : ptNum(limit, "EUR"), (rate * 100).toFixed(2).replace(".", ",")])
-      if (p && !said.includes(normTxt(p))) drift.push(`escaloes_irs.2026 escalao ${i + 1}: ${p} nao esta nos expect de ${e26.source_id}`);
+      if (p && !said.includes(normTxt(p))) drift.push(`escaloes_irs.2026 escalão ${i + 1}: ${p} não está nos expect de ${e26.source_id}`);
   });
 }
 

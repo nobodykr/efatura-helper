@@ -680,20 +680,20 @@
         "imoveis_rendas": {
           "article": "78.º-E",
           "verified": true,
-          "note": "rendas BASE 502 (2023); trajetoria 502(23)/600(24)/700(25)/900(26)/1000(27). Sub-limites JUROS (296/450/1100) + escalonamento nao aqui.",
+          "note": "rendas BASE 502 (2023); trajetoria 502(23)/600(24)/700(25)/900(26)/1000(27). Sub-limites JUROS (296/450/800) + escalonamento nao aqui.",
           "pct": 15,
           "base_ceiling": 502,
           "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record",
           "sub_limites": {
             "juros_base": 296,
-            "juros_limite_global": 1100,
+            "juros_limite_global": 800,
             "majoracao": 450,
             "escalonamento_pct": [
               50,
               75,
               100
             ],
-            "nota": "sub-limites JUROS + majoracao estaveis (Lei 7-A/2016); base da renda varia por ano"
+            "nota": "juros_limite_global = limite majorado do 78.º-E n.º 4 a) nesse ano (800 em 2023, 900 em 2024, 1000 em 2025 pela Lei 36/2024 art. 3.º); a regra verificada é cirs78e_4a_rendas_limite_majorado_ano"
           }
         },
         "lares": {
@@ -1315,14 +1315,14 @@
           "escalonamento": "ate 900 se rendimento coletavel <= 1.o escalao; linear 600->900 ate 30000",
           "sub_limites": {
             "juros_base": 296,
-            "juros_limite_global": 1100,
+            "juros_limite_global": 900,
             "majoracao": 450,
             "escalonamento_pct": [
               50,
               75,
               100
             ],
-            "nota": "sub-limites JUROS + majoracao estaveis (Lei 7-A/2016); base da renda varia por ano"
+            "nota": "juros_limite_global = limite majorado do 78.º-E n.º 4 a) nesse ano (800 em 2023, 900 em 2024, 1000 em 2025 pela Lei 36/2024 art. 3.º); a regra verificada é cirs78e_4a_rendas_limite_majorado_ano"
           }
         },
         "lares": {
@@ -1955,14 +1955,14 @@
           "source_law": "Lei 36/2024, arts. 2-4 (DRE) plus AT official deductions table for 2025",
           "sub_limites": {
             "juros_base": 296,
-            "juros_limite_global": 1100,
+            "juros_limite_global": 1000,
             "majoracao": 450,
             "escalonamento_pct": [
               50,
               75,
               100
             ],
-            "nota": "sub-limites JUROS + majoracao estaveis (Lei 7-A/2016); base da renda varia por ano"
+            "nota": "juros_limite_global = limite majorado do 78.º-E n.º 4 a) nesse ano (800 em 2023, 900 em 2024, 1000 em 2025 pela Lei 36/2024 art. 3.º); a regra verificada é cirs78e_4a_rendas_limite_majorado_ano"
           }
         },
         "lares": {
