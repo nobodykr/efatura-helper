@@ -15,14 +15,21 @@ const ok = (m) => console.log("  ok   " + m);
 
 const norm = (s) => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ").toLowerCase();
 const ptNum = (n, unit) => {
+  if (n === undefined) return "";
   if (unit === "EUR" && Number.isInteger(n)) return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
   if (unit === "EUR") return n.toFixed(2).replace(".", ",");
   return String(n).replace(".", ",") + (unit === "%" ? " %" : "");
 };
 const NUMERIC = ["EUR", "%", "coeficiente", "IAS"];
+const printedAliases = (n, unit) => unit === "EUR" && Number.isInteger(n)
+  ? [...new Set([ptNum(n, unit), String(n)])]
+  : unit === "%" && n === 100 ? [ptNum(n, unit), "totalidade do iva"] : [ptNum(n, unit)];
 const printed = (r) => !NUMERIC.includes(r.unit) ? []
-  : typeof r.value === "number" ? [ptNum(r.value, r.unit)]
-  : Object.values(r.value || {}).map((v) => ptNum(v, r.unit));
+  : (typeof r.value === "number" ? [r.value] : Object.values(r.value || {})).map((v) => printedAliases(v, r.unit));
+const hasPrinted = (text, n, unit) => printedAliases(n, unit).some((p) => {
+  p = norm(p);
+  return unit === "EUR" ? new RegExp(`(^|\\D)${p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?!\\d)`).test(text) : text.includes(p);
+});
 
 function ruleYears(s) {
   const out = {};
@@ -67,15 +74,33 @@ function check(s, l) {
       const said = norm((r.dre_text || []).join(" | "));
       if (r.derived) {
         const dv = r.derived;
-        if (!said.includes(norm(ptNum(dv.base, r.unit)))) problems.push(`${key} ${y}: derived base ${dv.base} is not in its dre_text`);
+        if (dv.kind === "phase_in") {
+          if (!hasPrinted(said, dv.to, r.unit)) problems.push(`${key} ${y}: phase-in target ${dv.to} is not in its dre_text`);
+          const fromRule = ry[dv.from_year] && ry[dv.from_year][dv.from_rule];
+          if (!fromRule || fromRule.verified !== true || fromRule.value !== dv.from)
+            problems.push(`${key} ${y}: phase-in origin ${dv.from_year}.${dv.from_rule} does not verify ${dv.from}`);
+        } else if (!hasPrinted(said, dv.base, r.unit)) problems.push(`${key} ${y}: derived base ${dv.base} is not in its dre_text`);
         for (const t of dv.texts || []) {
           const ts = src[t.source_id] || {};
           const tpool = [].concat(ts.expect || [], (ts.expect_by_year || {})[y] || [], t.on ? (ts.expect_on_date || {})[t.on] || [] : []).map(norm);
           if (!tpool.some((e) => e.includes(norm(t.text)))) problems.push(`${key} ${y}: derived text "${t.text}" is not one of ${t.source_id}'s checked strings`);
         }
-        if (!(dv.texts || []).some((t) => norm(t.text).includes(norm(dv.rate_pct + " %")))) problems.push(`${key} ${y}: rate ${dv.rate_pct} % is not in the derived texts`);
-        if (Math.round(dv.base * (100 + dv.rate_pct)) / 100 !== r.value) problems.push(`${key} ${y}: ${dv.formula} != ${r.value}`);
-      } else for (const p of printed(r)) if (!said.includes(norm(p))) problems.push(`${key} ${y}: value ${p} is not in its dre_text`);
+        const pct = dv.kind === "phase_in" ? dv.share_pct : dv.rate_pct;
+        if (!(dv.texts || []).some((t) => norm(t.text).includes(norm(pct + " %")))) problems.push(`${key} ${y}: rate ${pct} % is not in the derived texts`);
+        const value = dv.kind === "phase_in" ? Math.round((dv.from + dv.share_pct / 100 * (dv.to - dv.from)) * 100) / 100
+          : Math.round(dv.base * (100 + dv.rate_pct)) / 100;
+        if (value !== r.value) problems.push(`${key} ${y}: ${dv.formula} != ${r.value}`);
+      } else if (r.unit === "cae") {
+        for (const [alinea, codes] of Object.entries(r.value || {}))
+          for (const token of String(codes).split(/\s+/)) {
+            const found = /^\d+$/.test(token) ? new RegExp(`(^|\\D)${token}(?!\\d)`).test(said)
+              : new RegExp(`\\bseccao ${norm(token)}\\b`).test(said);
+            if (!found) problems.push(`${key} ${y}: CAE entry for alinea ${alinea}) is not in its dre_text`);
+          }
+      } else for (const forms of printed(r)) if (!forms.some((p) => {
+        p = norm(p);
+        return r.unit === "EUR" ? new RegExp(`(^|\\D)${p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?!\\d)`).test(said) : said.includes(p);
+      })) problems.push(`${key} ${y}: value ${forms.join(" or ")} is not in its dre_text`);
     }
     if (!s._structure.includes(key)) problems.push(`${key}: not documented in _structure`);
   }
@@ -93,6 +118,12 @@ const mutations = [
   ["another year's value carried into an unverified year", (s) => { s.years["2025"].rules.civa53_3_sem_deducao.value = true; }],
   ["2024 deduction not equal to 4 104 x 1,06", (s) => { s.years["2024"].rules.cirs25_1a_deducao_especifica.value = 4104; }],
   ["derived rate not checked on DRE", (s) => { s.years["2024"].rules.cirs25_1a_deducao_especifica.derived.texts[1].text = "taxa de 6 % inventada"; }],
+  ["phase-in value wrong", (s) => { s.years["2025"].rules.cirs78e_rendas_limite_ano.value = 750; }],
+  ["phase-in origin differs from referenced rule", (s) => { s.years["2025"].rules.cirs78e_rendas_limite_ano.derived.from = 500; }],
+  ["phase-in share text not checked", (s) => { s.years["2025"].rules.cirs78e_rendas_limite_ano.derived.texts[1].text = "a) 60 % em 2025"; }],
+  ["CAE value missing from DRE text", (s) => { s.current_values_2026_verified_isolation.rules.cirs78f_1_setores.value.l = "9999"; }],
+  ["integer EUR alias does not accept wrong value", (s) => { s.years["2025"].rules.cirs78e_1a_rendas_limite.value = 1000; }],
+  ["integer EUR boundary rejects 100 inside 1100", (s) => { s.years["2025"].rules.cirs78e_4a_rendas_limite_majorado.value = 100; }],
   ["not in force but the start date is inside the year", (s) => { s.years["2024"].rules.cirs31_15_prazo_portal.in_force_from = "2024-07-01"; }],
   ["not in force without a DRE absence check", (s) => { s.years["2023"].rules.civa53_3_sem_deducao.source_id = "civa-23"; }],
   ["dre_text not checked by verify_sources", (s) => { s.years["2023"].rules.cirs33_5_habitacao_pct.dre_text = ["25 % das despesas da casa"]; }],
@@ -113,6 +144,16 @@ const NEEDED = ["ias", "cirs25_1a_deducao_especifica", "cirs31_1_coeficientes", 
 const missing = NEEDED.filter((k) => Object.values(ry).some((rs) => !rs[k]));
 if (missing.length) bad("rules missing in some year: " + missing.join(", ")); else ok(`${NEEDED.length} rules present for 2023 to 2026`);
 
+const NEEDED_PERSONAL = ["cirs78b_1_despesas_gerais_pct", "cirs78b_1_despesas_gerais_limite", "cirs78b_1_limite_por_sujeito_passivo",
+  "cirs78b_9_monoparental_pct", "cirs78b_9_monoparental_limite", "cirs78c_1_saude_pct", "cirs78c_1_saude_limite",
+  "cirs78d_1_educacao_pct", "cirs78d_1_educacao_limite", "cirs78d_11_rendas_estudante_limite", "cirs78d_11_rendas_estudante_acrescimo",
+  "cirs78e_1_pct", "cirs78e_1a_rendas_limite", "cirs78e_4a_rendas_limite_majorado", "cirs78e_rendas_limite_ano",
+  "cirs78e_4a_rendas_limite_majorado_ano", "cirs78e_1b_juros_limite", "cirs78e_5a_juros_limite_majorado",
+  "cirs78f_1_iva_pct", "cirs78f_1_limite_agregado", "cirs78f_3_passes_pct", "cirs78f_6_medicamentos_veterinarios_pct",
+  "cirs78f_7_jornais_revistas_pct", "cirs78f_ginasios_pct", "cirs78f_1_setores", "cirs84_1_lares_pct", "cirs84_1_lares_limite"];
+const missingPersonal = NEEDED_PERSONAL.filter((k) => Object.values(ry).some((rs) => !rs[k]));
+if (missingPersonal.length) bad("personal rules missing in some year: " + missingPersonal.join(", ")); else ok(`${NEEDED_PERSONAL.length} personal rules present for 2023 to 2026`);
+
 // 4. pinned values read from DRE on 2026-10-07 (a change here must come with a new DRE reading);
 //    the 2024 deduction is 4 104 x 1,06 (n.º 7 of Lei 32/2024, Portaria 421/2023)
 const pins = [["2023", "civa53_limiar", 13500], ["2024", "civa53_limiar", 14500], ["2025", "civa53_limiar", 15000], ["2026", "civa53_limiar", 15000],
@@ -120,11 +161,35 @@ const pins = [["2023", "civa53_limiar", 13500], ["2024", "civa53_limiar", 14500]
   ["2023", "cirs25_1a_deducao_especifica", 4104], ["2024", "cirs25_1a_deducao_especifica", 4350.24], ["2026", "cirs25_1a_deducao_especifica", 8.54],
   ["2026", "cirs31_13_justificacao_pct", 15], ["2026", "cirs31_14_parcial_pct", 25], ["2026", "cirs33_5_habitacao_pct", 25],
   ["2023", "cirs31_15_prazo_portal", null], ["2024", "cirs31_15_prazo_portal", null], ["2025", "cirs31_15_prazo_portal", null]];
+pins.push(
+  ...[[2023, 502, 800, 15, 300], [2024, 600, 900, 30, 400], [2025, 700, 1000, 30, 400], [2026, 900, 1050, 30, 400]]
+    .flatMap(([y, rent, raised, gym, student]) => [[String(y), "cirs78e_rendas_limite_ano", rent], [String(y), "cirs78e_4a_rendas_limite_majorado_ano", raised],
+      [String(y), "cirs78f_ginasios_pct", gym], [String(y), "cirs78d_11_rendas_estudante_limite", student]]),
+  ...["2023", "2024", "2025", "2026"].flatMap((y) => [[y, "cirs78b_1_despesas_gerais_limite", 250], [y, "cirs78b_9_monoparental_pct", 45], [y, "cirs84_1_lares_limite", 403.75]])
+);
 for (const [y, k, v] of pins) if (ry[y][k].value !== v) bad(`${y} ${k}: ${JSON.stringify(ry[y][k].value)} != ${v}`);
 if (ry["2026"].cirs31_14_parcial_pct.applies_to_alineas.join() !== "c,d,e") bad("art. 31.º n.º 14 applies only to alíneas c) to e)");
 ok("pinned DRE readings unchanged");
 
-// 5. the 2026 brackets and the dedicated pages
+// 5. the old aggregate entries remain equal to their replacement rules during migration
+for (const y of ["2023", "2024", "2025"]) {
+  const old = snap.years[y].rules, newer = ry[y];
+  const equal = (oldValue, key) => { if (oldValue !== newer[key].value) bad(`${y}: migrated ${key} ${newer[key].value} != ${oldValue}`); };
+  equal(old.despesas_gerais.pct, "cirs78b_1_despesas_gerais_pct");
+  equal(old.despesas_gerais.ceiling, "cirs78b_1_despesas_gerais_limite");
+  if (old.despesas_gerais.pct_monoparental != null) equal(old.despesas_gerais.pct_monoparental, "cirs78b_9_monoparental_pct");
+  if (old.despesas_gerais.ceiling_monoparental != null) equal(old.despesas_gerais.ceiling_monoparental, "cirs78b_9_monoparental_limite");
+  for (const [oldKey, prefix] of [["saude", "cirs78c_1_saude"], ["educacao", "cirs78d_1_educacao"], ["lares", "cirs84_1_lares"]]) {
+    equal(old[oldKey].pct, `${prefix}_pct`); equal(old[oldKey].ceiling, `${prefix}_limite`);
+  }
+  equal(old.iva_conjunto.pct, "cirs78f_1_iva_pct"); equal(old.iva_conjunto.ceiling, "cirs78f_1_limite_agregado");
+  equal(old.imoveis_rendas.pct, "cirs78e_1_pct"); equal(old.imoveis_rendas.base_ceiling, "cirs78e_rendas_limite_ano");
+  equal(old.imoveis_rendas.sub_limites.juros_base, "cirs78e_1b_juros_limite");
+  equal(old.imoveis_rendas.sub_limites.majoracao, "cirs78e_5a_juros_limite_majorado");
+}
+ok("old aggregate entries equal their replacement personal rules");
+
+// 6. the 2026 brackets and the dedicated pages
 const e26 = snap.escaloes_irs["2026"];
 if (!e26 || e26.continente.length !== 9 || e26.continente[0][0] !== 8342 || e26.continente[8][1] !== 0.48) bad("escaloes_irs.2026 is not the Lei 73-A/2025 table");
 else ok("escaloes_irs.2026: 9 brackets from CIRS 68.º (Lei 73-A/2025)");

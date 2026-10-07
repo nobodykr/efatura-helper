@@ -1,4 +1,4 @@
-// Guards audit-manifest.json against drift and staleness: it must have ZERO recorded drift, cover
+// Guards audit-manifest.json against staleness: it must report every known drift, cover
 // all 16 sectors, and every row's rate/ceiling must still match what tool.js actually computes with.
 // If someone changes tool.js (a rate/ceiling) without re-running `node make-audit.mjs`, this FAILS -
 // so the public /auditoria page can never quietly disagree with the code.
@@ -25,10 +25,26 @@ if (raM) for (const [, y, v] of raM[1].matchAll(/(\d{4}): (\d+)/g)) rendasAno[y]
 const potCap = Number((tool.match(/POT_CAP = (\d+)/) || [])[1]);
 const nowRenda = rendasAno[Object.keys(rendasAno).sort().pop()];
 
-// 1. no drift
-if (Array.isArray(manifest.drift) && manifest.drift.length)
-  bad(`audit-manifest.json records ${manifest.drift.length} drift: ${manifest.drift.join(" | ")}`);
-else ok("no drift recorded");
+// 1. drift is shown on /auditoria, never filtered. tool.js has one CEIL for every year, so past-year
+//    rules that differ are known drift, listed here one by one; anything else is new drift and fails.
+const KNOWN_DRIFT = [
+  "C11 2023: tool.js aplica 30% mas o registo diz 15% (78.º-F n.º 1 f))",
+  ...["2023", "2024", "2025"].flatMap((y) => [
+    `C13 ${y}: setor nao existia nesse ano (78.º-F n.º 1 g) so desde 2026)`,
+    `C14 ${y}: setor nao existia nesse ano (78.º-F n.º 1 h), i), j) so desde 2026)`,
+    `C15 ${y}: setor nao existia nesse ano (78.º-F n.º 1 k), l) so desde 2026)`]),
+  "rendas 2023: registo antigo usa 1100 EUR mas cirs78e_4a_rendas_limite_majorado_ano diz 800 EUR (78.º-E n.º 4 a), faseado pela Lei 36/2024)",
+  "rendas 2024: registo antigo usa 1100 EUR mas cirs78e_4a_rendas_limite_majorado_ano diz 900 EUR (78.º-E n.º 4 a), faseado pela Lei 36/2024)",
+  "rendas 2025: registo antigo usa 1100 EUR mas cirs78e_4a_rendas_limite_majorado_ano diz 1000 EUR (78.º-E n.º 4 a), faseado pela Lei 36/2024)",
+];
+if (!Array.isArray(manifest.drift)) bad("manifest drift is not an array");
+else {
+  const unknown = manifest.drift.filter((d) => !KNOWN_DRIFT.includes(d));
+  const gone = KNOWN_DRIFT.filter((d) => !manifest.drift.includes(d));
+  if (unknown.length) bad(`new drift: ${unknown.join(" | ")}`);
+  if (gone.length) bad(`known drift no longer reported (fixed? remove it from KNOWN_DRIFT): ${gone.join(" | ")}`);
+  if (!unknown.length && !gone.length) ok(`${manifest.drift.length} known drift entries, all visible, no new drift`);
+}
 
 // 2. coverage
 const rows = manifest.rows || [];
@@ -46,6 +62,20 @@ for (const r of rows) {
     bad(`${r.code} ceiling: manifest ${r.ceiling_eur} != tool.js ${expected} - re-run make-audit.mjs`);
 }
 if (!fails) ok("every manifest row matches tool.js (rate + ceiling)");
+
+// 3b. one personal-deduction comparison per code and year, with every mismatch in drift
+const personal = manifest.personal || [];
+if (personal.length !== Object.keys(ceil).length * 4) bad(`expected ${Object.keys(ceil).length * 4} personal rows, manifest has ${personal.length}`);
+for (const r of personal) {
+  const c = ceil[r.code], expectedCap = r.code === "C07" ? rendasAno[r.year] : c.base === "iva" ? potCap : c.cap;
+  if (r.tool_value.rate_pct !== Math.round(c.rate * 100) || r.tool_value.cap_eur !== expectedCap)
+    bad(`${r.code} ${r.year}: personal tool value is stale`);
+  if (r.match !== (JSON.stringify(r.tool_value) === JSON.stringify(r.registry_value)))
+    bad(`${r.code} ${r.year}: personal match flag is stale`);
+  if (!r.match && !manifest.drift.some((d) => d.startsWith(`${r.code} ${r.year}:`)))
+    bad(`${r.code} ${r.year}: mismatch is missing from drift`);
+}
+if (!fails) ok(`${personal.length} personal rows match tool.js and expose every mismatch`);
 
 // 4. version stamp matches
 const fb = (tool.match(/FB_VERSION\s*=\s*"([^"]+)"/) || [])[1];
@@ -67,5 +97,5 @@ for (const r of manRules)
 if (!fails) ok(`${manRules.length} expense/IVA rules match year_snapshots for every year`);
 
 console.log(fails ? `\n  ${fails} FAILED - audit-manifest.json is stale or inconsistent; run \`node make-audit.mjs\``
-                  : "\n  audit-manifest.json is in sync with tool.js and drift-free");
+                  : "\n  audit-manifest.json is in sync with tool.js and keeps drift visible");
 process.exit(fails ? 1 : 0);

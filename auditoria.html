@@ -178,10 +178,21 @@
       <tbody id="tbody"></tbody>
     </table>
   </div>
-  <p class="mono">Verif. = valor confirmado contra o diploma no DRE. "Fonte hoje" = um robô nosso foi à lei confirmar que o artigo, a taxa e o teto ainda lá estão (não só que a página abre). O teto do C07 (rendas) varia por ano; os setores marcados "% do IVA" partilham um teto conjunto de 250 EUR (art. 78.º-F). Os setores do art. 78.º-F com a taxa base de 15% foram confirmados no diploma em vigor em 2023-2025 (taxa e teto conjunto de 250 EUR), por isso mostram esses anos. Um traço ("-") em "Verif."/"Anos" não é um valor pintado de verde sem prova: são os três setores do 78.º-F com taxa especial (transportes e jornais a 100%, ginásios a 30%) cuja taxa específica ainda não tem verificação documental própria por ano - ficam "-" até a confirmarmos (ver o trabalho em curso). A coluna "Fonte hoje" cobre-os na mesma.</p>
+  <p class="mono">Verif. = valor confirmado contra o diploma no DRE. "Fonte hoje" = um robô nosso foi à lei confirmar que o artigo, a taxa e o teto ainda lá estão (não só que a página abre). O teto do C07 - Imóveis / habitação varia por ano; os setores marcados "% do IVA" partilham um teto conjunto de 250 EUR (art. 78.º-F). As taxas especiais dos transportes, ginásios e jornais também são verificadas por ano.</p>
 
-  <h2>Regras das despesas da atividade e do IVA</h2>
-  <p>Taxas, limites e prazos usados para rever despesas da atividade (regime simplificado, contabilidade organizada e IVA), por ano. Cada valor foi lido no Diário da República, na página própria do artigo e na redação em vigor nesse ano (cada valor liga à sua fonte); "por verificar" quer dizer que a lei publicada não responde a esse ano e o programa não usa valor nenhum; "não existia nesta redação" quer dizer que o artigo, nesse ano, ainda não tinha essa regra.</p>
+  <h2>Deduções pessoais por ano</h2>
+  <p>Comparação direta entre os valores que <code>tool.js</code> aplica e o registo legal de cada ano. As diferenças ficam visíveis e não são filtradas.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr>
+        <th>Dedução</th><th>Ano</th><th>tool.js</th><th>Registo</th><th>Regras</th><th>Verif.</th><th>Igual</th>
+      </tr></thead>
+      <tbody id="personal-tbody"></tbody>
+    </table>
+  </div>
+
+  <h2>Regras fiscais por ano</h2>
+  <p>Taxas, limites e prazos das deduções pessoais, das despesas da atividade e do IVA. Cada valor foi lido no Diário da República, na página própria do artigo e na redação em vigor nesse ano (cada valor liga à sua fonte); "por verificar" quer dizer que a lei publicada não responde a esse ano e o programa não usa valor nenhum; "não existia nesta redação" quer dizer que o artigo, nesse ano, ainda não tinha essa regra.</p>
   <div class="tablewrap">
     <table>
       <thead><tr>
@@ -252,14 +263,20 @@
     if(v && v.in_force===false) return "não existia nesta redação"+(v.in_force_from_display?" (só desde "+esc(v.in_force_from_display)+")":"");
     if(!v || !v.verified) return "por verificar"+(v && v.in_force_from_display?" (em vigor desde "+esc(v.in_force_from_display)+")":"");
     var x=v.value, u=v.unit;
-    if(u==="EUR") return ptNum(x)+" &euro;";
-    if(u==="IAS") return String(x).replace(".",",")+" &times; IAS"+(IAS[y]!=null?" = "+ptNum(Math.round(x*IAS[y]*100)/100)+" &euro;":"");
+    var formula=v.derived && v.derived.formula ? '<br><span class="mono">'+esc(v.derived.formula)+"</span>" : "";
+    if(u==="EUR") return ptNum(x)+" &euro;"+formula;
+    if(u==="IAS") return String(x).replace(".",",")+" &times; IAS"+(IAS[y]!=null?" = "+ptNum(Math.round(x*IAS[y]*100)/100)+" &euro;":"")+formula;
     if(u==="regra") return "aplica-se";
     if(u==="prazo") return "até ao fim de fevereiro do ano seguinte";
+    if(u==="cae") return (v.dre_text||[]).map(esc).join("<br>");
     // Coefficients print as the law writes them (0,30, not 0,3); percentages carry " %".
     function one(n){ return u==="%" ? String(n).replace(".",",")+" %" : (Number.isInteger(n) ? String(n) : n.toFixed(2).replace(".",",")); }
-    if(typeof x==="number") return one(x);
+    if(typeof x==="number") return one(x)+formula;
     return Object.keys(x).map(function(k){ return esc(PARTS[k]||k)+" "+one(x[k]); }).join("<br>");
+  }
+  function personalValue(v){
+    var labels={rate_pct:"taxa",cap_eur:"teto",per_taxpayer:"por sujeito passivo",sector_in_force:"setor em vigor"};
+    return Object.keys(v||{}).map(function(k){ var x=v[k], shown=k==="rate_pct"?ptNum(x)+"&nbsp;%":k==="cap_eur"?ptNum(x)+"&nbsp;&euro;":x?"sim":"não"; return esc(labels[k]||k)+": "+shown; }).join("<br>");
   }
   Promise.all([
     fetch("/audit-manifest.json",{cache:"no-store"}).then(function(x){return x.json();}),
@@ -287,6 +304,16 @@
       td(r.verified===true?"sim":(r.verified===false?"não":"-"));
       td(r.effective_years ? esc(r.effective_years.join(", ")) : "-");
       tb.appendChild(tr);
+    });
+    var pb = document.getElementById("personal-tbody");
+    (m.personal||[]).forEach(function(r){
+      var tr = document.createElement("tr");
+      function td(html){ var d=document.createElement("td"); d.innerHTML=html; tr.appendChild(d); }
+      td("<code>"+esc(r.code)+"</code> - "+esc(r.sector));
+      td(esc(r.year)); td(personalValue(r.tool_value)); td(personalValue(r.registry_value));
+      td("<code>"+esc(r.rule_key)+"</code>"); td(r.verified?"sim":"não");
+      td('<span class="'+(r.match?"fok":"fbad")+'">'+(r.match?"sim":"não")+"</span>");
+      pb.appendChild(tr);
     });
     var rb = document.getElementById("rules-tbody");
     (m.rules||[]).forEach(function(r){ if(r.key==="ias") Object.keys(r.years||{}).forEach(function(y){ var v=r.years[y]; if(v && v.verified) IAS[y]=v.value; }); });
