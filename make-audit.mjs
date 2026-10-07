@@ -124,13 +124,91 @@ for (const code of Object.keys(ceil).sort()) {
   }
 }
 
+// ---- expense and IVA rules (year_snapshots rules that carry a source_id), one row per rule ----
+// Each verified rule-year must be traceable: value -> dre_text (the DRE wording it was read from) ->
+// one of the source's expect / expect_by_year strings, which fiscal-monitor verify_sources.mjs checks
+// on the live DRE page. Anything that does not chain is drift.
+const RULE_YEARS = { ...Object.fromEntries(years.map((y) => [y, snap.years[y].rules || {}])),
+                     2026: (snap.current_values_2026_verified_isolation || {}).rules || {} };
+const srcById = Object.fromEntries(legal.sources.map((s) => [s.id, s]));
+const normTxt = (s) => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ").toLowerCase();
+const ptNum = (n, unit) => {
+  if (unit === "EUR" && Number.isInteger(n)) return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  if (unit === "EUR") return n.toFixed(2).replace(".", ",");
+  return String(n).replace(".", ",") + (unit === "%" ? " %" : "");
+};
+const NUMERIC_UNITS = ["EUR", "%", "coeficiente", "IAS"];
+const printed = (r) => !NUMERIC_UNITS.includes(r.unit) ? []
+  : typeof r.value === "number" ? [ptNum(r.value, r.unit)]
+  : r.value && typeof r.value === "object" && Object.values(r.value).every((v) => typeof v === "number")
+    ? Object.values(r.value).map((v) => ptNum(v, r.unit)) : [];
+const ruleRows = [];
+const ruleKeys = [...new Set(Object.values(RULE_YEARS).flatMap((rs) => Object.keys(rs).filter((k) => rs[k] && rs[k].source_id)))];
+for (const key of ruleKeys) {
+  const perYear = {};
+  let first = null;
+  for (const [y, rs] of Object.entries(RULE_YEARS)) {
+    const r = rs[key];
+    if (!r) { drift.push(`regra ${key}: sem entrada para ${y}`); continue; }
+    first = first || r;
+    perYear[y] = { value: r.value, unit: r.unit ?? null, verified: r.verified === true, source_id: r.source_id,
+                   source_url: (srcById[r.source_id] || {}).url || null, source_law: r.source_law || null };
+    const src = srcById[r.source_id];
+    if (!src) { drift.push(`regra ${key} ${y}: source_id ${r.source_id} nao existe em legal_sources.json`); continue; }
+    if (r.verified !== true) {
+      if (r.value !== null) drift.push(`regra ${key} ${y}: nao verificada mas tem valor ${JSON.stringify(r.value)}`);
+      continue;
+    }
+    // A past year is read from that year's wording (expect_by_year), never from today's page, unless
+    // the rule says its text is a note on today's page that names the year (dre_text_scope).
+    const byYear = (src.expect_by_year || {})[y] || [];
+    const pool = (y !== "2026" && src.expect_by_year && r.dre_text_scope !== "current_page" ? byYear
+      : [].concat(src.expect || [], byYear)).map(normTxt);
+    if (!(r.dre_text || []).length) drift.push(`regra ${key} ${y}: verificada sem dre_text`);
+    for (const t of r.dre_text || [])
+      if (!pool.some((e) => e.includes(normTxt(t))))
+        drift.push(`regra ${key} ${y}: "${t}" nao esta nos expect de ${src.id} - o verify_sources nao o confirma`);
+    const said = normTxt((r.dre_text || []).join(" | "));
+    for (const p of printed(r))
+      if (!said.includes(normTxt(p))) drift.push(`regra ${key} ${y}: valor ${p} nao aparece no dre_text`);
+  }
+  const src = first && srcById[first.source_id];
+  ruleRows.push({ key, article: first ? first.article : null, source_id: first ? first.source_id : null,
+                  source_url: src ? src.url : null, years: perYear });
+}
+// One value, one place: the copies that predate the per-year rules must agree with them.
+const latestVerified = (key) => Object.entries(RULE_YEARS).filter(([, rs]) => rs[key] && rs[key].verified).map(([, rs]) => rs[key]).pop();
+const lim = latestVerified("civa53_limiar");
+const limCopy = snap.civa && snap.civa.art53_isencao && snap.civa.art53_isencao.limiar_eur;
+if (lim && limCopy !== lim.value) drift.push(`civa.art53_isencao.limiar_eur ${limCopy} != civa53_limiar ${lim.value}`);
+for (const [y, blk] of Object.entries(snap.escaloes_irs || {})) {
+  if (!/^\d{4}$/.test(y) || !RULE_YEARS[y] || blk.deducao_especifica_catA == null) continue;
+  const d = RULE_YEARS[y].cirs25_1a_deducao_especifica;
+  if (!d || !d.verified) continue;
+  // A multiple of the IAS is not turned into euros here: for 2025 the AT applied 4 104 EUR, not 8,54 x
+  // that year's IAS (escaloes_irs.2025._deducao_especifica). Only a rule stated in euros is compared.
+  const want = d.unit === "EUR" ? d.value : null;
+  if (want !== null && Math.abs(blk.deducao_especifica_catA - want) > 0.005)
+    drift.push(`escaloes_irs.${y}.deducao_especifica_catA ${blk.deducao_especifica_catA} != art. 25.º n.º 1 a) ${want}`);
+}
+const e26 = (snap.escaloes_irs || {})["2026"];
+if (e26 && e26.verified) {
+  const pool = (srcById[e26.source_id] || {}).expect || [];
+  const said = normTxt(pool.join(" | "));
+  e26.continente.forEach(([limit, rate], i) => {
+    for (const p of [limit === null ? null : ptNum(limit, "EUR"), (rate * 100).toFixed(2).replace(".", ",")])
+      if (p && !said.includes(normTxt(p))) drift.push(`escaloes_irs.2026 escalao ${i + 1}: ${p} nao esta nos expect de ${e26.source_id}`);
+  });
+}
+
 const manifest = {
   _generated: `make-audit.mjs a partir de deducoes.html + tool.js + year_snapshots.json + legal_sources.json (versão do tool.js ${fbVersion})`,
   _disclaimer: "GERADO automaticamente do código e das fontes, não curado. Cada linha é verificável: siga a fonte legal (DRE) e confirme o valor. Correr test-audit-sync.js garante que este ficheiro não desviou do código.",
   tool_version: fbVersion,
   rows: out,
+  rules: ruleRows,
   drift,
 };
 writeFileSync("audit-manifest.json", JSON.stringify(manifest, null, 2) + "\n");
-console.log(`audit-manifest.json -> ${out.length} rows, ${drift.length} drift`);
+console.log(`audit-manifest.json -> ${out.length} rows, ${ruleRows.length} rules, ${drift.length} drift`);
 if (drift.length) drift.forEach((d) => console.log("  DRIFT " + d));

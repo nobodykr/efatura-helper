@@ -222,6 +222,434 @@
       "why_it_matters": "Feeds the self-declared donativos estimate in /perfil (art. 63.o n.1 EBF). Rate 25%; regra geral limitada a 15% da coleta, donativos ao Estado sem limite; nocao de donativo em art. 61.o.",
       "expect": "Artigo 63",
       "source_note": "portaldasfinancas server-HTML mirror (bf_rep)"
+    },
+    {
+      "id": "cirs-25",
+      "governs": "Deducao especifica (art. 25.º n.º 1 a)): 4 104 EUR ate 2023, '8,54 vezes o valor do IAS' desde 2025 (valor em euros por confirmar: a AT aplicou 4 104 EUR em 2025)",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-902120232",
+      "type": "artigo",
+      "critical": true,
+      "dre_versao_id": "902120232",
+      "amended_by": "Lei 45-A/2024, art. 89.º (em vigor 2025-01-01); antes Lei 32/2024 art. 2.º (2024-08-08) e Lei 82/2023 art. 230.º (2024-01-01)",
+      "why_it_matters": "O art. 31.º n.º 13 a) conta sempre esta deducao na justificacao dos 15 %: ela decide se afetar mais faturas a atividade muda o IRS.",
+      "expect": [
+        "25.º",
+        "8,54 vezes o valor do IAS"
+      ],
+      "expect_by_year": {
+        "2023": [
+          "(euro) 4 104"
+        ],
+        "2025": [
+          "8,54 vezes o valor do IAS"
+        ],
+        "2026": [
+          "8,54 vezes o valor do IAS"
+        ]
+      },
+      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). 2024 sem expect_by_year: a redacao de 2024 diz 4 104 mas a Lei 32/2024 (em vigor 2024-08-08, sem norma de producao de efeitos) aditou o n.º 7 'atualizado anualmente a taxa de atualizacao do IAS'; o DRE nao diz se 2024 ja e atualizado."
+    },
+    {
+      "id": "cirs-31",
+      "governs": "Regime simplificado: coeficientes (n.º 1), 15 % de despesas (n.º 13), 25 % parcial (n.º 14), prazo do Portal (n.º 15), valores declarados (n.º 16)",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+      "type": "artigo",
+      "critical": true,
+      "dre_versao_id": "912821422",
+      "amended_by": "Decreto-Lei 49/2025, art. 2.º (em vigor 2025-07-01: acrescentou o prazo de fevereiro ao n.º 15); antes Lei 24-D/2022 art. 218.º (2023-01-01)",
+      "why_it_matters": "Base da revisao de despesas da atividade (Faturacao) e do que conta como despesa afeta.",
+      "expect": [
+        "31.º",
+        "0,15 às vendas de mercadorias",
+        "0,75 aos rendimentos das atividades profissionais",
+        "0,35 aos rendimentos de prestações de serviços",
+        "0,95 aos rendimentos provenientes",
+        "0,30 aos subsídios",
+        "0,10 aos subsídios",
+        "1 aos rendimentos decorrentes de prestações de serviços",
+        "entre 15 % dos rendimentos brutos das prestações de serviços",
+        "considerados em apenas 25 %",
+        "até ao final do mês de fevereiro do ano seguinte ao da sua emissão",
+        "declarar o valor das despesas e encargos"
+      ],
+      "expect_by_year": {
+        "2023": [
+          "0,15 às vendas de mercadorias",
+          "0,75 aos rendimentos das atividades profissionais",
+          "0,35 aos rendimentos de prestações de serviços",
+          "0,95 aos rendimentos provenientes",
+          "0,30 aos subsídios",
+          "0,10 aos subsídios",
+          "1 aos rendimentos decorrentes de prestações de serviços",
+          "entre 15 % dos rendimentos brutos das prestações de serviços",
+          "considerados em apenas 25 %",
+          "declarar o valor das despesas e encargos"
+        ],
+        "2024": [
+          "0,15 às vendas de mercadorias",
+          "0,75 aos rendimentos das atividades profissionais",
+          "0,35 aos rendimentos de prestações de serviços",
+          "0,95 aos rendimentos provenientes",
+          "0,30 aos subsídios",
+          "0,10 aos subsídios",
+          "1 aos rendimentos decorrentes de prestações de serviços",
+          "entre 15 % dos rendimentos brutos das prestações de serviços",
+          "considerados em apenas 25 %",
+          "declarar o valor das despesas e encargos"
+        ],
+        "2025": [
+          "0,15 às vendas de mercadorias",
+          "0,75 aos rendimentos das atividades profissionais",
+          "0,35 aos rendimentos de prestações de serviços",
+          "0,95 aos rendimentos provenientes",
+          "0,30 aos subsídios",
+          "0,10 aos subsídios",
+          "1 aos rendimentos decorrentes de prestações de serviços",
+          "entre 15 % dos rendimentos brutos das prestações de serviços",
+          "considerados em apenas 25 %",
+          "declarar o valor das despesas e encargos"
+        ],
+        "2026": [
+          "0,15 às vendas de mercadorias",
+          "0,75 aos rendimentos das atividades profissionais",
+          "0,35 aos rendimentos de prestações de serviços",
+          "0,95 aos rendimentos provenientes",
+          "0,30 aos subsídios",
+          "0,10 aos subsídios",
+          "1 aos rendimentos decorrentes de prestações de serviços",
+          "entre 15 % dos rendimentos brutos das prestações de serviços",
+          "considerados em apenas 25 %",
+          "declarar o valor das despesas e encargos",
+          "até ao final do mês de fevereiro do ano seguinte ao da sua emissão"
+        ]
+      },
+      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). O prazo de fevereiro do n.º 15 so existe na redacao do DL 49/2025 (em vigor 2025-07-01, art. 18.º sem regra de efeitos para o CIRS); as redacoes de 2023 e 2024 nao tem prazo no n.º 15."
+    },
+    {
+      "id": "cirs-32",
+      "governs": "Contabilidade organizada: remissao para as regras do Codigo do IRC",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-70051835",
+      "type": "artigo",
+      "critical": false,
+      "dre_versao_id": "70051835",
+      "amended_by": "nenhuma desde a republicacao (Lei 82-E/2014)",
+      "why_it_matters": "A dedutibilidade de despesas fora do simplificado segue o CIRC (art. 23.º), nao o art. 23.º do CIRS.",
+      "expect": [
+        "32.º",
+        "aplicam-se as regras estabelecidas no Código do IRC"
+      ],
+      "expect_by_year": {
+        "2023": [
+          "aplicam-se as regras estabelecidas no Código do IRC"
+        ],
+        "2024": [
+          "aplicam-se as regras estabelecidas no Código do IRC"
+        ],
+        "2025": [
+          "aplicam-se as regras estabelecidas no Código do IRC"
+        ],
+        "2026": [
+          "aplicam-se as regras estabelecidas no Código do IRC"
+        ]
+      },
+      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs)."
+    },
+    {
+      "id": "cirs-33",
+      "governs": "Encargos nao dedutiveis: parte da habitacao afeta a atividade limitada a 25 % (n.º 5)",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-121035507",
+      "type": "artigo",
+      "critical": false,
+      "dre_versao_id": "121035507",
+      "amended_by": "Lei 42/2016, art. 190.º (em vigor 2017-01-01)",
+      "why_it_matters": "Limite de 25 % dos encargos da habitacao em contabilidade organizada; nao confundir com os 25 % do art. 31.º n.º 14.",
+      "expect": [
+        "33.º",
+        "não podem ultrapassar 25 % das respetivas despesas"
+      ],
+      "expect_by_year": {
+        "2023": [
+          "não podem ultrapassar 25 % das respetivas despesas"
+        ],
+        "2024": [
+          "não podem ultrapassar 25 % das respetivas despesas"
+        ],
+        "2025": [
+          "não podem ultrapassar 25 % das respetivas despesas"
+        ],
+        "2026": [
+          "não podem ultrapassar 25 % das respetivas despesas"
+        ]
+      },
+      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs)."
+    },
+    {
+      "id": "cirs-78b-n4",
+      "governs": "Sem deducao a coleta para aquisicoes feitas no ambito da atividade (art. 78.º-B n.º 4)",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821425",
+      "type": "artigo",
+      "critical": true,
+      "dre_versao_id": "912821425",
+      "amended_by": "Decreto-Lei 49/2025, art. 2.º (em vigor 2025-07-01; o n.º 4 nao mudou)",
+      "why_it_matters": "Uma aquisicao feita na atividade nunca e sugerida como pessoal por valer mais.",
+      "expect": [
+        "78.º-B",
+        "fora do âmbito da sua atividade empresarial ou profissional"
+      ],
+      "expect_by_year": {
+        "2023": [
+          "fora do âmbito da sua atividade empresarial ou profissional"
+        ],
+        "2024": [
+          "fora do âmbito da sua atividade empresarial ou profissional"
+        ],
+        "2025": [
+          "fora do âmbito da sua atividade empresarial ou profissional"
+        ],
+        "2026": [
+          "fora do âmbito da sua atividade empresarial ou profissional"
+        ]
+      },
+      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). A entrada cirs-78b (taxa e teto) continua a citar o diploma-pai."
+    },
+    {
+      "id": "cirs-68",
+      "governs": "Taxas gerais do IRS (escaloes) de 2026",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777567",
+      "type": "artigo",
+      "critical": true,
+      "dre_versao_id": "1000777567",
+      "amended_by": "Lei 73-A/2025 (OE 2026), art. 71.º (em vigor 2026-01-01)",
+      "why_it_matters": "A taxa marginal do ano entra em qualquer efeito de IRS da atividade.",
+      "expect": [
+        "68.º",
+        "Até 8 342",
+        "De mais de 8 342 até 12 587",
+        "De mais de 12 587 até 17 838",
+        "De mais de 17 838 até 23 089",
+        "De mais de 23 089 até 29 397",
+        "De mais de 29 397 até 43 090",
+        "De mais de 43 090 até 46 566",
+        "De mais de 46 566 até 86 634",
+        "Superior a 86 634",
+        "12,50",
+        "15,70",
+        "21,20",
+        "24,10",
+        "31,10",
+        "34,90",
+        "43,10",
+        "44,60",
+        "48,00",
+        "13,579",
+        "15,823",
+        "17,705",
+        "20,579",
+        "25,130",
+        "26,472",
+        "34,856"
+      ],
+      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). Atencao: o n.º 2 desta redacao ainda diz 'quando superior a 8059 €' enquanto o 1.º escalao vai ate 8 342; registado como lido, nao reconciliado."
+    },
+    {
+      "id": "civa-19",
+      "governs": "Direito a deducao do IVA e documentos que o conferem",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-205104276",
+      "type": "artigo",
+      "critical": false,
+      "dre_versao_id": "205104276",
+      "amended_by": "Decreto-Lei 85/2022, art. 2.º (em vigor 2022-12-22, efeitos 2023-01-01)",
+      "why_it_matters": "So ha camada de IVA quando o regime da direito a deducao e a fatura e passada na forma legal.",
+      "expect": [
+        "19.º",
+        "Só confere direito a dedução o imposto mencionado nos seguintes documentos"
+      ],
+      "expect_by_year": {
+        "2023": [
+          "Só confere direito a dedução o imposto mencionado nos seguintes documentos"
+        ],
+        "2024": [
+          "Só confere direito a dedução o imposto mencionado nos seguintes documentos"
+        ],
+        "2025": [
+          "Só confere direito a dedução o imposto mencionado nos seguintes documentos"
+        ],
+        "2026": [
+          "Só confere direito a dedução o imposto mencionado nos seguintes documentos"
+        ]
+      },
+      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). ATENCAO: o DL 102/2008 traz o CIVA (Anexo IV) e o RITI (Anexo V) com os mesmos nomes de artigo; este id e o do Anexo IV."
+    },
+    {
+      "id": "civa-20",
+      "governs": "Operacoes que conferem o direito a deducao",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912254979",
+      "type": "artigo",
+      "critical": false,
+      "dre_versao_id": "912254979",
+      "amended_by": "Decreto-Lei 35/2025, art. 2.º (em vigor 2025-03-29: excecao das operacoes isentas no regime das pequenas empresas)",
+      "why_it_matters": "Exige uso em operacoes tributaveis que conferem direito a deducao.",
+      "expect": [
+        "20.º",
+        "Só pode deduzir-se o imposto que tenha incidido sobre bens ou serviços adquiridos"
+      ],
+      "expect_by_year": {
+        "2023": [
+          "Só pode deduzir-se o imposto que tenha incidido sobre bens ou serviços adquiridos"
+        ],
+        "2024": [
+          "Só pode deduzir-se o imposto que tenha incidido sobre bens ou serviços adquiridos"
+        ],
+        "2025": [
+          "Só pode deduzir-se o imposto que tenha incidido sobre bens ou serviços adquiridos"
+        ],
+        "2026": [
+          "Só pode deduzir-se o imposto que tenha incidido sobre bens ou serviços adquiridos"
+        ]
+      },
+      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs)."
+    },
+    {
+      "id": "civa-21",
+      "governs": "Exclusoes do direito a deducao: combustiveis 50 %, congressos 50 % (organizacao) e 25 % (participacao)",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-902104190",
+      "type": "artigo",
+      "critical": false,
+      "dre_versao_id": "902104190",
+      "amended_by": "Lei 45-A/2024, art. 92.º (em vigor 2025-01-01: so a alinea a) do n.º 1, velocipedes)",
+      "why_it_matters": "A deducao parcial por tipo de despesa no regime normal.",
+      "expect": [
+        "21.º",
+        "cujo imposto é dedutível na proporção de 50 %",
+        "cujo imposto é dedutível na proporção de 25 %"
+      ],
+      "expect_by_year": {
+        "2023": [
+          "cujo imposto é dedutível na proporção de 50 %",
+          "cujo imposto é dedutível na proporção de 25 %"
+        ],
+        "2024": [
+          "cujo imposto é dedutível na proporção de 50 %",
+          "cujo imposto é dedutível na proporção de 25 %"
+        ],
+        "2025": [
+          "cujo imposto é dedutível na proporção de 50 %",
+          "cujo imposto é dedutível na proporção de 25 %"
+        ],
+        "2026": [
+          "cujo imposto é dedutível na proporção de 50 %",
+          "cujo imposto é dedutível na proporção de 25 %"
+        ]
+      },
+      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). Anexo IV (CIVA), nao o art. 21.º do RITI."
+    },
+    {
+      "id": "civa-23",
+      "governs": "Bens de utilizacao mista: afetacao real ou percentagem (pro rata)",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-47463175",
+      "type": "artigo",
+      "critical": false,
+      "dre_versao_id": "47463175",
+      "amended_by": "nenhuma desde o DL 102/2008",
+      "why_it_matters": "Atividade mista tributada e isenta: o metodo e a percentagem legais.",
+      "expect": [
+        "23.º",
+        "na percentagem correspondente ao montante anual das operações que dêem lugar a dedução"
+      ],
+      "expect_by_year": {
+        "2023": [
+          "na percentagem correspondente ao montante anual das operações que dêem lugar a dedução"
+        ],
+        "2024": [
+          "na percentagem correspondente ao montante anual das operações que dêem lugar a dedução"
+        ],
+        "2025": [
+          "na percentagem correspondente ao montante anual das operações que dêem lugar a dedução"
+        ],
+        "2026": [
+          "na percentagem correspondente ao montante anual das operações que dêem lugar a dedução"
+        ]
+      },
+      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). Anexo IV (CIVA), nao o art. 23.º do RITI."
+    },
+    {
+      "id": "civa-53",
+      "governs": "Isencao do art. 53.º: limiar por ano (13 500 em 2023, 14 500 em 2024, 15 000 desde 2025) e sem direito a deducao (n.º 3)",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006",
+      "type": "artigo",
+      "critical": true,
+      "dre_versao_id": "912255006",
+      "amended_by": "Decreto-Lei 35/2025, art. 2.º (em vigor 2025-03-29); antes Lei 24-D/2022 art. 235.º (2023-01-01), com a nota do art. 282.º (13 500 em 2023, 14 500 em 2024)",
+      "why_it_matters": "O limite do cartao de faturacao e o enquadramento de quem nao deduz IVA. O detalhe esta em year_snapshots civa.art53_isencao.",
+      "expect": [
+        "53.º",
+        "superior a 15 000 (euro)",
+        "13 500 (euro), em 2023",
+        "14 500 (euro), em 2024",
+        "estão excluídos do direito à dedução previsto nos artigos 19.º e 20.º"
+      ],
+      "expect_by_year": {
+        "2025": [
+          "15 000 (euro)"
+        ],
+        "2026": [
+          "superior a 15 000 (euro)",
+          "estão excluídos do direito à dedução previsto nos artigos 19.º e 20.º"
+        ]
+      },
+      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). 2023 e 2024 vem da Nota do art. 282.º da Lei 24-D/2022 na propria pagina (o n.º 1 dessas redacoes diz 15 000)."
+    },
+    {
+      "id": "ias-2023",
+      "governs": "Valor do IAS em 2023",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/298-2022-204841038",
+      "type": "diploma",
+      "critical": true,
+      "amended_by": "Portaria 298/2022, art. 2.º (produz efeitos a partir de 1 de janeiro de 2023)",
+      "why_it_matters": "A deducao especifica (art. 25.º) e outros limites sao multiplos do IAS.",
+      "expect": [
+        "O valor do IAS para o ano de 2023 é de (euro) 480,43"
+      ],
+      "source_note": "Lido em 2026-10-07 na pagina do diploma no DRE."
+    },
+    {
+      "id": "ias-2024",
+      "governs": "Valor do IAS em 2024",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/421-2023-229857697",
+      "type": "diploma",
+      "critical": true,
+      "amended_by": "Portaria 421/2023, art. 2.º (produz efeitos a partir de 1 de janeiro de 2024)",
+      "why_it_matters": "A deducao especifica (art. 25.º) e outros limites sao multiplos do IAS.",
+      "expect": [
+        "O valor do IAS para o ano de 2024 é de (euro) 509,26"
+      ],
+      "source_note": "Lido em 2026-10-07 na pagina do diploma no DRE."
+    },
+    {
+      "id": "ias-2025",
+      "governs": "Valor do IAS em 2025",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/6-b-2025-902111932",
+      "type": "diploma",
+      "critical": true,
+      "amended_by": "Portaria 6-B/2025/1, art. 2.º (produz efeitos a partir de 1 de janeiro de 2025)",
+      "why_it_matters": "A deducao especifica (art. 25.º) e outros limites sao multiplos do IAS.",
+      "expect": [
+        "O valor do IAS para o ano de 2025 é de € 522,50"
+      ],
+      "source_note": "Lido em 2026-10-07 na pagina do diploma no DRE."
+    },
+    {
+      "id": "ias-2026",
+      "governs": "Valor do IAS em 2026",
+      "url": "https://diariodarepublica.pt/dr/detalhe/portaria/480-a-2025-993056222",
+      "type": "diploma",
+      "critical": true,
+      "amended_by": "Portaria 480-A/2025/1, art. 2.º (produz efeitos a partir de 1 de janeiro de 2026)",
+      "why_it_matters": "A deducao especifica (art. 25.º) e outros limites sao multiplos do IAS.",
+      "expect": [
+        "O valor do IAS para o ano de 2026 é de € 537,13"
+      ],
+      "source_note": "Lido em 2026-10-07 na pagina do diploma no DRE."
     }
   ],
   "watch": [

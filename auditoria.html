@@ -180,6 +180,17 @@
   </div>
   <p class="mono">Verif. = valor confirmado contra o diploma no DRE. "Fonte hoje" = um robô nosso foi à lei confirmar que o artigo, a taxa e o teto ainda lá estão (não só que a página abre). O teto do C07 (rendas) varia por ano; os setores marcados "% do IVA" partilham um teto conjunto de 250 EUR (art. 78.º-F). Os setores do art. 78.º-F com a taxa base de 15% foram confirmados no diploma em vigor em 2023-2025 (taxa e teto conjunto de 250 EUR), por isso mostram esses anos. Um traço ("-") em "Verif."/"Anos" não é um valor pintado de verde sem prova: são os três setores do 78.º-F com taxa especial (transportes e jornais a 100%, ginásios a 30%) cuja taxa específica ainda não tem verificação documental própria por ano - ficam "-" até a confirmarmos (ver o trabalho em curso). A coluna "Fonte hoje" cobre-os na mesma.</p>
 
+  <h2>Regras das despesas da atividade e do IVA</h2>
+  <p>Taxas, limites e prazos usados para rever despesas da atividade (regime simplificado, contabilidade organizada e IVA), por ano. Cada valor foi lido no Diário da República, na página própria do artigo e na redação em vigor nesse ano (cada valor liga à sua fonte); "por verificar" quer dizer que a lei publicada não responde a esse ano e o programa não usa valor nenhum.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr>
+        <th>Regra</th><th>2023</th><th>2024</th><th>2025</th><th>2026</th><th>Fonte hoje</th>
+      </tr></thead>
+      <tbody id="rules-tbody"></tbody>
+    </table>
+  </div>
+
   <h2>Como saber que isto está certo (sem confiar em nós)</h2>
   <p>Imagina uma máquina de fazer as contas do teu IRS. Quase todas te dão só um número e tens de acreditar. Esta mostra as contas todas à vista, como um trabalho de casa. Qualquer pessoa - sem conta, sem nos pedir nada, sem o teu perfil e sem instalar nada - pode confirmar três coisas:</p>
   <ol>
@@ -233,6 +244,21 @@
 (function(){
   function esc(s){ return String(s==null?"":s).replace(/[<>&]/g,function(c){return {"<":"&lt;",">":"&gt;","&":"&amp;"}[c];}); }
   var LBL = { OK:"sim", MUDOU:"MUDOU", REVOGADO:"REVOGADO", INACESSIVEL:"?", SKIP:"-" };
+  function ptNum(n){ var p=String(n).split("."); return p[0].replace(/\B(?=(\d{3})+(?!\d))/g," ")+(p[1]?","+(p[1].length===1?p[1]+"0":p[1]):""); }
+  var PARTS = { a:"a)", b:"b)", c:"c)", d:"d)", e:"e)", f:"f)", g:"g)", combustiveis:"Combustíveis:",
+    congressos_organizacao:"Congressos (organização):", congressos_participacao:"Congressos (participação):" };
+  function ruleValue(v){
+    if(!v || !v.verified) return "por verificar";
+    var x=v.value, u=v.unit;
+    if(u==="EUR") return ptNum(x)+" &euro;";
+    if(u==="IAS") return String(x).replace(".",",")+" &times; IAS";
+    if(u==="regra") return "aplica-se";
+    if(u==="prazo") return "até ao fim de fevereiro do ano seguinte";
+    // Coefficients print as the law writes them (0,30, not 0,3); percentages carry " %".
+    function one(n){ return u==="%" ? String(n).replace(".",",")+" %" : (Number.isInteger(n) ? String(n) : n.toFixed(2).replace(".",",")); }
+    if(typeof x==="number") return one(x);
+    return Object.keys(x).map(function(k){ return esc(PARTS[k]||k)+" "+one(x[k]); }).join("<br>");
+  }
   Promise.all([
     fetch("/audit-manifest.json",{cache:"no-store"}).then(function(x){return x.json();}),
     fetch("/audit-freshness.json",{cache:"no-store"}).then(function(x){return x.json();}).catch(function(){return null;})
@@ -242,7 +268,7 @@
     if(f && f.sources) f.sources.forEach(function(s){ fmap[s.id]=s.status; });
     var fw=document.getElementById("fresh-when");
     if(f && f._checked){ var chg=(f.sources||[]).filter(function(s){return s.status!=="OK"&&s.status!=="SKIP";}).length;
-      fw.textContent = "Fontes confirmadas na lei em "+f._checked+(chg?" - "+chg+" precisam de revisão":" - todas a bater."); }
+      fw.textContent = "Fontes confirmadas na lei"+(f._checked_display?" em "+f._checked_display:"")+(chg?" - "+chg+" precisam de revisão":" - todas a bater."); }
     else { fw.textContent="Frescura das fontes: ainda não confirmada."; }
     var tb = document.getElementById("tbody");
     (m.rows||[]).forEach(function(r){
@@ -259,6 +285,23 @@
       td(r.verified===true?"sim":(r.verified===false?"não":"-"));
       td(r.effective_years ? esc(r.effective_years.join(", ")) : "-");
       tb.appendChild(tr);
+    });
+    var rb = document.getElementById("rules-tbody");
+    (m.rules||[]).forEach(function(r){
+      var tr = document.createElement("tr");
+      function td(html){ var d=document.createElement("td"); d.innerHTML=html; tr.appendChild(d); }
+      td(esc(r.article||r.key)+"<br><code>"+esc(r.key)+"</code>");
+      var ids=[];
+      ["2023","2024","2025","2026"].forEach(function(y){
+        var v=(r.years||{})[y];
+        if(v && v.source_id && ids.indexOf(v.source_id)<0) ids.push(v.source_id);
+        td(v && v.verified && v.source_url ? '<a href="'+esc(v.source_url)+'" target="_blank" rel="noopener">'+ruleValue(v)+"</a>" : ruleValue(v));
+      });
+      var sts=ids.map(function(id){ return fmap[id]; });
+      var st=sts.every(function(x){ return x==="OK"; }) ? "OK" : (sts.filter(function(x){ return x && x!=="OK" && x!=="SKIP"; })[0] || null);
+      var cls = st==="OK"?"fok":(!st?"":"fbad");
+      td('<span class="'+cls+'">'+esc(st?(LBL[st]||st):"-")+"</span>");
+      rb.appendChild(tr);
     });
     var d = document.getElementById("drift");
     if(m.drift && m.drift.length){

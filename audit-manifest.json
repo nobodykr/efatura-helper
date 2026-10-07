@@ -132,7 +132,7 @@
       "ceiling_note": "800 EUR",
       "code_location": "tool.js: CEIL.C06",
       "article": "78.º-D",
-      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-185585815",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821427",
       "source_id": "cirs-78d",
       "source_expect": [
         "78.º-D",
@@ -374,6 +374,699 @@
         "2025"
       ],
       "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+    }
+  ],
+  "rules": [
+    {
+      "key": "ias",
+      "article": "IAS (portaria anual)",
+      "source_id": "ias-2023",
+      "source_url": "https://diariodarepublica.pt/dr/detalhe/portaria/298-2022-204841038",
+      "years": {
+        "2023": {
+          "value": 480.43,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "ias-2023",
+          "source_url": "https://diariodarepublica.pt/dr/detalhe/portaria/298-2022-204841038",
+          "source_law": "Portaria 298/2022"
+        },
+        "2024": {
+          "value": 509.26,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "ias-2024",
+          "source_url": "https://diariodarepublica.pt/dr/detalhe/portaria/421-2023-229857697",
+          "source_law": "Portaria 421/2023"
+        },
+        "2025": {
+          "value": 522.5,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "ias-2025",
+          "source_url": "https://diariodarepublica.pt/dr/detalhe/portaria/6-b-2025-902111932",
+          "source_law": "Portaria 6-B/2025/1"
+        },
+        "2026": {
+          "value": 537.13,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "ias-2026",
+          "source_url": "https://diariodarepublica.pt/dr/detalhe/portaria/480-a-2025-993056222",
+          "source_law": "Portaria 480-A/2025/1"
+        }
+      }
+    },
+    {
+      "key": "cirs25_1a_deducao_especifica",
+      "article": "CIRS 25.º n.º 1 a)",
+      "source_id": "cirs-25",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-902120232",
+      "years": {
+        "2023": {
+          "value": 4104,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-25",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-902120232",
+          "source_law": "CIRS republicado pela Lei 82-E/2014 (sem alteracao em vigor em 2023)"
+        },
+        "2024": {
+          "value": null,
+          "unit": null,
+          "verified": false,
+          "source_id": "cirs-25",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-902120232",
+          "source_law": null
+        },
+        "2025": {
+          "value": 8.54,
+          "unit": "IAS",
+          "verified": true,
+          "source_id": "cirs-25",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-902120232",
+          "source_law": "Lei 45-A/2024, art. 89.º (em vigor 2025-01-01)"
+        },
+        "2026": {
+          "value": 8.54,
+          "unit": "IAS",
+          "verified": true,
+          "source_id": "cirs-25",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-902120232",
+          "source_law": "Lei 45-A/2024, art. 89.º (em vigor 2025-01-01)"
+        }
+      }
+    },
+    {
+      "key": "cirs31_1_coeficientes",
+      "article": "CIRS 31.º n.º 1 a) a g)",
+      "source_id": "cirs-31",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+      "years": {
+        "2023": {
+          "value": {
+            "a": 0.15,
+            "b": 0.75,
+            "c": 0.35,
+            "d": 0.95,
+            "e": 0.3,
+            "f": 0.1,
+            "g": 1
+          },
+          "unit": "coeficiente",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)"
+        },
+        "2024": {
+          "value": {
+            "a": 0.15,
+            "b": 0.75,
+            "c": 0.35,
+            "d": 0.95,
+            "e": 0.3,
+            "f": 0.1,
+            "g": 1
+          },
+          "unit": "coeficiente",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)"
+        },
+        "2025": {
+          "value": {
+            "a": 0.15,
+            "b": 0.75,
+            "c": 0.35,
+            "d": 0.95,
+            "e": 0.3,
+            "f": 0.1,
+            "g": 1
+          },
+          "unit": "coeficiente",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Lei 24-D/2022, art. 218.º e Decreto-Lei 49/2025, art. 2.º (os n.os 1, 13, 14 e 16 nao mudaram a 2025-07-01)"
+        },
+        "2026": {
+          "value": {
+            "a": 0.15,
+            "b": 0.75,
+            "c": 0.35,
+            "d": 0.95,
+            "e": 0.3,
+            "f": 0.1,
+            "g": 1
+          },
+          "unit": "coeficiente",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Decreto-Lei 49/2025, art. 2.º (redacao em vigor desde 2025-07-01)"
+        }
+      }
+    },
+    {
+      "key": "cirs31_13_justificacao_pct",
+      "article": "CIRS 31.º n.º 13",
+      "source_id": "cirs-31",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+      "years": {
+        "2023": {
+          "value": 15,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)"
+        },
+        "2024": {
+          "value": 15,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)"
+        },
+        "2025": {
+          "value": 15,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Lei 24-D/2022, art. 218.º e Decreto-Lei 49/2025, art. 2.º (os n.os 1, 13, 14 e 16 nao mudaram a 2025-07-01)"
+        },
+        "2026": {
+          "value": 15,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Decreto-Lei 49/2025, art. 2.º (redacao em vigor desde 2025-07-01)"
+        }
+      }
+    },
+    {
+      "key": "cirs31_14_parcial_pct",
+      "article": "CIRS 31.º n.º 14",
+      "source_id": "cirs-31",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+      "years": {
+        "2023": {
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)"
+        },
+        "2024": {
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)"
+        },
+        "2025": {
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Lei 24-D/2022, art. 218.º e Decreto-Lei 49/2025, art. 2.º (os n.os 1, 13, 14 e 16 nao mudaram a 2025-07-01)"
+        },
+        "2026": {
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Decreto-Lei 49/2025, art. 2.º (redacao em vigor desde 2025-07-01)"
+        }
+      }
+    },
+    {
+      "key": "cirs31_15_prazo_portal",
+      "article": "CIRS 31.º n.º 15 a)",
+      "source_id": "cirs-31",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": null,
+          "verified": false,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": null
+        },
+        "2024": {
+          "value": null,
+          "unit": null,
+          "verified": false,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": null
+        },
+        "2025": {
+          "value": null,
+          "unit": null,
+          "verified": false,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": null
+        },
+        "2026": {
+          "value": {
+            "month_end": 2,
+            "year_offset": 1
+          },
+          "unit": "prazo",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Decreto-Lei 49/2025, art. 2.º (redacao em vigor desde 2025-07-01)"
+        }
+      }
+    },
+    {
+      "key": "cirs31_16_valores_declarados",
+      "article": "CIRS 31.º n.º 16",
+      "source_id": "cirs-31",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)"
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)"
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Lei 24-D/2022, art. 218.º e Decreto-Lei 49/2025, art. 2.º (os n.os 1, 13, 14 e 16 nao mudaram a 2025-07-01)"
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+          "source_law": "Decreto-Lei 49/2025, art. 2.º (redacao em vigor desde 2025-07-01)"
+        }
+      }
+    },
+    {
+      "key": "cirs32_remissao_circ",
+      "article": "CIRS 32.º",
+      "source_id": "cirs-32",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-70051835",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-32",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-70051835",
+          "source_law": "CIRS republicado pela Lei 82-E/2014 (sem alteracoes)"
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-32",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-70051835",
+          "source_law": "CIRS republicado pela Lei 82-E/2014 (sem alteracoes)"
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-32",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-70051835",
+          "source_law": "CIRS republicado pela Lei 82-E/2014 (sem alteracoes)"
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-32",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-70051835",
+          "source_law": "CIRS republicado pela Lei 82-E/2014 (sem alteracoes)"
+        }
+      }
+    },
+    {
+      "key": "cirs33_5_habitacao_pct",
+      "article": "CIRS 33.º n.º 5",
+      "source_id": "cirs-33",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-121035507",
+      "years": {
+        "2023": {
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-33",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-121035507",
+          "source_law": "Lei 42/2016, art. 190.º (em vigor 2017-01-01)"
+        },
+        "2024": {
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-33",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-121035507",
+          "source_law": "Lei 42/2016, art. 190.º (em vigor 2017-01-01)"
+        },
+        "2025": {
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-33",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-121035507",
+          "source_law": "Lei 42/2016, art. 190.º (em vigor 2017-01-01)"
+        },
+        "2026": {
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-33",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-121035507",
+          "source_law": "Lei 42/2016, art. 190.º (em vigor 2017-01-01)"
+        }
+      }
+    },
+    {
+      "key": "cirs78b_4_fora_atividade",
+      "article": "CIRS 78.º-B n.º 4",
+      "source_id": "cirs-78b-n4",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821425",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78b-n4",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821425",
+          "source_law": "Decreto-Lei 28/2019, art. 38.º"
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78b-n4",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821425",
+          "source_law": "Decreto-Lei 28/2019, art. 38.º"
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78b-n4",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821425",
+          "source_law": "Decreto-Lei 28/2019 e Decreto-Lei 49/2025 (n.º 4 inalterado)"
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78b-n4",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821425",
+          "source_law": "Decreto-Lei 28/2019 e Decreto-Lei 49/2025 (n.º 4 inalterado)"
+        }
+      }
+    },
+    {
+      "key": "civa19_direito_deducao",
+      "article": "CIVA 19.º",
+      "source_id": "civa-19",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-205104276",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-19",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-205104276",
+          "source_law": "Decreto-Lei 85/2022, art. 2.º (efeitos 2023-01-01)"
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-19",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-205104276",
+          "source_law": "Decreto-Lei 85/2022, art. 2.º (efeitos 2023-01-01)"
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-19",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-205104276",
+          "source_law": "Decreto-Lei 85/2022, art. 2.º (efeitos 2023-01-01)"
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-19",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-205104276",
+          "source_law": "Decreto-Lei 85/2022, art. 2.º (efeitos 2023-01-01)"
+        }
+      }
+    },
+    {
+      "key": "civa20_operacoes_dedutiveis",
+      "article": "CIVA 20.º",
+      "source_id": "civa-20",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912254979",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-20",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912254979",
+          "source_law": "CIVA (DL 102/2008)"
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-20",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912254979",
+          "source_law": "CIVA (DL 102/2008)"
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-20",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912254979",
+          "source_law": "Decreto-Lei 35/2025, art. 2.º (em vigor 2025-03-29)"
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-20",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912254979",
+          "source_law": "Decreto-Lei 35/2025, art. 2.º (em vigor 2025-03-29)"
+        }
+      }
+    },
+    {
+      "key": "civa21_exclusoes_pct",
+      "article": "CIVA 21.º n.º 1 b) e n.º 2 d) e e)",
+      "source_id": "civa-21",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-902104190",
+      "years": {
+        "2023": {
+          "value": {
+            "combustiveis": 50,
+            "congressos_organizacao": 50,
+            "congressos_participacao": 25
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "civa-21",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-902104190",
+          "source_law": "Lei 2/2020, art. 337.º"
+        },
+        "2024": {
+          "value": {
+            "combustiveis": 50,
+            "congressos_organizacao": 50,
+            "congressos_participacao": 25
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "civa-21",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-902104190",
+          "source_law": "Lei 2/2020, art. 337.º"
+        },
+        "2025": {
+          "value": {
+            "combustiveis": 50,
+            "congressos_organizacao": 50,
+            "congressos_participacao": 25
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "civa-21",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-902104190",
+          "source_law": "Lei 45-A/2024, art. 92.º (em vigor 2025-01-01)"
+        },
+        "2026": {
+          "value": {
+            "combustiveis": 50,
+            "congressos_organizacao": 50,
+            "congressos_participacao": 25
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "civa-21",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-902104190",
+          "source_law": "Lei 45-A/2024, art. 92.º (em vigor 2025-01-01)"
+        }
+      }
+    },
+    {
+      "key": "civa23_utilizacao_mista",
+      "article": "CIVA 23.º",
+      "source_id": "civa-23",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-47463175",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-23",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-47463175",
+          "source_law": "CIVA (DL 102/2008, sem alteracoes)"
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-23",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-47463175",
+          "source_law": "CIVA (DL 102/2008, sem alteracoes)"
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-23",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-47463175",
+          "source_law": "CIVA (DL 102/2008, sem alteracoes)"
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-23",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-47463175",
+          "source_law": "CIVA (DL 102/2008, sem alteracoes)"
+        }
+      }
+    },
+    {
+      "key": "civa53_limiar",
+      "article": "CIVA 53.º n.º 1",
+      "source_id": "civa-53",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006",
+      "years": {
+        "2023": {
+          "value": 13500,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "civa-53",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006",
+          "source_law": "Lei 24-D/2022, art. 282.º (nota ao art. 53.º)"
+        },
+        "2024": {
+          "value": 14500,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "civa-53",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006",
+          "source_law": "Lei 24-D/2022, art. 282.º (nota ao art. 53.º)"
+        },
+        "2025": {
+          "value": 15000,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "civa-53",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006",
+          "source_law": "Lei 24-D/2022, art. 235.º e Decreto-Lei 35/2025, art. 2.º (15 000 nas duas redacoes)"
+        },
+        "2026": {
+          "value": 15000,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "civa-53",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006",
+          "source_law": "Decreto-Lei 35/2025, art. 2.º (em vigor 2025-03-29)"
+        }
+      }
+    },
+    {
+      "key": "civa53_3_sem_deducao",
+      "article": "CIVA 53.º n.º 3",
+      "source_id": "civa-53",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": null,
+          "verified": false,
+          "source_id": "civa-53",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006",
+          "source_law": null
+        },
+        "2024": {
+          "value": null,
+          "unit": null,
+          "verified": false,
+          "source_id": "civa-53",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006",
+          "source_law": null
+        },
+        "2025": {
+          "value": null,
+          "unit": null,
+          "verified": false,
+          "source_id": "civa-53",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006",
+          "source_law": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-53",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255006",
+          "source_law": "Decreto-Lei 35/2025, art. 2.º (em vigor 2025-03-29)"
+        }
+      }
     }
   ],
   "drift": []

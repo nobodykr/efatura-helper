@@ -1,6 +1,6 @@
 {
   "_README": "Per-income-year IRS deduction rules, one self-contained rule set per year, for the past-year re-audit. A re-audit of year N MUST use year N's rules. Proven necessary: art. 78.º-E (rendas) changed in force in 2024, 2025 AND 2026, and is not a single ceiling but an escalonamento (15% base + majoracoes 50%/75%). Using today's value for a past year ships wrong numbers - the same green-but-wrong class as the Excel-serial and page-count bugs.",
-  "_structure": "years.<income_year>.rules.<key> holds {pct, ceiling, ...params, verified, source_law}. One year is authoritative only when every rule in it is verified=true. Downstream docs (deducoes.html, cae_sectors.json, Bible ch.15) should READ the current year from here instead of hardcoding their own copy - today they each carry a separate copy with no cross-check.",
+  "_structure": "years.<income_year>.rules.<key> holds {pct, ceiling, ...params, verified, source_law}. One year is authoritative only when every rule in it is verified=true. Downstream docs (deducoes.html, cae_sectors.json, Bible ch.15) should READ the current year from here instead of hardcoding their own copy - today they each carry a separate copy with no cross-check. Expense and IVA rules (slice R, added 2026-10-07): each rule-year also carries value (number, object or true for a rule with no number), unit (EUR, %, coeficiente, IAS = the multiple of the IAS the law states, NOT a euro amount to compute from the ias rule: for art. 25.º the AT applied 4104 EUR in 2025, see escaloes_irs.2025, prazo, regra), source_id (legal_sources.json id), source_law and dre_text (the exact DRE wording the value was read from; every item is one of that source's expect / expect_by_year strings, so verify_sources re-checks it; for a past year the string must be in expect_by_year[year], unless dre_text_scope is current_page: a note on today's page that names the year). verified=false means DRE does not answer for that year: value is null and a reader must return unknown, never another year's value. 2026 lives in current_values_2026_verified_isolation.rules (same shape); IRS brackets for 2026 in escaloes_irs.2026. Keys: ias, cirs25_1a_deducao_especifica, cirs31_1_coeficientes, cirs31_13_justificacao_pct, cirs31_14_parcial_pct, cirs31_15_prazo_portal, cirs31_16_valores_declarados, cirs32_remissao_circ, cirs33_5_habitacao_pct, cirs78b_4_fora_atividade, civa19_direito_deducao, civa20_operacoes_dedutiveis, civa21_exclusoes_pct, civa23_utilizacao_mista, civa53_limiar, civa53_3_sem_deducao.",
   "_provenance": "Values come from each article's DEDICATED DRE page (2014-70048167-<id>), which exposes the in-force text + full 'Alteracoes ao artigo' history; the full consolidated render does NOT expose those accordions. Historical (past-year) text is read by viewing the article as-in-force at that year. source_law names the diploma that set the value for that year.",
   "_correction_windows": "How long each past year stays fixable is separate, in legal_sources.json: cppt-59 (substituicao), cppt-70 (reclamacao graciosa 120 dias), lgt-78 (revisao 4 anos, com limites).",
   "_status": "COMPLETE for 2023/2024/2025 and current 2026 base values (reviewed 2026-08-22): all 6 base ceilings plus global-limit and dependent structures. The 2025 rent ceiling is confirmed by Lei 36/2024 and the AT's 2025 deductions table; the 2026 rent ceiling is confirmed by DL 97/2026. Refinements remain for income-bracket-dependent increases.",
@@ -16,11 +16,232 @@
     "78.º-F": "15% / 250 conjunto; 12 alineas (inclui veterinario e), livros g), cultura h-j), museus k-l)); n.3 passes 100%; n.6 medicamentos vet 35%; n.7 jornais 100%; n.8 ginasios 30%. Em vigor (Lei 73-A/2025), lido pag. dedicada 2026-07-28",
     "84.º": "25% / 403.75 EUR, confirmed on the AT's official deductions table for 2025",
     "78.º-A_dependentes": "dependente 600, ascendente 525, +300/126/63/110 (majoracoes)",
-    "78.º_n7_global_limit": "sem limite abaixo do 1.o escalao (~7703); formula entre ~7703 e 80000; teto 1000 acima de 80000; n.8 majoracao 3+ dependentes. NOTA: PDF glitchou o limiar inferior ('a.000') - confirmar 7703."
+    "78.º_n7_global_limit": "sem limite abaixo do 1.o escalao (~7703); formula entre ~7703 e 80000; teto 1000 acima de 80000; n.8 majoracao 3+ dependentes. NOTA: PDF glitchou o limiar inferior ('a.000') - confirmar 7703.",
+    "rules": {
+      "ias": {
+        "article": "IAS (portaria anual)",
+        "value": 537.13,
+        "unit": "EUR",
+        "verified": true,
+        "source_id": "ias-2026",
+        "source_law": "Portaria 480-A/2025/1",
+        "dre_text": [
+          "€ 537,13"
+        ]
+      },
+      "cirs25_1a_deducao_especifica": {
+        "article": "CIRS 25.º n.º 1 a)",
+        "value": 8.54,
+        "unit": "IAS",
+        "verified": true,
+        "source_id": "cirs-25",
+        "source_law": "Lei 45-A/2024, art. 89.º (em vigor 2025-01-01)",
+        "dre_text": [
+          "8,54 vezes o valor do IAS"
+        ],
+        "note": "A lei diz 8,54 x o valor do IAS. O valor em euros NAO e 8,54 x a regra ias deste ano: a AT aplicou 4104 EUR em 2025 (escaloes_irs.2025._deducao_especifica). Um leitor que precise de euros trata-os como desconhecidos."
+      },
+      "cirs31_1_coeficientes": {
+        "article": "CIRS 31.º n.º 1 a) a g)",
+        "value": {
+          "a": 0.15,
+          "b": 0.75,
+          "c": 0.35,
+          "d": 0.95,
+          "e": 0.3,
+          "f": 0.1,
+          "g": 1
+        },
+        "unit": "coeficiente",
+        "verified": true,
+        "source_id": "cirs-31",
+        "source_law": "Decreto-Lei 49/2025, art. 2.º (redacao em vigor desde 2025-07-01)",
+        "dre_text": [
+          "0,15 às vendas de mercadorias",
+          "0,75 aos rendimentos das atividades profissionais",
+          "0,35 aos rendimentos de prestações de serviços",
+          "0,95 aos rendimentos provenientes",
+          "0,30 aos subsídios",
+          "0,10 aos subsídios",
+          "1 aos rendimentos decorrentes de prestações de serviços"
+        ],
+        "note": "Alinea h) (0,50, alojamento local em area de contencao) fica de fora: o historico do DRE mostra-a ja na redacao de 2023-01-01, mas a Lei 56/2023, que criou as areas de contencao, nao consta das alteracoes ao artigo. Nao usada."
+      },
+      "cirs31_13_justificacao_pct": {
+        "article": "CIRS 31.º n.º 13",
+        "value": 15,
+        "unit": "%",
+        "verified": true,
+        "source_id": "cirs-31",
+        "source_law": "Decreto-Lei 49/2025, art. 2.º (redacao em vigor desde 2025-07-01)",
+        "dre_text": [
+          "entre 15 % dos rendimentos brutos das prestações de serviços"
+        ],
+        "applies_to_coefficients": [
+          "b",
+          "c"
+        ],
+        "alineas": [
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f"
+        ]
+      },
+      "cirs31_14_parcial_pct": {
+        "article": "CIRS 31.º n.º 14",
+        "value": 25,
+        "unit": "%",
+        "verified": true,
+        "source_id": "cirs-31",
+        "source_law": "Decreto-Lei 49/2025, art. 2.º (redacao em vigor desde 2025-07-01)",
+        "dre_text": [
+          "considerados em apenas 25 %"
+        ],
+        "applies_to_alineas": [
+          "c",
+          "d",
+          "e"
+        ]
+      },
+      "cirs31_15_prazo_portal": {
+        "article": "CIRS 31.º n.º 15 a)",
+        "value": {
+          "month_end": 2,
+          "year_offset": 1
+        },
+        "unit": "prazo",
+        "verified": true,
+        "source_id": "cirs-31",
+        "source_law": "Decreto-Lei 49/2025, art. 2.º (redacao em vigor desde 2025-07-01)",
+        "dre_text": [
+          "até ao final do mês de fevereiro do ano seguinte ao da sua emissão"
+        ],
+        "note": "Ate ao fim de fevereiro do ano seguinte ao da emissao da fatura."
+      },
+      "cirs31_16_valores_declarados": {
+        "article": "CIRS 31.º n.º 16",
+        "value": true,
+        "unit": "regra",
+        "verified": true,
+        "source_id": "cirs-31",
+        "source_law": "Decreto-Lei 49/2025, art. 2.º (redacao em vigor desde 2025-07-01)",
+        "dre_text": [
+          "declarar o valor das despesas e encargos"
+        ]
+      },
+      "cirs32_remissao_circ": {
+        "article": "CIRS 32.º",
+        "value": true,
+        "unit": "regra",
+        "verified": true,
+        "source_id": "cirs-32",
+        "source_law": "CIRS republicado pela Lei 82-E/2014 (sem alteracoes)",
+        "dre_text": [
+          "aplicam-se as regras estabelecidas no Código do IRC"
+        ]
+      },
+      "cirs33_5_habitacao_pct": {
+        "article": "CIRS 33.º n.º 5",
+        "value": 25,
+        "unit": "%",
+        "verified": true,
+        "source_id": "cirs-33",
+        "source_law": "Lei 42/2016, art. 190.º (em vigor 2017-01-01)",
+        "dre_text": [
+          "não podem ultrapassar 25 % das respetivas despesas"
+        ]
+      },
+      "cirs78b_4_fora_atividade": {
+        "article": "CIRS 78.º-B n.º 4",
+        "value": true,
+        "unit": "regra",
+        "verified": true,
+        "source_id": "cirs-78b-n4",
+        "source_law": "Decreto-Lei 28/2019 e Decreto-Lei 49/2025 (n.º 4 inalterado)",
+        "dre_text": [
+          "fora do âmbito da sua atividade empresarial ou profissional"
+        ]
+      },
+      "civa19_direito_deducao": {
+        "article": "CIVA 19.º",
+        "value": true,
+        "unit": "regra",
+        "verified": true,
+        "source_id": "civa-19",
+        "source_law": "Decreto-Lei 85/2022, art. 2.º (efeitos 2023-01-01)",
+        "dre_text": [
+          "Só confere direito a dedução o imposto mencionado nos seguintes documentos"
+        ]
+      },
+      "civa20_operacoes_dedutiveis": {
+        "article": "CIVA 20.º",
+        "value": true,
+        "unit": "regra",
+        "verified": true,
+        "source_id": "civa-20",
+        "source_law": "Decreto-Lei 35/2025, art. 2.º (em vigor 2025-03-29)",
+        "dre_text": [
+          "Só pode deduzir-se o imposto que tenha incidido sobre bens ou serviços adquiridos"
+        ]
+      },
+      "civa21_exclusoes_pct": {
+        "article": "CIVA 21.º n.º 1 b) e n.º 2 d) e e)",
+        "value": {
+          "combustiveis": 50,
+          "congressos_organizacao": 50,
+          "congressos_participacao": 25
+        },
+        "unit": "%",
+        "verified": true,
+        "source_id": "civa-21",
+        "source_law": "Lei 45-A/2024, art. 92.º (em vigor 2025-01-01)",
+        "dre_text": [
+          "cujo imposto é dedutível na proporção de 50 %",
+          "cujo imposto é dedutível na proporção de 25 %"
+        ]
+      },
+      "civa23_utilizacao_mista": {
+        "article": "CIVA 23.º",
+        "value": true,
+        "unit": "regra",
+        "verified": true,
+        "source_id": "civa-23",
+        "source_law": "CIVA (DL 102/2008, sem alteracoes)",
+        "dre_text": [
+          "na percentagem correspondente ao montante anual das operações que dêem lugar a dedução"
+        ]
+      },
+      "civa53_limiar": {
+        "article": "CIVA 53.º n.º 1",
+        "value": 15000,
+        "unit": "EUR",
+        "verified": true,
+        "source_id": "civa-53",
+        "source_law": "Decreto-Lei 35/2025, art. 2.º (em vigor 2025-03-29)",
+        "dre_text": [
+          "superior a 15 000 (euro)"
+        ],
+        "note": "Limiar em vigor no ano (compara-se com o volume de negocios do ano civil anterior). Detalhe das condicoes em civa.art53_isencao."
+      },
+      "civa53_3_sem_deducao": {
+        "article": "CIVA 53.º n.º 3",
+        "value": true,
+        "unit": "regra",
+        "verified": true,
+        "source_id": "civa-53",
+        "source_law": "Decreto-Lei 35/2025, art. 2.º (em vigor 2025-03-29)",
+        "dre_text": [
+          "estão excluídos do direito à dedução previsto nos artigos 19.º e 20.º"
+        ]
+      }
+    }
   },
   "article_pages": {
     "78.º-C": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821426",
-    "78.º-D": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-185585815",
+    "78.º-D": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821427",
     "78.º-E": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1124882175",
     "78.º-B": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821425",
     "78.º-F": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
@@ -32,7 +253,16 @@
     "CIVA 56.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255009",
     "CIVA 57.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255010",
     "CIVA 58.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255011",
-    "CIVA 59.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255020"
+    "CIVA 59.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912255020",
+    "25.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-902120232",
+    "31.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821422",
+    "32.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-70051835",
+    "33.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-121035507",
+    "68.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777567",
+    "CIVA 19.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-205104276",
+    "CIVA 20.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-912254979",
+    "CIVA 21.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-902104190",
+    "CIVA 23.º": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2008-34500675-47463175"
   },
   "amendment_map": {
     "_note": "Years an amendment came INTO FORCE, from the dedicated pages. A rule is STABLE for target years if nothing came into force within them; then all target years = current value (verified by absence of change). A rule that changed within 2023-2025 needs the as-in-force text read per year.",
@@ -132,6 +362,217 @@
           "verified": true,
           "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2023",
           "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+        },
+        "ias": {
+          "article": "IAS (portaria anual)",
+          "value": 480.43,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "ias-2023",
+          "source_law": "Portaria 298/2022",
+          "dre_text": [
+            "(euro) 480,43"
+          ]
+        },
+        "cirs25_1a_deducao_especifica": {
+          "article": "CIRS 25.º n.º 1 a)",
+          "value": 4104,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-25",
+          "source_law": "CIRS republicado pela Lei 82-E/2014 (sem alteracao em vigor em 2023)",
+          "dre_text": [
+            "(euro) 4 104"
+          ]
+        },
+        "cirs31_1_coeficientes": {
+          "article": "CIRS 31.º n.º 1 a) a g)",
+          "value": {
+            "a": 0.15,
+            "b": 0.75,
+            "c": 0.35,
+            "d": 0.95,
+            "e": 0.3,
+            "f": 0.1,
+            "g": 1
+          },
+          "unit": "coeficiente",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)",
+          "dre_text": [
+            "0,15 às vendas de mercadorias",
+            "0,75 aos rendimentos das atividades profissionais",
+            "0,35 aos rendimentos de prestações de serviços",
+            "0,95 aos rendimentos provenientes",
+            "0,30 aos subsídios",
+            "0,10 aos subsídios",
+            "1 aos rendimentos decorrentes de prestações de serviços"
+          ],
+          "note": "Alinea h) (0,50, alojamento local em area de contencao) fica de fora: o historico do DRE mostra-a ja na redacao de 2023-01-01, mas a Lei 56/2023, que criou as areas de contencao, nao consta das alteracoes ao artigo. Nao usada."
+        },
+        "cirs31_13_justificacao_pct": {
+          "article": "CIRS 31.º n.º 13",
+          "value": 15,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)",
+          "dre_text": [
+            "entre 15 % dos rendimentos brutos das prestações de serviços"
+          ],
+          "applies_to_coefficients": [
+            "b",
+            "c"
+          ],
+          "alineas": [
+            "a",
+            "b",
+            "c",
+            "d",
+            "e",
+            "f"
+          ]
+        },
+        "cirs31_14_parcial_pct": {
+          "article": "CIRS 31.º n.º 14",
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)",
+          "dre_text": [
+            "considerados em apenas 25 %"
+          ],
+          "applies_to_alineas": [
+            "c",
+            "d",
+            "e"
+          ]
+        },
+        "cirs31_15_prazo_portal": {
+          "article": "CIRS 31.º n.º 15 a)",
+          "value": null,
+          "verified": false,
+          "source_id": "cirs-31",
+          "source_law": null,
+          "dre_text": [],
+          "note": "A redacao em vigor neste ano (Lei 24-D/2022) nao tem prazo no n.º 15; se a remissao para o art. 78.º-B n.os 2 a 6 impoe um e uma leitura juridica, nao um valor lido: desconhecido."
+        },
+        "cirs31_16_valores_declarados": {
+          "article": "CIRS 31.º n.º 16",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)",
+          "dre_text": [
+            "declarar o valor das despesas e encargos"
+          ]
+        },
+        "cirs32_remissao_circ": {
+          "article": "CIRS 32.º",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-32",
+          "source_law": "CIRS republicado pela Lei 82-E/2014 (sem alteracoes)",
+          "dre_text": [
+            "aplicam-se as regras estabelecidas no Código do IRC"
+          ]
+        },
+        "cirs33_5_habitacao_pct": {
+          "article": "CIRS 33.º n.º 5",
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-33",
+          "source_law": "Lei 42/2016, art. 190.º (em vigor 2017-01-01)",
+          "dre_text": [
+            "não podem ultrapassar 25 % das respetivas despesas"
+          ]
+        },
+        "cirs78b_4_fora_atividade": {
+          "article": "CIRS 78.º-B n.º 4",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78b-n4",
+          "source_law": "Decreto-Lei 28/2019, art. 38.º",
+          "dre_text": [
+            "fora do âmbito da sua atividade empresarial ou profissional"
+          ]
+        },
+        "civa19_direito_deducao": {
+          "article": "CIVA 19.º",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-19",
+          "source_law": "Decreto-Lei 85/2022, art. 2.º (efeitos 2023-01-01)",
+          "dre_text": [
+            "Só confere direito a dedução o imposto mencionado nos seguintes documentos"
+          ]
+        },
+        "civa20_operacoes_dedutiveis": {
+          "article": "CIVA 20.º",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-20",
+          "source_law": "CIVA (DL 102/2008)",
+          "dre_text": [
+            "Só pode deduzir-se o imposto que tenha incidido sobre bens ou serviços adquiridos"
+          ]
+        },
+        "civa21_exclusoes_pct": {
+          "article": "CIVA 21.º n.º 1 b) e n.º 2 d) e e)",
+          "value": {
+            "combustiveis": 50,
+            "congressos_organizacao": 50,
+            "congressos_participacao": 25
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "civa-21",
+          "source_law": "Lei 2/2020, art. 337.º",
+          "dre_text": [
+            "cujo imposto é dedutível na proporção de 50 %",
+            "cujo imposto é dedutível na proporção de 25 %"
+          ]
+        },
+        "civa23_utilizacao_mista": {
+          "article": "CIVA 23.º",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-23",
+          "source_law": "CIVA (DL 102/2008, sem alteracoes)",
+          "dre_text": [
+            "na percentagem correspondente ao montante anual das operações que dêem lugar a dedução"
+          ]
+        },
+        "civa53_limiar": {
+          "article": "CIVA 53.º n.º 1",
+          "value": 13500,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "civa-53",
+          "source_law": "Lei 24-D/2022, art. 282.º (nota ao art. 53.º)",
+          "dre_text": [
+            "13 500 (euro), em 2023"
+          ],
+          "note": "Limiar em vigor no ano (compara-se com o volume de negocios do ano civil anterior). Detalhe das condicoes em civa.art53_isencao.",
+          "dre_text_scope": "current_page"
+        },
+        "civa53_3_sem_deducao": {
+          "article": "CIVA 53.º n.º 3",
+          "value": null,
+          "verified": false,
+          "source_id": "civa-53",
+          "source_law": null,
+          "dre_text": [],
+          "note": "So a redacao do DL 35/2025 (em vigor 2025-03-29) tem esta regra no art. 53.º; antes dessa data o art. 53.º nao a continha e a regra equivalente noutro artigo nao foi lida."
         }
       },
       "global_limit": {
@@ -226,6 +667,215 @@
           "verified": true,
           "note": "78-F ALTERADO por OE-2024 mas o teto (n.1) colapsa no SPA da DRE; confirmar 250 pelo PDF do OE. n.8 novo: 30% do IVA de servicos",
           "source_law": "CIRS consolidada (pdf-parse); OE-2024 alterou setores/n.8, NAO o teto n.1 (250)"
+        },
+        "ias": {
+          "article": "IAS (portaria anual)",
+          "value": 509.26,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "ias-2024",
+          "source_law": "Portaria 421/2023",
+          "dre_text": [
+            "(euro) 509,26"
+          ]
+        },
+        "cirs25_1a_deducao_especifica": {
+          "article": "CIRS 25.º n.º 1 a)",
+          "value": null,
+          "verified": false,
+          "source_id": "cirs-25",
+          "source_law": null,
+          "dre_text": [],
+          "note": "A redacao de 2024 (Lei 82/2023, depois Lei 32/2024) diz '(euro) 4 104', mas a Lei 32/2024, em vigor 2024-08-08 e sem norma de producao de efeitos, aditou o n.º 7 (valor atualizado anualmente a taxa de atualizacao do IAS). O DRE nao diz se o montante de 2024 ja e atualizado: desconhecido."
+        },
+        "cirs31_1_coeficientes": {
+          "article": "CIRS 31.º n.º 1 a) a g)",
+          "value": {
+            "a": 0.15,
+            "b": 0.75,
+            "c": 0.35,
+            "d": 0.95,
+            "e": 0.3,
+            "f": 0.1,
+            "g": 1
+          },
+          "unit": "coeficiente",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)",
+          "dre_text": [
+            "0,15 às vendas de mercadorias",
+            "0,75 aos rendimentos das atividades profissionais",
+            "0,35 aos rendimentos de prestações de serviços",
+            "0,95 aos rendimentos provenientes",
+            "0,30 aos subsídios",
+            "0,10 aos subsídios",
+            "1 aos rendimentos decorrentes de prestações de serviços"
+          ],
+          "note": "Alinea h) (0,50, alojamento local em area de contencao) fica de fora: o historico do DRE mostra-a ja na redacao de 2023-01-01, mas a Lei 56/2023, que criou as areas de contencao, nao consta das alteracoes ao artigo. Nao usada."
+        },
+        "cirs31_13_justificacao_pct": {
+          "article": "CIRS 31.º n.º 13",
+          "value": 15,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)",
+          "dre_text": [
+            "entre 15 % dos rendimentos brutos das prestações de serviços"
+          ],
+          "applies_to_coefficients": [
+            "b",
+            "c"
+          ],
+          "alineas": [
+            "a",
+            "b",
+            "c",
+            "d",
+            "e",
+            "f"
+          ]
+        },
+        "cirs31_14_parcial_pct": {
+          "article": "CIRS 31.º n.º 14",
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)",
+          "dre_text": [
+            "considerados em apenas 25 %"
+          ],
+          "applies_to_alineas": [
+            "c",
+            "d",
+            "e"
+          ]
+        },
+        "cirs31_15_prazo_portal": {
+          "article": "CIRS 31.º n.º 15 a)",
+          "value": null,
+          "verified": false,
+          "source_id": "cirs-31",
+          "source_law": null,
+          "dre_text": [],
+          "note": "A redacao em vigor neste ano (Lei 24-D/2022) nao tem prazo no n.º 15; se a remissao para o art. 78.º-B n.os 2 a 6 impoe um e uma leitura juridica, nao um valor lido: desconhecido."
+        },
+        "cirs31_16_valores_declarados": {
+          "article": "CIRS 31.º n.º 16",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_law": "Lei 24-D/2022, art. 218.º (redacao em vigor 2023-01-01 a 2025-06-30)",
+          "dre_text": [
+            "declarar o valor das despesas e encargos"
+          ]
+        },
+        "cirs32_remissao_circ": {
+          "article": "CIRS 32.º",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-32",
+          "source_law": "CIRS republicado pela Lei 82-E/2014 (sem alteracoes)",
+          "dre_text": [
+            "aplicam-se as regras estabelecidas no Código do IRC"
+          ]
+        },
+        "cirs33_5_habitacao_pct": {
+          "article": "CIRS 33.º n.º 5",
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-33",
+          "source_law": "Lei 42/2016, art. 190.º (em vigor 2017-01-01)",
+          "dre_text": [
+            "não podem ultrapassar 25 % das respetivas despesas"
+          ]
+        },
+        "cirs78b_4_fora_atividade": {
+          "article": "CIRS 78.º-B n.º 4",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78b-n4",
+          "source_law": "Decreto-Lei 28/2019, art. 38.º",
+          "dre_text": [
+            "fora do âmbito da sua atividade empresarial ou profissional"
+          ]
+        },
+        "civa19_direito_deducao": {
+          "article": "CIVA 19.º",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-19",
+          "source_law": "Decreto-Lei 85/2022, art. 2.º (efeitos 2023-01-01)",
+          "dre_text": [
+            "Só confere direito a dedução o imposto mencionado nos seguintes documentos"
+          ]
+        },
+        "civa20_operacoes_dedutiveis": {
+          "article": "CIVA 20.º",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-20",
+          "source_law": "CIVA (DL 102/2008)",
+          "dre_text": [
+            "Só pode deduzir-se o imposto que tenha incidido sobre bens ou serviços adquiridos"
+          ]
+        },
+        "civa21_exclusoes_pct": {
+          "article": "CIVA 21.º n.º 1 b) e n.º 2 d) e e)",
+          "value": {
+            "combustiveis": 50,
+            "congressos_organizacao": 50,
+            "congressos_participacao": 25
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "civa-21",
+          "source_law": "Lei 2/2020, art. 337.º",
+          "dre_text": [
+            "cujo imposto é dedutível na proporção de 50 %",
+            "cujo imposto é dedutível na proporção de 25 %"
+          ]
+        },
+        "civa23_utilizacao_mista": {
+          "article": "CIVA 23.º",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-23",
+          "source_law": "CIVA (DL 102/2008, sem alteracoes)",
+          "dre_text": [
+            "na percentagem correspondente ao montante anual das operações que dêem lugar a dedução"
+          ]
+        },
+        "civa53_limiar": {
+          "article": "CIVA 53.º n.º 1",
+          "value": 14500,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "civa-53",
+          "source_law": "Lei 24-D/2022, art. 282.º (nota ao art. 53.º)",
+          "dre_text": [
+            "14 500 (euro), em 2024"
+          ],
+          "note": "Limiar em vigor no ano (compara-se com o volume de negocios do ano civil anterior). Detalhe das condicoes em civa.art53_isencao.",
+          "dre_text_scope": "current_page"
+        },
+        "civa53_3_sem_deducao": {
+          "article": "CIVA 53.º n.º 3",
+          "value": null,
+          "verified": false,
+          "source_id": "civa-53",
+          "source_law": null,
+          "dre_text": [],
+          "note": "So a redacao do DL 35/2025 (em vigor 2025-03-29) tem esta regra no art. 53.º; antes dessa data o art. 53.º nao a continha e a regra equivalente noutro artigo nao foi lida."
         }
       },
       "global_limit": {
@@ -318,6 +968,217 @@
           "ceiling": 250,
           "note": "78-C/F/84 estaveis desde DL 41/2016; 78-B desde Lei 71/2018; educacao 800 confirmada na pagina historica de 2025",
           "source_law": "portaldasfinancas (AT codigo repo) - redacao-law provenance + historical ra pages; DRE = source of record"
+        },
+        "ias": {
+          "article": "IAS (portaria anual)",
+          "value": 522.5,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "ias-2025",
+          "source_law": "Portaria 6-B/2025/1",
+          "dre_text": [
+            "€ 522,50"
+          ]
+        },
+        "cirs25_1a_deducao_especifica": {
+          "article": "CIRS 25.º n.º 1 a)",
+          "value": 8.54,
+          "unit": "IAS",
+          "verified": true,
+          "source_id": "cirs-25",
+          "source_law": "Lei 45-A/2024, art. 89.º (em vigor 2025-01-01)",
+          "dre_text": [
+            "8,54 vezes o valor do IAS"
+          ],
+          "note": "A lei diz 8,54 x o valor do IAS. O valor em euros NAO e 8,54 x a regra ias deste ano: a AT aplicou 4104 EUR em 2025 (escaloes_irs.2025._deducao_especifica). Um leitor que precise de euros trata-os como desconhecidos."
+        },
+        "cirs31_1_coeficientes": {
+          "article": "CIRS 31.º n.º 1 a) a g)",
+          "value": {
+            "a": 0.15,
+            "b": 0.75,
+            "c": 0.35,
+            "d": 0.95,
+            "e": 0.3,
+            "f": 0.1,
+            "g": 1
+          },
+          "unit": "coeficiente",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_law": "Lei 24-D/2022, art. 218.º e Decreto-Lei 49/2025, art. 2.º (os n.os 1, 13, 14 e 16 nao mudaram a 2025-07-01)",
+          "dre_text": [
+            "0,15 às vendas de mercadorias",
+            "0,75 aos rendimentos das atividades profissionais",
+            "0,35 aos rendimentos de prestações de serviços",
+            "0,95 aos rendimentos provenientes",
+            "0,30 aos subsídios",
+            "0,10 aos subsídios",
+            "1 aos rendimentos decorrentes de prestações de serviços"
+          ],
+          "note": "Alinea h) (0,50, alojamento local em area de contencao) fica de fora: o historico do DRE mostra-a ja na redacao de 2023-01-01, mas a Lei 56/2023, que criou as areas de contencao, nao consta das alteracoes ao artigo. Nao usada."
+        },
+        "cirs31_13_justificacao_pct": {
+          "article": "CIRS 31.º n.º 13",
+          "value": 15,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_law": "Lei 24-D/2022, art. 218.º e Decreto-Lei 49/2025, art. 2.º (os n.os 1, 13, 14 e 16 nao mudaram a 2025-07-01)",
+          "dre_text": [
+            "entre 15 % dos rendimentos brutos das prestações de serviços"
+          ],
+          "applies_to_coefficients": [
+            "b",
+            "c"
+          ],
+          "alineas": [
+            "a",
+            "b",
+            "c",
+            "d",
+            "e",
+            "f"
+          ]
+        },
+        "cirs31_14_parcial_pct": {
+          "article": "CIRS 31.º n.º 14",
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_law": "Lei 24-D/2022, art. 218.º e Decreto-Lei 49/2025, art. 2.º (os n.os 1, 13, 14 e 16 nao mudaram a 2025-07-01)",
+          "dre_text": [
+            "considerados em apenas 25 %"
+          ],
+          "applies_to_alineas": [
+            "c",
+            "d",
+            "e"
+          ]
+        },
+        "cirs31_15_prazo_portal": {
+          "article": "CIRS 31.º n.º 15 a)",
+          "value": null,
+          "verified": false,
+          "source_id": "cirs-31",
+          "source_law": null,
+          "dre_text": [],
+          "note": "O prazo de fevereiro entrou pelo DL 49/2025, em vigor 2025-07-01, cujo art. 18.º nao tem regra de efeitos para o CIRS; de janeiro a junho de 2025 a redacao nao tinha prazo. O DRE nao diz se vale para as faturas de 2025: desconhecido."
+        },
+        "cirs31_16_valores_declarados": {
+          "article": "CIRS 31.º n.º 16",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-31",
+          "source_law": "Lei 24-D/2022, art. 218.º e Decreto-Lei 49/2025, art. 2.º (os n.os 1, 13, 14 e 16 nao mudaram a 2025-07-01)",
+          "dre_text": [
+            "declarar o valor das despesas e encargos"
+          ]
+        },
+        "cirs32_remissao_circ": {
+          "article": "CIRS 32.º",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-32",
+          "source_law": "CIRS republicado pela Lei 82-E/2014 (sem alteracoes)",
+          "dre_text": [
+            "aplicam-se as regras estabelecidas no Código do IRC"
+          ]
+        },
+        "cirs33_5_habitacao_pct": {
+          "article": "CIRS 33.º n.º 5",
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-33",
+          "source_law": "Lei 42/2016, art. 190.º (em vigor 2017-01-01)",
+          "dre_text": [
+            "não podem ultrapassar 25 % das respetivas despesas"
+          ]
+        },
+        "cirs78b_4_fora_atividade": {
+          "article": "CIRS 78.º-B n.º 4",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78b-n4",
+          "source_law": "Decreto-Lei 28/2019 e Decreto-Lei 49/2025 (n.º 4 inalterado)",
+          "dre_text": [
+            "fora do âmbito da sua atividade empresarial ou profissional"
+          ]
+        },
+        "civa19_direito_deducao": {
+          "article": "CIVA 19.º",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-19",
+          "source_law": "Decreto-Lei 85/2022, art. 2.º (efeitos 2023-01-01)",
+          "dre_text": [
+            "Só confere direito a dedução o imposto mencionado nos seguintes documentos"
+          ]
+        },
+        "civa20_operacoes_dedutiveis": {
+          "article": "CIVA 20.º",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-20",
+          "source_law": "Decreto-Lei 35/2025, art. 2.º (em vigor 2025-03-29)",
+          "dre_text": [
+            "Só pode deduzir-se o imposto que tenha incidido sobre bens ou serviços adquiridos"
+          ]
+        },
+        "civa21_exclusoes_pct": {
+          "article": "CIVA 21.º n.º 1 b) e n.º 2 d) e e)",
+          "value": {
+            "combustiveis": 50,
+            "congressos_organizacao": 50,
+            "congressos_participacao": 25
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "civa-21",
+          "source_law": "Lei 45-A/2024, art. 92.º (em vigor 2025-01-01)",
+          "dre_text": [
+            "cujo imposto é dedutível na proporção de 50 %",
+            "cujo imposto é dedutível na proporção de 25 %"
+          ]
+        },
+        "civa23_utilizacao_mista": {
+          "article": "CIVA 23.º",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "civa-23",
+          "source_law": "CIVA (DL 102/2008, sem alteracoes)",
+          "dre_text": [
+            "na percentagem correspondente ao montante anual das operações que dêem lugar a dedução"
+          ]
+        },
+        "civa53_limiar": {
+          "article": "CIVA 53.º n.º 1",
+          "value": 15000,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "civa-53",
+          "source_law": "Lei 24-D/2022, art. 235.º e Decreto-Lei 35/2025, art. 2.º (15 000 nas duas redacoes)",
+          "dre_text": [
+            "15 000 (euro)"
+          ],
+          "note": "Limiar em vigor no ano (compara-se com o volume de negocios do ano civil anterior). Detalhe das condicoes em civa.art53_isencao."
+        },
+        "civa53_3_sem_deducao": {
+          "article": "CIVA 53.º n.º 3",
+          "value": null,
+          "verified": false,
+          "source_id": "civa-53",
+          "source_law": null,
+          "dre_text": [],
+          "note": "So a redacao do DL 35/2025 (em vigor 2025-03-29) tem esta regra no art. 53.º; antes dessa data o art. 53.º nao a continha e a regra equivalente noutro artigo nao foi lida."
         }
       },
       "global_limit": {
@@ -398,7 +1259,8 @@
         ]
       ],
       "deducao_especifica_catA": 4104.0,
-      "_status": "CORRIGIDO 2026-07-25: tabela REDUZIDA (Lei 33-A/2024), escalao 6 = 35,5%. A controlled manual cross-check existed but its account figures and location are intentionally not retained. Guardar as parcelas OFICIAIS do art. 68 anual e chavear por regiao."
+      "_status": "CORRIGIDO 2026-07-25: tabela REDUZIDA (Lei 33-A/2024), escalao 6 = 35,5%. A controlled manual cross-check existed but its account figures and location are intentionally not retained. Guardar as parcelas OFICIAIS do art. 68 anual e chavear por regiao.",
+      "_deducao_especifica": "4104 e a letra da redacao de 2024 e o valor que a AT aplicou numa liquidacao real de 2024 (fiscal-monitor test_irs_validado.py), mas years.2024.rules.cirs25_1a_deducao_especifica fica por verificar: o DRE nao diz se a atualizacao pelo IAS da Lei 32/2024 (sem regra de efeitos) ja se aplica a 2024."
     },
     "2023": {
       "continente": [
@@ -541,7 +1403,8 @@
         ]
       ],
       "deducao_especifica_catA": 4104.0,
-      "_status": "Oficial: portaldasfinancas /ra/ irs68ra_202512 (Normal+Media)."
+      "_status": "Oficial: portaldasfinancas /ra/ irs68ra_202512 (Normal+Media).",
+      "_deducao_especifica": "4104 e o valor que a AT aplicou numa liquidacao real de 2025 (fiscal-monitor test_irs_validado.py confere ao centimo). A redacao da Lei 45-A/2024 diz '8,54 vezes o valor do IAS'; 8,54 x o IAS de 2025 (522,50) daria 4462,15, que a liquidacao contradiz, e nenhuma norma da Lei 45-A/2024 lida em 2026-10-07 diz que IAS usar. Valor em euros por confirmar no DRE; nao derivar da regra ias."
     },
     "_regioes": {
       "_fonte": "Tabelas de retencao (doclib tabela_ret_doclib). Nomes de ficheiro INCONSISTENTES: Tabelas_RF_Continente_2026.xlsx | Tabelas_RF_2025_RAM.xlsx | Tabelas_RF_RA_Acores_2025.xlsx | Tabelas_RF_RAA_2025_01_08_a_30_09_GSEAF_vf.xlsx (periodos a meio do ano!). NAO assumir padrao - listar a doclib e apanhar o href real.",
@@ -691,6 +1554,60 @@
       "_aviso": "Estas sao taxas de RETENCAO mensal. Para a LIQUIDACAO anual confirmar o art. 68 na versao regional (DLR proprio) - o CIRS art. 68 nao tem variantes regionais. O fator 0,70 dos Acores e o mesmo que a regiao aplica a liquidacao, mas CONFIRMAR antes de usar em producao.",
       "_arquivo_local": "fiscal-monitor/tabelas_rf/ (38 ficheiros, MANIFEST.json) + parser fiscal-monitor/parse_tabelas_rf.py",
       "_aviso_parser": "A coluna da PARCELA A ABATER e a col.4 da folha; a col.10 e 'Parcela ADICIONAL' (ex. 21,43 na Madeira) e NAO serve para o calculo - ler por POSICAO, nunca por heuristica de 'ultimo numero'."
+    },
+    "2026": {
+      "continente": [
+        [
+          8342,
+          0.125
+        ],
+        [
+          12587,
+          0.157
+        ],
+        [
+          17838,
+          0.212
+        ],
+        [
+          23089,
+          0.241
+        ],
+        [
+          29397,
+          0.311
+        ],
+        [
+          43090,
+          0.349
+        ],
+        [
+          46566,
+          0.431
+        ],
+        [
+          86634,
+          0.446
+        ],
+        [
+          null,
+          0.48
+        ]
+      ],
+      "media": [
+        0.125,
+        0.13579,
+        0.15823,
+        0.17705,
+        0.20579,
+        0.2513,
+        0.26472,
+        0.34856,
+        null
+      ],
+      "verified": true,
+      "source_id": "cirs-68",
+      "_status": "CIRS 68.º n.º 1 na redacao da Lei 73-A/2025 (OE 2026, em vigor 2026-01-01), pagina dedicada 1000777567 lida em 2026-10-07: limite, taxa normal (A) e taxa media (B) por escalao. Parcela a abater nao e publicada na lei: nao guardada. O n.º 2 desta redacao ainda diz '8059 €' (limite de 2025); registado como lido, nao reconciliado. Deducao especifica 2026: a lei diz 8,54 x IAS; o valor em euros nao e guardado (ver escaloes_irs.2025._deducao_especifica)."
     }
   },
   "civa": {
@@ -706,13 +1623,14 @@
       ],
       "condicoes_REMOVIDAS_do_texto_atual": "'sem contabilidade organizada' e 'importacoes' JA NAO constam do n.1 (reescrito pelo regime UE das PME, DL 35/2025, em vigor 2025-03-29) - nao repetir essas condicoes como atuais",
       "n2_alargamento_UE": "sujeitos de outros EM: vol. UE <= 100.000 + notificacao previa + numero com sufixo 'EX'",
-      "n3_contrapartida": "isentos ficam SEM direito a deducao (arts. 19/20) nem reembolso",
+      "n3_contrapartida": "isentos ficam SEM direito a deducao (arts. 19/20) nem reembolso Regra por ano: civa53_3_sem_deducao (so verificada na redacao do DL 35/2025).",
       "alteracoes": [
         "DL 35/2025 (2025-03-29)",
         "Lei 24-D/2022 art.235 (2023-01-01)",
         "Lei 75-B/2020 (2021-01-01)",
         "Lei 2/2020 (2020-04-01)"
-      ]
+      ],
+      "limiar_por_ano": "years.<ano>.rules.civa53_limiar (2026: current_values_2026_verified_isolation.rules.civa53_limiar): 13 500 em 2023 e 14 500 em 2024 (Lei 24-D/2022 art. 282.º), 15 000 desde 2025. limiar_eur acima e o valor atual; make-audit.mjs falha se divergir do registo."
     },
     "art56_impedimentos": {
       "_fonte": "pagina dedicada DRE do art. 56 CIVA. Lido 2026-07-28. Redaccao atual dada pelo art. 2.o do DL 35/2025, DR 58/2025 Serie I de 2025-03-24, em vigor desde 2025-03-29. n.1 REVOGADO.",

@@ -51,6 +51,21 @@ if (!fails) ok("every manifest row matches tool.js (rate + ceiling)");
 const fb = (tool.match(/FB_VERSION\s*=\s*"([^"]+)"/) || [])[1];
 if (manifest.tool_version !== fb) bad(`manifest tool_version ${manifest.tool_version} != FB_VERSION ${fb} - stale, re-run make-audit.mjs`);
 
+// 5. the expense and IVA rules on /auditoria are the registry's, year by year
+const snap = JSON.parse(fs.readFileSync("year_snapshots.json", "utf8"));
+const ry = Object.fromEntries(Object.keys(snap.years).map((y) => [y, snap.years[y].rules || {}]));
+ry["2026"] = (snap.current_values_2026_verified_isolation || {}).rules || {};
+const regKeys = [...new Set(Object.values(ry).flatMap((rs) => Object.keys(rs).filter((k) => rs[k] && rs[k].source_id)))].sort();
+const manRules = manifest.rules || [];
+if (manRules.map((r) => r.key).sort().join() !== regKeys.join()) bad(`manifest rules ${manRules.length} != registry rules ${regKeys.length} - re-run make-audit.mjs`);
+for (const r of manRules)
+  for (const [y, v] of Object.entries(r.years || {})) {
+    const reg = ry[y] && ry[y][r.key];
+    if (!reg || JSON.stringify(reg.value) !== JSON.stringify(v.value) || (reg.verified === true) !== v.verified)
+      bad(`${r.key} ${y}: manifest ${JSON.stringify(v.value)} differs from year_snapshots - re-run make-audit.mjs`);
+  }
+if (!fails) ok(`${manRules.length} expense/IVA rules match year_snapshots for every year`);
+
 console.log(fails ? `\n  ${fails} FAILED - audit-manifest.json is stale or inconsistent; run \`node make-audit.mjs\``
                   : "\n  audit-manifest.json is in sync with tool.js and drift-free");
 process.exit(fails ? 1 : 0);
