@@ -43,6 +43,18 @@ only those paths cross-origin script headers. Do not put the full site or an API
 The extension reads bucketed merchant-map data through `https://fiscalida.de/api/v1`. The upstream
 origin belongs only in deployment configuration, never in browser code.
 
+Pages bindings and secrets, set by hand with Wrangler:
+
+- `FISCALIDADE_API_ORIGIN`
+- `FISCALIDADE_API_CLIENT_ID`
+- `FISCALIDADE_API_CLIENT_SECRET`
+- `FISCALIDADE_MARKET_ORIGIN`
+- `FISCALIDADE_MARKET_KEY`
+- `FISCALIDADE_MARKET_CLIENT_ID`
+- `FISCALIDADE_MARKET_CLIENT_SECRET`
+- `HONEYPOT_SINK`
+- `HONEYPOT_KEY`
+
 The cae-db source is **private**, deliberately. The split is: *how your tax is calculated* is
 public and auditable (`tool.js` here, plus the CAE -> sector map it relies on); *how the merchant
 data is fetched* is not. The registry-scraping mechanics are an implementation detail and

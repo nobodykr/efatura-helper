@@ -15,6 +15,7 @@
 //     ua/ref/path - they are attacker-controlled and a stored-XSS vector if rendered raw.
 
 import { allow } from "./_lib/ratelimit.js";
+import { accessHeaders } from "./_lib/access.js";
 
 const cap = (s, n) => String(s || "").slice(0, n);
 const CANONICAL_HOST = "fiscalida.de";
@@ -98,7 +99,10 @@ async function record(request, env, ctx, kind) {
   if (sinkOk && env && env.HONEYPOT_SINK) {
     const p = fetch(env.HONEYPOT_SINK, {
       method: "POST",
-      headers: { "content-type": "application/json", "x-fb-hp": env.HONEYPOT_KEY || "" },
+      headers: {
+        "content-type": "application/json", "x-fb-hp": env.HONEYPOT_KEY || "",
+        ...accessHeaders(env),
+      },
       body: JSON.stringify(hit),
       signal: AbortSignal.timeout(2500),
     }).catch(() => {});

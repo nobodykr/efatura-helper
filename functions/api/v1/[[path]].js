@@ -5,6 +5,7 @@
  * arbitrary paths, headers and bodies are rejected locally.
  */
 import { allow } from "../../_lib/ratelimit.js";
+import { accessHeaders } from "../../_lib/access.js";
 
 const DEFAULT_MAX_BODY = 64 * 1024;
 // Only fiscalida.de sits behind the Access gate. The same function also answers on
@@ -123,12 +124,9 @@ export async function onRequest(context) {
       });
     headers.set("x-fiscalidade-market-key", marketKey);
   }
-  const clientId = route.market ? context.env.FISCALIDADE_MARKET_CLIENT_ID : context.env.FISCALIDADE_API_CLIENT_ID;
-  const clientSecret = route.market ? context.env.FISCALIDADE_MARKET_CLIENT_SECRET : context.env.FISCALIDADE_API_CLIENT_SECRET;
-  if (clientId && clientSecret) {
-    headers.set("cf-access-client-id", clientId);
-    headers.set("cf-access-client-secret", clientSecret);
-  }
+  for (const [name, value] of Object.entries(accessHeaders(
+    context.env, route.market ? "FISCALIDADE_MARKET" : "FISCALIDADE_API"
+  ))) headers.set(name, value);
 
   try {
     const response = await fetch(upstream, { method: request.method, headers, body, redirect: "manual" });

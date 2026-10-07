@@ -23,7 +23,10 @@ const limiterModule = "data:text/javascript;base64," + Buffer.from(limiterSource
   assert((await allow({ FB_RL: kv }, input)).ok, "missing deployment secret did not fail open");
 
   const trapSource = limiterSource.replace("export async function allow", "async function allow") + "\n" +
-    readFileSync("functions/[[path]].js", "utf8").replace('import { allow } from "./_lib/ratelimit.js";', "");
+    readFileSync("functions/_lib/access.js", "utf8") + "\n" +
+    readFileSync("functions/[[path]].js", "utf8")
+      .replace('import { allow } from "./_lib/ratelimit.js";', "")
+      .replace('import { accessHeaders } from "./_lib/access.js";', "");
   const trap = await import("data:text/javascript;base64," + Buffer.from(trapSource).toString("base64"));
   const alternate = await trap.onRequest({
     request: new Request("https://efatura-helper.pages.dev/"), env: {},
@@ -44,22 +47,39 @@ const limiterModule = "data:text/javascript;base64," + Buffer.from(limiterSource
   assert(assetHostRoot.status === 404, "asset hostname exposed a non-browser-asset route");
   let forwarded;
   const oldFetch = global.fetch;
-  global.fetch = async (_url, init) => { forwarded = JSON.parse(init.body); return new Response(null, { status: 204 }); };
+  global.fetch = async (_url, init) => {
+    forwarded = { body: JSON.parse(init.body), headers: new Headers(init.headers) };
+    return new Response(null, { status: 204 });
+  };
   const waits = [];
   const response = await trap.onRequest({
     request: new Request("https://fiscalida.de/.docker/config.json", {
       headers: { "CF-Connecting-IP": "192.0.2.20", "User-Agent": "synthetic-scanner", "Referer": "https://example.invalid/private?q=value" }
     }),
-    env: { HONEYPOT_SINK: "https://sink.invalid/trap", HONEYPOT_KEY: "synthetic", FB_RL: kv,
+    env: { HONEYPOT_SINK: "https://sink.invalid/trap", HONEYPOT_KEY: "synthetic",
+      FISCALIDADE_API_CLIENT_ID: "trap-id", FISCALIDADE_API_CLIENT_SECRET: "trap-secret", FB_RL: kv,
       FB_RL_KEY: "synthetic-test-key-that-is-long-enough" },
     waitUntil(promise) { waits.push(promise); }, next() { throw new Error("scanner bait reached static site"); }
   });
   await Promise.all(waits);
-  global.fetch = oldFetch;
   assert(response.status === 404 && response.headers.get("cache-control") === "no-store", "trap response contract weakened");
-  assert(forwarded && forwarded.kind === "scanner-bait", "new scanner bait was not recorded");
-  assert(!Object.prototype.hasOwnProperty.call(forwarded, "ref") && !Object.prototype.hasOwnProperty.call(forwarded, "city"),
+  assert(forwarded && forwarded.body.kind === "scanner-bait", "new scanner bait was not recorded");
+  assert(forwarded.headers.get("cf-access-client-id") === "trap-id" &&
+    forwarded.headers.get("cf-access-client-secret") === "trap-secret", "trap Access headers missing");
+  assert(forwarded.headers.get("x-fb-hp") === "synthetic", "honeypot key header was removed");
+  assert(!Object.prototype.hasOwnProperty.call(forwarded.body, "ref") && !Object.prototype.hasOwnProperty.call(forwarded.body, "city"),
     "unnecessary request metadata was forwarded");
+  const unboundWaits = [];
+  await trap.onRequest({
+    request: new Request("https://fiscalida.de/.env", { headers: { "CF-Connecting-IP": "192.0.2.21" } }),
+    env: { HONEYPOT_SINK: "https://sink.invalid/trap", HONEYPOT_KEY: "synthetic", FB_RL: kv,
+      FB_RL_KEY: "synthetic-test-key-that-is-long-enough" },
+    waitUntil(promise) { unboundWaits.push(promise); }, next() { throw new Error("scanner bait reached static site"); }
+  });
+  await Promise.all(unboundWaits);
+  assert(!forwarded.headers.has("cf-access-client-id") && !forwarded.headers.has("cf-access-client-secret"),
+    "unbound trap Access headers were forwarded");
+  global.fetch = oldFetch;
 
   const headers = readFileSync("_headers", "utf8");
   assert(/default-src 'self'/.test(headers) && /object-src 'none'/.test(headers), "full CSP baseline missing");
