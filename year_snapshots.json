@@ -1,6 +1,6 @@
 {
   "_README": "Per-income-year IRS deduction rules, one self-contained rule set per year, for the past-year re-audit. A re-audit of year N MUST use year N's rules. Proven necessary: art. 78.º-E (rendas) changed in force in 2024, 2025 AND 2026, and is not a single ceiling but an escalonamento (15% base + majoracoes 50%/75%). Using today's value for a past year ships wrong numbers - the same green-but-wrong class as the Excel-serial and page-count bugs.",
-  "_structure": "years.<income_year>.rules.<key> holds {pct, ceiling, ...params, verified, source_law}. One year is authoritative only when every rule in it is verified=true. Downstream docs (deducoes.html, cae_sectors.json, Bible ch.15) should READ the current year from here instead of hardcoding their own copy - today they each carry a separate copy with no cross-check. Expense and IVA rules (slice R, added 2026-10-07): each rule-year also carries value (number, object or true for a rule with no number), unit (EUR, %, coeficiente, IAS = multiple of that year's ias rule, prazo, regra), source_id (legal_sources.json id), source_law and dre_text (the exact DRE wording the value was read from; every item is one of that source's expect / expect_by_year strings, so verify_sources re-checks it; for a past year the string must be in expect_by_year[year], unless dre_text_scope is current_page: a note on today's page that names the year). verified=false means DRE does not answer for that year: value is null and a reader must return unknown, never another year's value. A rule-year with in_force false did not exist in that year's wording: verified true, value null, in_force_from (ISO) and in_force_from_display (PT-PT, table form); the absence is checked by the source's expect_absent_by_year. An unverified year may carry in_force_from when the rule started mid-year. A value computed from several DRE strings carries derived {formula, base, rate_pct, texts[{source_id, on?, text}]}: each text is checked by verify_sources (expect, expect_by_year or expect_on_date) and value = base x (1 + rate_pct/100). 2026 lives in current_values_2026_verified_isolation.rules (same shape); IRS brackets for 2026 in escaloes_irs.2026. Keys: ias, cirs25_1a_deducao_especifica, cirs31_1_coeficientes, cirs31_13_justificacao_pct, cirs31_14_parcial_pct, cirs31_15_prazo_portal, cirs31_16_valores_declarados, cirs32_remissao_circ, cirs33_5_habitacao_pct, cirs78b_4_fora_atividade, civa19_direito_deducao, civa20_operacoes_dedutiveis, civa21_exclusoes_pct, civa23_utilizacao_mista, civa53_limiar, civa53_3_sem_deducao.",
+  "_structure": "years.<income_year>.rules.<key> holds {pct, ceiling, ...params, verified, source_law}. One year is authoritative only when every rule in it is verified=true. Downstream docs (deducoes.html, cae_sectors.json, Bible ch.15) should READ the current year from here instead of hardcoding their own copy - today they each carry a separate copy with no cross-check. Expense and IVA rules (slice R, added 2026-10-07): each rule-year also carries value (number, object or true for a rule with no number), unit (EUR, %, coeficiente, IAS = multiple of that year's ias rule, prazo, regra, cae), source_id (legal_sources.json id), source_law and dre_text (the exact DRE wording the value was read from; every item is one of that source's expect / expect_by_year strings, so verify_sources re-checks it; for a past year the string must be in expect_by_year[year], unless dre_text_scope is current_page: a note on today's page that names the year). verified=false means DRE does not answer for that year: value is null and a reader must return unknown, never another year's value. A rule-year with in_force false did not exist in that year's wording: verified true, value null, in_force_from (ISO) and in_force_from_display (PT-PT, table form); the absence is checked by the source's expect_absent_by_year. An unverified year may carry in_force_from when the rule started mid-year. A value computed from several DRE strings carries derived {formula, base, rate_pct, texts[{source_id, on?, text}]}: each text is checked by verify_sources (expect, expect_by_year or expect_on_date) and value = base x (1 + rate_pct/100). derived.kind phase_in instead carries {formula, from, from_rule, from_year, to, share_pct, texts}: from must equal the verified from_year/from_rule value, to must be printed in dre_text, and value = from + share_pct/100 x (to - from), rounded to cents. Unit cae maps each alinea to one or more space-separated CAE tokens; numeric tokens must occur with digit boundaries in dre_text and letter sections must occur as 'seccao <letter>' after normalization. Integer EUR values accept either grouped or ungrouped DRE digits with digit boundaries; 100 % also accepts 'totalidade do IVA'. 2026 lives in current_values_2026_verified_isolation.rules (same shape); IRS brackets for 2026 in escaloes_irs.2026. Keys: ias, cirs25_1a_deducao_especifica, cirs31_1_coeficientes, cirs31_13_justificacao_pct, cirs31_14_parcial_pct, cirs31_15_prazo_portal, cirs31_16_valores_declarados, cirs32_remissao_circ, cirs33_5_habitacao_pct, cirs78b_4_fora_atividade, civa19_direito_deducao, civa20_operacoes_dedutiveis, civa21_exclusoes_pct, civa23_utilizacao_mista, civa53_limiar, civa53_3_sem_deducao. Personal-deduction keys: cirs78b_1_despesas_gerais_pct, cirs78b_1_despesas_gerais_limite, cirs78b_1_limite_por_sujeito_passivo, cirs78b_9_monoparental_pct, cirs78b_9_monoparental_limite, cirs78c_1_saude_pct, cirs78c_1_saude_limite, cirs78d_1_educacao_pct, cirs78d_1_educacao_limite, cirs78d_11_rendas_estudante_limite, cirs78d_11_rendas_estudante_acrescimo, cirs78e_1_pct, cirs78e_1a_rendas_limite, cirs78e_4a_rendas_limite_majorado, cirs78e_rendas_limite_ano, cirs78e_4a_rendas_limite_majorado_ano, cirs78e_1b_juros_limite, cirs78e_5a_juros_limite_majorado, cirs78f_1_iva_pct, cirs78f_1_limite_agregado, cirs78f_3_passes_pct, cirs78f_6_medicamentos_veterinarios_pct, cirs78f_7_jornais_revistas_pct, cirs78f_ginasios_pct, cirs78f_1_setores, cirs84_1_lares_pct, cirs84_1_lares_limite.",
   "_provenance": "Values come from each article's DEDICATED DRE page (2014-70048167-<id>), which exposes the in-force text + full 'Alteracoes ao artigo' history; the full consolidated render does NOT expose those accordions. Historical (past-year) text is read by viewing the article as-in-force at that year. source_law names the diploma that set the value for that year.",
   "_correction_windows": "How long each past year stays fixable is separate, in legal_sources.json: cppt-59 (substituicao), cppt-70 (reclamacao graciosa 120 dias), lgt-78 (revisao 4 anos, com limites).",
   "_status": "COMPLETE for 2023/2024/2025 and current 2026 base values (reviewed 2026-08-22): all 6 base ceilings plus global-limit and dependent structures. The 2025 rent ceiling is confirmed by Lei 36/2024 and the AT's 2025 deductions table; the 2026 rent ceiling is confirmed by DL 97/2026. Refinements remain for income-bracket-dependent increases.",
@@ -532,7 +532,7 @@
         ]
       },
       "cirs78f_1_setores": {
-        "article": "CIRS 78.º-F n.º 1 alineas",
+        "article": "CIRS 78.º-F n.º 1 alíneas",
         "value": {
           "a": "4520",
           "b": "45402",
@@ -1202,7 +1202,7 @@
           "note": "Em 2023 o desporto e os ginasios estavam na alinea f) do n.º 1 (15 %). A Lei 82/2023 revogou a alinea f) e criou o n.º 8 (30 %) a partir de 2024."
         },
         "cirs78f_1_setores": {
-          "article": "CIRS 78.º-F n.º 1 alineas",
+          "article": "CIRS 78.º-F n.º 1 alíneas",
           "value": {
             "a": "4520",
             "b": "45402",
@@ -1847,7 +1847,7 @@
           ]
         },
         "cirs78f_1_setores": {
-          "article": "CIRS 78.º-F n.º 1 alineas",
+          "article": "CIRS 78.º-F n.º 1 alíneas",
           "value": {
             "a": "4520",
             "b": "45402",
@@ -2510,7 +2510,7 @@
           ]
         },
         "cirs78f_1_setores": {
-          "article": "CIRS 78.º-F n.º 1 alineas",
+          "article": "CIRS 78.º-F n.º 1 alíneas",
           "value": {
             "a": "4520",
             "b": "45402",
