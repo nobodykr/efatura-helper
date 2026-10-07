@@ -181,7 +181,7 @@
   <p class="mono">Verif. = valor confirmado contra o diploma no DRE. "Fonte hoje" = um robô nosso foi à lei confirmar que o artigo, a taxa e o teto ainda lá estão (não só que a página abre). O teto do C07 (rendas) varia por ano; os setores marcados "% do IVA" partilham um teto conjunto de 250 EUR (art. 78.º-F). Os setores do art. 78.º-F com a taxa base de 15% foram confirmados no diploma em vigor em 2023-2025 (taxa e teto conjunto de 250 EUR), por isso mostram esses anos. Um traço ("-") em "Verif."/"Anos" não é um valor pintado de verde sem prova: são os três setores do 78.º-F com taxa especial (transportes e jornais a 100%, ginásios a 30%) cuja taxa específica ainda não tem verificação documental própria por ano - ficam "-" até a confirmarmos (ver o trabalho em curso). A coluna "Fonte hoje" cobre-os na mesma.</p>
 
   <h2>Regras das despesas da atividade e do IVA</h2>
-  <p>Taxas, limites e prazos usados para rever despesas da atividade (regime simplificado, contabilidade organizada e IVA), por ano. Cada valor foi lido no Diário da República, na página própria do artigo e na redação em vigor nesse ano (cada valor liga à sua fonte); "por verificar" quer dizer que a lei publicada não responde a esse ano e o programa não usa valor nenhum.</p>
+  <p>Taxas, limites e prazos usados para rever despesas da atividade (regime simplificado, contabilidade organizada e IVA), por ano. Cada valor foi lido no Diário da República, na página própria do artigo e na redação em vigor nesse ano (cada valor liga à sua fonte); "por verificar" quer dizer que a lei publicada não responde a esse ano e o programa não usa valor nenhum; "não existia nesta redação" quer dizer que o artigo, nesse ano, ainda não tinha essa regra.</p>
   <div class="tablewrap">
     <table>
       <thead><tr>
@@ -247,11 +247,13 @@
   function ptNum(n){ var p=String(n).split("."); return p[0].replace(/\B(?=(\d{3})+(?!\d))/g," ")+(p[1]?","+(p[1].length===1?p[1]+"0":p[1]):""); }
   var PARTS = { a:"a)", b:"b)", c:"c)", d:"d)", e:"e)", f:"f)", g:"g)", combustiveis:"Combustíveis:",
     congressos_organizacao:"Congressos (organização):", congressos_participacao:"Congressos (participação):" };
-  function ruleValue(v){
-    if(!v || !v.verified) return "por verificar";
+  var IAS = {};   // that year's verified IAS, to show an IAS multiple in euros
+  function ruleValue(v, y){
+    if(v && v.in_force===false) return "não existia nesta redação"+(v.in_force_from_display?" (só desde "+esc(v.in_force_from_display)+")":"");
+    if(!v || !v.verified) return "por verificar"+(v && v.in_force_from_display?" (em vigor desde "+esc(v.in_force_from_display)+")":"");
     var x=v.value, u=v.unit;
     if(u==="EUR") return ptNum(x)+" &euro;";
-    if(u==="IAS") return String(x).replace(".",",")+" &times; IAS";
+    if(u==="IAS") return String(x).replace(".",",")+" &times; IAS"+(IAS[y]!=null?" = "+ptNum(Math.round(x*IAS[y]*100)/100)+" &euro;":"");
     if(u==="regra") return "aplica-se";
     if(u==="prazo") return "até ao fim de fevereiro do ano seguinte";
     // Coefficients print as the law writes them (0,30, not 0,3); percentages carry " %".
@@ -287,6 +289,7 @@
       tb.appendChild(tr);
     });
     var rb = document.getElementById("rules-tbody");
+    (m.rules||[]).forEach(function(r){ if(r.key==="ias") Object.keys(r.years||{}).forEach(function(y){ var v=r.years[y]; if(v && v.verified) IAS[y]=v.value; }); });
     (m.rules||[]).forEach(function(r){
       var tr = document.createElement("tr");
       function td(html){ var d=document.createElement("td"); d.innerHTML=html; tr.appendChild(d); }
@@ -295,7 +298,7 @@
       ["2023","2024","2025","2026"].forEach(function(y){
         var v=(r.years||{})[y];
         if(v && v.source_id && ids.indexOf(v.source_id)<0) ids.push(v.source_id);
-        td(v && v.verified && v.source_url ? '<a href="'+esc(v.source_url)+'" target="_blank" rel="noopener">'+ruleValue(v)+"</a>" : ruleValue(v));
+        td(v && v.verified && v.source_url ? '<a href="'+esc(v.source_url)+'" target="_blank" rel="noopener">'+ruleValue(v,y)+"</a>" : ruleValue(v,y));
       });
       var sts=ids.map(function(id){ return fmap[id]; });
       var st=sts.every(function(x){ return x==="OK"; }) ? "OK" : (sts.filter(function(x){ return x && x!=="OK" && x!=="SKIP"; })[0] || null);
