@@ -152,9 +152,17 @@ for (const key of ruleKeys) {
     if (!r) { drift.push(`regra ${key}: sem entrada para ${y}`); continue; }
     first = first || r;
     perYear[y] = { value: r.value, unit: r.unit ?? null, verified: r.verified === true, source_id: r.source_id,
-                   source_url: (srcById[r.source_id] || {}).url || null, source_law: r.source_law || null };
+                   source_url: (srcById[r.source_id] || {}).url || null, source_law: r.source_law || null,
+                   in_force: r.in_force !== false, in_force_from_display: r.in_force_from_display || null };
     const src = srcById[r.source_id];
     if (!src) { drift.push(`regra ${key} ${y}: source_id ${r.source_id} nao existe em legal_sources.json`); continue; }
+    if (r.in_force === false) {
+      // Did not exist in that year's wording: no value, a later start date, and an absence check on DRE.
+      if (r.value !== null) drift.push(`regra ${key} ${y}: nao existia mas tem valor ${JSON.stringify(r.value)}`);
+      if (!(r.in_force_from > `${y}-12-31`)) drift.push(`regra ${key} ${y}: nao existia mas in_force_from ${r.in_force_from} nao e posterior ao ano`);
+      if (!((src.expect_absent_by_year || {})[y] || []).length) drift.push(`regra ${key} ${y}: nao existia sem expect_absent_by_year em ${src.id}`);
+      continue;
+    }
     if (r.verified !== true) {
       if (r.value !== null) drift.push(`regra ${key} ${y}: nao verificada mas tem valor ${JSON.stringify(r.value)}`);
       continue;
@@ -169,7 +177,18 @@ for (const key of ruleKeys) {
       if (!pool.some((e) => e.includes(normTxt(t))))
         drift.push(`regra ${key} ${y}: "${t}" nao esta nos expect de ${src.id} - o verify_sources nao o confirma`);
     const said = normTxt((r.dre_text || []).join(" | "));
-    for (const p of printed(r))
+    if (r.derived) {
+      // A value computed from several DRE strings: each string is checked, then the arithmetic.
+      const dv = r.derived;
+      if (!said.includes(normTxt(ptNum(dv.base, r.unit)))) drift.push(`regra ${key} ${y}: base ${dv.base} nao aparece no dre_text`);
+      for (const t of dv.texts || []) {
+        const ts = srcById[t.source_id] || {};
+        const tpool = [].concat(ts.expect || [], (ts.expect_by_year || {})[y] || [], t.on ? (ts.expect_on_date || {})[t.on] || [] : []).map(normTxt);
+        if (!tpool.some((e) => e.includes(normTxt(t.text)))) drift.push(`regra ${key} ${y}: "${t.text}" nao esta nos expect de ${t.source_id}`);
+      }
+      if (!(dv.texts || []).some((t) => normTxt(t.text).includes(normTxt(dv.rate_pct + " %")))) drift.push(`regra ${key} ${y}: taxa ${dv.rate_pct} % nao aparece nos textos`);
+      if (Math.round(dv.base * (100 + dv.rate_pct)) / 100 !== r.value) drift.push(`regra ${key} ${y}: ${dv.formula} != ${r.value}`);
+    } else for (const p of printed(r))
       if (!said.includes(normTxt(p))) drift.push(`regra ${key} ${y}: valor ${p} nao aparece no dre_text`);
   }
   const src = first && srcById[first.source_id];

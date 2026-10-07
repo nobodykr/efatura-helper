@@ -1,6 +1,6 @@
 {
   "_README": "Per-income-year IRS deduction rules, one self-contained rule set per year, for the past-year re-audit. A re-audit of year N MUST use year N's rules. Proven necessary: art. 78.º-E (rendas) changed in force in 2024, 2025 AND 2026, and is not a single ceiling but an escalonamento (15% base + majoracoes 50%/75%). Using today's value for a past year ships wrong numbers - the same green-but-wrong class as the Excel-serial and page-count bugs.",
-  "_structure": "years.<income_year>.rules.<key> holds {pct, ceiling, ...params, verified, source_law}. One year is authoritative only when every rule in it is verified=true. Downstream docs (deducoes.html, cae_sectors.json, Bible ch.15) should READ the current year from here instead of hardcoding their own copy - today they each carry a separate copy with no cross-check. Expense and IVA rules (slice R, added 2026-10-07): each rule-year also carries value (number, object or true for a rule with no number), unit (EUR, %, coeficiente, IAS = multiple of that year's ias rule, prazo, regra), source_id (legal_sources.json id), source_law and dre_text (the exact DRE wording the value was read from; every item is one of that source's expect / expect_by_year strings, so verify_sources re-checks it; for a past year the string must be in expect_by_year[year], unless dre_text_scope is current_page: a note on today's page that names the year). verified=false means DRE does not answer for that year: value is null and a reader must return unknown, never another year's value. 2026 lives in current_values_2026_verified_isolation.rules (same shape); IRS brackets for 2026 in escaloes_irs.2026. Keys: ias, cirs25_1a_deducao_especifica, cirs31_1_coeficientes, cirs31_13_justificacao_pct, cirs31_14_parcial_pct, cirs31_15_prazo_portal, cirs31_16_valores_declarados, cirs32_remissao_circ, cirs33_5_habitacao_pct, cirs78b_4_fora_atividade, civa19_direito_deducao, civa20_operacoes_dedutiveis, civa21_exclusoes_pct, civa23_utilizacao_mista, civa53_limiar, civa53_3_sem_deducao.",
+  "_structure": "years.<income_year>.rules.<key> holds {pct, ceiling, ...params, verified, source_law}. One year is authoritative only when every rule in it is verified=true. Downstream docs (deducoes.html, cae_sectors.json, Bible ch.15) should READ the current year from here instead of hardcoding their own copy - today they each carry a separate copy with no cross-check. Expense and IVA rules (slice R, added 2026-10-07): each rule-year also carries value (number, object or true for a rule with no number), unit (EUR, %, coeficiente, IAS = multiple of that year's ias rule, prazo, regra), source_id (legal_sources.json id), source_law and dre_text (the exact DRE wording the value was read from; every item is one of that source's expect / expect_by_year strings, so verify_sources re-checks it; for a past year the string must be in expect_by_year[year], unless dre_text_scope is current_page: a note on today's page that names the year). verified=false means DRE does not answer for that year: value is null and a reader must return unknown, never another year's value. A rule-year with in_force false did not exist in that year's wording: verified true, value null, in_force_from (ISO) and in_force_from_display (PT-PT, table form); the absence is checked by the source's expect_absent_by_year. An unverified year may carry in_force_from when the rule started mid-year. A value computed from several DRE strings carries derived {formula, base, rate_pct, texts[{source_id, on?, text}]}: each text is checked by verify_sources (expect, expect_by_year or expect_on_date) and value = base x (1 + rate_pct/100). 2026 lives in current_values_2026_verified_isolation.rules (same shape); IRS brackets for 2026 in escaloes_irs.2026. Keys: ias, cirs25_1a_deducao_especifica, cirs31_1_coeficientes, cirs31_13_justificacao_pct, cirs31_14_parcial_pct, cirs31_15_prazo_portal, cirs31_16_valores_declarados, cirs32_remissao_circ, cirs33_5_habitacao_pct, cirs78b_4_fora_atividade, civa19_direito_deducao, civa20_operacoes_dedutiveis, civa21_exclusoes_pct, civa23_utilizacao_mista, civa53_limiar, civa53_3_sem_deducao.",
   "_provenance": "Values come from each article's DEDICATED DRE page (2014-70048167-<id>), which exposes the in-force text + full 'Alteracoes ao artigo' history; the full consolidated render does NOT expose those accordions. Historical (past-year) text is read by viewing the article as-in-force at that year. source_law names the diploma that set the value for that year.",
   "_correction_windows": "How long each past year stays fixable is separate, in legal_sources.json: cppt-59 (substituicao), cppt-70 (reclamacao graciosa 120 dias), lgt-78 (revisao 4 anos, com limites).",
   "_status": "COMPLETE for 2023/2024/2025 and current 2026 base values (reviewed 2026-08-22): all 6 base ceilings plus global-limit and dependent structures. The 2025 rent ceiling is confirmed by Lei 36/2024 and the AT's 2025 deductions table; the 2026 rent ceiling is confirmed by DL 97/2026. Refinements remain for income-bracket-dependent increases.",
@@ -453,11 +453,14 @@
         "cirs31_15_prazo_portal": {
           "article": "CIRS 31.º n.º 15 a)",
           "value": null,
-          "verified": false,
+          "verified": true,
           "source_id": "cirs-31",
-          "source_law": null,
+          "source_law": "Decreto-Lei 49/2025 aditou o prazo ao n.º 15 (em vigor 2025-07-01)",
           "dre_text": [],
-          "note": "A redacao em vigor neste ano (Lei 24-D/2022) nao tem prazo no n.º 15; se a remissao para o art. 78.º-B n.os 2 a 6 impoe um e uma leitura juridica, nao um valor lido: desconhecido."
+          "note": "A redacao do n.º 15 em vigor neste ano nao tem o prazo de fevereiro (verificado: expect_absent_by_year). Se a remissao para o art. 78.º-B n.os 2 a 6 impunha outro prazo e uma leitura juridica, nao um valor lido.",
+          "in_force": false,
+          "in_force_from": "2025-07-01",
+          "in_force_from_display": "01/07/2025"
         },
         "cirs31_16_valores_declarados": {
           "article": "CIRS 31.º n.º 16",
@@ -568,11 +571,14 @@
         "civa53_3_sem_deducao": {
           "article": "CIVA 53.º n.º 3",
           "value": null,
-          "verified": false,
+          "verified": true,
           "source_id": "civa-53",
-          "source_law": null,
+          "source_law": "Decreto-Lei 35/2025 aditou o n.º 3 ao art. 53.º (em vigor 2025-03-29)",
           "dre_text": [],
-          "note": "So a redacao do DL 35/2025 (em vigor 2025-03-29) tem esta regra no art. 53.º; antes dessa data o art. 53.º nao a continha e a regra equivalente noutro artigo nao foi lida."
+          "note": "O art. 53.º em vigor neste ano nao tem esta regra (verificado: expect_absent_by_year). Que o isento do art. 53.º nao deduz IVA decorria das regras gerais (arts. 19.º e 20.º); isso nao esta neste registo.",
+          "in_force": false,
+          "in_force_from": "2025-03-29",
+          "in_force_from_display": "29/03/2025"
         }
       },
       "global_limit": {
@@ -681,12 +687,31 @@
         },
         "cirs25_1a_deducao_especifica": {
           "article": "CIRS 25.º n.º 1 a)",
-          "value": null,
-          "verified": false,
+          "value": 4350.24,
+          "unit": "EUR",
+          "verified": true,
           "source_id": "cirs-25",
-          "source_law": null,
-          "dre_text": [],
-          "note": "A redacao de 2024 (Lei 82/2023, depois Lei 32/2024) diz '(euro) 4 104', mas a Lei 32/2024, em vigor 2024-08-08 e sem norma de producao de efeitos, aditou o n.º 7 (valor atualizado anualmente a taxa de atualizacao do IAS). O DRE nao diz se o montante de 2024 ja e atualizado: desconhecido."
+          "source_law": "Lei 32/2024, art. 2.º (n.º 7, em vigor 2024-08-08) e Portaria 421/2023 (taxa de atualização do IAS de 6 %)",
+          "dre_text": [
+            "(euro) 4 104"
+          ],
+          "derived": {
+            "formula": "4 104 x 1,06",
+            "base": 4104,
+            "rate_pct": 6,
+            "texts": [
+              {
+                "source_id": "cirs-25",
+                "on": "2024-12-31",
+                "text": "O valor referido na alínea a) do n.º 1 é atualizado anualmente à taxa de atualização do IAS"
+              },
+              {
+                "source_id": "ias-2024",
+                "text": "a taxa de atualização do valor do IAS para 2024, é de 6 %"
+              }
+            ]
+          },
+          "note": "4 104 da alinea a) atualizado pelo n.º 7 (Lei 32/2024) a taxa do IAS de 2024. A AT aplica 4 350,24 como deducao especifica de 2024."
         },
         "cirs31_1_coeficientes": {
           "article": "CIRS 31.º n.º 1 a) a g)",
@@ -756,11 +781,14 @@
         "cirs31_15_prazo_portal": {
           "article": "CIRS 31.º n.º 15 a)",
           "value": null,
-          "verified": false,
+          "verified": true,
           "source_id": "cirs-31",
-          "source_law": null,
+          "source_law": "Decreto-Lei 49/2025 aditou o prazo ao n.º 15 (em vigor 2025-07-01)",
           "dre_text": [],
-          "note": "A redacao em vigor neste ano (Lei 24-D/2022) nao tem prazo no n.º 15; se a remissao para o art. 78.º-B n.os 2 a 6 impoe um e uma leitura juridica, nao um valor lido: desconhecido."
+          "note": "A redacao do n.º 15 em vigor neste ano nao tem o prazo de fevereiro (verificado: expect_absent_by_year). Se a remissao para o art. 78.º-B n.os 2 a 6 impunha outro prazo e uma leitura juridica, nao um valor lido.",
+          "in_force": false,
+          "in_force_from": "2025-07-01",
+          "in_force_from_display": "01/07/2025"
         },
         "cirs31_16_valores_declarados": {
           "article": "CIRS 31.º n.º 16",
@@ -871,11 +899,14 @@
         "civa53_3_sem_deducao": {
           "article": "CIVA 53.º n.º 3",
           "value": null,
-          "verified": false,
+          "verified": true,
           "source_id": "civa-53",
-          "source_law": null,
+          "source_law": "Decreto-Lei 35/2025 aditou o n.º 3 ao art. 53.º (em vigor 2025-03-29)",
           "dre_text": [],
-          "note": "So a redacao do DL 35/2025 (em vigor 2025-03-29) tem esta regra no art. 53.º; antes dessa data o art. 53.º nao a continha e a regra equivalente noutro artigo nao foi lida."
+          "note": "O art. 53.º em vigor neste ano nao tem esta regra (verificado: expect_absent_by_year). Que o isento do art. 53.º nao deduz IVA decorria das regras gerais (arts. 19.º e 20.º); isso nao esta neste registo.",
+          "in_force": false,
+          "in_force_from": "2025-03-29",
+          "in_force_from_display": "29/03/2025"
         }
       },
       "global_limit": {
@@ -1064,7 +1095,9 @@
           "source_id": "cirs-31",
           "source_law": null,
           "dre_text": [],
-          "note": "O prazo de fevereiro entrou pelo DL 49/2025, em vigor 2025-07-01, cujo art. 18.º nao tem regra de efeitos para o CIRS; de janeiro a junho de 2025 a redacao nao tinha prazo. O DRE nao diz se vale para as faturas de 2025: desconhecido."
+          "note": "O prazo de fevereiro entrou pelo DL 49/2025, em vigor 2025-07-01, cujo art. 18.º nao tem regra de efeitos para o CIRS; de janeiro a junho de 2025 a redacao nao tinha prazo. O DRE nao diz se vale para as faturas de 2025: desconhecido.",
+          "in_force_from": "2025-07-01",
+          "in_force_from_display": "01/07/2025"
         },
         "cirs31_16_valores_declarados": {
           "article": "CIRS 31.º n.º 16",
@@ -1178,7 +1211,9 @@
           "source_id": "civa-53",
           "source_law": null,
           "dre_text": [],
-          "note": "So a redacao do DL 35/2025 (em vigor 2025-03-29) tem esta regra no art. 53.º; antes dessa data o art. 53.º nao a continha e a regra equivalente noutro artigo nao foi lida."
+          "note": "So a redacao do DL 35/2025 (em vigor 2025-03-29) tem esta regra no art. 53.º; antes dessa data o art. 53.º nao a continha e a regra equivalente noutro artigo nao foi lida.",
+          "in_force_from": "2025-03-29",
+          "in_force_from_display": "29/03/2025"
         }
       },
       "global_limit": {
@@ -1258,9 +1293,9 @@
           0.48
         ]
       ],
-      "deducao_especifica_catA": 4104.0,
+      "deducao_especifica_catA": 4350.24,
       "_status": "CORRIGIDO 2026-07-25: tabela REDUZIDA (Lei 33-A/2024), escalao 6 = 35,5%. A controlled manual cross-check existed but its account figures and location are intentionally not retained. Guardar as parcelas OFICIAIS do art. 68 anual e chavear por regiao.",
-      "_deducao_especifica": "4104 e a letra da redacao de 2024, mas years.2024.rules.cirs25_1a_deducao_especifica fica por verificar (atualizacao pelo IAS da Lei 32/2024 sem regra de efeitos)."
+      "_deducao_especifica": "4 104 x 1,06 = 4350,24 (CIRS 25.º n.º 1 a) e n.º 7 da Lei 32/2024; taxa do IAS de 2024, Portaria 421/2023). A AT aplica este valor em 2024. Era 4104; regra: years.2024.rules.cirs25_1a_deducao_especifica."
     },
     "2023": {
       "continente": [

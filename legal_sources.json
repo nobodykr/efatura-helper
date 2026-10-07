@@ -225,7 +225,7 @@
     },
     {
       "id": "cirs-25",
-      "governs": "Deducao especifica (art. 25.º n.º 1 a)): 4 104 EUR ate 2023, 8,54 x IAS desde 2025",
+      "governs": "Deducao especifica (art. 25.º n.º 1 a)): 4 104 EUR em 2023, 4 350,24 EUR em 2024 (n.º 7, Lei 32/2024: atualizado a taxa do IAS, 6 %), 8,54 x IAS desde 2025",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-902120232",
       "type": "artigo",
       "critical": true,
@@ -240,6 +240,9 @@
         "2023": [
           "(euro) 4 104"
         ],
+        "2024": [
+          "(euro) 4 104"
+        ],
         "2025": [
           "8,54 vezes o valor do IAS"
         ],
@@ -247,7 +250,12 @@
           "8,54 vezes o valor do IAS"
         ]
       },
-      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). 2024 sem expect_by_year: a redacao de 2024 diz 4 104 mas a Lei 32/2024 (em vigor 2024-08-08, sem norma de producao de efeitos) aditou o n.º 7 'atualizado anualmente a taxa de atualizacao do IAS'; o DRE nao diz se 2024 ja e atualizado."
+      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). 2024: a redacao diz 4 104 nos dois dias e, a 31-12-2024, o n.º 7 aditado pela Lei 32/2024 (em vigor 2024-08-08) manda atualiza-lo a taxa do IAS (6 % em 2024, Portaria 421/2023, fonte ias-2024): 4 104 x 1,06 = 4 350,24, o valor que a AT aplica em 2024.",
+      "expect_on_date": {
+        "2024-12-31": [
+          "O valor referido na alínea a) do n.º 1 é atualizado anualmente à taxa de atualização do IAS"
+        ]
+      }
     },
     {
       "id": "cirs-31",
@@ -323,7 +331,25 @@
           "até ao final do mês de fevereiro do ano seguinte ao da sua emissão"
         ]
       },
-      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). O prazo de fevereiro do n.º 15 so existe na redacao do DL 49/2025 (em vigor 2025-07-01, art. 18.º sem regra de efeitos para o CIRS); as redacoes de 2023 e 2024 nao tem prazo no n.º 15."
+      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). O prazo de fevereiro do n.º 15 so existe na redacao do DL 49/2025 (em vigor 2025-07-01, art. 18.º sem regra de efeitos para o CIRS); as redacoes de 2023 e 2024 nao tem prazo no n.º 15.",
+      "expect_absent_by_year": {
+        "2023": [
+          "até ao final do mês de fevereiro do ano seguinte ao da sua emissão"
+        ],
+        "2024": [
+          "até ao final do mês de fevereiro do ano seguinte ao da sua emissão"
+        ]
+      },
+      "expect_absent_on_date": {
+        "2025-06-30": [
+          "até ao final do mês de fevereiro do ano seguinte ao da sua emissão"
+        ]
+      },
+      "expect_on_date": {
+        "2025-07-01": [
+          "até ao final do mês de fevereiro do ano seguinte ao da sua emissão"
+        ]
+      }
     },
     {
       "id": "cirs-32",
@@ -597,7 +623,25 @@
           "estão excluídos do direito à dedução previsto nos artigos 19.º e 20.º"
         ]
       },
-      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). 2023 e 2024 vem da Nota do art. 282.º da Lei 24-D/2022 na propria pagina (o n.º 1 dessas redacoes diz 15 000)."
+      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). 2023 e 2024 vem da Nota do art. 282.º da Lei 24-D/2022 na propria pagina (o n.º 1 dessas redacoes diz 15 000).",
+      "expect_absent_by_year": {
+        "2023": [
+          "estão excluídos do direito à dedução previsto nos artigos 19.º e 20.º"
+        ],
+        "2024": [
+          "estão excluídos do direito à dedução previsto nos artigos 19.º e 20.º"
+        ]
+      },
+      "expect_absent_on_date": {
+        "2025-03-28": [
+          "estão excluídos do direito à dedução previsto nos artigos 19.º e 20.º"
+        ]
+      },
+      "expect_on_date": {
+        "2025-03-29": [
+          "estão excluídos do direito à dedução previsto nos artigos 19.º e 20.º"
+        ]
+      }
     },
     {
       "id": "ias-2023",
@@ -621,7 +665,8 @@
       "amended_by": "Portaria 421/2023, art. 2.º (produz efeitos a partir de 1 de janeiro de 2024)",
       "why_it_matters": "A deducao especifica (art. 25.º) e outros limites sao multiplos do IAS.",
       "expect": [
-        "O valor do IAS para o ano de 2024 é de (euro) 509,26"
+        "O valor do IAS para o ano de 2024 é de (euro) 509,26",
+        "a taxa de atualização do valor do IAS para 2024, é de 6 %"
       ],
       "source_note": "Lido em 2026-10-07 na pagina do diploma no DRE."
     },
