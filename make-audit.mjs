@@ -183,9 +183,11 @@ const limCopy = snap.civa && snap.civa.art53_isencao && snap.civa.art53_isencao.
 if (lim && limCopy !== lim.value) drift.push(`civa.art53_isencao.limiar_eur ${limCopy} != civa53_limiar ${lim.value}`);
 for (const [y, blk] of Object.entries(snap.escaloes_irs || {})) {
   if (!/^\d{4}$/.test(y) || !RULE_YEARS[y] || blk.deducao_especifica_catA == null) continue;
-  const d = RULE_YEARS[y].cirs25_1a_deducao_especifica, ias = RULE_YEARS[y].ias;
+  const d = RULE_YEARS[y].cirs25_1a_deducao_especifica;
   if (!d || !d.verified) continue;
-  const want = d.unit === "IAS" ? (ias && ias.verified ? Math.round(d.value * ias.value * 100) / 100 : null) : d.value;
+  // A multiple of the IAS is not turned into euros here: for 2025 the AT applied 4 104 EUR, not 8,54 x
+  // that year's IAS (escaloes_irs.2025._deducao_especifica). Only a rule stated in euros is compared.
+  const want = d.unit === "EUR" ? d.value : null;
   if (want !== null && Math.abs(blk.deducao_especifica_catA - want) > 0.005)
     drift.push(`escaloes_irs.${y}.deducao_especifica_catA ${blk.deducao_especifica_catA} != art. 25.º n.º 1 a) ${want}`);
 }

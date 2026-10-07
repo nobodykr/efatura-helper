@@ -268,7 +268,7 @@
     if(f && f.sources) f.sources.forEach(function(s){ fmap[s.id]=s.status; });
     var fw=document.getElementById("fresh-when");
     if(f && f._checked){ var chg=(f.sources||[]).filter(function(s){return s.status!=="OK"&&s.status!=="SKIP";}).length;
-      fw.textContent = "Fontes confirmadas na lei em "+(f._checked_display||f._checked)+(chg?" - "+chg+" precisam de revisão":" - todas a bater."); }
+      fw.textContent = "Fontes confirmadas na lei"+(f._checked_display?" em "+f._checked_display:"")+(chg?" - "+chg+" precisam de revisão":" - todas a bater."); }
     else { fw.textContent="Frescura das fontes: ainda não confirmada."; }
     var tb = document.getElementById("tbody");
     (m.rows||[]).forEach(function(r){
