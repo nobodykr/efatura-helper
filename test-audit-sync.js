@@ -24,19 +24,17 @@ const raM = tool.match(/RENDAS_CAP_ANO = \{([^}]*)\}/);
 if (raM) for (const [, y, v] of raM[1].matchAll(/(\d{4}): (\d+)/g)) rendasAno[y] = Number(v);
 const potCap = Number((tool.match(/POT_CAP = (\d+)/) || [])[1]);
 const nowRenda = rendasAno[Object.keys(rendasAno).sort().pop()];
+const setorDesde = {};
+const sdM = tool.match(/SETOR_DESDE = \{([^}]*)\}/);
+if (sdM) for (const [, c, y] of sdM[1].matchAll(/(C\d+): (\d{4})/g)) setorDesde[c] = Number(y);
+const taxaAno = {};
+const taM = tool.match(/TAXA_ANO = \{((?:[^{}]|\{[^}]*\})*)\}/);
+if (taM) for (const [, c, body] of taM[1].matchAll(/(C\d+): \{([^}]*)\}/g))
+  for (const [, y, v] of body.matchAll(/(\d{4}): ([\d.]+)/g)) (taxaAno[c] ||= {})[y] = Number(v);
 
-// 1. drift is shown on /auditoria, never filtered. tool.js has one CEIL for every year, so past-year
-//    rules that differ are known drift, listed here one by one; anything else is new drift and fails.
-const KNOWN_DRIFT = [
-  "C11 2023: tool.js aplica 30% mas o registo diz 15% (78.º-F n.º 1 f))",
-  ...["2023", "2024", "2025"].flatMap((y) => [
-    `C13 ${y}: setor nao existia nesse ano (78.º-F n.º 1 g) so desde 2026)`,
-    `C14 ${y}: setor nao existia nesse ano (78.º-F n.º 1 h), i), j) so desde 2026)`,
-    `C15 ${y}: setor nao existia nesse ano (78.º-F n.º 1 k), l) so desde 2026)`]),
-  "rendas 2023: registo antigo usa 1100 EUR mas cirs78e_4a_rendas_limite_majorado_ano diz 800 EUR (78.º-E n.º 4 a), faseado pela Lei 36/2024)",
-  "rendas 2024: registo antigo usa 1100 EUR mas cirs78e_4a_rendas_limite_majorado_ano diz 900 EUR (78.º-E n.º 4 a), faseado pela Lei 36/2024)",
-  "rendas 2025: registo antigo usa 1100 EUR mas cirs78e_4a_rendas_limite_majorado_ano diz 1000 EUR (78.º-E n.º 4 a), faseado pela Lei 36/2024)",
-];
+// 1. drift is shown on /auditoria, never filtered. tool.js follows each year's wording (SETOR_DESDE,
+//    TAXA_ANO, RENDAS_CAP_ANO), so known drift is empty; anything reported is new drift and fails.
+const KNOWN_DRIFT = [];
 if (!Array.isArray(manifest.drift)) bad("manifest drift is not an array");
 else {
   const unknown = manifest.drift.filter((d) => !KNOWN_DRIFT.includes(d));
@@ -68,8 +66,11 @@ const personal = manifest.personal || [];
 if (personal.length !== Object.keys(ceil).length * 4) bad(`expected ${Object.keys(ceil).length * 4} personal rows, manifest has ${personal.length}`);
 for (const r of personal) {
   const c = ceil[r.code], expectedCap = r.code === "C07" ? rendasAno[r.year] : c.base === "iva" ? potCap : c.cap;
-  if (r.tool_value.rate_pct !== Math.round(c.rate * 100) || r.tool_value.cap_eur !== expectedCap)
+  const rate = (taxaAno[r.code] || {})[r.year] ?? c.rate;
+  if (r.tool_value.rate_pct !== Math.round(rate * 100) || r.tool_value.cap_eur !== expectedCap)
     bad(`${r.code} ${r.year}: personal tool value is stale`);
+  if ("sector_in_force" in r.tool_value && r.tool_value.sector_in_force !== !(setorDesde[r.code] > Number(r.year)))
+    bad(`${r.code} ${r.year}: personal sector_in_force is stale`);
   if (r.match !== (JSON.stringify(r.tool_value) === JSON.stringify(r.registry_value)))
     bad(`${r.code} ${r.year}: personal match flag is stale`);
   if (!r.match && !manifest.drift.some((d) => d.startsWith(`${r.code} ${r.year}:`)))

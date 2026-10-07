@@ -1,7 +1,7 @@
 {
-  "_generated": "make-audit.mjs a partir de deducoes.html + tool.js + year_snapshots.json + legal_sources.json (versão do tool.js 2026.10.06.3)",
+  "_generated": "make-audit.mjs a partir de deducoes.html + tool.js + year_snapshots.json + legal_sources.json (versão do tool.js 2026.10.07.1)",
   "_disclaimer": "GERADO automaticamente do código e das fontes, não curado. Cada linha é verificável: siga a fonte legal (DRE) e confirme o valor. Correr test-audit-sync.js garante que este ficheiro não desviou do código.",
-  "tool_version": "2026.10.06.3",
+  "tool_version": "2026.10.07.1",
   "rows": [
     {
       "code": "C01",
@@ -3546,7 +3546,7 @@
       "sector": "Ginásios",
       "year": "2023",
       "tool_value": {
-        "rate_pct": 30,
+        "rate_pct": 15,
         "cap_eur": 250,
         "sector_in_force": true
       },
@@ -3557,7 +3557,7 @@
       },
       "rule_key": "cirs78f_ginasios_pct + cirs78f_1_limite_agregado + cirs78f_1_setores",
       "verified": true,
-      "match": false
+      "match": true
     },
     {
       "code": "C11",
@@ -3678,7 +3678,7 @@
       "tool_value": {
         "rate_pct": 15,
         "cap_eur": 250,
-        "sector_in_force": true
+        "sector_in_force": false
       },
       "registry_value": {
         "rate_pct": 15,
@@ -3687,7 +3687,7 @@
       },
       "rule_key": "cirs78f_1_iva_pct + cirs78f_1_limite_agregado + cirs78f_1_setores",
       "verified": true,
-      "match": false
+      "match": true
     },
     {
       "code": "C13",
@@ -3696,7 +3696,7 @@
       "tool_value": {
         "rate_pct": 15,
         "cap_eur": 250,
-        "sector_in_force": true
+        "sector_in_force": false
       },
       "registry_value": {
         "rate_pct": 15,
@@ -3705,7 +3705,7 @@
       },
       "rule_key": "cirs78f_1_iva_pct + cirs78f_1_limite_agregado + cirs78f_1_setores",
       "verified": true,
-      "match": false
+      "match": true
     },
     {
       "code": "C13",
@@ -3714,7 +3714,7 @@
       "tool_value": {
         "rate_pct": 15,
         "cap_eur": 250,
-        "sector_in_force": true
+        "sector_in_force": false
       },
       "registry_value": {
         "rate_pct": 15,
@@ -3723,7 +3723,7 @@
       },
       "rule_key": "cirs78f_1_iva_pct + cirs78f_1_limite_agregado + cirs78f_1_setores",
       "verified": true,
-      "match": false
+      "match": true
     },
     {
       "code": "C13",
@@ -3750,7 +3750,7 @@
       "tool_value": {
         "rate_pct": 15,
         "cap_eur": 250,
-        "sector_in_force": true
+        "sector_in_force": false
       },
       "registry_value": {
         "rate_pct": 15,
@@ -3759,7 +3759,7 @@
       },
       "rule_key": "cirs78f_1_iva_pct + cirs78f_1_limite_agregado + cirs78f_1_setores",
       "verified": true,
-      "match": false
+      "match": true
     },
     {
       "code": "C14",
@@ -3768,7 +3768,7 @@
       "tool_value": {
         "rate_pct": 15,
         "cap_eur": 250,
-        "sector_in_force": true
+        "sector_in_force": false
       },
       "registry_value": {
         "rate_pct": 15,
@@ -3777,7 +3777,7 @@
       },
       "rule_key": "cirs78f_1_iva_pct + cirs78f_1_limite_agregado + cirs78f_1_setores",
       "verified": true,
-      "match": false
+      "match": true
     },
     {
       "code": "C14",
@@ -3786,7 +3786,7 @@
       "tool_value": {
         "rate_pct": 15,
         "cap_eur": 250,
-        "sector_in_force": true
+        "sector_in_force": false
       },
       "registry_value": {
         "rate_pct": 15,
@@ -3795,7 +3795,7 @@
       },
       "rule_key": "cirs78f_1_iva_pct + cirs78f_1_limite_agregado + cirs78f_1_setores",
       "verified": true,
-      "match": false
+      "match": true
     },
     {
       "code": "C14",
@@ -3822,7 +3822,7 @@
       "tool_value": {
         "rate_pct": 15,
         "cap_eur": 250,
-        "sector_in_force": true
+        "sector_in_force": false
       },
       "registry_value": {
         "rate_pct": 15,
@@ -3831,7 +3831,7 @@
       },
       "rule_key": "cirs78f_1_iva_pct + cirs78f_1_limite_agregado + cirs78f_1_setores",
       "verified": true,
-      "match": false
+      "match": true
     },
     {
       "code": "C15",
@@ -3840,7 +3840,7 @@
       "tool_value": {
         "rate_pct": 15,
         "cap_eur": 250,
-        "sector_in_force": true
+        "sector_in_force": false
       },
       "registry_value": {
         "rate_pct": 15,
@@ -3849,7 +3849,7 @@
       },
       "rule_key": "cirs78f_1_iva_pct + cirs78f_1_limite_agregado + cirs78f_1_setores",
       "verified": true,
-      "match": false
+      "match": true
     },
     {
       "code": "C15",
@@ -3858,7 +3858,7 @@
       "tool_value": {
         "rate_pct": 15,
         "cap_eur": 250,
-        "sector_in_force": true
+        "sector_in_force": false
       },
       "registry_value": {
         "rate_pct": 15,
@@ -3867,7 +3867,7 @@
       },
       "rule_key": "cirs78f_1_iva_pct + cirs78f_1_limite_agregado + cirs78f_1_setores",
       "verified": true,
-      "match": false
+      "match": true
     },
     {
       "code": "C15",
@@ -3960,19 +3960,5 @@
       "match": true
     }
   ],
-  "drift": [
-    "C11 2023: tool.js aplica 30% mas o registo diz 15% (78.º-F n.º 1 f))",
-    "C13 2023: setor nao existia nesse ano (78.º-F n.º 1 g) so desde 2026)",
-    "C13 2024: setor nao existia nesse ano (78.º-F n.º 1 g) so desde 2026)",
-    "C13 2025: setor nao existia nesse ano (78.º-F n.º 1 g) so desde 2026)",
-    "C14 2023: setor nao existia nesse ano (78.º-F n.º 1 h), i), j) so desde 2026)",
-    "C14 2024: setor nao existia nesse ano (78.º-F n.º 1 h), i), j) so desde 2026)",
-    "C14 2025: setor nao existia nesse ano (78.º-F n.º 1 h), i), j) so desde 2026)",
-    "C15 2023: setor nao existia nesse ano (78.º-F n.º 1 k), l) so desde 2026)",
-    "C15 2024: setor nao existia nesse ano (78.º-F n.º 1 k), l) so desde 2026)",
-    "C15 2025: setor nao existia nesse ano (78.º-F n.º 1 k), l) so desde 2026)",
-    "rendas 2023: registo antigo usa 1100 EUR mas cirs78e_4a_rendas_limite_majorado_ano diz 800 EUR (78.º-E n.º 4 a), faseado pela Lei 36/2024)",
-    "rendas 2024: registo antigo usa 1100 EUR mas cirs78e_4a_rendas_limite_majorado_ano diz 900 EUR (78.º-E n.º 4 a), faseado pela Lei 36/2024)",
-    "rendas 2025: registo antigo usa 1100 EUR mas cirs78e_4a_rendas_limite_majorado_ano diz 1000 EUR (78.º-E n.º 4 a), faseado pela Lei 36/2024)"
-  ]
+  "drift": []
 }

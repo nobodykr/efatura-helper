@@ -64,7 +64,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.10.06.3";
+  var FB_VERSION = "2026.10.07.1";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -149,8 +149,9 @@
     C05: { rate: 0.15, base: "total", cap: 1000 },
     C06: { rate: 0.30, base: "total", cap: 800 },
     // Art. 78.o-E: the permanent n.10 ceiling is 1,000 EUR, but DL 97/2026 art. 15 applies
-    // 900 EUR to income year 2026. N.4 can raise the result to 1,100 for lower incomes; that
-    // income-dependent increase is not modelled, so this remains the conservative base ceiling.
+    // 900 EUR to income year 2026. N.4 a) can raise it for lower incomes (1,050 in 2026, 1,100 from
+    // 2027, Lei 36/2024 art. 3); that income-dependent increase is not modelled, so this remains
+    // the conservative base ceiling.
     // Historico: 502 (fix anterior) era o texto
     // DESATUALIZADO do render do diploma-pai - o valor por ano vive em RENDAS_CAP_ANO abaixo.
     C07: { rate: 0.15, base: "total", cap: 900 },
@@ -167,6 +168,15 @@
     C15: { rate: 0.15, base: "iva", pot: POT }
   };
   var POT_CAP = 250;
+  /* CEIL is the current wording. Past-year re-audits must use the wording of THAT income year
+   * (art. 78.o-F, DRE version history; rules per year in year_snapshots.json):
+   * - C11 ginasios: 30% under n.8 only from 2024 (Lei 82/2023); in 2023 it was n.1 f) at 15%.
+   * - C13 livros, C14 artes, C15 museus: n.1 g) to l), only from 2026 (Lei 73-A/2025).
+   * make-audit.mjs reads both tables and /auditoria compares them with the registry per year. */
+  var SETOR_DESDE = { C13: 2026, C14: 2026, C15: 2026 };
+  var TAXA_ANO = { C11: { 2023: 0.15 } };
+  function emVigor(sec, ano) { return !!CEIL[sec] && !(ano && SETOR_DESDE[sec] > Number(ano)); }
+  function taxaAno(sec, ano) { var t = ano && TAXA_ANO[sec]; return (t && t[ano] != null) ? t[ano] : CEIL[sec].rate; }
 
   // Household shape changes the ceilings, and e-Fatura does not expose it (it lives on another
   // origin, so the browser blocks us from reading it). So we ask once and keep it in localStorage
@@ -250,20 +260,20 @@
   /* Deduction contributed by one invoice when classified in `sec`. Keep this in one place: C99
    * is 45%, not CEIL.C99.rate (35%), for a monoparental household. Having ad-hoc copies of this
    * formula already made the optimiser undervalue that case. Amounts from e-Fatura are cents. */
-  function deductionFor(x, sec, prof) {
-    var c = CEIL[sec]; if (!c) return 0;
+  function deductionFor(x, sec, prof, ano) {
+    var c = CEIL[sec]; if (!c || !emVigor(sec, ano)) return 0;
     var value = (c.base === "iva" ? Number(x.valorTotalIva || 0) : Number(x.valorTotal || 0)) / 100;
-    return value * (sec === "C99" ? c99Rate(prof) : c.rate);
+    return value * (sec === "C99" ? c99Rate(prof) : taxaAno(sec, ano));
   }
 
   /* How much of each ceiling the year's ALREADY-REGISTERED invoices have used up. */
-  function usedSoFar(rows, prof) {
+  function usedSoFar(rows, prof, ano) {
     var used = {};
     rows.forEach(function (x) {
       var sec = x.actividadeEmitente, c = CEIL[sec];
       if (!isAttributed(x.estadoBeneficio) || !c) return;
       var key = c.pot || sec;
-      used[key] = (used[key] || 0) + deductionFor(x, sec, prof);
+      used[key] = (used[key] || 0) + deductionFor(x, sec, prof, ano);
     });
     return used;
   }
@@ -271,8 +281,9 @@
   /* PAST-YEAR RE-AUDIT. e-Fatura keeps invoices per year (the same obterDocumentosAdquirente endpoint
    * takes a date range), so we can read any past year and see how much of each ceiling was used vs
    * still free - i.e. deduction that MIGHT be recoverable via a declaracao de substituicao (within
-   * the CPPT/LGT windows). Only the rendas ceiling (C07) moved across years; the rest held. Values
-   * are DRE/AT-verified in year_snapshots.json. Indicators only - never a submission. */
+   * the CPPT/LGT windows). The rendas ceiling (C07) and the 78.o-F sectors moved across years
+   * (RENDAS_CAP_ANO, SETOR_DESDE, TAXA_ANO). Values are DRE/AT-verified in year_snapshots.json.
+   * Indicators only - never a submission. */
   var RENDAS_CAP_ANO = { 2023: 502, 2024: 600, 2025: 700, 2026: 900 };   // C07 base per income year. 2025: Lei 36/2024 (transitoria 50% do aumento 600->800). 2026: DL 97/2026, art. 78-E n.10 + norma transitoria (900 em 2026, 1000 em 2027) - lido do PDF do DR 2026-07-31.
   /* obterDocumentosAdquirente CAPS at 300 rows and returns the MOST RECENT first, so summing an
    * unfiltered year silently misses invoices on a busy year. But it accepts ambitoAquisicaoFilter
@@ -321,10 +332,10 @@
    * sectors the merchant genuinely holds (from caemap/SICAE) are ever offered, so it can never say
    * "declare groceries as Saude". Used by run() for the current year AND by reAuditAno for past
    * years (pass the per-year rendas cap for C07). Identical logic; do not let them diverge. */
-  function movablesAndRecoverable(rows, caemap, prof, rendasCap, usedOverride) {
+  function movablesAndRecoverable(rows, caemap, prof, rendasCap, usedOverride, ano) {
     // Current-year household mode supplies the authoritative merged ceiling usage. Past-year
     // re-audits omit it and use this account's rows. Copy so allocation never mutates the caller.
-    var sourceUsed = usedOverride || usedSoFar(rows, prof), used = {};
+    var sourceUsed = usedOverride || usedSoFar(rows, prof, ano), used = {};
     Object.keys(sourceUsed).forEach(function (k) { used[k] = sourceUsed[k]; });
     var capOf = function (sec) { return (sec === "C07" && rendasCap != null) ? rendasCap : capFor(sec, prof); };
     var keyOf = function (sec) { return CEIL[sec].pot || sec; };
@@ -342,7 +353,7 @@
         var cur = x.actividadeEmitente; if (!cur || !CEIL[cur]) return;
         var raw = caemap[x.nifEmitente];
         var reg = raw ? (Object.prototype.toString.call(raw) === "[object Array]" ? raw : [raw]) : [];
-        reg = reg.filter(function (s, i) { return CEIL[s] && reg.indexOf(s) === i; });
+        reg = reg.filter(function (s, i) { return emVigor(s, ano) && reg.indexOf(s) === i; });
         var primario = reg.length ? reg[0] : null;
         var targets = onlyPrimary ? (primario && primario !== cur ? [primario] : [])
                                   : reg.filter(function (s) { return s !== cur; });
@@ -352,7 +363,7 @@
       while (pending.length) {
         var best = null;
         pending.forEach(function (p, pi) {
-          var sourceKey = keyOf(p.cur), sourceD = deductionFor(p.x, p.cur, prof);
+          var sourceKey = keyOf(p.cur), sourceD = deductionFor(p.x, p.cur, prof, ano);
           var sourceBefore = Math.min(levels[sourceKey] || 0, capOf(p.cur));
           var sourceAfter = Math.min(Math.max(0, (levels[sourceKey] || 0) - sourceD), capOf(p.cur));
           var sourceLoss = sourceBefore - sourceAfter;
@@ -361,7 +372,7 @@
             // Sectors in the same 78-F pot share one ceiling. Re-labelling inside that pot is not
             // a cap-recovery operation and must be left to the factual purchase classification.
             if (targetKey === sourceKey) return;
-            var targetD = deductionFor(p.x, to, prof);
+            var targetD = deductionFor(p.x, to, prof, ano);
             var targetBefore = Math.min(levels[targetKey] || 0, capOf(to));
             var targetAfter = Math.min((levels[targetKey] || 0) + targetD, capOf(to));
             var net = targetAfter - targetBefore - sourceLoss;
@@ -456,7 +467,7 @@
   function reAuditAno(ano, prof) {
     return fetchSector(ano, "").then(function (rows) {          // "" = all sectors, uncapped
       return fetchMap(rows.map(function (x) { return x.nifEmitente; })).then(function (caemap) {
-        var mr = movablesAndRecoverable(rows, caemap || {}, prof, RENDAS_CAP_ANO[ano]);
+        var mr = movablesAndRecoverable(rows, caemap || {}, prof, RENDAS_CAP_ANO[ano], null, ano);
         var byTarget = {};
         mr.movR.forEach(function (m) { var s = SECTORS[m.to] || m.to; byTarget[s] = (byTarget[s] || 0) + 1; });
         var byTargetA = {};
