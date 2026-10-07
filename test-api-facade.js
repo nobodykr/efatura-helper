@@ -5,9 +5,11 @@ const { readFileSync } = require("fs");
 function assert(ok, message) { if (!ok) throw new Error(message); }
 const limiter = readFileSync("functions/_lib/ratelimit.js", "utf8")
   .replace("export async function allow", "async function allow");
+const access = readFileSync("functions/_lib/access.js", "utf8");
 const facade = readFileSync("functions/api/v1/[[path]].js", "utf8")
-  .replace('import { allow } from "../../_lib/ratelimit.js";', "");
-const source = limiter + "\n" + facade;
+  .replace('import { allow } from "../../_lib/ratelimit.js";', "")
+  .replace('import { accessHeaders } from "../../_lib/access.js";', "");
+const source = limiter + "\n" + access + "\n" + facade;
 
 (async () => {
   const mod = await import("data:text/javascript;base64," + Buffer.from(source).toString("base64"));
@@ -57,12 +59,16 @@ const source = limiter + "\n" + facade;
     "upstream was not fixed to the reviewed path");
   assert(!forwarded.init.headers.has("cookie") && !forwarded.init.headers.has("authorization"), "browser secrets forwarded");
   assert(forwarded.init.headers.get("cf-access-client-id") === "test-id", "service credential not applied server-side");
+  assert(forwarded.init.headers.get("cf-access-client-secret") === "test-secret", "service secret not applied server-side");
   assert(!response.headers.has("x-upstream-secret"), "unreviewed upstream header leaked");
   assert(response.headers.get("x-robots-tag") === "noindex, nofollow, noarchive", "API noindex missing");
   const options = await call("contributions/impact", "OPTIONS");
   assert(options.headers.get("access-control-allow-methods") === "POST, OPTIONS", "route-specific CORS methods missing");
   await call("map/rules", "GET", undefined, env);
   assert(forwarded.url === "https://internal-api.invalid/api/v1/map/rules", "unreviewed query leaked upstream");
+  await call("map/rules", "GET", undefined, { FISCALIDADE_API_ORIGIN: "https://internal-api.invalid" });
+  assert(!forwarded.init.headers.has("cf-access-client-id") && !forwarded.init.headers.has("cf-access-client-secret"),
+    "partial API Access bindings were forwarded");
   const marketEnv = {
     FISCALIDADE_API_ORIGIN: "https://internal-api.invalid",
     FISCALIDADE_MARKET_ORIGIN: "https://market-api.invalid/private",
@@ -72,6 +78,7 @@ const source = limiter + "\n" + facade;
   const marketResponse = await call("intake", "POST", "{}", marketEnv);
   assert(forwarded.url === "https://market-api.invalid/api/v1/intake", "intake did not use its isolated origin");
   assert(forwarded.init.headers.get("cf-access-client-id") === "market-id", "dedicated market credential not applied");
+  assert(forwarded.init.headers.get("cf-access-client-secret") === "market-secret", "dedicated market secret not applied");
   assert(forwarded.init.headers.get("x-fiscalidade-market-key") === "dedicated-market-key",
     "dedicated market API key not applied server-side");
   assert(marketResponse.headers.get("access-control-allow-origin") === "https://fiscalida.de",
