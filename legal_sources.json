@@ -10,86 +10,283 @@
     {
       "id": "cirs-78b",
       "governs": "C99 despesas gerais familiares - 35% ate 250 EUR",
-      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821425",
       "type": "artigo",
       "critical": true,
       "why_it_matters": "C99 is the fallback for EVERY unmapped merchant, so its rate and ceiling affect more invoices than any other single rule.",
       "expect": [
         "78.º-B",
         "35 %",
-        "250"
+        "250",
+        "correspondente a 35 % do valor suportado por qualquer membro do agregado familiar",
+        "com o limite global de (euro) 250 para cada sujeito passivo",
+        "No caso de famílias monoparentais, a dedução prevista no n.º 1 é de 45 %",
+        "com o limite global de (euro) 335"
       ],
-      "source_note": "DRE consolidada CIRS; portaldasfinancas pages are pointers"
+      "source_note": "Lido em 2026-10-07 com dre.mjs article na pagina DEDICADA e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs).",
+      "dre_versao_id": "912821425",
+      "amended_by": "Decreto-Lei 49/2025, art. 2.º (em vigor 2025-07-01); antes Decreto-Lei 28/2019 art. 38.º (2019-02-16)",
+      "expect_by_year": {
+        "2023": [
+          "correspondente a 35 % do valor suportado por qualquer membro do agregado familiar",
+          "com o limite global de (euro) 250 para cada sujeito passivo",
+          "No caso de famílias monoparentais, a dedução prevista no n.º 1 é de 45 %",
+          "com o limite global de (euro) 335"
+        ],
+        "2024": [
+          "correspondente a 35 % do valor suportado por qualquer membro do agregado familiar",
+          "com o limite global de (euro) 250 para cada sujeito passivo",
+          "No caso de famílias monoparentais, a dedução prevista no n.º 1 é de 45 %",
+          "com o limite global de (euro) 335"
+        ],
+        "2025": [
+          "correspondente a 35 % do valor suportado por qualquer membro do agregado familiar",
+          "com o limite global de (euro) 250 para cada sujeito passivo",
+          "No caso de famílias monoparentais, a dedução prevista no n.º 1 é de 45 %",
+          "com o limite global de (euro) 335"
+        ]
+      }
     },
     {
       "id": "cirs-78c",
       "governs": "C05 saude - 15% ate 1000 EUR",
-      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821426",
       "type": "artigo",
       "critical": true,
       "why_it_matters": "Names the CAE classes that qualify as saude. The 47782 rejection came from reading this too broadly.",
       "expect": [
         "78.º-C",
         "15 %",
-        "1 000"
+        "1 000",
+        "correspondente a 15 % do valor suportado a título de despesas de saúde",
+        "a título de despesas de saúde por qualquer membro do agregado familiar, com o limite global de (euro) 1 000"
       ],
-      "source_note": "DRE consolidada CIRS; portaldasfinancas pages are pointers"
+      "source_note": "Lido em 2026-10-07 com dre.mjs article na pagina DEDICADA e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs).",
+      "dre_versao_id": "912821426",
+      "amended_by": "Decreto-Lei 49/2025, art. 2.º (em vigor 2025-07-01); antes Lei 12/2022 art. 278.º (2022-06-28)",
+      "expect_by_year": {
+        "2023": [
+          "correspondente a 15 % do valor suportado a título de despesas de saúde",
+          "a título de despesas de saúde por qualquer membro do agregado familiar, com o limite global de (euro) 1 000"
+        ],
+        "2024": [
+          "correspondente a 15 % do valor suportado a título de despesas de saúde",
+          "a título de despesas de saúde por qualquer membro do agregado familiar, com o limite global de (euro) 1 000"
+        ],
+        "2025": [
+          "correspondente a 15 % do valor suportado a título de despesas de saúde",
+          "a título de despesas de saúde por qualquer membro do agregado familiar, com o limite global de (euro) 1 000"
+        ]
+      }
     },
     {
       "id": "cirs-78d",
       "governs": "C06 educacao - 30% ate 800 EUR",
-      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821427",
       "type": "artigo",
       "critical": true,
       "why_it_matters": "Also names 47610 (livros), which is why that code is ambiguous between C13 and C06.",
       "expect": [
         "78.º-D",
         "30 %",
-        "800"
+        "800",
+        "correspondente a 30 % do valor suportado a título de despesas de formação e educação",
+        "com o limite global de 800 (euro):",
+        "É dedutível a título de rendas um valor máximo de 400 (euro) anuais",
+        "sendo limite global de 800 (euro) aumentado em 300 (euro) quando a diferença seja relativa a rendas"
       ],
-      "source_note": "DRE consolidada CIRS; portaldasfinancas pages are pointers"
+      "source_note": "Lido em 2026-10-07 com dre.mjs article na pagina DEDICADA e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs).",
+      "dre_versao_id": "912821427",
+      "amended_by": "Decreto-Lei 49/2025, art. 2.º (em vigor 2025-07-01); antes Lei 82/2023 art. 230.º (2024-01-01) e Lei 12/2022 art. 278.º (2022-06-28)",
+      "expect_by_year": {
+        "2023": [
+          "correspondente a 30 % do valor suportado a título de despesas de formação e educação",
+          "com o limite global de (euro) 800:",
+          "É dedutível a título de rendas um valor máximo de (euro) 300 anuais",
+          "sendo o limite global de (euro) 800 aumentado em (euro) 200 quando a diferença seja relativa a rendas"
+        ],
+        "2024": [
+          "correspondente a 30 % do valor suportado a título de despesas de formação e educação",
+          "com o limite global de 800 (euro):",
+          "É dedutível a título de rendas um valor máximo de 400 (euro) anuais",
+          "sendo limite global de 800 (euro) aumentado em 300 (euro) quando a diferença seja relativa a rendas"
+        ],
+        "2025": [
+          "correspondente a 30 % do valor suportado a título de despesas de formação e educação",
+          "com o limite global de 800 (euro):",
+          "É dedutível a título de rendas um valor máximo de 400 (euro) anuais",
+          "sendo limite global de 800 (euro) aumentado em 300 (euro) quando a diferença seja relativa a rendas"
+        ]
+      }
     },
     {
       "id": "cirs-78e",
       "governs": "C07 imoveis / rendas - 15%; teto POR ANO (78.º-E n.1 a) base 800; efetivo 900 em 2026 via norma transitoria do DL 97/2026 - ver year_snapshots)",
-      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1124882175",
       "type": "artigo",
       "critical": true,
       "why_it_matters": "Names ONLY 68200 (arrendamento). The original map used prefix 681, which wrongly swallowed 68100 (compra e venda).",
       "expect": [
         "78.º-E",
         "15 %",
-        "800"
+        "800",
+        "correspondente a 15 % do valor suportado por qualquer membro do agregado familiar",
+        "até ao limite de 800 €",
+        "um montante de 1100 €",
+        "contraídas com a aquisição, construção ou beneficiação de imóveis para habitação própria e permanente ou arrendamento devidamente comprovado para habitação permanente do arrendatário, até ao limite de (euro) 296",
+        "um montante de (euro) 450",
+        "O limite a que se refere a alínea a) do n.º 1 é elevado para 1000,00 €"
       ],
-      "source_note": "DRE consolidada CIRS; portaldasfinancas pages are pointers"
+      "source_note": "Lido em 2026-10-07 com dre.mjs article na pagina DEDICADA e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs).",
+      "dre_versao_id": "1124882175",
+      "amended_by": "Decreto-Lei 97/2026, art. 5.º (n.º 10, em vigor 2026-05-25, efeitos 2026-01-01); antes Lei 36/2024 art. 2.º (2025-01-01), Lei 82/2023 art. 230.º (2024-01-01), Lei 12/2022 art. 278.º (2022-06-28)",
+      "expect_by_year": {
+        "2023": [
+          "correspondente a 15 % do valor suportado por qualquer membro do agregado familiar",
+          "até ao limite de 502 (euro)",
+          "um montante de (euro) 800",
+          "contraídas com a aquisição, construção ou beneficiação de imóveis para habitação própria e permanente ou arrendamento devidamente comprovado para habitação permanente do arrendatário, até ao limite de (euro) 296",
+          "um montante de (euro) 450"
+        ],
+        "2024": [
+          "correspondente a 15 % do valor suportado por qualquer membro do agregado familiar",
+          "até ao limite de 600 (euro)",
+          "um montante de 900 (euro)",
+          "contraídas com a aquisição, construção ou beneficiação de imóveis para habitação própria e permanente ou arrendamento devidamente comprovado para habitação permanente do arrendatário, até ao limite de (euro) 296",
+          "um montante de (euro) 450"
+        ],
+        "2025": [
+          "correspondente a 15 % do valor suportado por qualquer membro do agregado familiar",
+          "até ao limite de 800 €",
+          "um montante de 1100 €",
+          "contraídas com a aquisição, construção ou beneficiação de imóveis para habitação própria e permanente ou arrendamento devidamente comprovado para habitação permanente do arrendatário, até ao limite de (euro) 296",
+          "um montante de (euro) 450"
+        ]
+      }
     },
     {
       "id": "cirs-78f",
       "governs": "C01 C02 C03 C04 C09 C10 C11 C12 C13 C14 C15 - 15% do IVA, tecto CONJUNTO de 250 EUR",
-      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777569",
       "type": "artigo",
       "critical": true,
       "why_it_matters": "The single most important article here: it carries the taxative lists (n.3 transportes, n.7 jornais, n.8 desporto) AND the shared 250 EUR ceiling. If the enumerations change, several sectors change at once.",
       "expect": [
         "78.º-F",
         "15 %",
-        "250"
+        "250",
+        "correspondente a 15 % do IVA suportado por qualquer membro do agregado familiar",
+        "com o limite global de (euro) 250 por agregado familiar",
+        "concorrendo para o limite referido no n.º 1, um montante correspondente a 100 % do IVA suportado por qualquer membro do agregado familiar, com a aquisição de passes mensais",
+        "inclui a aquisição de medicamentos de uso veterinário, concorrendo para o limite referido no n.º 1 um montante correspondente a 35 % do IVA suportado",
+        "um montante correspondente à totalidade do IVA suportado por qualquer membro do agregado familiar, que conste de faturas relativas a aquisição de assinaturas de publicações periódicas",
+        "É também dedutível à coleta, concorrendo para o limite referido no n.º 1, um montante correspondente a 30 % do IVA suportado",
+        "93130 (atividades de ginásio-fitness)",
+        "a) Secção G, classe 4520 - Manutenção e reparação de veículos automóveis",
+        "b) Secção G, classe 45402 - Manutenção e reparação de motociclos",
+        "c) Secção I - Alojamento, restauração e similares",
+        "d) Secção S, classe 9602 - Atividades de salões de cabeleireiro e institutos de beleza",
+        "e) Secção M, classe 75000 - atividades veterinárias",
+        "g) Secção G, classe 47610 - Comércio a retalho de livros, em estabelecimentos especializados",
+        "h) Secção R, classe 90 - Atividades de teatro, de música, de dança e outras atividades artísticas e literárias",
+        "i) Secção R, classe 9004 - Exploração de salas de espetáculos e atividades conexas",
+        "j) Secção R, classe 9101 - Atividades das bibliotecas e arquivos",
+        "k) Secção R, classe 9102 - Atividades dos museus",
+        "l) Secção R, classe 9103 - Atividades dos sítios e monumentos históricos"
       ],
-      "source_note": "DRE consolidada CIRS; portaldasfinancas pages are pointers"
+      "source_note": "Lido em 2026-10-07 com dre.mjs article na pagina DEDICADA e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs).",
+      "dre_versao_id": "1000777569",
+      "amended_by": "Lei 73-A/2025, art. 71.º (em vigor 2026-01-01); antes Lei 82/2023 art. 230.º (2024-01-01) e Lei 24-D/2022 art. 218.º (2023-01-01)",
+      "expect_by_year": {
+        "2023": [
+          "correspondente a 15 % do IVA suportado por qualquer membro do agregado familiar",
+          "com o limite global de (euro) 250 por agregado familiar",
+          "concorrendo para o limite referido no n.º 1, um montante correspondente a 100 % do IVA suportado por qualquer membro do agregado familiar, com a aquisição de passes mensais",
+          "inclui a aquisição de medicamentos de uso veterinário, concorrendo para o limite referido no n.º 1 um montante correspondente a 35 % do IVA suportado",
+          "um montante correspondente à totalidade do IVA suportado por qualquer membro do agregado familiar, que conste de faturas relativas a aquisição de assinaturas de publicações periódicas",
+          "f) Secção P, classe 85510 (Ensinos desportivo e recreativo) e Secção R, classes 93120 (Atividades dos clubes desportivos) e 93130 (atividades de ginásio - fitness)",
+          "a) Secção G, classe 4520 - Manutenção e reparação de veículos automóveis",
+          "b) Secção G, classe 45402 - Manutenção e reparação de motociclos",
+          "c) Secção I - Alojamento, restauração e similares",
+          "d) Secção S, classe 9602 - Atividades de salões de cabeleireiro e institutos de beleza",
+          "e) Secção M, classe 75000 - atividades veterinárias"
+        ],
+        "2024": [
+          "correspondente a 15 % do IVA suportado por qualquer membro do agregado familiar",
+          "com o limite global de (euro) 250 por agregado familiar",
+          "concorrendo para o limite referido no n.º 1, um montante correspondente a 100 % do IVA suportado por qualquer membro do agregado familiar, com a aquisição de passes mensais",
+          "inclui a aquisição de medicamentos de uso veterinário, concorrendo para o limite referido no n.º 1 um montante correspondente a 35 % do IVA suportado",
+          "um montante correspondente à totalidade do IVA suportado por qualquer membro do agregado familiar, que conste de faturas relativas a aquisição de assinaturas de publicações periódicas",
+          "É também dedutível à coleta, concorrendo para o limite referido no n.º 1, um montante correspondente a 30 % do IVA suportado",
+          "93130 (atividades de ginásio-fitness)",
+          "a) Secção G, classe 4520 - Manutenção e reparação de veículos automóveis",
+          "b) Secção G, classe 45402 - Manutenção e reparação de motociclos",
+          "c) Secção I - Alojamento, restauração e similares",
+          "d) Secção S, classe 9602 - Atividades de salões de cabeleireiro e institutos de beleza",
+          "e) Secção M, classe 75000 - atividades veterinárias"
+        ],
+        "2025": [
+          "correspondente a 15 % do IVA suportado por qualquer membro do agregado familiar",
+          "com o limite global de (euro) 250 por agregado familiar",
+          "concorrendo para o limite referido no n.º 1, um montante correspondente a 100 % do IVA suportado por qualquer membro do agregado familiar, com a aquisição de passes mensais",
+          "inclui a aquisição de medicamentos de uso veterinário, concorrendo para o limite referido no n.º 1 um montante correspondente a 35 % do IVA suportado",
+          "um montante correspondente à totalidade do IVA suportado por qualquer membro do agregado familiar, que conste de faturas relativas a aquisição de assinaturas de publicações periódicas",
+          "É também dedutível à coleta, concorrendo para o limite referido no n.º 1, um montante correspondente a 30 % do IVA suportado",
+          "93130 (atividades de ginásio-fitness)",
+          "a) Secção G, classe 4520 - Manutenção e reparação de veículos automóveis",
+          "b) Secção G, classe 45402 - Manutenção e reparação de motociclos",
+          "c) Secção I - Alojamento, restauração e similares",
+          "d) Secção S, classe 9602 - Atividades de salões de cabeleireiro e institutos de beleza",
+          "e) Secção M, classe 75000 - atividades veterinárias"
+        ]
+      },
+      "expect_absent_by_year": {
+        "2023": [
+          "g) Secção G, classe 47610",
+          "l) Secção R, classe 9103",
+          "É também dedutível à coleta, concorrendo para o limite referido no n.º 1, um montante correspondente a 30 % do IVA suportado"
+        ],
+        "2024": [
+          "g) Secção G, classe 47610",
+          "l) Secção R, classe 9103"
+        ],
+        "2025": [
+          "g) Secção G, classe 47610",
+          "l) Secção R, classe 9103"
+        ]
+      }
     },
     {
       "id": "cirs-84",
       "governs": "C08 lares - 25% ate 403 EUR",
-      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821428",
       "type": "artigo",
       "critical": true,
       "why_it_matters": "Names classes 873 and 8810. 87200 (foro mental, com alojamento) is deliberately NOT mapped because it is not named.",
       "expect": [
         "84.º",
         "25 %",
-        "403"
+        "403",
+        "correspondente a 25 % do valor suportado a título de encargos com lares",
+        "com o limite global de (euro) 403,75"
       ],
-      "source_note": "DRE consolidada CIRS; portaldasfinancas pages are pointers"
+      "source_note": "Lido em 2026-10-07 com dre.mjs article na pagina DEDICADA e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs).",
+      "dre_versao_id": "912821428",
+      "amended_by": "Decreto-Lei 49/2025, art. 2.º (em vigor 2025-07-01); antes Lei 12/2022 art. 278.º (2022-06-28)",
+      "expect_by_year": {
+        "2023": [
+          "correspondente a 25 % do valor suportado a título de encargos com lares",
+          "com o limite global de (euro) 403,75"
+        ],
+        "2024": [
+          "correspondente a 25 % do valor suportado a título de encargos com lares",
+          "com o limite global de (euro) 403,75"
+        ],
+        "2025": [
+          "correspondente a 25 % do valor suportado a título de encargos com lares",
+          "com o limite global de (euro) 403,75"
+        ]
+      }
     },
     {
       "id": "cppt-59",
@@ -693,6 +890,37 @@
       "why_it_matters": "A deducao especifica (art. 25.º) e outros limites sao multiplos do IAS.",
       "expect": [
         "O valor do IAS para o ano de 2026 é de € 537,13"
+      ],
+      "source_note": "Lido em 2026-10-07 na pagina do diploma no DRE."
+    },
+    {
+      "id": "lei-36-2024",
+      "governs": "Norma transitoria do art. 78.º-E (rendas): aumento dos limites do n.º 1 a) e n.º 4 a) e b) em 50 % em 2025, 75 % em 2026, 100 % em 2027",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/36-2024-875716580",
+      "type": "diploma",
+      "critical": true,
+      "amended_by": "Lei 36/2024, art. 3.º (norma transitoria) e art. 4.º (em vigor 2025-01-01)",
+      "why_it_matters": "O limite das rendas de 2025 (700 €) nao esta escrito em lado nenhum: resulta de 600 + 50 % x (800 - 600) por esta norma.",
+      "expect": [
+        "O aumento da dedução prevista na alínea a) do n.º 1 e nas alíneas a) e b) do n.º 4 do artigo 78.º-E do Código do IRS, na redação introduzida pela presente lei, é concretizado progressivamente",
+        "a) 50 % em 2025",
+        "b) 75 % em 2026",
+        "c) 100 % em 2027",
+        "A presente lei entra em vigor a 1 de janeiro de 2025"
+      ],
+      "source_note": "Lido em 2026-10-07 na pagina do diploma no DRE."
+    },
+    {
+      "id": "dl-97-2026",
+      "governs": "Norma transitoria do art. 78.º-E n.º 10 (rendas): 900 € em 2026, 1000 € a partir de 2027; efeitos das alteracoes ao CIRS a 1 de janeiro de 2026",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/97-2026-1124493227",
+      "type": "diploma",
+      "critical": true,
+      "amended_by": "Decreto-Lei 97/2026, art. 15.º n.º 1 (norma transitoria) e art. 18.º n.º 2 (producao de efeitos)",
+      "why_it_matters": "Fixa o limite das rendas de 2026 (900 €), que a pagina do artigo nao mostra.",
+      "expect": [
+        "aplica-se a partir do ano de 2027, inclusive, aplicando-se no ano de 2026 o limite de 900,00 €",
+        "As alterações ao Código do IRS, introduzidas pelo artigo 5.º"
       ],
       "source_note": "Lido em 2026-10-07 na pagina do diploma no DRE."
     }
