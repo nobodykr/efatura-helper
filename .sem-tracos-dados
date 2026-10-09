@@ -1,0 +1,5 @@
+# Data JSON that carries official labels verbatim: the dash pre-commit hook (homeserver-tools
+# sem-tracos.sh) leaves these files alone. Only .json is honoured. Decided by Diogo on 09/10/2026
+# (fat-fb-dash-hook): the INE label of CAE 8412 carries an en dash.
+cirs_atividades.json
+fixtures/cae_rev4_levels_4_5.json

@@ -1,5 +1,5 @@
 {
- "_fonte": "cae e cirs: AT, modal Lista de Atividades do Portal das Finanças (sitfiscal /atividade/entregar), separadores CAES e CIRS, colhidos no navegador. Na colheita os dois separadores ficaram fundidos num só dicionário e 17 classes CAE de 4 dígitos receberam a designação do código CIRS homónimo; essas 17 designações foram repostas a partir da CAE Rev.4 do INE (SMI, versão 5497). A meia risca da designação oficial de 8412 está escrita como hífen (regra do repositório contra travessões).",
+ "_fonte": "cae e cirs: AT, modal Lista de Atividades do Portal das Finanças (sitfiscal /atividade/entregar), separadores CAES e CIRS, colhidos no navegador. Na colheita os dois separadores ficaram fundidos num só dicionário e 17 classes CAE de 4 dígitos receberam a designação do código CIRS homónimo; essas 17 designações foram repostas a partir da CAE Rev.4 do INE (SMI, versão 5497).",
  "_colhido": "2026-07-25",
  "_nota": "cae: códigos CAE Rev.4, subclasses de 5 dígitos (ex. 62100, as que se declaram) e as classes de 4 dígitos que a lista da AT também mostra (níveis agregados, não servem para declarar). cirs: os 90 códigos de 4 dígitos da tabela de atividades do art. 151.º do CIRS (no regime simplificado, coeficiente 0,75 do art. 31.º, n.º 1, alínea b)). Os mesmos 4 dígitos podem existir nas duas listas com significados diferentes (ex. 1011). Nenhum código da ferramenta lê este ficheiro: é uma tabela de referência publicada.",
  "cae": {
@@ -1295,7 +1295,7 @@
   "84112": "Administração Regional Autónoma",
   "84113": "Administração Local",
   "84114": "Atividades de apoio à administração pública",
-  "8412": "Administração Pública - atividades de saúde, educação, cultura e outros serviços sociais",
+  "8412": "Administração Pública – atividades de saúde, educação, cultura e outros serviços sociais",
   "84121": "Administração Pública - atividades de saúde",
   "84122": "Administração Pública - atividades de educação",
   "84123": "Administração Pública - atividades do ambiente",
