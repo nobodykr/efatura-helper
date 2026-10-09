@@ -919,6 +919,7 @@
     if (despAt && despAt.categorias && Object.keys(despAt.categorias).length){
       var dp = Object.keys(despAt.categorias).map(function(k){ return esc(k)+' €'+esc((despAt.categorias[k].considerar||0).toFixed(2)); });
       h += '<div class="kv">Despesas afetas à atividade'+(despAt.ano?' '+esc(despAt.ano):'')+' <span class="w">(Cat. B, simplificado)</span>: '+dp.join(', ')+'.</div>';
+      (despAt.avisos||[]).forEach(function(a){ h += '<div class="warn">⚠ '+esc(a)+'</div>'; });
     }
     if (d.movfin){
       var pj = d.movfin.porImposto||{};
