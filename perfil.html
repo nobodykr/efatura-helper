@@ -584,6 +584,8 @@
   }
 
   function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+  // Euros (not cents) as PT-PT text, "84 341,72 €" with non-breaking spaces (tool.js eurPT twin).
+  function eurPT(n){ var p=Number(n).toFixed(2).split("."); return p[0].replace(/\B(?=(\d{3})+(?!\d))/g,"\u00a0")+","+p[1]+"\u00a0\u20ac"; }
   // The profile is sensitive fiscal data, so it is NOT kept indefinitely: it self-destructs at the
   // end of the day it was last saved. save() stamps `expiresAt` at the next local midnight; load()
   // wipes the store BEFORE returning it if that moment has passed. You can still delete it manually
@@ -942,7 +944,7 @@
     if (d.patrimonio){
       h += '<div class="kv">Património: <b>'+esc(d.patrimonio.imoveis)+'</b> imóvel(is).</div>';
       (d.patrimonio.lista||[]).slice(0,3).forEach(function(im){
-        h += '<div class="w" style="margin-left:8px">- '+esc(im.artigo||"artigo?")+(im.freguesia?", "+esc(im.freguesia):"")+(im.vpt!=null?" (VPT "+esc(im.vpt)+")":"")+'</div>';
+        h += '<div class="w" style="margin-left:8px">- '+esc(im.artigo||"artigo?")+(im.freguesia?", "+esc(im.freguesia):"")+(im.vptEur!=null?" (VPT "+esc(eurPT(im.vptEur))+")":"")+'</div>';
       });
     }
     if (d.irs){

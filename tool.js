@@ -64,7 +64,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.10.07.1";
+  var FB_VERSION = "2026.10.09.1";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -138,6 +138,11 @@
    * N Beneficio NAO atribuido (merchant declined - not fixable by reclassifying), O Duplicado. */
   var year = new Date().getFullYear();
   var eur = function (c) { return (Number(c || 0) / 100).toFixed(2); };
+  // Euros (not cents) as PT-PT text: "84 341,72 EUR" with a non-breaking space for thousands.
+  var eurPT = function (n) {
+    var p = Number(n).toFixed(2).split(".");
+    return p[0].replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0") + "," + p[1] + "\u00a0\u20ac";
+  };
 
   /* IRS ceilings (income year 2026, declared 2027 - Lei 73-A/2025).
    * base "iva" = you deduct a share of the VAT; base "total" = a share of the invoice value.
@@ -2076,8 +2081,11 @@
   /* Patrimonio predial (SMPP): the properties you own and their VPT - the base of IMI, and a
    * pointer to Cat G if one is later sold. The response shape is not pinned in our recon, so the
    * property list is read from the usual container keys and each property's fields from the usual
-   * candidates; anything unknown is omitted, never guessed. Count is reliable; VPT is stored raw
-   * (not summed - its format is unconfirmed). */
+   * candidates; anything unknown is omitted, never guessed. `valor` (VPT) and `valorInicial` are
+   * integer CENTS (8434172 = 84 341,72 EUR, checked against a real reply 2026-10-07), unlike the
+   * rendas endpoints on the same host, which send euros. `vptEur` is euros; the never-seen fallback
+   * keys have no confirmed unit and are left out rather than guessed. Older stored profiles carry a
+   * raw `vpt` (cents) and are not shown until re-read. */
   function readPatrimonio() {
     return getJSON("/matrizesinter/api/patrimonio?_=" + Date.now()).then(function (j) {
       var lista = [];
@@ -2089,14 +2097,17 @@
       }
       // Real field is `valor` (int), confirmed against the server 2026-07-23; valorPatrimonial does
       // NOT exist. `valorInicial` is the original matrix value, kept as a fallback.
-      function vpt(o) { return o.valor != null ? o.valor : (o.valorPatrimonial != null ? o.valorPatrimonial : (o.vpt != null ? o.vpt : (o.valorInicial != null ? o.valorInicial : null))); }
+      function vptEur(o) {
+        var c = o.valor != null ? o.valor : o.valorInicial;
+        return (typeof c === "number" && isFinite(c)) ? Math.round(c) / 100 : null;
+      }
       return { data: {
         imoveis: lista.length,
         lista: lista.slice(0, 8).map(function (o) {
           return { artigo: o.artigo || o.artigoMatricial || o.identificacao || o.numeroArtigo || null,
                    freguesia: o.freguesia || o.nomeFreguesia || o.designacaoFreguesia || null,
                    tipo: o.tipo || o.tipoPredio || o.especie || o.tipoImovel || null,
-                   vpt: vpt(o) };
+                   vptEur: vptEur(o) };
         })
       }, source: "/matrizesinter/api/patrimonio" };
     });
@@ -2195,7 +2206,7 @@
       h += '<div style="font-size:12px;color:#333;margin:2px 0">Patrim\u00f3nio: <b>' + esc(d.patrimonio.imoveis) + '</b> im\u00f3vel(is).</div>';
       (d.patrimonio.lista || []).slice(0, 3).forEach(function (im) {
         h += '<div style="font-size:11px;color:#666;margin-left:8px">\u2022 ' + esc(im.artigo || "artigo?") +
-             (im.freguesia ? ", " + esc(im.freguesia) : "") + (im.vpt != null ? " (VPT " + esc(im.vpt) + ")" : "") + '</div>';
+             (im.freguesia ? ", " + esc(im.freguesia) : "") + (im.vptEur != null ? " (VPT " + esc(eurPT(im.vptEur)) + ")" : "") + '</div>';
       });
     }
     if (d.irs) {

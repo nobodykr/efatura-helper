@@ -97,7 +97,7 @@ function fetchOK(u) {
   if (/geral\/dividas/.test(s)) return json({ montanteTotal: 0, nAtivasGeral: 0, dataInfoObtida: "2026-07-23" });
   if (/geral\/coimas/.test(s)) return json({ montanteTotal: 0, nAtivasGeral: 0 });
   if (/agendaFiscal/.test(s)) return json([{ data: "2026-08-31", descricao: "Entrega da declaracao de IRS" }]);
-  if (/matrizesinter\/api\/patrimonio/.test(s)) return json([{ artigo: "1234", nomeFreguesia: "Benfica", tipo: "U", valor: 120000, valorInicial: 90000, estado: {codigo:"ATIVO"} }]);
+  if (/matrizesinter\/api\/patrimonio/.test(s)) return json([{ artigo: "1234", nomeFreguesia: "Benfica", tipo: "U", valor: 8434172, valorInicial: 390110, estado: {codigo:"ATIVO"} }]);
   if (/liquidacoesIRSDataTables/.test(s)) return json({ iTotalRecords: 3, iTotalDisplayRecords: 3, aaData: [{ ano: 2024 }, { ano: 2023 }, { ano: 2022 }] });
   if (/reembolsosDataTables/.test(s)) return json({ iTotalRecords: 1, aaData: [{ ano: 2024 }] });
   // O leitor consulta ANO A ANO (o servidor rejeita intervalos multi-ano), por isso o mock so
@@ -359,6 +359,9 @@ function hasHandoffShape(w, partition) {
   ok("patrimonio picked (not rendas) on /matrizesinter path", store.partitions.patrimonio && store.partitions.patrimonio.status === "done" && !store.partitions.rendas);
   ok("patrimonio: 1 imovel parsed", store.partitions.patrimonio.data.imoveis === 1 && store.partitions.patrimonio.data.lista[0].artigo === "1234");
   ok("patrimonio hands off to /perfil", w.__handoffs.some(h => h.partition === "patrimonio"));
+  // The Portal sends VPT as integer cents (real reply 2026-10-07): 8434172 is 84 341,72 EUR, never 8 434 172.
+  ok("patrimonio: VPT read as cents -> euros", store.partitions.patrimonio.data.lista[0].vptEur === 84341.72 &&
+     store.partitions.patrimonio.data.lista[0].vpt === undefined);
 
   // 5. rule 3: HTML 200 on the contracts endpoint => pending, not stored as done
   const fetchHtml = (u) => {
