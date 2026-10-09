@@ -2068,27 +2068,81 @@
       return root.outerHTML || "";
     } catch (e) { return ""; }
   }
-  function readDespesasAtividade() {
-    var url = "/app/dashboard-regime-simplificado";
-    var visibleHtml = despesasAtividadeVisibleHtml();
-    var visibleData = parseDespesasAtividadeHtml(visibleHtml);
-    if (visibleData) {
-      recordShape(url, "html", visibleHtml);
-      return Promise.resolve(visibleData);
-    }
+  function despesasAtividadeYears(html) {
+    // The page's own year selector (#anoDashboard) navigates to ?ano=<year>; its options are the years
+    // the AT offers for this taxpayer, and its value is the year the page shows.
+    try {
+      var sel = new DOMParser().parseFromString(String(html || ""), "text/html").getElementById("anoDashboard");
+      if (!sel) return { anos: [], atual: null };
+      var anos = Array.prototype.map.call(sel.options, function (o) { return String(o.value || "").trim(); })
+        .filter(function (v) { return /^20\d{2}$/.test(v); });
+      return { anos: anos, atual: /^20\d{2}$/.test(String(sel.value || "").trim()) ? String(sel.value).trim() : null };
+    } catch (e) { return { anos: [], atual: null }; }
+  }
+  function fetchDespesasAtividade(url) {
     return fetch(url, { credentials: "include" })
       .then(function (r) {
         return r.text().then(function (html) {
           var data = parseDespesasAtividadeHtml(html);
           // Valid page content wins over harmless login-related script or shell text. Only an actual
           // login form or a redirect to acesso.gov.pt means this page's session has expired.
-          if (data) { recordShape(url, "html", html); return data; }
+          if (data) { recordShape(url, "html", html); return { html: html, data: data }; }
           if (despesasAtividadeLoginDocument(html, r.url))
             throw readError("session_required", "A sess\u00e3o desta p\u00e1gina expirou. Faz login aqui e tenta de novo.");
           recordShape(url, "html", html);
-          return null;
+          return { html: html, data: null };
         });
       });
+  }
+  /* Every year the selector offers, one ?ano=<year> request at a time; the year the page was showing is
+   * asked last, so the Portal stays on it. `porAno` keys each page by the year it states (a page that
+   * answers another year than asked carries `anoPedido` and a warning, as in the Fatura\u00e7\u00e3o reader);
+   * the top-level fields are the latest year's, as before. A year that could not be read is listed in
+   * `anosNaoLidos`, never guessed. Without a selector, the page as shown (one year). */
+  function readDespesasAtividade() {
+    var url = "/app/dashboard-regime-simplificado";
+    var visibleHtml = despesasAtividadeVisibleHtml();
+    var visibleData = parseDespesasAtividadeHtml(visibleHtml);
+    var first;
+    if (visibleData) {
+      recordShape(url, "html", visibleHtml);
+      first = Promise.resolve({ html: visibleHtml, data: visibleData });
+    } else first = fetchDespesasAtividade(url);
+    return first.then(function (shown) {
+      if (!shown.data) return null;
+      var sel = despesasAtividadeYears(shown.html);
+      if (!sel.anos.length) return shown.data;
+      var atual = sel.atual || (shown.data.ano != null ? String(shown.data.ano) : null);
+      var ordem = sel.anos.filter(function (y) { return y !== atual; });
+      if (atual && sel.anos.indexOf(atual) >= 0) ordem.push(atual);
+      // The page already read stands for its year until (and unless) the request for it answers.
+      var porAno = {}, naoLidos = [];
+      if (shown.data.ano != null) porAno[shown.data.ano] = shown.data;
+      function keep(data, pedido) {
+        if (data.ano !== +pedido) {
+          data.anoPedido = +pedido;
+          data.avisos = (data.avisos || []).concat(["O ano devolvido pela AT n\u00e3o corresponde ao pedido."]);
+        }
+        porAno[data.ano != null ? data.ano : pedido] = data;
+      }
+      return ordem.reduce(function (chain, y) {
+        return chain.then(function () {
+          return fetchDespesasAtividade(url + "?ano=" + y).then(function (res) {
+            if (res.data) keep(res.data, y); else if (!porAno[y]) naoLidos.push(+y);
+          }, function (e) {
+            if (e && e.code === "session_required") throw e;
+            if (!porAno[y]) naoLidos.push(+y);
+          });
+        });
+      }, Promise.resolve()).then(function () {
+        var anos = Object.keys(porAno).map(Number).sort(function (a, b) { return b - a; });
+        var out = {}, top = anos.length ? porAno[anos[0]] : shown.data;
+        Object.keys(top).forEach(function (k) { out[k] = top[k]; });
+        out.porAno = porAno;
+        if (naoLidos.length) out.anosNaoLidos = naoLidos.sort(function (a, b) { return b - a; });
+        return out;
+      });
+    });
   }
 
   /* DECLARA\u00c7\u00d5ES de IRS por ano (irs.../app/consulta). POST com {anoDeclaracoes:"YYYY"} - um GET

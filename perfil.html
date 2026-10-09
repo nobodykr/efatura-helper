@@ -921,6 +921,18 @@
       h += '<div class="kv">Despesas afetas à atividade'+(despAt.ano?' '+esc(despAt.ano):'')+' <span class="w">(Cat. B, simplificado)</span>: '+dp.join(', ')+'.</div>';
       (despAt.avisos||[]).forEach(function(a){ h += '<div class="warn">⚠ '+esc(a)+'</div>'; });
     }
+    if (despAt && despAt.porAno){
+      var despAnos = Object.keys(despAt.porAno).sort().reverse();
+      if (despAnos.length > 1) h += '<div class="w" style="margin-left:2px">Anos lidos: '+despAnos.map(function(a){
+        var y = despAt.porAno[a], n = Object.keys(y.categorias||{}).length;
+        return esc(a)+(y.vazio||!n?' (sem despesas)':'');
+      }).join(', ')+'.</div>';
+      despAnos.filter(function(a){ return +a !== despAt.ano; }).forEach(function(a){
+        (despAt.porAno[a].avisos||[]).forEach(function(w){ h += '<div class="warn">⚠ '+esc(a)+': '+esc(w)+'</div>'; });
+      });
+      if ((despAt.anosNaoLidos||[]).length)
+        h += '<div class="warn">⚠ Despesas afetas à atividade não lidas para '+despAt.anosNaoLidos.map(esc).join(', ')+'. Abre a página no Portal e tenta de novo.</div>';
+    }
     if (d.movfin){
       var pj = d.movfin.porImposto||{};
       var parts = Object.keys(pj).map(function(k){ var v=pj[k]||{}; return esc(k)+' ('+esc(v.n)+(v.anulados?', '+esc(v.anulados)+' anul.':'')+')'; }).slice(0,6).join(', ');
