@@ -81,6 +81,12 @@ const PROFILES = {
         "2023": { ano: 2023, categorias: {}, vazio: true } },
       anosNaoLidos: [2022] } },
   } },
+  // A past year the e-Fatura reader could not read (http-429 after its retries) is said, not left blank.
+  "e-Fatura com ano em falta": { partitions: {
+    efatura: { status: "done", data: { ano: anoPassado + 1, totalFaturas: 10, porClassificar: 0, atividades: {}, reAudit: [],
+      reAuditFalhados: [{ ano: anoPassado, motivo: "limite_pedidos", tentativas: 3 }] } },
+    irs: { status: "done", data: { liquidacoes: 1, porAno: [{ ano: anoPassado }] } },
+  } },
   "atividade futura, ainda não aberta": { partitions: {
     atividade: { status: "done", data: { declaracoes: 2, cessada: null,
       ultimaDeclaracaoTipo: "inicio-ou-reinicio", ultimaDeclaracaoAceite: true,
@@ -133,6 +139,10 @@ function render(profile) {
   ok("despesas de atividade: anos lidos, aviso de ano anterior e ano não lido visíveis",
     /Anos lidos: 2025, 2024, 2023 \(sem despesas\)/.test(despesas.html) && /2024: Despesas de atividade: categoria não reconhecida/.test(despesas.html) &&
     /não lidas para 2022/.test(despesas.html), (despesas.html.match(/Anos lidos[^<]{0,80}/) || [""])[0]);
+  const falta = await render(PROFILES["e-Fatura com ano em falta"]);
+  ok("ano anterior não lido aparece com o motivo, em PT-PT",
+    new RegExp("Não foi possível ler as faturas de " + anoPassado + ": o Portal das Finanças limitou os pedidos \\(3 tentativas\\)").test(falta.html),
+    (falta.html.match(/Não foi possível[^<]{0,120}/) || [""])[0]);
   const scheduled = await render(PROFILES["atividade futura, ainda não aberta"]);
   ok("atividade futura não ativa Cat. B nem Anexo B",
     !/Cat\. B\b/.test(scheduled.html) && !/IRS - Anexo B/.test(scheduled.html));

@@ -25,6 +25,8 @@ async function run(target,withTotal){
     }
     throw new Error("unexpected request "+s);
   };
+  // e-Fatura requests are paced 8 s apart (tool.js efaturaGet); the test time scale keeps these fixed waits valid.
+  w.__FISCALIDADE_CONFIG__={efaturaTimeScale:0.001};
   eval(src);
   await new Promise((resolve)=>setTimeout(resolve,1000));
   const got=(w.__efhPend||[]).length;

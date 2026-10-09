@@ -53,6 +53,8 @@ global.fetch = (u, opt = {}) => {
 };
 localStorage.setItem("efh-consent-v1", JSON.stringify({ ok: true, share: false }));
 
+// e-Fatura requests are paced 8 s apart (tool.js efaturaGet); the test time scale keeps these fixed waits valid.
+window.__FISCALIDADE_CONFIG__ = { efaturaTimeScale: 0.001 };
 eval(fs.readFileSync(process.argv[2] || "tool.js", "utf8"));
 
 function selected() {
