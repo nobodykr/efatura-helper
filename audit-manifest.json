@@ -2858,6 +2858,1668 @@
           "in_force_from_display": null
         }
       }
+    },
+    {
+      "key": "cirs72_1e_prediais_pct",
+      "article": "CIRS 72.º n.º 1 e)",
+      "source_id": "cirs-72",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+      "years": {
+        "2023": {
+          "value": 28,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 24-D/2022 art. 218.º e Lei 56/2023 art. 27.º (28 % nas duas redacoes de 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": 28,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": 28,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": 28,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 73-A/2025, art. 261.º (em vigor 2026-01-01; n.os 1 a 5, 13, 20, 23 e 24 sem alteracao)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs72_2_habitacional_pct",
+      "article": "CIRS 72.º n.º 2",
+      "source_id": "cirs-72",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "%",
+          "verified": false,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": null,
+          "in_force": true,
+          "in_force_from_display": "07/10/2023"
+        },
+        "2024": {
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": 25,
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 73-A/2025, art. 261.º (em vigor 2026-01-01; n.os 1 a 5, 13, 20, 23 e 24 sem alteracao)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs72_3_reducao_pp",
+      "article": "CIRS 72.º n.º 3",
+      "source_id": "cirs-72",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "pp",
+          "verified": false,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": null,
+          "in_force": true,
+          "in_force_from_display": "07/10/2023"
+        },
+        "2024": {
+          "value": 10,
+          "unit": "pp",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": 10,
+          "unit": "pp",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": 10,
+          "unit": "pp",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 73-A/2025, art. 261.º (em vigor 2026-01-01; n.os 1 a 5, 13, 20, 23 e 24 sem alteracao)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs72_3_renovacao_pp",
+      "article": "CIRS 72.º n.º 3",
+      "source_id": "cirs-72",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "pp",
+          "verified": false,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": null,
+          "in_force": true,
+          "in_force_from_display": "07/10/2023"
+        },
+        "2024": {
+          "value": {
+            "por_renovacao": 2,
+            "limite": 10
+          },
+          "unit": "pp",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": {
+            "por_renovacao": 2,
+            "limite": 10
+          },
+          "unit": "pp",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": {
+            "por_renovacao": 2,
+            "limite": 10
+          },
+          "unit": "pp",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 73-A/2025, art. 261.º (em vigor 2026-01-01; n.os 1 a 5, 13, 20, 23 e 24 sem alteracao)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs72_4_reducao_pp",
+      "article": "CIRS 72.º n.º 4",
+      "source_id": "cirs-72",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "pp",
+          "verified": false,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": null,
+          "in_force": true,
+          "in_force_from_display": "07/10/2023"
+        },
+        "2024": {
+          "value": 15,
+          "unit": "pp",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": 15,
+          "unit": "pp",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": 15,
+          "unit": "pp",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 73-A/2025, art. 261.º (em vigor 2026-01-01; n.os 1 a 5, 13, 20, 23 e 24 sem alteracao)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs72_5_reducao_pp",
+      "article": "CIRS 72.º n.º 5",
+      "source_id": "cirs-72",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "pp",
+          "verified": false,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": null,
+          "in_force": true,
+          "in_force_from_display": "07/10/2023"
+        },
+        "2024": {
+          "value": 20,
+          "unit": "pp",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": 20,
+          "unit": "pp",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": 20,
+          "unit": "pp",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 73-A/2025, art. 261.º (em vigor 2026-01-01; n.os 1 a 5, 13, 20, 23 e 24 sem alteracao)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs72_13_englobamento_opcao",
+      "article": "CIRS 72.º n.º 13",
+      "source_id": "cirs-72",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 24-D/2022, art. 218.º, e Lei 56/2023, art. 27.º (opcao de englobamento nas duas redacoes de 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 73-A/2025, art. 261.º (em vigor 2026-01-01; n.os 1 a 5, 13, 20, 23 e 24 sem alteracao)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs72_20_perda_reducoes",
+      "article": "CIRS 72.º n.º 20",
+      "source_id": "cirs-72",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": null,
+          "in_force": true,
+          "in_force_from_display": "07/10/2023"
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 73-A/2025, art. 261.º (em vigor 2026-01-01; n.os 1 a 5, 13, 20, 23 e 24 sem alteracao)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs72_23_exclusao_renda_elevada",
+      "article": "CIRS 72.º n.º 23",
+      "source_id": "cirs-72",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": null,
+          "in_force": true,
+          "in_force_from_display": "07/10/2023"
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 73-A/2025, art. 261.º (em vigor 2026-01-01; n.os 1 a 5, 13, 20, 23 e 24 sem alteracao)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs72_24_reducao_adicional_pp",
+      "article": "CIRS 72.º n.º 24",
+      "source_id": "cirs-72",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "pp",
+          "verified": false,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": null,
+          "in_force": true,
+          "in_force_from_display": "07/10/2023"
+        },
+        "2024": {
+          "value": 5,
+          "unit": "pp",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": 5,
+          "unit": "pp",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 56/2023, art. 27.º, e Lei 82/2023, art. 230.º (redacao em vigor desde 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": 5,
+          "unit": "pp",
+          "verified": true,
+          "source_id": "cirs-72",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+          "source_law": "Lei 73-A/2025, art. 261.º (em vigor 2026-01-01; n.os 1 a 5, 13, 20, 23 e 24 sem alteracao)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "lei56_2023_50_7_contratos_abrangidos",
+      "article": "Lei 56/2023 50.º n.º 7",
+      "source_id": "lei-56-2023-art50",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2023-222471959-838758723",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "lei-56-2023-art50",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2023-222471959-838758723",
+          "source_law": null,
+          "in_force": true,
+          "in_force_from_display": "07/10/2023"
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "lei-56-2023-art50",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2023-222471959-838758723",
+          "source_law": "Lei 56/2023, art. 50.º, na redacao da Lei 82/2023, art. 314.º (em vigor 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "lei-56-2023-art50",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2023-222471959-838758723",
+          "source_law": "Lei 56/2023, art. 50.º, na redacao da Lei 82/2023, art. 314.º (em vigor 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "lei-56-2023-art50",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2023-222471959-838758723",
+          "source_law": "Lei 56/2023, art. 50.º, na redacao da Lei 82/2023, art. 314.º (em vigor 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "lei56_2023_50_8_ambito_n2",
+      "article": "Lei 56/2023 50.º n.º 8",
+      "source_id": "lei-56-2023-art50",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2023-222471959-838758723",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "lei-56-2023-art50",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2023-222471959-838758723",
+          "source_law": null,
+          "in_force": true,
+          "in_force_from_display": "07/10/2023"
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "lei-56-2023-art50",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2023-222471959-838758723",
+          "source_law": "Lei 56/2023, art. 50.º, na redacao da Lei 82/2023, art. 314.º (em vigor 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "lei-56-2023-art50",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2023-222471959-838758723",
+          "source_law": "Lei 56/2023, art. 50.º, na redacao da Lei 82/2023, art. 314.º (em vigor 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "lei-56-2023-art50",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2023-222471959-838758723",
+          "source_law": "Lei 56/2023, art. 50.º, na redacao da Lei 82/2023, art. 314.º (em vigor 2024-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "ebf45c_1_taxa_pct",
+      "article": "EBF 45.º-C n.º 1",
+      "source_id": "ebf-45c",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "%",
+          "verified": true,
+          "source_id": "ebf-45c",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2024": {
+          "value": null,
+          "unit": "%",
+          "verified": true,
+          "source_id": "ebf-45c",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2025": {
+          "value": null,
+          "unit": "%",
+          "verified": true,
+          "source_id": "ebf-45c",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2026": {
+          "value": 10,
+          "unit": "%",
+          "verified": true,
+          "source_id": "ebf-45c",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º (EBF 45.º-C) e art. 18.º n.º 2 (efeitos a 2026-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "ebf45c_1_auferidos_ate",
+      "article": "EBF 45.º-C n.º 1",
+      "source_id": "ebf-45c",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "data",
+          "verified": true,
+          "source_id": "ebf-45c",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2024": {
+          "value": null,
+          "unit": "data",
+          "verified": true,
+          "source_id": "ebf-45c",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2025": {
+          "value": null,
+          "unit": "data",
+          "verified": true,
+          "source_id": "ebf-45c",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2026": {
+          "value": "2029-12-31",
+          "unit": "data",
+          "verified": true,
+          "source_id": "ebf-45c",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º (EBF 45.º-C) e art. 18.º n.º 2 (efeitos a 2026-01-01)",
+          "in_force": true,
+          "in_force_from_display": null,
+          "value_display": "31/12/2029"
+        }
+      }
+    },
+    {
+      "key": "ebf45c_1_condicoes",
+      "article": "EBF 45.º-C n.º 1",
+      "source_id": "ebf-45c",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "ebf-45c",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2024": {
+          "value": null,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "ebf-45c",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2025": {
+          "value": null,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "ebf-45c",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "ebf-45c",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º (EBF 45.º-C) e art. 18.º n.º 2 (efeitos a 2026-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "dl97_2_2a_limite_renda_rmmg",
+      "article": "DL 97/2026 2.º n.º 2 a)",
+      "source_id": "dl-97-2026-art2",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730175",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "RMMG",
+          "verified": true,
+          "source_id": "dl-97-2026-art2",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730175",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2024": {
+          "value": null,
+          "unit": "RMMG",
+          "verified": true,
+          "source_id": "dl-97-2026-art2",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730175",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2025": {
+          "value": null,
+          "unit": "RMMG",
+          "verified": true,
+          "source_id": "dl-97-2026-art2",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730175",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2026": {
+          "value": 2.5,
+          "unit": "RMMG",
+          "verified": true,
+          "source_id": "dl-97-2026-art2",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730175",
+          "source_law": "Decreto-Lei 97/2026, art. 2.º",
+          "in_force": true,
+          "in_force_from_display": null,
+          "rmmg_reference_year": "2026",
+          "rmmg_rule": "dl97_2_2a_rmmg_2026"
+        }
+      }
+    },
+    {
+      "key": "dl97_2_2a_rmmg_2026",
+      "article": "DL 139/2025 (RMMG de 2026)",
+      "source_id": "rmmg-2026",
+      "source_url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/139-2025-992879809",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "rmmg-2026",
+          "source_url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/139-2025-992879809",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2024": {
+          "value": null,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "rmmg-2026",
+          "source_url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/139-2025-992879809",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2025": {
+          "value": null,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "rmmg-2026",
+          "source_url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/139-2025-992879809",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2026": {
+          "value": 920,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "rmmg-2026",
+          "source_url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/139-2025-992879809",
+          "source_law": "Decreto-Lei 139/2025 (efeitos 2026-01-01)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "dl97_2_3_atualizacao_portaria",
+      "article": "DL 97/2026 2.º n.º 3",
+      "source_id": "dl-97-2026-art2",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730175",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "dl-97-2026-art2",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730175",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2024": {
+          "value": null,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "dl-97-2026-art2",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730175",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2025": {
+          "value": null,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "dl-97-2026-art2",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730175",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "dl-97-2026-art2",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730175",
+          "source_law": "Decreto-Lei 97/2026, art. 2.º",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "dl97_3_valor_renda_mensal",
+      "article": "DL 97/2026 3.º",
+      "source_id": "dl-97-2026-art3",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730375",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "dl-97-2026-art3",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730375",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2024": {
+          "value": null,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "dl-97-2026-art3",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730375",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2025": {
+          "value": null,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "dl-97-2026-art3",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730375",
+          "source_law": "Decreto-Lei 97/2026, art. 9.º e art. 18.º n.º 2",
+          "in_force": false,
+          "in_force_from_display": "01/01/2026",
+          "in_force_evidence": [
+            {
+              "source_id": "dl-97-2026-art18",
+              "text": "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+            },
+            {
+              "source_id": "ebf-45c",
+              "text": "com efeitos a partir de 2026-01-01"
+            }
+          ]
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "dl-97-2026-art3",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730375",
+          "source_law": "Decreto-Lei 97/2026, art. 3.º",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs41_1_gastos_dedutiveis",
+      "article": "CIRS 41.º n.º 1",
+      "source_id": "cirs-41",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Lei 42/2016, art. 190.º, e Lei 56/2023, art. 27.º (2023-10-07)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs41_1_exclusao_gastos_financeiros",
+      "article": "CIRS 41.º n.º 1",
+      "source_id": "cirs-41",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Lei 42/2016, art. 190.º, e Lei 56/2023, art. 27.º (2023-10-07)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs41_1_outras_exclusoes",
+      "article": "CIRS 41.º n.º 1",
+      "source_id": "cirs-41",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Lei 42/2016, art. 190.º, e Lei 56/2023, art. 27.º (2023-10-07)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs41_2_condominio",
+      "article": "CIRS 41.º n.º 2",
+      "source_id": "cirs-41",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Lei 42/2016, art. 190.º, e Lei 56/2023, art. 27.º (2023-10-07)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs41_3_permilagem",
+      "article": "CIRS 41.º n.º 3",
+      "source_id": "cirs-41",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Lei 42/2016, art. 190.º, e Lei 56/2023, art. 27.º (2023-10-07)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs41_4_imputacao_vpt_area",
+      "article": "CIRS 41.º n.º 4",
+      "source_id": "cirs-41",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Lei 42/2016, art. 190.º, e Lei 56/2023, art. 27.º (2023-10-07)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs41_5_imi_selo_ano",
+      "article": "CIRS 41.º n.º 5",
+      "source_id": "cirs-41",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Lei 42/2016, art. 190.º, e Lei 56/2023, art. 27.º (2023-10-07)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs41_6_sublocacao",
+      "article": "CIRS 41.º n.º 6",
+      "source_id": "cirs-41",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Lei 42/2016, art. 190.º, e Lei 56/2023, art. 27.º (2023-10-07)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs41_7_obras_24_meses_antes",
+      "article": "CIRS 41.º n.º 7",
+      "source_id": "cirs-41",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Lei 42/2016, art. 190.º, e Lei 56/2023, art. 27.º (2023-10-07)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs41_8_rendas_habitacao_propria",
+      "article": "CIRS 41.º n.º 8",
+      "source_id": "cirs-41",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": false,
+          "in_force_from_display": "11/09/2024"
+        },
+        "2024": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": null,
+          "in_force": true,
+          "in_force_from_display": "11/09/2024"
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs41_comprovacao_documental",
+      "article": "CIRS 41.º n.º 9 (n.º 8 ate 10/09/2024)",
+      "source_id": "cirs-41",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Lei 42/2016, art. 190.º, e Lei 56/2023, art. 27.º (2023-10-07)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-41",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+          "source_law": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
     }
   ],
   "personal": [

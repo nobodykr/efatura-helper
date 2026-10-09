@@ -923,6 +923,268 @@
         "As alterações ao Código do IRS, introduzidas pelo artigo 5.º"
       ],
       "source_note": "Lido em 2026-10-07 na pagina do diploma no DRE."
+    },
+    {
+      "id": "cirs-72",
+      "governs": "Categoria F, taxa autonoma: n.º 1 e) 28 %, n.º 2 25 % arrendamento habitacional, reducoes por duracao (n.os 3 a 5), reducao adicional (n.º 24), exclusao por renda elevada (n.º 23), opcao de englobamento (n.º 13), perda das reducoes (n.º 20).",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777570",
+      "type": "artigo",
+      "critical": true,
+      "dre_versao_id": "1000777570",
+      "amended_by": "Lei 73-A/2025, art. 261.º (em vigor 2026-01-01; so revogou o n.º 19); antes Lei 82/2023 art. 230.º (2024-01-01), Lei 56/2023 art. 27.º (2023-10-07), Lei 21/2023 art. 8.º (2023-05-26), Lei 24-D/2022 art. 218.º (2023-01-01)",
+      "why_it_matters": "Taxas autonomas e reducoes da categoria F, dependentes da duracao e do ambito contratual.",
+      "expect": [
+        "72.º",
+        "São tributados à taxa autónoma de 28 %",
+        "Os rendimentos prediais não previstos no número seguinte",
+        "Os rendimentos prediais decorrentes de arrendamento habitacional, incluindo os referidos na alínea b) do n.º 5 do artigo 8.º, são tributados à taxa autónoma de 25 %",
+        "com duração igual ou superior a cinco anos e inferior a 10 anos é aplicada uma redução de 10 pontos percentuais na respetiva taxa autónoma",
+        "por cada renovação com igual duração, aplicada uma redução de dois pontos percentuais, estando as reduções relativas à renovação do contrato sujeitas ao limite de 10 pontos percentuais",
+        "com duração igual ou superior a 10 anos e inferior a 20 anos é aplicada uma redução de 15 pontos percentuais na respetiva taxa autónoma",
+        "com duração igual ou superior a 20 anos e aos rendimentos prediais decorrentes de contratos de direito real de habitação duradoura, na parte respeitante ao pagamento da prestação pecuniária mensal, é aplicada uma redução de 20 pontos percentuais da respetiva taxa autónoma",
+        "nos n.os 2 a 5 e nos n.os 9, 10 e 12 podem ser englobados por opção dos respetivos titulares residentes em território português",
+        "Sempre que os contratos de arrendamento previstos nos n.os 3, 4 e 5 cessem os seus efeitos antes de decorridos os prazos de duração dos mesmos ou das suas renovações, por motivo imputável ao senhorio",
+        "O disposto nos n.os 3 a 5 não se aplica a rendimentos prediais decorrentes de contratos de arrendamento habitacional celebrados a partir de 1 de janeiro de 2024, cuja renda mensal exceda em 50 % os limites gerais de preço de renda por tipologia em função do concelho onde se localiza o imóvel",
+        "é aplicada uma redução adicional de cinco pontos percentuais na respetiva taxa autónoma sempre que a renda seja inferior, em pelo menos cinco pontos percentuais, à renda do contrato de arrendamento anterior sobre o mesmo imóvel"
+      ],
+      "expect_by_year": {
+        "2023": [
+          "São tributados à taxa autónoma de 28 %",
+          "nos n.os 2 a 5 e nos n.os 9, 10 e 12 podem ser englobados por opção dos respetivos titulares residentes em território português"
+        ],
+        "2024": [
+          "São tributados à taxa autónoma de 28 %",
+          "Os rendimentos prediais não previstos no número seguinte",
+          "Os rendimentos prediais decorrentes de arrendamento habitacional, incluindo os referidos na alínea b) do n.º 5 do artigo 8.º, são tributados à taxa autónoma de 25 %",
+          "com duração igual ou superior a cinco anos e inferior a 10 anos é aplicada uma redução de 10 pontos percentuais na respetiva taxa autónoma",
+          "por cada renovação com igual duração, aplicada uma redução de dois pontos percentuais, estando as reduções relativas à renovação do contrato sujeitas ao limite de 10 pontos percentuais",
+          "com duração igual ou superior a 10 anos e inferior a 20 anos é aplicada uma redução de 15 pontos percentuais na respetiva taxa autónoma",
+          "com duração igual ou superior a 20 anos e aos rendimentos prediais decorrentes de contratos de direito real de habitação duradoura, na parte respeitante ao pagamento da prestação pecuniária mensal, é aplicada uma redução de 20 pontos percentuais da respetiva taxa autónoma",
+          "nos n.os 2 a 5 e nos n.os 9, 10 e 12 podem ser englobados por opção dos respetivos titulares residentes em território português",
+          "Sempre que os contratos de arrendamento previstos nos n.os 3, 4 e 5 cessem os seus efeitos antes de decorridos os prazos de duração dos mesmos ou das suas renovações, por motivo imputável ao senhorio",
+          "O disposto nos n.os 3 a 5 não se aplica a rendimentos prediais decorrentes de contratos de arrendamento habitacional celebrados a partir de 1 de janeiro de 2024, cuja renda mensal exceda em 50 % os limites gerais de preço de renda por tipologia em função do concelho onde se localiza o imóvel",
+          "é aplicada uma redução adicional de cinco pontos percentuais na respetiva taxa autónoma sempre que a renda seja inferior, em pelo menos cinco pontos percentuais, à renda do contrato de arrendamento anterior sobre o mesmo imóvel"
+        ],
+        "2025": [
+          "São tributados à taxa autónoma de 28 %",
+          "Os rendimentos prediais não previstos no número seguinte",
+          "Os rendimentos prediais decorrentes de arrendamento habitacional, incluindo os referidos na alínea b) do n.º 5 do artigo 8.º, são tributados à taxa autónoma de 25 %",
+          "com duração igual ou superior a cinco anos e inferior a 10 anos é aplicada uma redução de 10 pontos percentuais na respetiva taxa autónoma",
+          "por cada renovação com igual duração, aplicada uma redução de dois pontos percentuais, estando as reduções relativas à renovação do contrato sujeitas ao limite de 10 pontos percentuais",
+          "com duração igual ou superior a 10 anos e inferior a 20 anos é aplicada uma redução de 15 pontos percentuais na respetiva taxa autónoma",
+          "com duração igual ou superior a 20 anos e aos rendimentos prediais decorrentes de contratos de direito real de habitação duradoura, na parte respeitante ao pagamento da prestação pecuniária mensal, é aplicada uma redução de 20 pontos percentuais da respetiva taxa autónoma",
+          "nos n.os 2 a 5 e nos n.os 9, 10 e 12 podem ser englobados por opção dos respetivos titulares residentes em território português",
+          "Sempre que os contratos de arrendamento previstos nos n.os 3, 4 e 5 cessem os seus efeitos antes de decorridos os prazos de duração dos mesmos ou das suas renovações, por motivo imputável ao senhorio",
+          "O disposto nos n.os 3 a 5 não se aplica a rendimentos prediais decorrentes de contratos de arrendamento habitacional celebrados a partir de 1 de janeiro de 2024, cuja renda mensal exceda em 50 % os limites gerais de preço de renda por tipologia em função do concelho onde se localiza o imóvel",
+          "é aplicada uma redução adicional de cinco pontos percentuais na respetiva taxa autónoma sempre que a renda seja inferior, em pelo menos cinco pontos percentuais, à renda do contrato de arrendamento anterior sobre o mesmo imóvel"
+        ]
+      },
+      "expect_on_date": {
+        "2023-10-07": [
+          "Os rendimentos prediais decorrentes de arrendamento habitacional, incluindo os referidos na alínea b) do n.º 5 do artigo 8.º, são tributados à taxa autónoma de 25 %",
+          "O disposto nos n.os 3 a 5 não se aplica a rendimentos prediais decorrentes de contratos de arrendamento habitacional celebrados a partir de 1 de janeiro de 2024, cuja renda mensal exceda em 50 % os limites gerais de preço de renda por tipologia em função do concelho onde se localiza o imóvel",
+          "é aplicada uma redução adicional de cinco pontos percentuais na respetiva taxa autónoma sempre que a renda seja inferior, em pelo menos cinco pontos percentuais, à renda do contrato de arrendamento anterior sobre o mesmo imóvel"
+        ]
+      },
+      "expect_absent_on_date": {
+        "2023-10-06": [
+          "Os rendimentos prediais decorrentes de arrendamento habitacional, incluindo os referidos na alínea b) do n.º 5 do artigo 8.º, são tributados à taxa autónoma de 25 %",
+          "O disposto nos n.os 3 a 5 não se aplica a rendimentos prediais decorrentes de contratos de arrendamento habitacional celebrados a partir de 1 de janeiro de 2024, cuja renda mensal exceda em 50 % os limites gerais de preço de renda por tipologia em função do concelho onde se localiza o imóvel",
+          "é aplicada uma redução adicional de cinco pontos percentuais na respetiva taxa autónoma sempre que a renda seja inferior, em pelo menos cinco pontos percentuais, à renda do contrato de arrendamento anterior sobre o mesmo imóvel"
+        ]
+      },
+      "source_note": "Lido em 2026-10-09 com dre.mjs/version history na pagina DEDICADA e no historico de versoes da mesma pagina. expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y; expect_on_date e expect_absent_on_date = redacao nessa data."
+    },
+    {
+      "id": "cirs-41",
+      "governs": "Categoria F, gastos dedutiveis aos rendimentos prediais e exclusoes (gastos financeiros, depreciacoes, mobiliario, AIMI), condominio, permilagem, imputacao por VPT ou area, IMI e selo, sublocacao, obras nos 24 meses anteriores, rendas da habitacao propria (n.º 8), comprovacao documental.",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-887423292",
+      "type": "artigo",
+      "critical": true,
+      "dre_versao_id": "887423292",
+      "amended_by": "Decreto-Lei 57/2024, art. 2.º (em vigor 2024-09-11: novo n.º 8; o antigo n.º 8 passou a n.º 9); antes Lei 56/2023 art. 27.º (2023-10-07: seguros de renda no n.º 1), Lei 42/2016 art. 190.º (2017-01-01)",
+      "why_it_matters": "Gastos dedutiveis e exclusoes da categoria F, incluindo gastos financeiros e a regra da habitacao propria.",
+      "expect": [
+        "41.º",
+        "deduzem-se, relativamente a cada prédio ou parte de prédio, todos os gastos efetivamente suportados e pagos pelo sujeito passivo para obter ou garantir tais rendimentos",
+        "com exceção dos gastos de natureza financeira",
+        "dos relativos a depreciações e dos relativos a mobiliário, eletrodomésticos e artigos de conforto ou decoração, bem como do adicional ao imposto municipal sobre imóveis",
+        "No caso de fração autónoma de prédio em regime de propriedade horizontal, são dedutíveis, relativamente a cada fração ou parte de fração, outros encargos que, nos termos da lei, o condómino deva obrigatoriamente suportar e que sejam efetivamente pagos pelo sujeito passivo",
+        "os encargos referidos no número anterior são imputados de acordo com a permilagem atribuída a cada fração ou parte de fração no título constitutivo da propriedade horizontal",
+        "Caso o sujeito passivo arrende parte de prédio suscetível de utilização independente, os encargos referidos no número anterior são imputados de acordo com o respetivo valor patrimonial tributário ou, na falta deste, na proporção da área utilizável de tal parte na área total utilizável do prédio",
+        "O imposto municipal sobre imóveis e o imposto do selo, pagos em determinado ano, apenas são dedutíveis quando respeitem a prédio ou parte de prédio cujo rendimento seja objeto de tributação nesse ano fiscal",
+        "Na sublocação, a diferença entre a renda recebida pelo sublocador e a renda paga por este não beneficia de qualquer dedução",
+        "Podem ainda ser deduzidos gastos suportados e pagos nos 24 meses anteriores ao início do arrendamento relativos a obras de conservação e manutenção do prédio, desde que entretanto o imóvel não tenha sido utilizado para outro fim que não o arrendamento",
+        "deduzem-se, até à sua concorrência, os gastos suportados pelo sujeito passivo com o pagamento de rendas de imóvel afeto à sua habitação própria e permanente",
+        "Os gastos referidos nos números anteriores devem ser documentalmente comprovados",
+        "incluindo os seguros de renda"
+      ],
+      "expect_by_year": {
+        "2023": [
+          "deduzem-se, relativamente a cada prédio ou parte de prédio, todos os gastos efetivamente suportados e pagos pelo sujeito passivo para obter ou garantir tais rendimentos",
+          "com exceção dos gastos de natureza financeira",
+          "dos relativos a depreciações e dos relativos a mobiliário, eletrodomésticos e artigos de conforto ou decoração, bem como do adicional ao imposto municipal sobre imóveis",
+          "No caso de fração autónoma de prédio em regime de propriedade horizontal, são dedutíveis, relativamente a cada fração ou parte de fração, outros encargos que, nos termos da lei, o condómino deva obrigatoriamente suportar e que sejam efetivamente pagos pelo sujeito passivo",
+          "os encargos referidos no número anterior são imputados de acordo com a permilagem atribuída a cada fração ou parte de fração no título constitutivo da propriedade horizontal",
+          "Caso o sujeito passivo arrende parte de prédio suscetível de utilização independente, os encargos referidos no número anterior são imputados de acordo com o respetivo valor patrimonial tributário ou, na falta deste, na proporção da área utilizável de tal parte na área total utilizável do prédio",
+          "O imposto municipal sobre imóveis e o imposto do selo, pagos em determinado ano, apenas são dedutíveis quando respeitem a prédio ou parte de prédio cujo rendimento seja objeto de tributação nesse ano fiscal",
+          "Na sublocação, a diferença entre a renda recebida pelo sublocador e a renda paga por este não beneficia de qualquer dedução",
+          "Podem ainda ser deduzidos gastos suportados e pagos nos 24 meses anteriores ao início do arrendamento relativos a obras de conservação e manutenção do prédio, desde que entretanto o imóvel não tenha sido utilizado para outro fim que não o arrendamento",
+          "Os gastos referidos nos números anteriores devem ser documentalmente comprovados"
+        ],
+        "2024": [
+          "deduzem-se, relativamente a cada prédio ou parte de prédio, todos os gastos efetivamente suportados e pagos pelo sujeito passivo para obter ou garantir tais rendimentos",
+          "com exceção dos gastos de natureza financeira",
+          "dos relativos a depreciações e dos relativos a mobiliário, eletrodomésticos e artigos de conforto ou decoração, bem como do adicional ao imposto municipal sobre imóveis",
+          "No caso de fração autónoma de prédio em regime de propriedade horizontal, são dedutíveis, relativamente a cada fração ou parte de fração, outros encargos que, nos termos da lei, o condómino deva obrigatoriamente suportar e que sejam efetivamente pagos pelo sujeito passivo",
+          "os encargos referidos no número anterior são imputados de acordo com a permilagem atribuída a cada fração ou parte de fração no título constitutivo da propriedade horizontal",
+          "Caso o sujeito passivo arrende parte de prédio suscetível de utilização independente, os encargos referidos no número anterior são imputados de acordo com o respetivo valor patrimonial tributário ou, na falta deste, na proporção da área utilizável de tal parte na área total utilizável do prédio",
+          "O imposto municipal sobre imóveis e o imposto do selo, pagos em determinado ano, apenas são dedutíveis quando respeitem a prédio ou parte de prédio cujo rendimento seja objeto de tributação nesse ano fiscal",
+          "Na sublocação, a diferença entre a renda recebida pelo sublocador e a renda paga por este não beneficia de qualquer dedução",
+          "Podem ainda ser deduzidos gastos suportados e pagos nos 24 meses anteriores ao início do arrendamento relativos a obras de conservação e manutenção do prédio, desde que entretanto o imóvel não tenha sido utilizado para outro fim que não o arrendamento",
+          "Os gastos referidos nos números anteriores devem ser documentalmente comprovados",
+          "incluindo os seguros de renda"
+        ],
+        "2025": [
+          "deduzem-se, relativamente a cada prédio ou parte de prédio, todos os gastos efetivamente suportados e pagos pelo sujeito passivo para obter ou garantir tais rendimentos",
+          "com exceção dos gastos de natureza financeira",
+          "dos relativos a depreciações e dos relativos a mobiliário, eletrodomésticos e artigos de conforto ou decoração, bem como do adicional ao imposto municipal sobre imóveis",
+          "No caso de fração autónoma de prédio em regime de propriedade horizontal, são dedutíveis, relativamente a cada fração ou parte de fração, outros encargos que, nos termos da lei, o condómino deva obrigatoriamente suportar e que sejam efetivamente pagos pelo sujeito passivo",
+          "os encargos referidos no número anterior são imputados de acordo com a permilagem atribuída a cada fração ou parte de fração no título constitutivo da propriedade horizontal",
+          "Caso o sujeito passivo arrende parte de prédio suscetível de utilização independente, os encargos referidos no número anterior são imputados de acordo com o respetivo valor patrimonial tributário ou, na falta deste, na proporção da área utilizável de tal parte na área total utilizável do prédio",
+          "O imposto municipal sobre imóveis e o imposto do selo, pagos em determinado ano, apenas são dedutíveis quando respeitem a prédio ou parte de prédio cujo rendimento seja objeto de tributação nesse ano fiscal",
+          "Na sublocação, a diferença entre a renda recebida pelo sublocador e a renda paga por este não beneficia de qualquer dedução",
+          "Podem ainda ser deduzidos gastos suportados e pagos nos 24 meses anteriores ao início do arrendamento relativos a obras de conservação e manutenção do prédio, desde que entretanto o imóvel não tenha sido utilizado para outro fim que não o arrendamento",
+          "deduzem-se, até à sua concorrência, os gastos suportados pelo sujeito passivo com o pagamento de rendas de imóvel afeto à sua habitação própria e permanente",
+          "Os gastos referidos nos números anteriores devem ser documentalmente comprovados",
+          "incluindo os seguros de renda"
+        ]
+      },
+      "expect_absent_by_year": {
+        "2023": [
+          "deduzem-se, até à sua concorrência, os gastos suportados pelo sujeito passivo com o pagamento de rendas de imóvel afeto à sua habitação própria e permanente"
+        ]
+      },
+      "expect_on_date": {
+        "2024-09-11": [
+          "deduzem-se, até à sua concorrência, os gastos suportados pelo sujeito passivo com o pagamento de rendas de imóvel afeto à sua habitação própria e permanente"
+        ]
+      },
+      "expect_absent_on_date": {
+        "2024-09-10": [
+          "deduzem-se, até à sua concorrência, os gastos suportados pelo sujeito passivo com o pagamento de rendas de imóvel afeto à sua habitação própria e permanente"
+        ]
+      },
+      "source_note": "Lido em 2026-10-09 com dre.mjs/version history na pagina DEDICADA e no historico de versoes da mesma pagina. expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y; expect_on_date e expect_absent_on_date = redacao nessa data."
+    },
+    {
+      "id": "lei-56-2023-art50",
+      "governs": "Norma transitoria do art. 72.º CIRS: a quem se aplicam os n.os 2 a 5 (n.º 7) e o n.º 2 (n.º 8).",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2023-222471959-838758723",
+      "type": "artigo",
+      "critical": true,
+      "dre_versao_id": "838758723",
+      "amended_by": "Lei 82/2023, art. 314.º (em vigor 2024-01-01: reescreveu os n.os 8, 10, 11 e 12); Lei 56/2023 em vigor desde 2023-10-07 (art. 55.º)",
+      "why_it_matters": "Condiciona quais contratos podem usar as taxas do art. 72.º n.os 2 a 5.",
+      "expect": [
+        "50.º",
+        "O disposto nos n.os 2 a 5 do artigo 72.º do Código do IRS, na redação introduzida pela presente lei, aplica-se a novos contratos de arrendamento e respetivas renovações contratuais, bem como às renovações dos contratos de arrendamento em vigor verificadas a partir da data de entrada em vigor da presente lei",
+        "Não é aplicável aos rendimentos prediais decorrentes de contratos de arrendamento para habitação permanente com duração inferior a cinco anos que já beneficiassem de uma taxa de IRS inferior à nele prevista, mantendo-se a taxa anteriormente aplicável até ao termo da duração do contrato ou até à sua renovação",
+        "É aplicável aos rendimentos prediais decorrentes de contratos de arrendamento para habitação que não beneficiassem de uma taxa de IRS inferior à nele prevista"
+      ],
+      "expect_by_year": {
+        "2024": [
+          "O disposto nos n.os 2 a 5 do artigo 72.º do Código do IRS, na redação introduzida pela presente lei, aplica-se a novos contratos de arrendamento e respetivas renovações contratuais, bem como às renovações dos contratos de arrendamento em vigor verificadas a partir da data de entrada em vigor da presente lei",
+          "Não é aplicável aos rendimentos prediais decorrentes de contratos de arrendamento para habitação permanente com duração inferior a cinco anos que já beneficiassem de uma taxa de IRS inferior à nele prevista, mantendo-se a taxa anteriormente aplicável até ao termo da duração do contrato ou até à sua renovação",
+          "É aplicável aos rendimentos prediais decorrentes de contratos de arrendamento para habitação que não beneficiassem de uma taxa de IRS inferior à nele prevista"
+        ],
+        "2025": [
+          "O disposto nos n.os 2 a 5 do artigo 72.º do Código do IRS, na redação introduzida pela presente lei, aplica-se a novos contratos de arrendamento e respetivas renovações contratuais, bem como às renovações dos contratos de arrendamento em vigor verificadas a partir da data de entrada em vigor da presente lei",
+          "Não é aplicável aos rendimentos prediais decorrentes de contratos de arrendamento para habitação permanente com duração inferior a cinco anos que já beneficiassem de uma taxa de IRS inferior à nele prevista, mantendo-se a taxa anteriormente aplicável até ao termo da duração do contrato ou até à sua renovação",
+          "É aplicável aos rendimentos prediais decorrentes de contratos de arrendamento para habitação que não beneficiassem de uma taxa de IRS inferior à nele prevista"
+        ]
+      },
+      "source_note": "Lido em 2026-10-09 com dre.mjs/version history na pagina DEDICADA e no historico de versoes da mesma pagina. expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y; expect_on_date e expect_absent_on_date = redacao nessa data."
+    },
+    {
+      "id": "ebf-45c",
+      "governs": "Categoria F: taxa de 10 % para rendas habitacionais dentro dos limites do DL 97/2026, salvo taxa mais favoravel, com efeitos desde 2026-01-01 e rendimentos auferidos ate 2029-12-31.",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/1989-34554075-1124763775",
+      "type": "artigo",
+      "critical": true,
+      "dre_versao_id": "1124763775",
+      "amended_by": "Decreto-Lei 97/2026, art. 9.º (aditado; em vigor 2026-05-25, com efeitos a partir de 2026-01-01 pelo art. 18.º n.º 2)",
+      "why_it_matters": "A taxa de 10 % nao existia em 2025 e nao afasta uma taxa mais favoravel.",
+      "expect": [
+        "45.º-C",
+        "A taxa de tributação autónoma aplicável aos rendimentos prediais decorrentes de contratos de arrendamento destinados exclusivamente ao arrendamento para habitação cujo valor de renda mensal não exceda os limites a que se referem os n.os 2 e 3 do artigo 2.º do Decreto-Lei n.º 97/2026, de 20 de maio",
+        "auferidos até 31 de dezembro de 2029, é de 10 %, salvo quando seja aplicável uma taxa mais favorável",
+        "com efeitos a partir de 2026-01-01"
+      ],
+      "source_note": "Lido em 2026-10-09 com dre.mjs/version history na pagina DEDICADA e no historico de versoes da mesma pagina. expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y; expect_on_date e expect_absent_on_date = redacao nessa data. A pagina dedicada nao consta do indice consolidado do EBF em 2026-10-09; alcancada por \"Artigo seguinte\" a partir do 45.º-B. O historico tem uma unica versao, o proprio aditamento: nao permite expect_absent_by_year para 2023 a 2025; a ausencia e provada pelo texto dos efeitos em in_force_evidence."
+    },
+    {
+      "id": "dl-97-2026-art2",
+      "governs": "Limite de renda mensal moderada: 2,5 vezes a RMMG prevista para 2026 e atualizacao por portaria.",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730175",
+      "type": "artigo",
+      "critical": true,
+      "dre_versao_id": "1124730175",
+      "amended_by": "Decreto-Lei 97/2026 (texto original; a Declaracao de Retificacao 26/2026 nao altera o art. 2.º n.os 2 e 3)",
+      "why_it_matters": "O limite usa sempre a RMMG de 2026, nunca a RMMG do ano dos rendimentos.",
+      "expect": [
+        "2.º",
+        "No caso da renda mensal moderada, 2,5 vezes o valor da retribuição mínima mensal prevista para 2026",
+        "Os limites referidos no número anterior podem ser objeto de atualização por portaria dos membros do Governo responsáveis pelas áreas das finanças e da habitação de acordo com o fator de atualização previsto no artigo 24.º do Novo Regime do Arrendamento Urbano"
+      ],
+      "source_note": "Lido em 2026-10-09 com dre.mjs/version history na pagina DEDICADA e no historico de versoes da mesma pagina. expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y; expect_on_date e expect_absent_on_date = redacao nessa data."
+    },
+    {
+      "id": "dl-97-2026-art3",
+      "governs": "Afericao do valor total da renda, pluralidade de arrendatarios e valor anual dividido pelos meses decorridos em cada ano.",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124730375",
+      "type": "artigo",
+      "critical": true,
+      "dre_versao_id": "1124730375",
+      "amended_by": "Decreto-Lei 97/2026 (texto original)",
+      "why_it_matters": "O limite afere-se pela renda total, mesmo com varios arrendatarios.",
+      "expect": [
+        "3.º",
+        "considera-se como valor de aquisição ou de renda mensal, a totalidade do valor pago pelo prédio urbano, prédio misto ou fração autónoma no âmbito da transação ou do contrato de arrendamento",
+        "sendo vários os arrendatários, os limites a que se referem os n.os 2 e 3 do artigo anterior são aferidos pelo montante correspondente à totalidade do valor a que se refere o n.º 1",
+        "No caso de arrendamento, para os efeitos previstos no n.º 1, considera-se o valor anual, dividido pelo número de meses decorridos em cada ano"
+      ],
+      "source_note": "Lido em 2026-10-09 com dre.mjs/version history na pagina DEDICADA e no historico de versoes da mesma pagina. expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y; expect_on_date e expect_absent_on_date = redacao nessa data."
+    },
+    {
+      "id": "dl-97-2026-art18",
+      "governs": "Producao de efeitos do EBF 45.º-C a partir de 1 de janeiro de 2026.",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/decreto-lei/2026-1124729375-1124733975",
+      "type": "artigo",
+      "critical": true,
+      "dre_versao_id": "1124733975",
+      "amended_by": "Decreto-Lei 97/2026 (texto original)",
+      "why_it_matters": "Prova a ausencia do EBF 45.º-C nos anos anteriores a 2026.",
+      "expect": [
+        "18.º",
+        "As alterações ao Código do IRS, introduzidas pelo artigo 5.º, a alteração ao artigo 24.º-A do EBF, introduzida pelo artigo 7.º, e o artigo 45.º-C do EBF, aditado pelo artigo 9.º, produzem efeitos a partir de 1 de janeiro de 2026"
+      ],
+      "source_note": "Lido em 2026-10-09 com dre.mjs/version history na pagina DEDICADA e no historico de versoes da mesma pagina. expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y; expect_on_date e expect_absent_on_date = redacao nessa data."
+    },
+    {
+      "id": "rmmg-2026",
+      "governs": "Valor da RMMG para 2026 (referencia do limite de renda do DL 97/2026 art. 2.º n.º 2 a))",
+      "url": "https://diariodarepublica.pt/dr/detalhe/decreto-lei/139-2025-992879809",
+      "type": "diploma",
+      "critical": true,
+      "amended_by": "Decreto-Lei 139/2025 (efeitos 2026-01-01)",
+      "why_it_matters": "Referencia legal da RMMG usada pelo limite de renda mensal moderada.",
+      "expect": [
+        "O valor da RMMG a que se refere o n.º 1 do artigo 273.º do Código do Trabalho",
+        "é de € 920,00",
+        "produz efeitos no dia 1 de janeiro de 2026"
+      ],
+      "source_note": "Lido em 2026-10-09 na pagina do diploma no DRE."
     }
   ],
   "watch": [

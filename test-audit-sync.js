@@ -95,7 +95,31 @@ for (const r of manRules)
     if (!reg || JSON.stringify(reg.value) !== JSON.stringify(v.value) || (reg.verified === true) !== v.verified)
       bad(`${r.key} ${y}: manifest ${JSON.stringify(v.value)} differs from year_snapshots - re-run make-audit.mjs`);
   }
+for (const r of manRules) for (const [y, v] of Object.entries(r.years || {})) {
+  const reg = ry[y] && ry[y][r.key];
+  for (const field of ["value_display", "rmmg_reference_year", "rmmg_rule", "in_force_evidence"])
+    if (JSON.stringify(v[field]) !== JSON.stringify(reg && reg[field])) bad(`${r.key} ${y}: stale ${field}`);
+}
 if (!fails) ok(`${manRules.length} expense/IVA rules match year_snapshots for every year`);
+
+// Exercise the page's formatter with the new manifest fields and an escaped string fallback.
+const html = fs.readFileSync("auditoria.html", "utf8");
+const formatter = html.slice(html.indexOf("  function esc(s)"), html.indexOf("  Promise.all(["));
+const context = {};
+require("vm").runInNewContext(formatter, context);
+for (const [key, expected] of [
+  ["cirs72_4_reducao_pp", "15 p.p."],
+  ["cirs72_3_renovacao_pp", "por renovação: 2 p.p.<br>limite: 10 p.p."],
+  ["dl97_2_2a_limite_renda_rmmg", "2,5 &times; RMMG de 2026"],
+  ["ebf45c_1_auferidos_ate", "31/12/2029"],
+]) {
+  const r = manRules.find((r) => r.key === key);
+  if (!r || context.ruleValue(r.years["2026"], "2026") !== expected) bad(`${key}: audit page display differs`);
+}
+if (context.ruleValue({ verified: true, value: "<texto>" }) !== "&lt;texto&gt;"
+  || context.ruleValue({ verified: true, value: { limite: "<texto>" } }) !== "limite: &lt;texto&gt;")
+  bad("audit page must safely escape string values");
+if (!fails) ok("Category F metadata and Portuguese audit display match the registry");
 
 console.log(fails ? `\n  ${fails} FAILED - audit-manifest.json is stale or inconsistent; run \`node make-audit.mjs\``
                   : "\n  audit-manifest.json is in sync with tool.js and keeps drift visible");

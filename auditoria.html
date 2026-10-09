@@ -258,6 +258,7 @@
   function ptNum(n){ var p=String(n).split("."); return p[0].replace(/\B(?=(\d{3})+(?!\d))/g," ")+(p[1]?","+(p[1].length===1?p[1]+"0":p[1]):""); }
   var PARTS = { a:"a)", b:"b)", c:"c)", d:"d)", e:"e)", f:"f)", g:"g)", combustiveis:"Combustíveis:",
     congressos_organizacao:"Congressos (organização):", congressos_participacao:"Congressos (participação):" };
+  PARTS.por_renovacao = "por renovação:"; PARTS.limite = "limite:";
   var IAS = {};   // that year's verified IAS, to show an IAS multiple in euros
   function ruleValue(v, y){
     if(v && v.in_force===false) return "não existia nesta redação"+(v.in_force_from_display?" (só desde "+esc(v.in_force_from_display)+")":"");
@@ -266,13 +267,16 @@
     var formula=v.derived && v.derived.formula ? '<br><span class="mono">'+esc(v.derived.formula)+"</span>" : "";
     if(u==="EUR") return ptNum(x)+" &euro;"+formula;
     if(u==="IAS") return String(x).replace(".",",")+" &times; IAS"+(IAS[y]!=null?" = "+ptNum(Math.round(x*IAS[y]*100)/100)+" &euro;":"")+formula;
+    if(u==="RMMG") return String(x).replace(".",",")+" &times; RMMG de "+esc(v.rmmg_reference_year);
+    if(u==="data") return esc(v.value_display);
     if(u==="regra") return "aplica-se";
     if(u==="prazo") return "até ao fim de fevereiro do ano seguinte";
     if(u==="cae") return (v.dre_text||[]).map(esc).join("<br>");
     // Coefficients print as the law writes them (0,30, not 0,3); percentages carry " %".
-    function one(n){ return u==="%" ? String(n).replace(".",",")+" %" : (Number.isInteger(n) ? String(n) : n.toFixed(2).replace(".",",")); }
+    function one(n){ if(u==="pp") return String(n).replace(".",",")+" p.p."; return u==="%" ? String(n).replace(".",",")+" %" : (Number.isInteger(n) ? String(n) : n.toFixed(2).replace(".",",")); }
     if(typeof x==="number") return one(x)+formula;
-    return Object.keys(x).map(function(k){ return esc(PARTS[k]||k)+" "+one(x[k]); }).join("<br>");
+    if(x===null || typeof x!=="object") return esc(String(x));
+    return Object.keys(x).map(function(k){ return esc(PARTS[k]||k)+" "+(typeof x[k]==="number"?one(x[k]):esc(String(x[k]))); }).join("<br>");
   }
   function personalValue(v){
     var labels={rate_pct:"taxa",cap_eur:"teto",per_taxpayer:"por sujeito passivo",sector_in_force:"setor em vigor"};
