@@ -5,6 +5,7 @@
 // carries no value, so a reader can only answer "unknown". Offline: no network.
 //   node test-rule-registry.js
 const fs = require("fs");
+const vm = require("vm");
 
 const snap = JSON.parse(fs.readFileSync("year_snapshots.json", "utf8"));
 const legal = JSON.parse(fs.readFileSync("legal_sources.json", "utf8"));
@@ -21,7 +22,28 @@ const ptNum = (n, unit) => {
   return String(n).replace(".", ",") + (unit === "%" ? " %" : "");
 };
 const NUMERIC = ["EUR", "%", "coeficiente", "IAS"];
-const printedAliases = (n, unit) => unit === "EUR" && Number.isInteger(n)
+NUMERIC.push("pp", "RMMG");
+const PT_WORD = ["zero", "um", "dois", "tres", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez",
+  "onze", "doze", "treze", "catorze", "quinze", "dezasseis", "dezassete", "dezoito", "dezanove", "vinte"];
+const PT_MONTH = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+const dateParts = (value) => {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const date = new Date(value + "T00:00:00Z");
+  if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== value) return null;
+  const [year, month, day] = value.split("-");
+  return { display: `${day}/${month}/${year}`, long: `${Number(day)} de ${PT_MONTH[Number(month) - 1]} de ${year}` };
+};
+const hasInForceEvidence = (r, sources) => {
+  const evidence = r.in_force_evidence, date = dateParts(r.in_force_from);
+  return date && Array.isArray(evidence) && evidence.length > 0
+    && evidence.every((t) => t && typeof t.text === "string" && t.text.trim()
+      && ((sources[t.source_id] || {}).expect || []).some((e) => norm(e).includes(norm(t.text))))
+    && evidence.some((t) => norm(t.text).includes(norm(r.in_force_from)) || norm(t.text).includes(norm(date.long)));
+};
+const printedAliases = (n, unit) => unit === "pp"
+  ? [`${n} pontos percentuais`, ...(PT_WORD[n] ? [`${PT_WORD[n]} pontos percentuais`] : [])]
+  : unit === "RMMG" ? [`${ptNum(n)} vezes`]
+  : unit === "EUR" && Number.isInteger(n)
   ? [...new Set([ptNum(n, unit), String(n)])]
   : unit === "%" && n === 100 ? [ptNum(n, unit), "totalidade do iva"] : [ptNum(n, unit)];
 const printed = (r) => !NUMERIC.includes(r.unit) ? []
@@ -54,7 +76,7 @@ function check(s, l) {
         if (r.value !== null) problems.push(`${key} ${y}: not in force but carries a value`);
         if (r.verified !== true || !r.source_law) problems.push(`${key} ${y}: not in force without verified + source_law`);
         if (!(r.in_force_from > `${y}-12-31`) || !r.in_force_from_display) problems.push(`${key} ${y}: not in force needs a later in_force_from and its display`);
-        if (!((so.expect_absent_by_year || {})[y] || []).length) problems.push(`${key} ${y}: not in force without ${so.id}.expect_absent_by_year`);
+        if (!((so.expect_absent_by_year || {})[y] || []).length && !hasInForceEvidence(r, src)) problems.push(`${key} ${y}: not in force without ${so.id}.expect_absent_by_year`);
         continue;
       }
       if (r.verified !== true) {
@@ -72,6 +94,12 @@ function check(s, l) {
       for (const t of r.dre_text || [])
         if (!pool.some((e) => e.includes(norm(t)))) problems.push(`${key} ${y}: dre_text "${t}" is not one of ${so.id}'s checked strings`);
       const said = norm((r.dre_text || []).join(" | "));
+      if (r.in_force_from > `${y}-12-31`) problems.push(`${key} ${y}: verified before entering into force`);
+      if (r.unit === "data") {
+        const date = dateParts(r.value);
+        if (!date || r.value_display !== date.display || !said.includes(norm(date.long)))
+          problems.push(`${key} ${y}: invalid date, display or DRE long form`);
+      }
       if (r.derived) {
         const dv = r.derived;
         if (dv.kind === "phase_in") {
@@ -113,7 +141,32 @@ if (problems.length) problems.forEach(bad); else ok(`${keys.length} rules x 4 ye
 
 // 2. the check catches what it exists for (mutations on deep copies)
 const clone = (o) => JSON.parse(JSON.stringify(o));
+const auditCode = fs.readFileSync("make-audit.mjs", "utf8").replace(/^import .*;$/m, "");
+const auditDrift = (s) => {
+  let manifest;
+  vm.runInNewContext(auditCode, {
+    readFileSync: (file, encoding) => file === "year_snapshots.json" ? JSON.stringify(s) : fs.readFileSync(file, encoding),
+    writeFileSync: (file, contents) => { manifest = JSON.parse(contents); },
+    console: { log() {} },
+  });
+  return manifest.drift;
+};
+if (auditDrift(snap).length) bad("audit generator reports drift for the shipped registry");
 const mutations = [
+  ["date value and display agree but differ from DRE", (s) => { Object.assign(s.current_values_2026_verified_isolation.rules.ebf45c_1_auferidos_ate, { value: "2028-12-31", value_display: "31/12/2028" }); }],
+  ["invalid calendar date", (s) => { Object.assign(s.current_values_2026_verified_isolation.rules.ebf45c_1_auferidos_ate, { value: "2029-02-31", value_display: "31/02/2029" }); }],
+  ["evidence date differs despite being after the year", (s) => { s.years["2025"].rules.ebf45c_1_taxa_pct.in_force_from = "2027-01-01"; }],
+  ["wrong percentage-point reduction", (s) => { s.years["2025"].rules.cirs72_4_reducao_pp.value = 14; }],
+  ["wrong percentage-point renewal object", (s) => { s.current_values_2026_verified_isolation.rules.cirs72_3_renovacao_pp.value.por_renovacao = 3; }],
+  ["wrong RMMG multiplier", (s) => { s.current_values_2026_verified_isolation.rules.dl97_2_2a_limite_renda_rmmg.value = 3; }],
+  ["wrong end date", (s) => { s.current_values_2026_verified_isolation.rules.ebf45c_1_auferidos_ate.value = "2028-12-31"; }],
+  ["wrong date display", (s) => { s.current_values_2026_verified_isolation.rules.ebf45c_1_auferidos_ate.value_display = "30/12/2029"; }],
+  ["EBF 45.º-C claimed for 2025", (s) => { Object.assign(s.years["2025"].rules.ebf45c_1_taxa_pct, { verified: true, in_force: true, value: 10, dre_text: s.current_values_2026_verified_isolation.rules.ebf45c_1_taxa_pct.dre_text }); }],
+  ["missing not-in-force evidence", (s) => { delete s.years["2025"].rules.ebf45c_1_taxa_pct.in_force_evidence; }],
+  ["evidence text not checked by DRE", (s) => { s.years["2025"].rules.ebf45c_1_taxa_pct.in_force_evidence[0].text = "texto inventado"; }],
+  ["evidence does not name the start date", (s) => { s.years["2025"].rules.ebf45c_1_taxa_pct.in_force_from = "2025-01-01"; }],
+  ["habitational rate claimed for all of 2023", (s) => { s.years["2023"].rules.cirs72_2_habitacional_pct.value = 25; }],
+  ["own-home rent deduction claimed for all of 2024", (s) => { s.years["2024"].rules.cirs41_8_rendas_habitacao_propria.value = true; }],
   ["wrong value", (s) => { s.current_values_2026_verified_isolation.rules.civa53_limiar.value = 14000; }],
   ["another year's value carried into an unverified year", (s) => { s.years["2025"].rules.civa53_3_sem_deducao.value = true; }],
   ["2024 deduction not equal to 4 104 x 1,06", (s) => { s.years["2024"].rules.cirs25_1a_deducao_especifica.value = 4104; }],
@@ -133,6 +186,7 @@ const mutations = [
 for (const [name, mutate] of mutations) {
   const s = clone(snap);
   mutate(s);
+  if (!auditDrift(s).length) bad(`audit generator does not catch: ${name}`);
   if (check(s, legal).problems.length) ok(`catches: ${name}`); else bad(`does not catch: ${name}`);
 }
 
@@ -154,6 +208,32 @@ const NEEDED_PERSONAL = ["cirs78b_1_despesas_gerais_pct", "cirs78b_1_despesas_ge
 const missingPersonal = NEEDED_PERSONAL.filter((k) => Object.values(ry).some((rs) => !rs[k]));
 if (missingPersonal.length) bad("personal rules missing in some year: " + missingPersonal.join(", ")); else ok(`${NEEDED_PERSONAL.length} personal rules present for 2023 to 2026`);
 
+const NEEDED_CATF = [
+  "cirs72_1e_prediais_pct", "cirs72_2_habitacional_pct", "cirs72_3_reducao_pp",
+  "cirs72_3_renovacao_pp", "cirs72_4_reducao_pp", "cirs72_5_reducao_pp",
+  "cirs72_13_englobamento_opcao", "cirs72_20_perda_reducoes", "cirs72_23_exclusao_renda_elevada",
+  "cirs72_24_reducao_adicional_pp", "lei56_2023_50_7_contratos_abrangidos", "lei56_2023_50_8_ambito_n2",
+  "ebf45c_1_taxa_pct", "ebf45c_1_auferidos_ate", "ebf45c_1_condicoes",
+  "dl97_2_2a_limite_renda_rmmg", "dl97_2_2a_rmmg_2026", "dl97_2_3_atualizacao_portaria",
+  "dl97_3_valor_renda_mensal", "cirs41_1_gastos_dedutiveis", "cirs41_1_exclusao_gastos_financeiros",
+  "cirs41_1_outras_exclusoes", "cirs41_2_condominio", "cirs41_3_permilagem",
+  "cirs41_4_imputacao_vpt_area", "cirs41_5_imi_selo_ano", "cirs41_6_sublocacao",
+  "cirs41_7_obras_24_meses_antes", "cirs41_8_rendas_habitacao_propria", "cirs41_comprovacao_documental"
+];
+const missingCatF = NEEDED_CATF.filter((k) => Object.values(ry).some((rs) => !rs[k]));
+if (missingCatF.length) bad("Category F rules missing in some year: " + missingCatF.join(", ")); else ok(`${NEEDED_CATF.length} Category F rules present for 2023 to 2026`);
+for (const [y, rs] of Object.entries(ry)) {
+  if (y !== "2026" && rs.ebf45c_1_taxa_pct.in_force !== false) bad(`${y}: EBF 45.º-C must not be in force`);
+  if (rs.cirs41_1_exclusao_gastos_financeiros.verified !== true) bad(`${y}: financial expenses exclusion must be verified`);
+  for (const [key, r] of Object.entries(rs)) {
+    if (r.rmmg_reference_year !== undefined && r.rmmg_reference_year !== "2026") bad(`${y} ${key}: RMMG reference must be 2026`);
+    if ((key.startsWith("ebf45c_") || key.startsWith("dl97_")) && key !== "dl97_2_2a_rmmg_2026"
+      && (r.unit === "EUR" || Object.keys(r).some((k) => /(?:cap|limite|ceiling).*eur|eur.*(?:cap|limite|ceiling)/i.test(k))))
+      bad(`${y} ${key}: EBF 45.º-C must not store a euro cap`);
+  }
+}
+if (ry["2026"].dl97_2_2a_limite_renda_rmmg.rmmg_reference_year !== "2026") bad("RMMG multiplier must reference 2026");
+
 // 4. pinned values read from DRE on 2026-10-07 (a change here must come with a new DRE reading);
 //    the 2024 deduction is 4 104 x 1,06 (n.º 7 of Lei 32/2024, Portaria 421/2023)
 const pins = [["2023", "civa53_limiar", 13500], ["2024", "civa53_limiar", 14500], ["2025", "civa53_limiar", 15000], ["2026", "civa53_limiar", 15000],
@@ -166,6 +246,23 @@ pins.push(
     .flatMap(([y, rent, raised, gym, student]) => [[String(y), "cirs78e_rendas_limite_ano", rent], [String(y), "cirs78e_4a_rendas_limite_majorado_ano", raised],
       [String(y), "cirs78f_ginasios_pct", gym], [String(y), "cirs78d_11_rendas_estudante_limite", student]]),
   ...["2023", "2024", "2025", "2026"].flatMap((y) => [[y, "cirs78b_1_despesas_gerais_limite", 250], [y, "cirs78b_9_monoparental_pct", 45], [y, "cirs84_1_lares_limite", 403.75]])
+);
+pins.push(
+  ["2024", "cirs72_2_habitacional_pct", 25],
+  ["2025", "cirs72_2_habitacional_pct", 25],
+  ["2026", "cirs72_2_habitacional_pct", 25],
+  ["2023", "cirs72_2_habitacional_pct", null],
+  ["2025", "cirs72_1e_prediais_pct", 28],
+  ["2026", "cirs72_1e_prediais_pct", 28],
+  ["2025", "cirs72_3_reducao_pp", 10],
+  ["2025", "cirs72_4_reducao_pp", 15],
+  ["2025", "cirs72_5_reducao_pp", 20],
+  ["2025", "cirs72_24_reducao_adicional_pp", 5],
+  ["2026", "ebf45c_1_taxa_pct", 10],
+  ["2025", "ebf45c_1_taxa_pct", null],
+  ["2026", "dl97_2_2a_limite_renda_rmmg", 2.5],
+  ["2026", "dl97_2_2a_rmmg_2026", 920],
+  ["2026", "ebf45c_1_auferidos_ate", "2029-12-31"]
 );
 for (const [y, k, v] of pins) if (ry[y][k].value !== v) bad(`${y} ${k}: ${JSON.stringify(ry[y][k].value)} != ${v}`);
 if (ry["2026"].cirs31_14_parcial_pct.applies_to_alineas.join() !== "c,d,e") bad("art. 31.º n.º 14 applies only to alíneas c) to e)");

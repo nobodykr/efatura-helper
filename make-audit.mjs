@@ -144,7 +144,28 @@ const ptNum = (n, unit) => {
   return String(n).replace(".", ",") + (unit === "%" ? " %" : "");
 };
 const NUMERIC_UNITS = ["EUR", "%", "coeficiente", "IAS"];
-const printedAliases = (n, unit) => unit === "EUR" && Number.isInteger(n)
+NUMERIC_UNITS.push("pp", "RMMG");
+const PT_WORD = ["zero", "um", "dois", "tres", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez",
+  "onze", "doze", "treze", "catorze", "quinze", "dezasseis", "dezassete", "dezoito", "dezanove", "vinte"];
+const PT_MONTH = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+const dateParts = (value) => {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const date = new Date(value + "T00:00:00Z");
+  if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== value) return null;
+  const [year, month, day] = value.split("-");
+  return { display: `${day}/${month}/${year}`, long: `${Number(day)} de ${PT_MONTH[Number(month) - 1]} de ${year}` };
+};
+const hasInForceEvidence = (r, sources) => {
+  const evidence = r.in_force_evidence, date = dateParts(r.in_force_from);
+  return date && Array.isArray(evidence) && evidence.length > 0
+    && evidence.every((t) => t && typeof t.text === "string" && t.text.trim()
+      && ((sources[t.source_id] || {}).expect || []).some((e) => normTxt(e).includes(normTxt(t.text))))
+    && evidence.some((t) => normTxt(t.text).includes(normTxt(r.in_force_from)) || normTxt(t.text).includes(normTxt(date.long)));
+};
+const printedAliases = (n, unit) => unit === "pp"
+  ? [`${n} pontos percentuais`, ...(PT_WORD[n] ? [`${PT_WORD[n]} pontos percentuais`] : [])]
+  : unit === "RMMG" ? [`${ptNum(n)} vezes`]
+  : unit === "EUR" && Number.isInteger(n)
   ? [...new Set([ptNum(n, unit), String(n)])]
   : unit === "%" && n === 100 ? [ptNum(n, unit), "totalidade do iva"] : [ptNum(n, unit)];
 const printed = (r) => !NUMERIC_UNITS.includes(r.unit) ? []
@@ -167,15 +188,19 @@ for (const key of ruleKeys) {
     perYear[y] = { value: r.value, unit: r.unit ?? null, verified: r.verified === true, source_id: r.source_id,
                    source_url: (srcById[r.source_id] || {}).url || null, source_law: r.source_law || null,
                    in_force: r.in_force !== false, in_force_from_display: r.in_force_from_display || null };
+    for (const field of ["value_display", "rmmg_reference_year", "rmmg_rule", "in_force_evidence"])
+      if (Object.hasOwn(r, field)) perYear[y][field] = r[field];
     if (r.derived) perYear[y].derived = r.derived;
     if (r.unit === "cae") perYear[y].dre_text = r.dre_text || [];
     const src = srcById[r.source_id];
     if (!src) { drift.push(`regra ${key} ${y}: source_id ${r.source_id} não existe em legal_sources.json`); continue; }
     if (r.in_force === false) {
+      if (r.verified !== true || !r.source_law) drift.push(`regra ${key} ${y}: não existia sem verified + source_law`);
+      if (!r.in_force_from_display) drift.push(`regra ${key} ${y}: não existia sem data de início legível`);
       // Did not exist in that year's wording: no value, a later start date, and an absence check on DRE.
       if (r.value !== null) drift.push(`regra ${key} ${y}: não existia mas tem valor ${JSON.stringify(r.value)}`);
       if (!(r.in_force_from > `${y}-12-31`)) drift.push(`regra ${key} ${y}: não existia mas in_force_from ${r.in_force_from} não é posterior ao ano`);
-      if (!((src.expect_absent_by_year || {})[y] || []).length) drift.push(`regra ${key} ${y}: não existia sem expect_absent_by_year em ${src.id}`);
+      if (!((src.expect_absent_by_year || {})[y] || []).length && !hasInForceEvidence(r, srcById)) drift.push(`regra ${key} ${y}: não existia sem expect_absent_by_year em ${src.id}`);
       continue;
     }
     if (r.verified !== true) {
@@ -192,6 +217,12 @@ for (const key of ruleKeys) {
       if (!pool.some((e) => e.includes(normTxt(t))))
         drift.push(`regra ${key} ${y}: "${t}" não está nos expect de ${src.id} - o verify_sources não o confirma`);
     const said = normTxt((r.dre_text || []).join(" | "));
+    if (r.in_force_from > `${y}-12-31`) drift.push(`regra ${key} ${y}: verificada antes de entrar em vigor`);
+    if (r.unit === "data") {
+      const date = dateParts(r.value);
+      if (!date || r.value_display !== date.display || !said.includes(normTxt(date.long)))
+        drift.push(`regra ${key} ${y}: data inválida, apresentação ou texto DRE divergente`);
+    }
     if (r.derived) {
       // A value computed from several DRE strings: each string is checked, then the arithmetic.
       const dv = r.derived;
