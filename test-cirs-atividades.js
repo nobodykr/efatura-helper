@@ -36,6 +36,12 @@ ok("a code in both lists never shares its label (" + shared.length + " shared co
 const caeLabels = new Set(Object.values(cae).map(norm));
 const crossed = Object.keys(cirs).filter((k) => caeLabels.has(norm(cirs[k])));
 ok("no CIRS label appears in the CAE list", crossed.length === 0, crossed.slice(0, 10).join(", "));
+// The INE label of 8412 carries an en dash. A dash sweep once wrote it as a hyphen in both files, and
+// the label comparison above still passed because the pinned copy was swept too. Both files are
+// listed in .sem-tracos-dados so the dash hook leaves them verbatim.
+ok("CAE 8412 keeps the official en dash in the table and in the pinned Rev.4 copy",
+  /^Administra\u00e7\u00e3o P\u00fablica \u2013 atividades/.test(cae["8412"] || "") &&
+  /^Administra\u00e7\u00e3o P\u00fablica \u2013 atividades/.test(rev4.level4["8412"] || ""));
 ok("metadata says what each list is", /cirs/i.test(data._nota) && /151/.test(data._nota) && /Rev\.4/.test(data._nota) &&
   !/fetched live|lido pela ferramenta/i.test(data._nota));
 

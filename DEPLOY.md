@@ -90,7 +90,7 @@ So the order matters - commit tool.js BEFORE generating the manifest:
    rsync -a --delete --delete-excluded \
     --exclude extension --exclude dist --exclude market --exclude node_modules --exclude .git \
      --exclude .wrangler --exclude .github --exclude .claude \
-     --exclude .gitignore --exclude .gitleaks.toml \
+     --exclude .gitignore --exclude .gitleaks.toml --exclude .sem-tracos-dados \
      --exclude '*.md' --exclude docs --exclude outreach --exclude fixtures --exclude LICENSE \
      --exclude 'test-*.js' --exclude 'make-*.mjs' --exclude 'build-*.mjs' \
      --exclude run-tests.mjs --exclude check-functions.js --exclude escape-tool.js \

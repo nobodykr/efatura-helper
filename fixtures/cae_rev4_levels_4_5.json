@@ -1,5 +1,5 @@
 {
- "_fonte": "INE, Sistema Integrado de Metainformação (smi.ine.pt), CAE Rev.4, versão 5497 (https://smi.ine.pt/Versao/Detalhes/5497), observada em 26/09/2026. Cópia fixa dos níveis 4 e 5 (código e designação), retirada de cae-db reference/smi/cae_rev4.json, só para test-cirs-atividades.js. A meia risca da designação oficial de 8412 está escrita como hífen (regra do repositório contra travessões).",
+ "_fonte": "INE, Sistema Integrado de Metainformação (smi.ine.pt), CAE Rev.4, versão 5497 (https://smi.ine.pt/Versao/Detalhes/5497), observada em 26/09/2026. Cópia fixa dos níveis 4 e 5 (código e designação), retirada de cae-db reference/smi/cae_rev4.json, só para test-cirs-atividades.js.",
  "version_id": 5497,
  "observed_on": "2026-09-26",
  "level4": {
@@ -566,7 +566,7 @@
   "8292": "Atividades de embalagem",
   "8299": "Outras atividades de serviços de apoio aos negócios, n.e.",
   "8411": "Atividades de administração pública geral",
-  "8412": "Administração Pública - atividades de saúde, educação, cultura e outros serviços sociais",
+  "8412": "Administração Pública – atividades de saúde, educação, cultura e outros serviços sociais",
   "8413": "Regulação e promoção da eficiência da atividade económica",
   "8421": "Negócios estrangeiros",
   "8422": "Atividades de defesa",
