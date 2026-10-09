@@ -637,12 +637,12 @@
     },
     {
       "id": "cirs-68",
-      "governs": "Taxas gerais do IRS (escaloes) de 2026",
+      "governs": "Taxas gerais do IRS (escaloes, colunas A e B) de 2024 a 2026",
       "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-1000777567",
       "type": "artigo",
       "critical": true,
       "dre_versao_id": "1000777567",
-      "amended_by": "Lei 73-A/2025 (OE 2026), art. 71.º (em vigor 2026-01-01)",
+      "amended_by": "Lei 73-A/2025, art. 71.º (em vigor 2026-01-01); antes Lei 55-A/2025 art. 2.º (2025-07-23), Lei 45-A/2024 art. 89.º (2025-01-01), Lei 33/2024 art. 2.º (2024-08-08), Lei 82/2023 art. 230.º (2024-01-01)",
       "why_it_matters": "A taxa marginal do ano entra em qualquer efeito de IRS da atividade.",
       "expect": [
         "68.º",
@@ -664,6 +664,7 @@
         "43,10",
         "44,60",
         "48,00",
+        "12,500",
         "13,579",
         "15,823",
         "17,705",
@@ -672,7 +673,162 @@
         "26,472",
         "34,856"
       ],
-      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). Atencao: o n.º 2 desta redacao ainda diz 'quando superior a 8059 €' enquanto o 1.º escalao vai ate 8 342; registado como lido, nao reconciliado."
+      "source_note": "Lido em 2026-10-07 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). Atencao: o n.º 2 desta redacao ainda diz 'quando superior a 8059 €' enquanto o 1.º escalao vai ate 8 342; registado como lido, nao reconciliado. 2024 e 2025: a tabela do ano de rendimento e a redacao em vigor a 31-12 (Lei 33/2024 art. 2.º, em vigor 2024-08-08; Lei 55-A/2025 art. 2.º, em vigor 2025-07-23). Nenhuma das duas leis tem norma de producao de efeitos (art. 3.º e art. 4.º: entrada em vigor no dia seguinte); a AT liquidou os anos de 2024 e 2025 com estas tabelas (conferido contra demonstracoes de liquidacao reais, valores fora do repositorio). A 01-01 de cada ano vigorava a tabela anterior (Lei 82/2023; Lei 45-A/2024), por isso estas strings sao expect_on_date e nao expect_by_year. 2023: na versao consolidada a tabela e uma imagem ('ver documento original'); nao verificada.",
+      "expect_on_date": {
+        "2024-12-31": [
+          "Até 7 703",
+          "De mais de 7 703 até 11 623",
+          "De mais de 11 623 até 16 472",
+          "De mais de 16 472 até 21 321",
+          "De mais de 21 321 até 27 146",
+          "De mais de 27 146 até 39 791",
+          "De mais de 39 791 até 43 000",
+          "De mais de 43 000 até 80 000",
+          "Superior a 80 000",
+          "13,00",
+          "16,50",
+          "22,00",
+          "25,00",
+          "32,00",
+          "35,50",
+          "43,50",
+          "45,00",
+          "48,00",
+          "13,000",
+          "14,180",
+          "16,482",
+          "18,419",
+          "21,334",
+          "25,835",
+          "27,154",
+          "35,408"
+        ],
+        "2025-12-31": [
+          "Até 8 059",
+          "De mais de 8 059 até 12 160",
+          "De mais de 12 160 até 17 233",
+          "De mais de 17 233 até 22 306",
+          "De mais de 22 306 até 28 400",
+          "De mais de 28 400 até 41 629",
+          "De mais de 41 629 até 44 987",
+          "De mais de 44 987 até 83 696",
+          "Superior a 83 696",
+          "12,50",
+          "16,00",
+          "21,50",
+          "24,40",
+          "31,40",
+          "34,90",
+          "43,10",
+          "44,60",
+          "48,00",
+          "12,500",
+          "13,680",
+          "15,982",
+          "17,897",
+          "20,794",
+          "25,277",
+          "26,607",
+          "34,929"
+        ]
+      }
+    },
+    {
+      "id": "cirs-68a",
+      "governs": "Taxa adicional de solidariedade (2,5 % de 80 000 a 250 000 EUR, 5 % acima)",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-74534822",
+      "type": "artigo",
+      "critical": true,
+      "dre_versao_id": "74534822",
+      "amended_by": "Lei 7-A/2016, art. 129.º (2016-03-31); sem alteracoes desde",
+      "why_it_matters": "Soma-se a coleta do art. 68.º acima de 80 000 EUR de rendimento coletavel; o limiar e tambem o do art. 78.º n.º 7 c).",
+      "expect": [
+        "68.º-A",
+        "ao quantitativo do rendimento coletável superior a (euro) 80 000",
+        "uma, igual a (euro) 170 000, à qual se aplica a taxa de 2,5 %",
+        "outra, igual ao rendimento coletável que exceda (euro) 250 000, à qual se aplica a taxa de 5 %",
+        "No caso de tributação conjunta, o procedimento referido nos números anteriores aplica-se a metade do rendimento coletável"
+      ],
+      "expect_by_year": {
+        "2023": [
+          "ao quantitativo do rendimento coletável superior a (euro) 80 000",
+          "uma, igual a (euro) 170 000, à qual se aplica a taxa de 2,5 %",
+          "outra, igual ao rendimento coletável que exceda (euro) 250 000, à qual se aplica a taxa de 5 %",
+          "No caso de tributação conjunta, o procedimento referido nos números anteriores aplica-se a metade do rendimento coletável"
+        ],
+        "2024": [
+          "ao quantitativo do rendimento coletável superior a (euro) 80 000",
+          "uma, igual a (euro) 170 000, à qual se aplica a taxa de 2,5 %",
+          "outra, igual ao rendimento coletável que exceda (euro) 250 000, à qual se aplica a taxa de 5 %",
+          "No caso de tributação conjunta, o procedimento referido nos números anteriores aplica-se a metade do rendimento coletável"
+        ],
+        "2025": [
+          "ao quantitativo do rendimento coletável superior a (euro) 80 000",
+          "uma, igual a (euro) 170 000, à qual se aplica a taxa de 2,5 %",
+          "outra, igual ao rendimento coletável que exceda (euro) 250 000, à qual se aplica a taxa de 5 %",
+          "No caso de tributação conjunta, o procedimento referido nos números anteriores aplica-se a metade do rendimento coletável"
+        ],
+        "2026": [
+          "ao quantitativo do rendimento coletável superior a (euro) 80 000",
+          "uma, igual a (euro) 170 000, à qual se aplica a taxa de 2,5 %",
+          "outra, igual ao rendimento coletável que exceda (euro) 250 000, à qual se aplica a taxa de 5 %",
+          "No caso de tributação conjunta, o procedimento referido nos números anteriores aplica-se a metade do rendimento coletável"
+        ]
+      },
+      "source_note": "Lido em 2026-10-09 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). A tabela do n.º 1 e uma imagem; o n.º 2 enuncia os limites e as taxas em texto."
+    },
+    {
+      "id": "cirs-78",
+      "governs": "Deducoes a coleta: limite global do n.º 7 (ambito, sem limite ate ao 1.º escalao, 1000 EUR acima do limiar do art. 68.º-A)",
+      "url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+      "type": "artigo",
+      "critical": true,
+      "dre_versao_id": "912821424",
+      "amended_by": "Decreto-Lei 49/2025 art. 2.º (2025-07-01); antes Lei 82/2023 art. 230.º (2024-01-01, acrescentou a alinea m) ao n.º 7), Lei 12/2022 art. 278.º (2022-06-28)",
+      "expect": [
+        "78.º",
+        "A soma das deduções à coleta previstas nas alíneas c) a h), k) e m) do n.º 1 não pode exceder",
+        "igual ou inferior ao valor do 1.º escalão do n.º 1 artigo 68.º, sem limite",
+        "superior ao valor mínimo do primeiro escalão do n.º 1 do artigo 68.º-A, o montante de 1000 (euro)",
+        "Às despesas gerais familiares",
+        "À exigência de fatura",
+        "Aos encargos com lares"
+      ],
+      "expect_by_year": {
+        "2023": [
+          "A soma das deduções à coleta previstas nas alíneas c) a h) e k) do n.º 1 não pode exceder",
+          "igual ou inferior ao valor do 1.º escalão do n.º 1 artigo 68.º, sem limite",
+          "superior ao valor mínimo do primeiro escalão do n.º 1 do artigo 68.º-A, o montante de 1000 (euro)",
+          "Às despesas gerais familiares",
+          "À exigência de fatura",
+          "Aos encargos com lares"
+        ],
+        "2024": [
+          "A soma das deduções à coleta previstas nas alíneas c) a h), k) e m) do n.º 1 não pode exceder",
+          "igual ou inferior ao valor do 1.º escalão do n.º 1 artigo 68.º, sem limite",
+          "superior ao valor mínimo do primeiro escalão do n.º 1 do artigo 68.º-A, o montante de 1000 (euro)",
+          "Às despesas gerais familiares",
+          "À exigência de fatura",
+          "Aos encargos com lares"
+        ],
+        "2025": [
+          "A soma das deduções à coleta previstas nas alíneas c) a h), k) e m) do n.º 1 não pode exceder",
+          "igual ou inferior ao valor do 1.º escalão do n.º 1 artigo 68.º, sem limite",
+          "superior ao valor mínimo do primeiro escalão do n.º 1 do artigo 68.º-A, o montante de 1000 (euro)",
+          "Às despesas gerais familiares",
+          "À exigência de fatura",
+          "Aos encargos com lares"
+        ],
+        "2026": [
+          "A soma das deduções à coleta previstas nas alíneas c) a h), k) e m) do n.º 1 não pode exceder",
+          "igual ou inferior ao valor do 1.º escalão do n.º 1 artigo 68.º, sem limite",
+          "superior ao valor mínimo do primeiro escalão do n.º 1 do artigo 68.º-A, o montante de 1000 (euro)",
+          "Às despesas gerais familiares",
+          "À exigência de fatura",
+          "Aos encargos com lares"
+        ]
+      },
+      "source_note": "Lido em 2026-10-09 com dre.mjs get na pagina DEDICADA (id = FragmentoVersaoId do TOC, anexo certo) e, para anos passados, no historico de versoes da mesma pagina ('Ver alteracoes ao texto'). expect = pagina atual; expect_by_year[Y] = redacao em vigor a 01-01-Y E a 31-12-Y (fiscal-monitor verify_sources.mjs). A formula da alinea b) do n.º 7 e uma imagem no DRE (versao consolidada e Lei 12/2022) e na pagina do CIRS da AT: nao verificavel por texto, regista-se como por verificar."
     },
     {
       "id": "civa-19",

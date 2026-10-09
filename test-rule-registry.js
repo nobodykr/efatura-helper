@@ -64,6 +64,32 @@ function ruleYears(s) {
 function check(s, l) {
   const problems = [];
   const src = Object.fromEntries(l.sources.map((x) => [x.id, x]));
+  for (const [y, block] of Object.entries(s.escaloes_irs || {})) {
+    if (block.verified !== true) continue;
+    const source = src[block.source_id];
+    if (!source) { problems.push(`escaloes_irs.${y}: missing or unknown source_id`); continue; }
+    const pool = (y === "2026" ? source.expect
+      : (source.expect_on_date || {})[`${y}-12-31`] || (source.expect_by_year || {})[y]) || [];
+    const checked = pool.map(norm), said = checked.join(" | ");
+    const { continente, media } = block;
+    if (!Array.isArray(continente) || !continente.length || !Array.isArray(media) || media.length !== continente.length) {
+      problems.push(`escaloes_irs.${y}: missing brackets or mismatched column B length`);
+      continue;
+    }
+    continente.forEach((bracket, i) => {
+      const label = `escaloes_irs.${y} income bracket ${i + 1}`, last = i === continente.length - 1;
+      if (!Array.isArray(bracket)) { problems.push(`${label}: invalid bracket`); return; }
+      const [limit, rate] = bracket;
+      if (last ? limit !== null : !Number.isFinite(limit)) problems.push(`${label}: invalid upper limit`);
+      else if (!last && !new RegExp(`(^|\\D)${ptNum(limit, "EUR")}(?!\\d)`).test(said))
+        problems.push(`${label}: upper limit is not in checked strings`);
+      if (!Number.isFinite(rate) || !checked.includes((rate * 100).toFixed(2).replace(".", ",")))
+        problems.push(`${label}: column A is not in checked strings`);
+      if (last ? media[i] !== null : !Number.isFinite(media[i])) problems.push(`${label}: invalid column B`);
+      else if (!last && !checked.includes((media[i] * 100).toFixed(3).replace(".", ",")))
+        problems.push(`${label}: column B is not in checked strings`);
+    });
+  }
   const ry = ruleYears(s);
   const keys = [...new Set(Object.values(ry).flatMap((rs) => Object.keys(rs).filter((k) => rs[k] && rs[k].source_id)))];
   for (const key of keys) {
@@ -153,6 +179,12 @@ const auditDrift = (s) => {
 };
 if (auditDrift(snap).length) bad("audit generator reports drift for the shipped registry");
 const mutations = [
+  // Bracket provenance is checked here; audit-manifest contains the rule-year rows.
+  ["2024 column B differs from DRE", (s) => { s.escaloes_irs["2024"].media[1] = 0.15; }, false],
+  ["2025 upper limit differs from DRE", (s) => { s.escaloes_irs["2025"].continente[0][0] = 8060; }, false],
+  ["verified 2024 brackets without source_id", (s) => { delete s.escaloes_irs["2024"].source_id; }, false],
+  ["2025 solidarity rate differs from DRE", (s) => { s.years["2025"].rules.cirs68a_1_taxas.value.escalao_1 = 3; }],
+  ["2024 global deduction cap differs from DRE", (s) => { s.years["2024"].rules.cirs78_7_c_limite.value = 1500; }],
   ["date value and display agree but differ from DRE", (s) => { Object.assign(s.current_values_2026_verified_isolation.rules.ebf45c_1_auferidos_ate, { value: "2028-12-31", value_display: "31/12/2028" }); }],
   ["invalid calendar date", (s) => { Object.assign(s.current_values_2026_verified_isolation.rules.ebf45c_1_auferidos_ate, { value: "2029-02-31", value_display: "31/02/2029" }); }],
   ["evidence date differs despite being after the year", (s) => { s.years["2025"].rules.ebf45c_1_taxa_pct.in_force_from = "2027-01-01"; }],
@@ -183,11 +215,11 @@ const mutations = [
   ["missing year", (s) => { delete s.years["2025"].rules.ias; }],
   ["deadline claimed for 2024", (s) => { Object.assign(s.years["2024"].rules.cirs31_15_prazo_portal, { verified: true, value: { month_end: 2, year_offset: 1 }, source_law: "x", dre_text: ["até ao final do mês de fevereiro do ano seguinte ao da sua emissão"] }); }],
 ];
-for (const [name, mutate] of mutations) {
+for (const [name, mutate, checkAudit = true] of mutations) {
   const s = clone(snap);
   mutate(s);
-  if (!auditDrift(s).length) bad(`audit generator does not catch: ${name}`);
-  if (check(s, legal).problems.length) ok(`catches: ${name}`); else bad(`does not catch: ${name}`);
+  if (checkAudit && !auditDrift(s).length) bad(`audit generator does not catch: ${name}`);
+  if (check(s, legal).problems.some((p) => !problems.includes(p))) ok(`catches: ${name}`); else bad(`does not catch: ${name}`);
 }
 
 // 3. what slices 1 and 3 read is present for every year (verified or explicitly unknown)
@@ -207,6 +239,12 @@ const NEEDED_PERSONAL = ["cirs78b_1_despesas_gerais_pct", "cirs78b_1_despesas_ge
   "cirs78f_7_jornais_revistas_pct", "cirs78f_ginasios_pct", "cirs78f_1_setores", "cirs84_1_lares_pct", "cirs84_1_lares_limite"];
 const missingPersonal = NEEDED_PERSONAL.filter((k) => Object.values(ry).some((rs) => !rs[k]));
 if (missingPersonal.length) bad("personal rules missing in some year: " + missingPersonal.join(", ")); else ok(`${NEEDED_PERSONAL.length} personal rules present for 2023 to 2026`);
+
+const NEEDED_ANNUAL = ["cirs68a_1_limiares", "cirs68a_1_taxas", "cirs78_7_ambito",
+  "cirs78_7_a_sem_limite", "cirs78_7_c_limite", "cirs78_7_b_formula"];
+const missingAnnual = NEEDED_ANNUAL.filter((k) => Object.values(ry).some((rs) => !rs[k]));
+if (missingAnnual.length) bad("annual IRS rules missing in some year: " + missingAnnual.join(", "));
+else ok(`${NEEDED_ANNUAL.length} annual IRS rules present for 2023 to 2026`);
 
 const NEEDED_CATF = [
   "cirs72_1e_prediais_pct", "cirs72_2_habitacional_pct", "cirs72_3_reducao_pp",
@@ -286,7 +324,8 @@ for (const y of ["2023", "2024", "2025"]) {
 }
 ok("old aggregate entries equal their replacement personal rules");
 
-// 6. the 2026 brackets and the dedicated pages
+// 6. verified annual brackets chain through check(); retain the 2026 table pin.
+if (!problems.length) ok(`${Object.values(snap.escaloes_irs).filter((b) => b.verified === true).length} verified annual tables: limits and columns A and B traceable to DRE`);
 const e26 = snap.escaloes_irs["2026"];
 if (!e26 || e26.continente.length !== 9 || e26.continente[0][0] !== 8342 || e26.continente[8][1] !== 0.48) bad("escaloes_irs.2026 is not the Lei 73-A/2025 table");
 else ok("escaloes_irs.2026: 9 brackets from CIRS 68.º (Lei 73-A/2025)");

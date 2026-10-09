@@ -1,6 +1,6 @@
 {
   "_README": "Per-income-year IRS deduction rules, one self-contained rule set per year, for the past-year re-audit. A re-audit of year N MUST use year N's rules. Proven necessary: art. 78.º-E (rendas) changed in force in 2024, 2025 AND 2026, and is not a single ceiling but an escalonamento (15% base + majoracoes 50%/75%). Using today's value for a past year ships wrong numbers - the same green-but-wrong class as the Excel-serial and page-count bugs.",
-  "_structure": "years.<income_year>.rules.<key> holds {pct, ceiling, ...params, verified, source_law}. One year is authoritative only when every rule in it is verified=true. Downstream docs (deducoes.html, cae_sectors.json, Bible ch.15) should READ the current year from here instead of hardcoding their own copy - today they each carry a separate copy with no cross-check. Expense and IVA rules (slice R, added 2026-10-07): each rule-year also carries value (number, object or true for a rule with no number), unit (EUR, %, coeficiente, IAS = multiple of that year's ias rule, prazo, regra, cae), source_id (legal_sources.json id), source_law and dre_text (the exact DRE wording the value was read from; every item is one of that source's expect / expect_by_year strings, so verify_sources re-checks it; for a past year the string must be in expect_by_year[year], unless dre_text_scope is current_page: a note on today's page that names the year). verified=false means DRE does not answer for that year: value is null and a reader must return unknown, never another year's value. A rule-year with in_force false did not exist in that year's wording: verified true, value null, in_force_from (ISO) and in_force_from_display (PT-PT, table form); the absence is checked by the source's expect_absent_by_year. An unverified year may carry in_force_from when the rule started mid-year. A value computed from several DRE strings carries derived {formula, base, rate_pct, texts[{source_id, on?, text}]}: each text is checked by verify_sources (expect, expect_by_year or expect_on_date) and value = base x (1 + rate_pct/100). derived.kind phase_in instead carries {formula, from, from_rule, from_year, to, share_pct, texts}: from must equal the verified from_year/from_rule value, to must be printed in dre_text, and value = from + share_pct/100 x (to - from), rounded to cents. Unit cae maps each alinea to one or more space-separated CAE tokens; numeric tokens must occur with digit boundaries in dre_text and letter sections must occur as 'seccao <letter>' after normalization. Integer EUR values accept either grouped or ungrouped DRE digits with digit boundaries; 100 % also accepts 'totalidade do IVA'. 2026 lives in current_values_2026_verified_isolation.rules (same shape); IRS brackets for 2026 in escaloes_irs.2026. Keys: ias, cirs25_1a_deducao_especifica, cirs31_1_coeficientes, cirs31_13_justificacao_pct, cirs31_14_parcial_pct, cirs31_15_prazo_portal, cirs31_16_valores_declarados, cirs32_remissao_circ, cirs33_5_habitacao_pct, cirs78b_4_fora_atividade, civa19_direito_deducao, civa20_operacoes_dedutiveis, civa21_exclusoes_pct, civa23_utilizacao_mista, civa53_limiar, civa53_3_sem_deducao. Personal-deduction keys: cirs78b_1_despesas_gerais_pct, cirs78b_1_despesas_gerais_limite, cirs78b_1_limite_por_sujeito_passivo, cirs78b_9_monoparental_pct, cirs78b_9_monoparental_limite, cirs78c_1_saude_pct, cirs78c_1_saude_limite, cirs78d_1_educacao_pct, cirs78d_1_educacao_limite, cirs78d_11_rendas_estudante_limite, cirs78d_11_rendas_estudante_acrescimo, cirs78e_1_pct, cirs78e_1a_rendas_limite, cirs78e_4a_rendas_limite_majorado, cirs78e_rendas_limite_ano, cirs78e_4a_rendas_limite_majorado_ano, cirs78e_1b_juros_limite, cirs78e_5a_juros_limite_majorado, cirs78f_1_iva_pct, cirs78f_1_limite_agregado, cirs78f_3_passes_pct, cirs78f_6_medicamentos_veterinarios_pct, cirs78f_7_jornais_revistas_pct, cirs78f_ginasios_pct, cirs78f_1_setores, cirs84_1_lares_pct, cirs84_1_lares_limite. Category F keys: cirs72_1e_prediais_pct, cirs72_2_habitacional_pct, cirs72_3_reducao_pp, cirs72_3_renovacao_pp, cirs72_4_reducao_pp, cirs72_5_reducao_pp, cirs72_13_englobamento_opcao, cirs72_20_perda_reducoes, cirs72_23_exclusao_renda_elevada, cirs72_24_reducao_adicional_pp, lei56_2023_50_7_contratos_abrangidos, lei56_2023_50_8_ambito_n2, ebf45c_1_taxa_pct, ebf45c_1_auferidos_ate, ebf45c_1_condicoes, dl97_2_2a_limite_renda_rmmg, dl97_2_2a_rmmg_2026, dl97_2_3_atualizacao_portaria, dl97_3_valor_renda_mensal, cirs41_1_gastos_dedutiveis, cirs41_1_exclusao_gastos_financeiros, cirs41_1_outras_exclusoes, cirs41_2_condominio, cirs41_3_permilagem, cirs41_4_imputacao_vpt_area, cirs41_5_imi_selo_ano, cirs41_6_sublocacao, cirs41_7_obras_24_meses_antes, cirs41_8_rendas_habitacao_propria, cirs41_comprovacao_documental. Unit pp means pontos percentuais (a number or an object of numbers), printed as \"<n> pontos percentuais\" with digits or Portuguese words; RMMG is a multiple of the RMMG of rmmg_reference_year, never the income year, with its euro value in rmmg_rule; data is an ISO date with value_display in DD/MM/YYYY and the long Portuguese form (for example \"31 de dezembro de 2029\") in dre_text. scope_rules and limit_rules name the keys of rules that condition this rule. A not-in-force rule-year may use in_force_evidence [{source_id, text}] instead of expect_absent_by_year when the DRE history starts with the article addition: each text must be in that source's expect and at least one must name in_force_from in ISO or long Portuguese form.",
+  "_structure": "years.<income_year>.rules.<key> holds {pct, ceiling, ...params, verified, source_law}. One year is authoritative only when every rule in it is verified=true. Downstream docs (deducoes.html, cae_sectors.json, Bible ch.15) should READ the current year from here instead of hardcoding their own copy - today they each carry a separate copy with no cross-check. Expense and IVA rules (slice R, added 2026-10-07): each rule-year also carries value (number, object or true for a rule with no number), unit (EUR, %, coeficiente, IAS = multiple of that year's ias rule, prazo, regra, cae), source_id (legal_sources.json id), source_law and dre_text (the exact DRE wording the value was read from; every item is one of that source's expect / expect_by_year strings, so verify_sources re-checks it; for a past year the string must be in expect_by_year[year], unless dre_text_scope is current_page: a note on today's page that names the year). verified=false means DRE does not answer for that year: value is null and a reader must return unknown, never another year's value. A rule-year with in_force false did not exist in that year's wording: verified true, value null, in_force_from (ISO) and in_force_from_display (PT-PT, table form); the absence is checked by the source's expect_absent_by_year. An unverified year may carry in_force_from when the rule started mid-year. A value computed from several DRE strings carries derived {formula, base, rate_pct, texts[{source_id, on?, text}]}: each text is checked by verify_sources (expect, expect_by_year or expect_on_date) and value = base x (1 + rate_pct/100). derived.kind phase_in instead carries {formula, from, from_rule, from_year, to, share_pct, texts}: from must equal the verified from_year/from_rule value, to must be printed in dre_text, and value = from + share_pct/100 x (to - from), rounded to cents. Unit cae maps each alinea to one or more space-separated CAE tokens; numeric tokens must occur with digit boundaries in dre_text and letter sections must occur as 'seccao <letter>' after normalization. Integer EUR values accept either grouped or ungrouped DRE digits with digit boundaries; 100 % also accepts 'totalidade do IVA'. 2026 lives in current_values_2026_verified_isolation.rules (same shape); IRS brackets for verified years live in escaloes_irs. Keys: ias, cirs25_1a_deducao_especifica, cirs31_1_coeficientes, cirs31_13_justificacao_pct, cirs31_14_parcial_pct, cirs31_15_prazo_portal, cirs31_16_valores_declarados, cirs32_remissao_circ, cirs33_5_habitacao_pct, cirs78b_4_fora_atividade, civa19_direito_deducao, civa20_operacoes_dedutiveis, civa21_exclusoes_pct, civa23_utilizacao_mista, civa53_limiar, civa53_3_sem_deducao. Personal-deduction keys: cirs78b_1_despesas_gerais_pct, cirs78b_1_despesas_gerais_limite, cirs78b_1_limite_por_sujeito_passivo, cirs78b_9_monoparental_pct, cirs78b_9_monoparental_limite, cirs78c_1_saude_pct, cirs78c_1_saude_limite, cirs78d_1_educacao_pct, cirs78d_1_educacao_limite, cirs78d_11_rendas_estudante_limite, cirs78d_11_rendas_estudante_acrescimo, cirs78e_1_pct, cirs78e_1a_rendas_limite, cirs78e_4a_rendas_limite_majorado, cirs78e_rendas_limite_ano, cirs78e_4a_rendas_limite_majorado_ano, cirs78e_1b_juros_limite, cirs78e_5a_juros_limite_majorado, cirs78f_1_iva_pct, cirs78f_1_limite_agregado, cirs78f_3_passes_pct, cirs78f_6_medicamentos_veterinarios_pct, cirs78f_7_jornais_revistas_pct, cirs78f_ginasios_pct, cirs78f_1_setores, cirs84_1_lares_pct, cirs84_1_lares_limite. Category F keys: cirs72_1e_prediais_pct, cirs72_2_habitacional_pct, cirs72_3_reducao_pp, cirs72_3_renovacao_pp, cirs72_4_reducao_pp, cirs72_5_reducao_pp, cirs72_13_englobamento_opcao, cirs72_20_perda_reducoes, cirs72_23_exclusao_renda_elevada, cirs72_24_reducao_adicional_pp, lei56_2023_50_7_contratos_abrangidos, lei56_2023_50_8_ambito_n2, ebf45c_1_taxa_pct, ebf45c_1_auferidos_ate, ebf45c_1_condicoes, dl97_2_2a_limite_renda_rmmg, dl97_2_2a_rmmg_2026, dl97_2_3_atualizacao_portaria, dl97_3_valor_renda_mensal, cirs41_1_gastos_dedutiveis, cirs41_1_exclusao_gastos_financeiros, cirs41_1_outras_exclusoes, cirs41_2_condominio, cirs41_3_permilagem, cirs41_4_imputacao_vpt_area, cirs41_5_imi_selo_ano, cirs41_6_sublocacao, cirs41_7_obras_24_meses_antes, cirs41_8_rendas_habitacao_propria, cirs41_comprovacao_documental. Unit pp means pontos percentuais (a number or an object of numbers), printed as \"<n> pontos percentuais\" with digits or Portuguese words; RMMG is a multiple of the RMMG of rmmg_reference_year, never the income year, with its euro value in rmmg_rule; data is an ISO date with value_display in DD/MM/YYYY and the long Portuguese form (for example \"31 de dezembro de 2029\") in dre_text. scope_rules and limit_rules name the keys of rules that condition this rule. A not-in-force rule-year may use in_force_evidence [{source_id, text}] instead of expect_absent_by_year when the DRE history starts with the article addition: each text must be in that source's expect and at least one must name in_force_from in ISO or long Portuguese form. Annual IRS keys: cirs68a_1_limiares and cirs68a_1_taxas hold the solidarity bands and rates (CIRS 68-A); cirs78_7_ambito, cirs78_7_a_sem_limite, cirs78_7_c_limite and cirs78_7_b_formula hold the global deduction scope, exemptions, cap and unverified image-only formula (CIRS 78 n. 7), while escaloes_irs year blocks with verified true carry media (column B) and source_id.",
   "_provenance": "Values come from each article's DEDICATED DRE page (2014-70048167-<id>), which exposes the in-force text + full 'Alteracoes ao artigo' history; the full consolidated render does NOT expose those accordions. Historical (past-year) text is read by viewing the article as-in-force at that year. source_law names the diploma that set the value for that year.",
   "_correction_windows": "How long each past year stays fixable is separate, in legal_sources.json: cppt-59 (substituicao), cppt-70 (reclamacao graciosa 120 dias), lgt-78 (revisao 4 anos, com limites).",
   "_status": "COMPLETE for 2023/2024/2025 and current 2026 base values (reviewed 2026-08-22): all 6 base ceilings plus global-limit and dependent structures. The 2025 rent ceiling is confirmed by Lei 36/2024 and the AT's 2025 deductions table; the 2026 rent ceiling is confirmed by DL 97/2026. Refinements remain for income-bracket-dependent increases.",
@@ -981,6 +981,80 @@
         "dre_text": [
           "Os gastos referidos nos números anteriores devem ser documentalmente comprovados"
         ]
+      },
+      "cirs68a_1_limiares": {
+        "article": "68.º-A n.os 1 e 2",
+        "value": {
+          "inferior": 80000,
+          "superior": 250000
+        },
+        "unit": "EUR",
+        "verified": true,
+        "source_id": "cirs-68a",
+        "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+        "dre_text": [
+          "ao quantitativo do rendimento coletável superior a (euro) 80 000",
+          "outra, igual ao rendimento coletável que exceda (euro) 250 000, à qual se aplica a taxa de 5 %"
+        ]
+      },
+      "cirs68a_1_taxas": {
+        "article": "68.º-A n.os 1 e 2",
+        "value": {
+          "escalao_1": 2.5,
+          "escalao_2": 5
+        },
+        "unit": "%",
+        "verified": true,
+        "source_id": "cirs-68a",
+        "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+        "dre_text": [
+          "uma, igual a (euro) 170 000, à qual se aplica a taxa de 2,5 %",
+          "outra, igual ao rendimento coletável que exceda (euro) 250 000, à qual se aplica a taxa de 5 %"
+        ]
+      },
+      "cirs78_7_ambito": {
+        "article": "78.º n.º 7",
+        "value": true,
+        "unit": "regra",
+        "verified": true,
+        "source_id": "cirs-78",
+        "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+        "dre_text": [
+          "A soma das deduções à coleta previstas nas alíneas c) a h), k) e m) do n.º 1 não pode exceder"
+        ],
+        "note": "Alineas do n.º 1: c) saude, d) educacao, e) imoveis, f) pensoes de alimentos, g) exigencia de fatura, h) lares, k) beneficios fiscais, m) (desde 2024) trabalho domestico; a b) despesas gerais familiares fica fora do limite."
+      },
+      "cirs78_7_a_sem_limite": {
+        "article": "78.º n.º 7 a)",
+        "value": true,
+        "unit": "regra",
+        "verified": true,
+        "source_id": "cirs-78",
+        "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+        "dre_text": [
+          "igual ou inferior ao valor do 1.º escalão do n.º 1 artigo 68.º, sem limite"
+        ]
+      },
+      "cirs78_7_c_limite": {
+        "article": "78.º n.º 7 c)",
+        "value": 1000,
+        "unit": "EUR",
+        "verified": true,
+        "source_id": "cirs-78",
+        "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+        "dre_text": [
+          "superior ao valor mínimo do primeiro escalão do n.º 1 do artigo 68.º-A, o montante de 1000 (euro)"
+        ],
+        "note": "Limiar: o minimo do 1.º escalao do art. 68.º-A (regra cirs68a_1_limiares.inferior)."
+      },
+      "cirs78_7_b_formula": {
+        "article": "78.º n.º 7 b)",
+        "value": null,
+        "unit": "regra",
+        "verified": false,
+        "source_id": "cirs-78",
+        "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+        "note": "Formula publicada como imagem no DRE (versao consolidada e Lei 12/2022) e na pagina do CIRS da AT; nao verificavel por texto. Por verificar."
       }
     }
   },
@@ -2080,6 +2154,80 @@
           "dre_text": [
             "Os gastos referidos nos números anteriores devem ser documentalmente comprovados"
           ]
+        },
+        "cirs68a_1_limiares": {
+          "article": "68.º-A n.os 1 e 2",
+          "value": {
+            "inferior": 80000,
+            "superior": 250000
+          },
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-68a",
+          "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+          "dre_text": [
+            "ao quantitativo do rendimento coletável superior a (euro) 80 000",
+            "outra, igual ao rendimento coletável que exceda (euro) 250 000, à qual se aplica a taxa de 5 %"
+          ]
+        },
+        "cirs68a_1_taxas": {
+          "article": "68.º-A n.os 1 e 2",
+          "value": {
+            "escalao_1": 2.5,
+            "escalao_2": 5
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-68a",
+          "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+          "dre_text": [
+            "uma, igual a (euro) 170 000, à qual se aplica a taxa de 2,5 %",
+            "outra, igual ao rendimento coletável que exceda (euro) 250 000, à qual se aplica a taxa de 5 %"
+          ]
+        },
+        "cirs78_7_ambito": {
+          "article": "78.º n.º 7",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "dre_text": [
+            "A soma das deduções à coleta previstas nas alíneas c) a h) e k) do n.º 1 não pode exceder"
+          ],
+          "note": "Alineas do n.º 1: c) saude, d) educacao, e) imoveis, f) pensoes de alimentos, g) exigencia de fatura, h) lares, k) beneficios fiscais, m) (desde 2024) trabalho domestico; a b) despesas gerais familiares fica fora do limite."
+        },
+        "cirs78_7_a_sem_limite": {
+          "article": "78.º n.º 7 a)",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "dre_text": [
+            "igual ou inferior ao valor do 1.º escalão do n.º 1 artigo 68.º, sem limite"
+          ]
+        },
+        "cirs78_7_c_limite": {
+          "article": "78.º n.º 7 c)",
+          "value": 1000,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "dre_text": [
+            "superior ao valor mínimo do primeiro escalão do n.º 1 do artigo 68.º-A, o montante de 1000 (euro)"
+          ],
+          "note": "Limiar: o minimo do 1.º escalao do art. 68.º-A (regra cirs68a_1_limiares.inferior)."
+        },
+        "cirs78_7_b_formula": {
+          "article": "78.º n.º 7 b)",
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-78",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "note": "Formula publicada como imagem no DRE (versao consolidada e Lei 12/2022) e na pagina do CIRS da AT; nao verificavel por texto. Por verificar."
         }
       },
       "global_limit": {
@@ -3186,6 +3334,80 @@
           "dre_text": [
             "Os gastos referidos nos números anteriores devem ser documentalmente comprovados"
           ]
+        },
+        "cirs68a_1_limiares": {
+          "article": "68.º-A n.os 1 e 2",
+          "value": {
+            "inferior": 80000,
+            "superior": 250000
+          },
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-68a",
+          "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+          "dre_text": [
+            "ao quantitativo do rendimento coletável superior a (euro) 80 000",
+            "outra, igual ao rendimento coletável que exceda (euro) 250 000, à qual se aplica a taxa de 5 %"
+          ]
+        },
+        "cirs68a_1_taxas": {
+          "article": "68.º-A n.os 1 e 2",
+          "value": {
+            "escalao_1": 2.5,
+            "escalao_2": 5
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-68a",
+          "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+          "dre_text": [
+            "uma, igual a (euro) 170 000, à qual se aplica a taxa de 2,5 %",
+            "outra, igual ao rendimento coletável que exceda (euro) 250 000, à qual se aplica a taxa de 5 %"
+          ]
+        },
+        "cirs78_7_ambito": {
+          "article": "78.º n.º 7",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "dre_text": [
+            "A soma das deduções à coleta previstas nas alíneas c) a h), k) e m) do n.º 1 não pode exceder"
+          ],
+          "note": "Alineas do n.º 1: c) saude, d) educacao, e) imoveis, f) pensoes de alimentos, g) exigencia de fatura, h) lares, k) beneficios fiscais, m) (desde 2024) trabalho domestico; a b) despesas gerais familiares fica fora do limite."
+        },
+        "cirs78_7_a_sem_limite": {
+          "article": "78.º n.º 7 a)",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "dre_text": [
+            "igual ou inferior ao valor do 1.º escalão do n.º 1 artigo 68.º, sem limite"
+          ]
+        },
+        "cirs78_7_c_limite": {
+          "article": "78.º n.º 7 c)",
+          "value": 1000,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "dre_text": [
+            "superior ao valor mínimo do primeiro escalão do n.º 1 do artigo 68.º-A, o montante de 1000 (euro)"
+          ],
+          "note": "Limiar: o minimo do 1.º escalao do art. 68.º-A (regra cirs68a_1_limiares.inferior)."
+        },
+        "cirs78_7_b_formula": {
+          "article": "78.º n.º 7 b)",
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-78",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "note": "Formula publicada como imagem no DRE (versao consolidada e Lei 12/2022) e na pagina do CIRS da AT; nao verificavel por texto. Por verificar."
         }
       },
       "global_limit": {
@@ -4313,6 +4535,80 @@
           "dre_text": [
             "Os gastos referidos nos números anteriores devem ser documentalmente comprovados"
           ]
+        },
+        "cirs68a_1_limiares": {
+          "article": "68.º-A n.os 1 e 2",
+          "value": {
+            "inferior": 80000,
+            "superior": 250000
+          },
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-68a",
+          "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+          "dre_text": [
+            "ao quantitativo do rendimento coletável superior a (euro) 80 000",
+            "outra, igual ao rendimento coletável que exceda (euro) 250 000, à qual se aplica a taxa de 5 %"
+          ]
+        },
+        "cirs68a_1_taxas": {
+          "article": "68.º-A n.os 1 e 2",
+          "value": {
+            "escalao_1": 2.5,
+            "escalao_2": 5
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-68a",
+          "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+          "dre_text": [
+            "uma, igual a (euro) 170 000, à qual se aplica a taxa de 2,5 %",
+            "outra, igual ao rendimento coletável que exceda (euro) 250 000, à qual se aplica a taxa de 5 %"
+          ]
+        },
+        "cirs78_7_ambito": {
+          "article": "78.º n.º 7",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "dre_text": [
+            "A soma das deduções à coleta previstas nas alíneas c) a h), k) e m) do n.º 1 não pode exceder"
+          ],
+          "note": "Alineas do n.º 1: c) saude, d) educacao, e) imoveis, f) pensoes de alimentos, g) exigencia de fatura, h) lares, k) beneficios fiscais, m) (desde 2024) trabalho domestico; a b) despesas gerais familiares fica fora do limite."
+        },
+        "cirs78_7_a_sem_limite": {
+          "article": "78.º n.º 7 a)",
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "dre_text": [
+            "igual ou inferior ao valor do 1.º escalão do n.º 1 artigo 68.º, sem limite"
+          ]
+        },
+        "cirs78_7_c_limite": {
+          "article": "78.º n.º 7 c)",
+          "value": 1000,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "dre_text": [
+            "superior ao valor mínimo do primeiro escalão do n.º 1 do artigo 68.º-A, o montante de 1000 (euro)"
+          ],
+          "note": "Limiar: o minimo do 1.º escalao do art. 68.º-A (regra cirs68a_1_limiares.inferior)."
+        },
+        "cirs78_7_b_formula": {
+          "article": "78.º n.º 7 b)",
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-78",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "note": "Formula publicada como imagem no DRE (versao consolidada e Lei 12/2022) e na pagina do CIRS da AT; nao verificavel por texto. Por verificar."
         }
       },
       "global_limit": {
@@ -4351,7 +4647,7 @@
   "escaloes_irs": {
     "_source": "CIRS art. 68 (Continente). URL info.portaldasfinancas.gov.pt/.../cirs_rep/ra/Pages/irs68ra_<AAAAMM>.aspx",
     "_method": "coleta = coletavel * taxa - parcela_a_abater; parcela derived from boundaries+rates (see fiscal-monitor/irs_calc.py)",
-    "_status": "2024 brackets 1-6 had a controlled manual cross-check, but no account values or identity are retained here. Brackets 7-9 still need direct DRE confirmation. The /ra/ page is a JS SPA: confirm via dre.mjs, not plain curl.",
+    "_status": "2024, 2025 and 2026 carry verified true, source_id cirs-68 and column B (media) read on DRE; a reader computes collection by CIRS 68.º n.º 2 from limits, column A and column B. 2022 and 2023 are not verified (the consolidated 2023 table is an image). _regioes holds monthly withholding tables only: never an annual regional rule.",
     "2024": {
       "continente": [
         [
@@ -4393,8 +4689,21 @@
         ]
       ],
       "deducao_especifica_catA": 4350.24,
-      "_status": "CORRIGIDO 2026-07-25: tabela REDUZIDA (Lei 33-A/2024), escalao 6 = 35,5%. A controlled manual cross-check existed but its account figures and location are intentionally not retained. Guardar as parcelas OFICIAIS do art. 68 anual e chavear por regiao.",
-      "_deducao_especifica": "4 104 x 1,06 = 4350,24 (CIRS 25.º n.º 1 a) e n.º 7 da Lei 32/2024; taxa do IAS de 2024, Portaria 421/2023). A AT aplica este valor em 2024. Era 4104; regra: years.2024.rules.cirs25_1a_deducao_especifica."
+      "_status": "CIRS 68.º n.º 1 as in force on 2024-12-31 (Lei 33/2024 art. 2.º, em vigor 2024-08-08), limits and columns A and B read on DRE 2026-10-09 (version history of the dedicated page); all 9 brackets confirmed; the stored third element of bracket 6 is the AT parcela a abater and equals 27 146 x (35,50 % - 21,334 %), rounded to cents.",
+      "_deducao_especifica": "4 104 x 1,06 = 4350,24 (CIRS 25.º n.º 1 a) e n.º 7 da Lei 32/2024; taxa do IAS de 2024, Portaria 421/2023). A AT aplica este valor em 2024. Era 4104; regra: years.2024.rules.cirs25_1a_deducao_especifica.",
+      "media": [
+        0.13,
+        0.1418,
+        0.16482,
+        0.18419,
+        0.21334,
+        0.25835,
+        0.27154,
+        0.35408,
+        null
+      ],
+      "verified": true,
+      "source_id": "cirs-68"
     },
     "2023": {
       "continente": [
@@ -4537,8 +4846,21 @@
         ]
       ],
       "deducao_especifica_catA": 4462.15,
-      "_status": "Oficial: portaldasfinancas /ra/ irs68ra_202512 (Normal+Media).",
-      "_deducao_especifica": "8,54 x IAS 2025 (522,50) = 4462,15 (CIRS 25.º n.º 1 a) na redacao da Lei 45-A/2024, em vigor 2025-01-01). Era 4104, o valor de 2024 copiado; regra: years.2025.rules.cirs25_1a_deducao_especifica."
+      "_status": "CIRS 68.º n.º 1 as in force on 2025-12-31 (Lei 55-A/2025 art. 2.º, em vigor 2025-07-23), read on DRE 2026-10-09 (version history of the dedicated page); the stored parcelas equal L(n-1) x (A(n) - B(n-1)), rounded to cents.",
+      "_deducao_especifica": "8,54 x IAS 2025 (522,50) = 4462,15 (CIRS 25.º n.º 1 a) na redacao da Lei 45-A/2024, em vigor 2025-01-01). Era 4104, o valor de 2024 copiado; regra: years.2025.rules.cirs25_1a_deducao_especifica.",
+      "media": [
+        0.125,
+        0.1368,
+        0.15982,
+        0.17897,
+        0.20794,
+        0.25277,
+        0.26607,
+        0.34929,
+        null
+      ],
+      "verified": true,
+      "source_id": "cirs-68"
     },
     "_regioes": {
       "_fonte": "Tabelas de retencao (doclib tabela_ret_doclib). Nomes de ficheiro INCONSISTENTES: Tabelas_RF_Continente_2026.xlsx | Tabelas_RF_2025_RAM.xlsx | Tabelas_RF_RA_Acores_2025.xlsx | Tabelas_RF_RAA_2025_01_08_a_30_09_GSEAF_vf.xlsx (periodos a meio do ano!). NAO assumir padrao - listar a doclib e apanhar o href real.",

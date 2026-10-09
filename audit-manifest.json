@@ -4520,6 +4520,318 @@
           "in_force_from_display": null
         }
       }
+    },
+    {
+      "key": "cirs68a_1_limiares",
+      "article": "68.º-A n.os 1 e 2",
+      "source_id": "cirs-68a",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-74534822",
+      "years": {
+        "2023": {
+          "value": {
+            "inferior": 80000,
+            "superior": 250000
+          },
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-68a",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-74534822",
+          "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": {
+            "inferior": 80000,
+            "superior": 250000
+          },
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-68a",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-74534822",
+          "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": {
+            "inferior": 80000,
+            "superior": 250000
+          },
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-68a",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-74534822",
+          "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": {
+            "inferior": 80000,
+            "superior": 250000
+          },
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-68a",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-74534822",
+          "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs68a_1_taxas",
+      "article": "68.º-A n.os 1 e 2",
+      "source_id": "cirs-68a",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-74534822",
+      "years": {
+        "2023": {
+          "value": {
+            "escalao_1": 2.5,
+            "escalao_2": 5
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-68a",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-74534822",
+          "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": {
+            "escalao_1": 2.5,
+            "escalao_2": 5
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-68a",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-74534822",
+          "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": {
+            "escalao_1": 2.5,
+            "escalao_2": 5
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-68a",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-74534822",
+          "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": {
+            "escalao_1": 2.5,
+            "escalao_2": 5
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-68a",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-74534822",
+          "source_law": "CIRS art. 68.º-A n.os 1 e 2 (redacao da Lei 7-A/2016)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs78_7_ambito",
+      "article": "78.º n.º 7",
+      "source_id": "cirs-78",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs78_7_a_sem_limite",
+      "article": "78.º n.º 7 a)",
+      "source_id": "cirs-78",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+      "years": {
+        "2023": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs78_7_c_limite",
+      "article": "78.º n.º 7 c)",
+      "source_id": "cirs-78",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+      "years": {
+        "2023": {
+          "value": 1000,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": 1000,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": 1000,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": 1000,
+          "unit": "EUR",
+          "verified": true,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs78_7_b_formula",
+      "article": "78.º n.º 7 b)",
+      "source_id": "cirs-78",
+      "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-78",
+          "source_url": "https://diariodarepublica.pt/dr/legislacao-consolidada/lei/2014-70048167-912821424",
+          "source_law": "CIRS art. 78.º n.º 7 (redacao da Lei 82/2023 a partir de 2024; Lei 12/2022 em 2023)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
     }
   ],
   "personal": [
