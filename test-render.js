@@ -69,6 +69,18 @@ const PROFILES = {
       { artigo: "1227", freguesia: "Exemplo", tipo: "U", vptEur: 84341.72 },
       { artigo: "99", freguesia: "Antiga", tipo: "U", vpt: 8434172 }] } },
   } },
+  // Despesas de atividade read for every selector year: the latest on top, the others listed, an
+  // unknown label of an earlier year and a year that could not be read stay visible.
+  "despesas de atividade por ano": { partitions: {
+    despesas_atividade: { status: "done", data: { ano: 2025, nota: "x",
+      categorias: { "Despesas com pessoal": { valor: 100, considerar: 100, reconhecida: true, detalhes: [] } },
+      porAno: {
+        "2025": { ano: 2025, categorias: { "Despesas com pessoal": { valor: 100, considerar: 100, reconhecida: true, detalhes: [] } } },
+        "2024": { ano: 2024, categorias: { "Despesas novas": { valor: 5, considerar: 5, reconhecida: false, detalhes: [] } },
+          avisos: ["Despesas de atividade: categoria não reconhecida «Despesas novas». Confirme no Portal das Finanças."] },
+        "2023": { ano: 2023, categorias: {}, vazio: true } },
+      anosNaoLidos: [2022] } },
+  } },
   "atividade futura, ainda não aberta": { partitions: {
     atividade: { status: "done", data: { declaracoes: 2, cessada: null,
       ultimaDeclaracaoTipo: "inicio-ou-reinicio", ultimaDeclaracaoAceite: true,
@@ -117,6 +129,10 @@ function render(profile) {
   const vpt = await render(PROFILES["património com VPT"]);
   ok("VPT em euros, formato PT-PT", /VPT 84(&nbsp;|\u00a0)341,72(&nbsp;|\u00a0)€/.test(vpt.html), (vpt.html.match(/VPT[^<]{0,30}/) || [""])[0]);
   ok("VPT antigo em cêntimos não aparece como euros", !/8434172|8(&nbsp;|\u00a0)434(&nbsp;|\u00a0)172/.test(vpt.html));
+  const despesas = await render(PROFILES["despesas de atividade por ano"]);
+  ok("despesas de atividade: anos lidos, aviso de ano anterior e ano não lido visíveis",
+    /Anos lidos: 2025, 2024, 2023 \(sem despesas\)/.test(despesas.html) && /2024: Despesas de atividade: categoria não reconhecida/.test(despesas.html) &&
+    /não lidas para 2022/.test(despesas.html), (despesas.html.match(/Anos lidos[^<]{0,80}/) || [""])[0]);
   const scheduled = await render(PROFILES["atividade futura, ainda não aberta"]);
   ok("atividade futura não ativa Cat. B nem Anexo B",
     !/Cat\. B\b/.test(scheduled.html) && !/IRS - Anexo B/.test(scheduled.html));

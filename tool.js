@@ -64,7 +64,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.10.09.1";
+  var FB_VERSION = "2026.10.09.2";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -1939,29 +1939,110 @@
    * No simplificado tributa-se um coeficiente do bruto (art. 31), mas parte desse benef\u00edcio exige
    * despesas efetivamente afetas \u00e0 atividade (art. 31 n.13): pessoal, rendas, VPT de im\u00f3veis afetos,
    * outras. Esta p\u00e1gina mostra o que a AT j\u00e1 tem, com o "valor a considerar" j\u00e1 calculado.
-   * Mesmo padr\u00e3o (e mesma armadilha) da p\u00e1gina das dedu\u00e7\u00f5es: HTML server-rendered e ano STATEFUL. */
+   * HTML server-rendered; o ano escolhe-se com ?ano=<ano>.
+   * Each "<amount> EUR Valor a considerar ... <amount> EUR" pair is one summary block, whatever its label,
+   * so no block can vanish: the label is the phrase right before the first amount, recognised only when the
+   * whole phrase is a known label (a longer phrase ending in "Outras despesas" stays whole), otherwise kept
+   * with `reconhecida: false` and a warning in `avisos`. The
+   * block's "Ver Detalhes" tables follow it in the page and are attached as `detalhes`. The Fatura\u00e7\u00e3o
+   * reader uses the same algorithm on the same pages (fixtures/despesas-atividade.js). */
+  var DESPESAS_ATIVIDADE_LABELS = [
+    // The page's labels (real capture, 2026-10-07), longest first ...
+    "VPT dos im[\u00f3o]veis afetos [\u00e0a] atividade hoteleira ou de alojamento local",
+    "VPT dos im[\u00f3o]veis afetos [\u00e0a] atividade empresarial/profissional",
+    "Outras despesas com aquisi[\u00e7c][\u00e3a]o de bens e presta[\u00e7c][\u00f5o]es de servi[\u00e7c]os",
+    "Despesas com pessoal", "Despesas com rendas",
+    // ... then the older labels this reader knew since 4d9ef30.
+    "Valor patrimonial tribut[\u00e1a]rio", "Rendas de im[\u00f3o]veis", "Outras despesas", "Import[\u00e2a]ncias"
+  ];
+  function despesasAtividadeText(node) {
+    // A space at every element boundary, so adjacent cells never glue together.
+    if (node.nodeType === 3) return node.data;
+    if (node.nodeType !== 1 && node.nodeType !== 9) return "";
+    var out = " ";
+    for (var c = node.firstChild; c; c = c.nextSibling) out += despesasAtividadeText(c);
+    return out + " ";
+  }
+  function despesasAtividadeTables(doc) {
+    var out = [];
+    Array.prototype.forEach.call(doc.querySelectorAll("table"), function (table) {
+      var own = function (sel) {
+        return Array.prototype.filter.call(table.querySelectorAll(sel), function (x) { return x.closest("table") === table; });
+      };
+      var squash = function (el) { return despesasAtividadeText(el).replace(/\s+/g, " ").trim(); };
+      var columns = own("thead th").map(squash);
+      var bodyRows = own("tbody tr");
+      if (!bodyRows.length) bodyRows = own("tr").filter(function (tr) { return !tr.closest("thead"); });
+      if (!columns.length && bodyRows[0])
+        columns = Array.prototype.filter.call(bodyRows[0].children, function (c) { return c.tagName === "TH"; }).map(squash);
+      var rows = [];
+      bodyRows.forEach(function (tr) {
+        var cells = Array.prototype.filter.call(tr.children, function (c) { return c.tagName === "TD"; }).map(squash);
+        if (cells.length) rows.push(cells);
+      });
+      out.push({ columns: columns, rows: rows });
+    });
+    return out;
+  }
   function parseDespesasAtividadeHtml(html) {
-    var raw = String(html || ""), t = "";
+    var raw = String(html || ""), t = "", tables = [];
     try {
       var contentDoc = new DOMParser().parseFromString(raw, "text/html");
-      Array.prototype.forEach.call(contentDoc.querySelectorAll("script,style,noscript"), function (node) {
+      Array.prototype.forEach.call(contentDoc.querySelectorAll("script,style,noscript,template,[hidden],input[type=hidden]"), function (node) {
         if (node.parentNode) node.parentNode.removeChild(node);
       });
-      t = (contentDoc.body && contentDoc.body.textContent) || contentDoc.textContent || "";
+      t = despesasAtividadeText(contentDoc.body || contentDoc);
+      tables = despesasAtividadeTables(contentDoc);
     } catch (e) {
       t = raw.replace(/<[^>]+>/g, " ").replace(/&nbsp;?/g, " ").replace(/&euro;/g, "\u20ac");
     }
-    t = t.replace(/\s+/g, " ");
+    t = t.replace(/\s+/g, " ").trim();
     if (!/Despesas Afetas [\u00e0a] Atividade/i.test(t)) return null;
     var num = function (s) { return +String(s).replace(/\./g, "").replace(",", ".") || 0; };
-    var cats = {}, m;
-    var re = /(Despesas com pessoal|Rendas de im[\u00f3o]veis|Outras despesas|Valor patrimonial tribut[\u00e1a]rio|Import[\u00e2a]ncias)[^0-9]{0,80}([\d.]+,\d{2})\s*\u20ac\s*Valor a considerar[^0-9]{0,60}([\d.]+,\d{2})\s*\u20ac/g;
-    while ((m = re.exec(t)) !== null)
-      cats[m[1].replace(/\s+/g, " ").trim()] = { valor: num(m[2]), considerar: num(m[3]) };
+    var known = new RegExp("^(?:" + DESPESAS_ATIVIDADE_LABELS.join("|") + ")$");
+    var labelStart = /^[\s\S]*(?:\s-\s|\d,\d{2}(?:\s*\u20ac)?\s|Ver Mais\s|Ver Detalhes\s|A[\u00e7c][\u00f5o]es dispon[\u00edi]veis\s|[.:)]\s|Esta p[\u00e1a]gina\s|Despesas Afetas [\u00e0a] Atividade\s)/i;
+    var re = /([\d.]+,\d{2})\s*\u20ac\s*Valor a considerar[^0-9]{0,60}([\d.]+,\d{2})\s*\u20ac/g;
+    var blocks = [], m, prev = 0;
+    while ((m = re.exec(t)) !== null) {
+      var seg = t.slice(prev, m.index), st = seg.match(labelStart);
+      var nome = (st ? seg.slice(st[0].length) : seg).replace(/\s+/g, " ").trim(), k = known.test(nome);
+      if (!k && nome.length > 120) nome = nome.slice(-120).replace(/^\S*\s/, "");
+      nome = nome || "Sem designa\u00e7\u00e3o";
+      blocks.push({ nome: nome, reconhecida: k, valor: num(m[1]), considerar: num(m[2]), detalhes: [], end: re.lastIndex });
+      prev = re.lastIndex;
+    }
+    // Each detail table belongs to the summary block right before it in the page. A detail value is
+    // euros as text ("315,76", no EUR sign) or "-" when the AT has none (kept in `publicado`, valor null).
+    var strays = [], cursor = 0;
+    tables.forEach(function (tb) {
+      var needle = tb.columns.filter(Boolean).join(" ") || (tb.rows[0] && tb.rows[0][0]) || "";
+      var pos = needle ? t.indexOf(needle, cursor) : -1, owner = null;
+      var group = { grupo: tb.columns[0] || "", linhas: tb.rows.filter(function (r) { return r[0]; }).map(function (r) {
+        // Euros as "1.234,56" (a trailing EUR sign allowed); "-", empty or any other text is no amount.
+        var pub = r.length > 1 ? r[1] : "", amount = pub.replace(/\s*\u20ac$/, "");
+        return { descricao: r[0], valor: /^[\d.]+,\d{2}$/.test(amount) ? num(amount) : null, publicado: pub };
+      }) };
+      if (pos >= 0) {
+        cursor = pos + needle.length;
+        for (var i = blocks.length - 1; i >= 0; i--) if (blocks[i].end <= pos) { owner = blocks[i]; break; }
+      }
+      if (owner) owner.detalhes.push(group);
+      else strays.push(group);
+    });
+    var cats = {}, avisos = [];
+    blocks.forEach(function (b) {
+      if (!b.reconhecida)
+        avisos.push("Despesas de atividade: categoria n\u00e3o reconhecida \u00ab" + b.nome + "\u00bb. Confirme no Portal das Finan\u00e7as.");
+      // Keyed by label: a repeated label keeps its last block.
+      cats[b.nome] = { valor: b.valor, considerar: b.considerar, reconhecida: b.reconhecida, detalhes: b.detalhes };
+    });
+    strays.forEach(function (g) { avisos.push("Despesas de atividade: tabela de detalhe sem categoria \u00ab" + g.grupo + "\u00bb."); });
     var ano = (t.match(/Ano\s+(20\d{2})\s+Esta p[\u00e1a]gina/) || t.match(/\bAno\s+(20\d{2})\b/) || [])[1] || null;
-    if (!Object.keys(cats).length) return { ano: ano ? +ano : null, categorias: {}, vazio: true };
-    return { ano: ano ? +ano : null, categorias: cats,
+    if (!blocks.length) return { ano: ano ? +ano : null, categorias: {}, vazio: true };
+    var out = { ano: ano ? +ano : null, categorias: cats,
              nota: "despesas afetas \u00e0 atividade (art. 31.\u00ba n.13 CIRS) - relevantes s\u00f3 no regime simplificado" };
+    if (avisos.length) out.avisos = avisos;
+    return out;
   }
   function despesasAtividadeLoginDocument(html, responseUrl) {
     if (/^https:\/\/acesso\.gov\.pt(?:\/|$)/i.test(String(responseUrl || ""))) return true;
@@ -1987,27 +2068,81 @@
       return root.outerHTML || "";
     } catch (e) { return ""; }
   }
-  function readDespesasAtividade() {
-    var url = "/app/dashboard-regime-simplificado";
-    var visibleHtml = despesasAtividadeVisibleHtml();
-    var visibleData = parseDespesasAtividadeHtml(visibleHtml);
-    if (visibleData) {
-      recordShape(url, "html", visibleHtml);
-      return Promise.resolve(visibleData);
-    }
+  function despesasAtividadeYears(html) {
+    // The page's own year selector (#anoDashboard) navigates to ?ano=<year>; its options are the years
+    // the AT offers for this taxpayer, and its value is the year the page shows.
+    try {
+      var sel = new DOMParser().parseFromString(String(html || ""), "text/html").getElementById("anoDashboard");
+      if (!sel) return { anos: [], atual: null };
+      var anos = Array.prototype.map.call(sel.options, function (o) { return String(o.value || "").trim(); })
+        .filter(function (v) { return /^20\d{2}$/.test(v); });
+      return { anos: anos, atual: /^20\d{2}$/.test(String(sel.value || "").trim()) ? String(sel.value).trim() : null };
+    } catch (e) { return { anos: [], atual: null }; }
+  }
+  function fetchDespesasAtividade(url) {
     return fetch(url, { credentials: "include" })
       .then(function (r) {
         return r.text().then(function (html) {
           var data = parseDespesasAtividadeHtml(html);
           // Valid page content wins over harmless login-related script or shell text. Only an actual
           // login form or a redirect to acesso.gov.pt means this page's session has expired.
-          if (data) { recordShape(url, "html", html); return data; }
+          if (data) { recordShape(url, "html", html); return { html: html, data: data }; }
           if (despesasAtividadeLoginDocument(html, r.url))
             throw readError("session_required", "A sess\u00e3o desta p\u00e1gina expirou. Faz login aqui e tenta de novo.");
           recordShape(url, "html", html);
-          return null;
+          return { html: html, data: null };
         });
       });
+  }
+  /* Every year the selector offers, one ?ano=<year> request at a time; the year the page was showing is
+   * asked last, so the Portal stays on it. `porAno` keys each page by the year it states (a page that
+   * answers another year than asked carries `anoPedido` and a warning, as in the Fatura\u00e7\u00e3o reader);
+   * the top-level fields are the latest year's, as before. A year that could not be read is listed in
+   * `anosNaoLidos`, never guessed. Without a selector, the page as shown (one year). */
+  function readDespesasAtividade() {
+    var url = "/app/dashboard-regime-simplificado";
+    var visibleHtml = despesasAtividadeVisibleHtml();
+    var visibleData = parseDespesasAtividadeHtml(visibleHtml);
+    var first;
+    if (visibleData) {
+      recordShape(url, "html", visibleHtml);
+      first = Promise.resolve({ html: visibleHtml, data: visibleData });
+    } else first = fetchDespesasAtividade(url);
+    return first.then(function (shown) {
+      if (!shown.data) return null;
+      var sel = despesasAtividadeYears(shown.html);
+      if (!sel.anos.length) return shown.data;
+      var atual = sel.atual || (shown.data.ano != null ? String(shown.data.ano) : null);
+      var ordem = sel.anos.filter(function (y) { return y !== atual; });
+      if (atual && sel.anos.indexOf(atual) >= 0) ordem.push(atual);
+      // The page already read stands for its year until (and unless) the request for it answers.
+      var porAno = {}, naoLidos = [];
+      if (shown.data.ano != null) porAno[shown.data.ano] = shown.data;
+      function keep(data, pedido) {
+        if (data.ano !== +pedido) {
+          data.anoPedido = +pedido;
+          data.avisos = (data.avisos || []).concat(["O ano devolvido pela AT n\u00e3o corresponde ao pedido."]);
+        }
+        porAno[data.ano != null ? data.ano : pedido] = data;
+      }
+      return ordem.reduce(function (chain, y) {
+        return chain.then(function () {
+          return fetchDespesasAtividade(url + "?ano=" + y).then(function (res) {
+            if (res.data) keep(res.data, y); else if (!porAno[y]) naoLidos.push(+y);
+          }, function (e) {
+            if (e && e.code === "session_required") throw e;
+            if (!porAno[y]) naoLidos.push(+y);
+          });
+        });
+      }, Promise.resolve()).then(function () {
+        var anos = Object.keys(porAno).map(Number).sort(function (a, b) { return b - a; });
+        var out = {}, top = anos.length ? porAno[anos[0]] : shown.data;
+        Object.keys(top).forEach(function (k) { out[k] = top[k]; });
+        out.porAno = porAno;
+        if (naoLidos.length) out.anosNaoLidos = naoLidos.sort(function (a, b) { return b - a; });
+        return out;
+      });
+    });
   }
 
   /* DECLARA\u00c7\u00d5ES de IRS por ano (irs.../app/consulta). POST com {anoDeclaracoes:"YYYY"} - um GET

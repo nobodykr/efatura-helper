@@ -342,6 +342,50 @@ function hasHandoffShape(w, partition) {
     store.partitions.despesas_atividade && store.partitions.despesas_atividade.status === "done" &&
     store.partitions.despesas_atividade.data.categorias["Outras despesas"].considerar === 150);
 
+  // Every year the page's selector offers is read through ?ano=<year>, the shown year last; a page that
+  // answers another year is flagged, a year that fails is listed, never guessed.
+  const DESP = require("./fixtures/despesas-atividade.js");
+  const withSelector = (html, shown) => html.replace(/<select>[\s\S]*?<\/select>/, '<select id="anoDashboard">' +
+    ["2025", "2024", "2023", "2022"].map(y => '<option value="' + y + '"' + (y === shown ? " selected" : "") + ">" + y + "</option>").join("") + "</select>");
+  const pageHtml = html => ({ ok:true, url:"https://irs.portaldasfinancas.gov.pt/app/dashboard-regime-simplificado",
+    headers:{ get:() => "text/html" }, text:() => Promise.resolve(html) });
+  const asked = [];
+  const perYear = (url) => {
+    asked.push(String(url));
+    const y = (String(url).match(/[?&]ano=(\d{4})/) || [])[1];
+    if (y === "2025") return Promise.resolve(pageHtml(withSelector(DESP.REAL_SHAPE, "2025")));
+    if (y === "2024") return Promise.resolve(pageHtml(withSelector(DESP.UNKNOWN_LABEL, "2024")));
+    if (y === "2023") return Promise.resolve(pageHtml(withSelector(DESP.ODD.replace("Ano 2022", "Ano 2021"), "2023")));  // answers 2021
+    return Promise.reject(new Error("network"));                                            // 2022 fails
+  };
+  w = mkEnv("irs.portaldasfinancas.gov.pt", true, perYear, "/app/dashboard-regime-simplificado");
+  w.document.documentElement.innerHTML = new JSDOM(withSelector(DESP.REAL_SHAPE, "2025")).window.document.documentElement.innerHTML;
+  eval(SRC); await wait(1500);
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  const despData = store.partitions.despesas_atividade && store.partitions.despesas_atividade.data;
+  ok("activity expenses: every selector year asked through ?ano=, the shown year last",
+    asked.map(u => (u.match(/ano=(\d{4})/) || [])[1]).join() === "2024,2023,2022,2025");
+  ok("activity expenses: porAno keyed by the year each page states, latest on top",
+    despData && Object.keys(despData.porAno).sort().join() === "2021,2024,2025" && despData.ano === 2025 &&
+    Object.keys(despData.categorias).length === 5 && despData.porAno["2024"].avisos.length === 1);
+  ok("activity expenses: a page answering another year is flagged with the year asked",
+    despData && despData.porAno["2021"].anoPedido === 2023 &&
+    /n.o corresponde ao pedido/.test(despData.porAno["2021"].avisos.slice(-1)[0]));
+  ok("activity expenses: a year that fails is listed, not guessed",
+    despData && JSON.stringify(despData.anosNaoLidos) === "[2022]");
+
+  const lostMidway = (url) => /ano=2024/.test(String(url))
+    ? Promise.resolve({ ok:true, url:"https://acesso.gov.pt/login", headers:{ get:() => "text/html" },
+        text:() => Promise.resolve("<html><body><form id='loginForm' action='https://acesso.gov.pt/login'></form></body></html>") })
+    : perYear(url);
+  w = mkEnv("irs.portaldasfinancas.gov.pt", true, lostMidway, "/app/dashboard-regime-simplificado");
+  w.document.documentElement.innerHTML = new JSDOM(withSelector(DESP.REAL_SHAPE, "2025")).window.document.documentElement.innerHTML;
+  eval(SRC); await wait(1500);
+  store = JSON.parse(global.localStorage.getItem("fb-profile-v1") || "{}");
+  ok("activity expenses: a lost session on any year is the loud retryable error, not a partial profile",
+    (!store.partitions.despesas_atividade || store.partitions.despesas_atividade.status === "pending") &&
+    /N.o consegui ler/.test(w.document.getElementById("efh-body").textContent));
+
   const activityLogin = () => Promise.resolve({ ok:true, url:"https://acesso.gov.pt/login",
     headers:{ get:() => "text/html" }, text:() => Promise.resolve("<html><body><form id='loginForm' action='https://acesso.gov.pt/login'></form></body></html>") });
   w = mkEnv("irs.portaldasfinancas.gov.pt", true, activityLogin, "/app/dashboard-regime-simplificado");
