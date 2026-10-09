@@ -62,6 +62,13 @@ const PROFILES = {
       { ano: anoPassado, recuperavel: 0, nMover: 0, porSetor: {}, recuperavelAconselhado: 0, nMoverAconselhado: 0, porSetorAconselhado: {} }] } },
     irs: { status: "done", data: { liquidacoes: 2, porAno: [{ ano: anoPassado }] } },
   } },
+  // VPT: the Portal sends integer cents; tool.js stores euros in `vptEur`. A profile saved by an older
+  // version holds only the raw `vpt` (cents) and must not show it as euros.
+  "património com VPT": { partitions: {
+    patrimonio: { status: "done", data: { imoveis: 2, lista: [
+      { artigo: "1227", freguesia: "Exemplo", tipo: "U", vptEur: 84341.72 },
+      { artigo: "99", freguesia: "Antiga", tipo: "U", vpt: 8434172 }] } },
+  } },
   "atividade futura, ainda não aberta": { partitions: {
     atividade: { status: "done", data: { declaracoes: 2, cessada: null,
       ultimaDeclaracaoTipo: "inicio-ou-reinicio", ultimaDeclaracaoAceite: true,
@@ -107,6 +114,9 @@ function render(profile) {
   ok("abas Otimizado/Aconselhado presentes", /class="fbtab"/.test(full.html));
   ok("comparacao de rendas esta explicitamente desativada",
      /Comparação de rendas desativada/.test(full.html) && /não recomenda englobamento/.test(full.html));
+  const vpt = await render(PROFILES["património com VPT"]);
+  ok("VPT em euros, formato PT-PT", /VPT 84(&nbsp;|\u00a0)341,72(&nbsp;|\u00a0)€/.test(vpt.html), (vpt.html.match(/VPT[^<]{0,30}/) || [""])[0]);
+  ok("VPT antigo em cêntimos não aparece como euros", !/8434172|8(&nbsp;|\u00a0)434(&nbsp;|\u00a0)172/.test(vpt.html));
   const scheduled = await render(PROFILES["atividade futura, ainda não aberta"]);
   ok("atividade futura não ativa Cat. B nem Anexo B",
     !/Cat\. B\b/.test(scheduled.html) && !/IRS - Anexo B/.test(scheduled.html));
