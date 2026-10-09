@@ -69,7 +69,12 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
   const officialPage = await officialOpened;
   await officialPage.waitForLoadState("domcontentloaded");
   const officialClosed = officialPage.waitForEvent("close", { timeout:5000 });
-  await officialPage.evaluate((bookmarklet) => { location.href = bookmarklet; }, href);
+  // e-Fatura requests are paced 8 s apart (tool.js efaturaGet). The installer merges an existing
+  // __FISCALIDADE_CONFIG__, so the test time scale keeps this flow inside its timeouts.
+  await officialPage.evaluate((bookmarklet) => {
+    window.__FISCALIDADE_CONFIG__ = { efaturaTimeScale: 0.001 };
+    location.href = bookmarklet;
+  }, href);
   await officialPage.waitForSelector("#efh-panel", { timeout:15000 });
   const panel = await officialPage.locator("#efh-panel").innerText();
   if (!/Fatura Boa/.test(panel)) throw new Error("current tool panel did not execute");
