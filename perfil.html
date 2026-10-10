@@ -895,6 +895,16 @@
     return prof;
   }
 
+  /* Um ano anterior que o leitor do e-Fatura não conseguiu ler (reAuditFalhados). O Portal limita os
+   * pedidos a cerca de 2 a cada 15 s; um ano que ainda falha depois das tentativas fica de fora inteiro.
+   * Mesmo texto que o tool.js (reAuditFalhaTexto). */
+  function reAuditFalhaTexto(f){
+    var porque = f.motivo === 'limite_pedidos'
+      ? 'o Portal das Finanças limitou os pedidos' + (f.tentativas > 1 ? ' (' + f.tentativas + ' tentativas)' : '')
+      : f.motivo === 'sessao' ? 'a sessão do e-Fatura expirou a meio da leitura' : 'a leitura falhou';
+    return 'Não foi possível ler as faturas de ' + f.ano + ': ' + porque +
+      '. Volta a ler o e-Fatura daqui a uns minutos para veres este ano.';
+  }
   function overlay(prof){
     var h = '';
     if (prof.categorias.length){
@@ -904,6 +914,7 @@
     }
     var d = prof.detalhes;
     if (d.efatura) h += '<div class="kv">e-Fatura '+esc(d.efatura.ano)+': <b>'+esc(d.efatura.porClassificar)+'</b> por classificar de '+esc(d.efatura.totalFaturas)+'.</div>';
+    if (d.efatura) (d.efatura.reAuditFalhados||[]).forEach(function(f){ h += '<div class="warn">'+esc(reAuditFalhaTexto(f))+'</div>'; });
     // Deduções à coleta OFICIAIS (calculadas pela AT) - melhores que qualquer estimativa nossa.
     var dedYears = d.deducoesOficiais && d.deducoesOficiais.porAno;
     var dedYear = dedYears && Object.keys(dedYears).sort().reverse()[0];
@@ -1589,17 +1600,9 @@
         '<div class="w" style="margin-bottom:8px">Se num ano deixaste deduções por fora, ainda podes entregar uma declaração de substituição <b>a teu favor</b> - mas só dentro do prazo. A janela para recuperar é curta: cerca de 120 dias a contar da liquidação desse ano (na prática, até ao fim do ano em que entregaste).'+
         (detected?' Mostrando os anos com liquidação detetada nos teus dados.':'')+'</div>';
       var reAuditData = (prof.detalhes.efatura && prof.detalhes.efatura.reAudit) || [];
-      // Anos que o leitor do e-Fatura não conseguiu ler (o Portal limita os pedidos a cerca de 2 a
-      // cada 15 s). Sem isto, um ano em falta parecia um ano sem nada a recuperar. Mesmo texto que o
-      // tool.js (reAuditFalhaTexto).
+      // Anos que o leitor do e-Fatura não conseguiu ler: sem isto, um ano em falta parecia um ano sem
+      // nada a recuperar.
       var reAuditFalhados = (prof.detalhes.efatura && prof.detalhes.efatura.reAuditFalhados) || [];
-      var reAuditFalhaTexto = function(f){
-        var porque = f.motivo === 'limite_pedidos'
-          ? 'o Portal das Finanças limitou os pedidos' + (f.tentativas > 1 ? ' (' + f.tentativas + ' tentativas)' : '')
-          : f.motivo === 'sessao' ? 'a sessão do e-Fatura expirou a meio da leitura' : 'a leitura falhou';
-        return 'Não foi possível ler as faturas de ' + f.ano + ': ' + porque +
-          '. Volta a ler o e-Fatura daqui a uns minutos para veres este ano.';
-      };
       anos.forEach(function(yy){
         var wnd = resubmissionWindows(yy);
         var openPill = wnd.recover.open

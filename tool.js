@@ -1605,7 +1605,7 @@
   }
   function reAuditFalhasHtml(data) {
     return ((data && data.reAuditFalhados) || []).map(function (f) {
-      return '<div style="font-size:11px;color:#8a6100;margin:2px 0">\u26a0 ' + esc(reAuditFalhaTexto(f)) + '</div>';
+      return '<div style="font-size:11px;color:#8a6100;margin:2px 0">' + esc(reAuditFalhaTexto(f)) + '</div>';
     }).join("");
   }
 
