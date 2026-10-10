@@ -4832,6 +4832,460 @@
           "in_force_from_display": null
         }
       }
+    },
+    {
+      "key": "cirs12b_1_idade_maxima",
+      "article": "CIRS 12.º-B n.º 1",
+      "source_id": "cirs-12b",
+      "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "anos",
+          "verified": false,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": null,
+          "unit": "anos",
+          "verified": false,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": 35,
+          "unit": "anos",
+          "verified": true,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": 35,
+          "unit": "anos",
+          "verified": true,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs12b_1_anos_rendimentos",
+      "article": "CIRS 12.º-B n.º 1",
+      "source_id": "cirs-12b",
+      "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "anos",
+          "verified": false,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": null,
+          "unit": "anos",
+          "verified": false,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": 10,
+          "unit": "anos",
+          "verified": true,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": 10,
+          "unit": "anos",
+          "verified": true,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs12b_5_isencao_pct",
+      "article": "CIRS 12.º-B n.º 5",
+      "source_id": "cirs-12b",
+      "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "%",
+          "verified": false,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": null,
+          "unit": "%",
+          "verified": false,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": {
+            "ano_1": 100,
+            "ano_2": 75,
+            "ano_3": 75,
+            "ano_4": 75,
+            "ano_5": 50,
+            "ano_6": 50,
+            "ano_7": 50,
+            "ano_8": 25,
+            "ano_9": 25,
+            "ano_10": 25
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": {
+            "ano_1": 100,
+            "ano_2": 75,
+            "ano_3": 75,
+            "ano_4": 75,
+            "ano_5": 50,
+            "ano_6": 50,
+            "ano_7": 50,
+            "ano_8": 25,
+            "ano_9": 25,
+            "ano_10": 25
+          },
+          "unit": "%",
+          "verified": true,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs12b_5_limite",
+      "article": "CIRS 12.º-B n.º 5",
+      "source_id": "cirs-12b",
+      "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "IAS",
+          "verified": false,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": null,
+          "unit": "IAS",
+          "verified": false,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": 55,
+          "unit": "IAS",
+          "verified": true,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": 55,
+          "unit": "IAS",
+          "verified": true,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs12b_1_opcao_nao_dependente",
+      "article": "CIRS 12.º-B n.º 1",
+      "source_id": "cirs-12b",
+      "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs12b_3_interrupcao",
+      "article": "CIRS 12.º-B n.º 3 b)",
+      "source_id": "cirs-12b",
+      "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs12b_9_exclusoes",
+      "article": "CIRS 12.º-B n.º 9",
+      "source_id": "cirs-12b",
+      "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-12b",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "lei45a_2024_116_2_contagem",
+      "article": "Lei 45-A/2024 art. 116.º n.º 2",
+      "source_id": "lei45a-2024-irs-jovem",
+      "source_url": "https://diariodarepublica.pt/dr/detalhe/lei/45-a-2024-901667918",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "lei45a-2024-irs-jovem",
+          "source_url": "https://diariodarepublica.pt/dr/detalhe/lei/45-a-2024-901667918",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "lei45a-2024-irs-jovem",
+          "source_url": "https://diariodarepublica.pt/dr/detalhe/lei/45-a-2024-901667918",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "lei45a-2024-irs-jovem",
+          "source_url": "https://diariodarepublica.pt/dr/detalhe/lei/45-a-2024-901667918",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "lei45a-2024-irs-jovem",
+          "source_url": "https://diariodarepublica.pt/dr/detalhe/lei/45-a-2024-901667918",
+          "source_law": "Lei 45-A/2024, arts. 89.º e 116.º (effective 01/01/2025)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
+    },
+    {
+      "key": "cirs22_4_7_progressividade",
+      "article": "CIRS 22.º n.os 4 e 7 a)",
+      "source_id": "cirs-22-progressividade",
+      "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs22.aspx",
+      "years": {
+        "2023": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-22-progressividade",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs22.aspx",
+          "source_law": "CIRS 22.º n.os 4 e 7 a)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2024": {
+          "value": null,
+          "unit": "regra",
+          "verified": false,
+          "source_id": "cirs-22-progressividade",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs22.aspx",
+          "source_law": "CIRS 22.º n.os 4 e 7 a)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2025": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-22-progressividade",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs22.aspx",
+          "source_law": "CIRS 22.º n.os 4 e 7 a)",
+          "in_force": true,
+          "in_force_from_display": null
+        },
+        "2026": {
+          "value": true,
+          "unit": "regra",
+          "verified": true,
+          "source_id": "cirs-22-progressividade",
+          "source_url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs22.aspx",
+          "source_law": "CIRS 22.º n.os 4 e 7 a)",
+          "in_force": true,
+          "in_force_from_display": null
+        }
+      }
     }
   ],
   "personal": [

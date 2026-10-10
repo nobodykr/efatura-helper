@@ -306,6 +306,29 @@ for (const [y, k, v] of pins) if (ry[y][k].value !== v) bad(`${y} ${k}: ${JSON.s
 if (ry["2026"].cirs31_14_parcial_pct.applies_to_alineas.join() !== "c,d,e") bad("art. 31.º n.º 14 applies only to alíneas c) to e)");
 ok("pinned DRE readings unchanged");
 
+// IRS Jovem uses income-year position, including years before the regime was claimed.
+const jovemPct = { ano_1: 100, ano_2: 75, ano_3: 75, ano_4: 75, ano_5: 50,
+  ano_6: 50, ano_7: 50, ano_8: 25, ano_9: 25, ano_10: 25 };
+const jovemKeys = ["cirs12b_1_idade_maxima", "cirs12b_1_anos_rendimentos", "cirs12b_5_isencao_pct",
+  "cirs12b_5_limite", "cirs12b_1_opcao_nao_dependente", "cirs12b_3_interrupcao", "cirs12b_9_exclusoes",
+  "lei45a_2024_116_2_contagem", "cirs22_4_7_progressividade"];
+for (const y of ["2023", "2024"]) for (const k of jovemKeys)
+  if (ry[y][k]?.verified !== false || ry[y][k]?.value !== null) bad(`${y} ${k}: newer regime leaked into historical year`);
+for (const y of ["2025", "2026"]) {
+  const r = ry[y];
+  if (jovemKeys.some((k) => r[k]?.verified !== true)) bad(`${y}: incomplete IRS Jovem evidence`);
+  if (r.cirs12b_1_idade_maxima.value !== 35 || r.cirs12b_1_anos_rendimentos.value !== 10)
+    bad(`${y}: IRS Jovem age/income-year limits differ from the reviewed law`);
+  if (JSON.stringify(r.cirs12b_5_isencao_pct.value) !== JSON.stringify(jovemPct))
+    bad(`${y}: exemption percentages no longer match their statutory income years`);
+  if (r.cirs12b_5_limite.unit !== "IAS" || r.cirs12b_5_limite.value !== 55)
+    bad(`${y}: IRS Jovem cap must use the income year's IAS`);
+  const cap = Math.round(r.cirs12b_5_limite.value * r.ias.value * 100) / 100;
+  if (cap !== (y === "2025" ? 28737.5 : 29542.15)) bad(`${y}: wrong annual exemption cap`);
+  for (const k of jovemKeys.slice(4)) if (r[k].value !== true) bad(`${y} ${k}: statutory condition lost`);
+}
+ok("IRS Jovem: schedule boundaries, shared IAS cap and historical unknowns preserved");
+
 // 5. the old aggregate entries remain equal to their replacement rules during migration
 for (const y of ["2023", "2024", "2025"]) {
   const old = snap.years[y].rules, newer = ry[y];
