@@ -8,6 +8,9 @@ Fiscalidade / Fatura Boa: a browser tool and Chrome extension for reviewing Port
 in the user's own official-site sessions, plus the isolated market service (`market/`) that receives
 minimized contributions. Static site on Cloudflare Pages (`index.html`, `tool.js`, `perfil.html`).
 `tool.js` must stay pure ASCII. Read README.md for the privacy boundary and DEPLOY.md for the runbook.
+Copy carries no decorative glyphs (decided by Diogo 10/10/2026, #30): a warning in /perfil gets the
+outline `i-alert` icon from the page's own SVG sprite (the `WARN` prefix in `overlay()`), separators are a
+plain hyphen, quotes are straight. Official labels in the CAE / CIRS data files stay exactly as published.
 
 ## Test
 `npm test` (node run-tests.mjs; needs a browser, a missing one fails the run). A fresh worktree has

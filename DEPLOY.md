@@ -96,8 +96,12 @@ So the order matters - commit tool.js BEFORE generating the manifest:
      --exclude run-tests.mjs --exclude check-functions.js --exclude escape-tool.js \
      --exclude package.json --exclude package-lock.json \
      . /tmp/fb-deploy/
-   cd /tmp/fb-deploy && cf-token npx --yes wrangler@4.125.0 pages deploy . --project-name=efatura-helper --branch=main
+   SHA=$(git rev-parse HEAD) && cd /tmp/fb-deploy && cf-token npx --yes wrangler@4.125.0 pages deploy . \
+     --project-name=efatura-helper --branch=main --commit-hash="$SHA" --commit-dirty=false
    ```
+   The filtered copy has no `.git`, so the deployment's Source column is whatever `--commit-hash` says:
+   take it from `git rev-parse`, never type it (10/10/2026: a hand-typed hash recorded a commit that does
+   not exist, and the identical content had to be redeployed to fix the record).
    `cf-token` (homelab-infra `tools/agents/cf-token.py`) runs wrangler with `CLOUDFLARE_API_TOKEN` from
    `/mnt/data/secrets/cloudflare.env`, never the saved wrangler OAuth login (decided 09/10/2026, Jotty
    fat-fb-wrangler-token). Without it wrangler falls back to that login, or asks for one.
