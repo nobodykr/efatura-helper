@@ -16,7 +16,7 @@ assert(/MARKET_INTAKE_ENABLED\s*=\s*true/.test(profile), "mandatory minimized ma
 assert(/status:"pending",completionStatus:envelope\.status/.test(profile) &&
   /row\.status=row\.completionStatus\|\|"done"/.test(profile),
   "source completion is not gated on an accepted intake receipt");
-assert(/fontes lidas · a confirmar/.test(profile) && /seg\.wait/.test(profile),
+assert(/fontes lidas - a confirmar/.test(profile) && /seg\.wait/.test(profile),
   "profile does not show an immediate pending-read state while required intake is confirmed");
 assert(/schema_required/.test(profile) && /retry-intake/.test(profile),
   "missing schema or failed intake cannot be recovered safely");

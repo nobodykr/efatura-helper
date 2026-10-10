@@ -11,7 +11,7 @@ findings, decisions, tests and implementation commits do not exist only in chat 
 - `/perfil` is now the only profile/results hub. A shared contract orders all 13 SSO partitions,
   exposes one next-source action, reuses one named official tab and returns a nonce-bound envelope
   with `postMessage`. The website launcher and 13 competing action buttons are removed.
-- The extension bar has one functional action, “Ler e voltar à Fiscalidade”. The separately named
+- The extension bar has one functional action, "Ler e voltar à Fiscalidade". The separately named
   DEV build and the July-style SRI-pinned DEV bookmarklet use the same contract and reader bytes.
 - Tax-status JSON errors distinguish expired sessions, HTTP errors, empty responses, invalid JSON
   and unknown debt schemas. Optional coima/agenda failures remain unknown and never render as zero.

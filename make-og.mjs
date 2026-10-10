@@ -40,7 +40,7 @@ const html = `<!doctype html><html lang="pt"><head><meta charset="utf-8">
   </div>
   <div class="foot">
     <div class="url">fiscalida.de</div>
-    <div class="tag">Gratuito · nunca pede a password</div>
+    <div class="tag">Gratuito - nunca pede a password</div>
   </div>
 </body></html>`;
 
