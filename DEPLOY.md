@@ -96,8 +96,11 @@ So the order matters - commit tool.js BEFORE generating the manifest:
      --exclude run-tests.mjs --exclude check-functions.js --exclude escape-tool.js \
      --exclude package.json --exclude package-lock.json \
      . /tmp/fb-deploy/
-   cd /tmp/fb-deploy && npx wrangler@4.125.0 pages deploy . --project-name=efatura-helper --branch=main
+   cd /tmp/fb-deploy && cf-token npx --yes wrangler@4.125.0 pages deploy . --project-name=efatura-helper --branch=main
    ```
+   `cf-token` (homelab-infra `tools/agents/cf-token.py`) runs wrangler with `CLOUDFLARE_API_TOKEN` from
+   `/mnt/data/secrets/cloudflare.env`, never the saved wrangler OAuth login (decided 09/10/2026, Jotty
+   fat-fb-wrangler-token). Without it wrangler falls back to that login, or asks for one.
    Run wrangler from INSIDE the filtered copy. It bundles Functions from `./functions` of the current
    directory, not from the directory it uploads: run from a checkout that is behind main, it ships that
    checkout's old Functions with the new static files and still reports success (05/10/2026). After the
