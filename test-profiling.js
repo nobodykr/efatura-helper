@@ -79,7 +79,8 @@ function mkEnv(host, flag, fetchImpl, path, options) {
   window.__profileDom = profileDom;
   if (flag) {
     window.__FB_PROFILE = 1;
-    window.__FISCALIDADE_CONFIG__ = { channel:"dev-bookmarklet", remoteCodeAllowed:false };
+    // e-Fatura requests are paced 8 s apart (tool.js efaturaGet); the test time scale keeps these fixed waits valid.
+    window.__FISCALIDADE_CONFIG__ = { channel:"dev-bookmarklet", remoteCodeAllowed:false, efaturaTimeScale:0.001 };
   } else { try { delete window.__FB_PROFILE; } catch (e) {} }
   return window;
 }

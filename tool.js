@@ -64,7 +64,7 @@
   var IMPACT_CONTRIBUTION_URL = API_BASE + "/contributions/impact";
   // Provably-fair versioning: this label is shown in the panel; the TRUTH is the file's sha384,
   // published per release in /versions.json and checkable at /verificar. Bump on any tool.js change.
-  var FB_VERSION = "2026.10.09.2";
+  var FB_VERSION = "2026.10.10.1";
 
   /* ADS AS INERT DATA (provably-fair Step 2). The sponsor strip is the ONE piece that should update
    * without re-pinning the core, so it is a DATA feed, not code: the pinned core fetches offers.json
@@ -304,13 +304,43 @@
     return _iso(mid);
   }
   function _nextDay(iso) { var d = _d(iso); d.setDate(d.getDate() + 1); return _iso(d); }
+  /* The AT rate-limits obterDocumentosAdquirente: about two requests per 15 s (a little more after a
+   * rest); a 429 carries no Retry-After and does not use up the allowance (measured on 07/10/2026,
+   * Bible ch. 15). The three past years used to go in parallel, answered 429 and vanished from the
+   * re-audit without a word. So every e-Fatura request goes through ONE queue that waits
+   * EFATURA_GAP_MS after the previous answer, and a 429 is retried after 15 s and then 30 s
+   * (Retry-After instead, if the AT ever sends one), as faturacao-perfil 0.2.2 does. Any other
+   * error is not retried. The queue holds its turn through the retries, so nothing jumps in. */
+  var EFATURA_GAP_MS = 8000, EFATURA_RETRY_MS = [15000, 30000];
+  // Tests only: __FISCALIDADE_CONFIG__.efaturaTimeScale in (0, 1] shortens every pause. The public
+  // bookmarklet and the extension never set it, so every pause is real.
+  var EF_SCALE = (Number(RUNTIME.efaturaTimeScale) > 0 && Number(RUNTIME.efaturaTimeScale) <= 1)
+    ? Number(RUNTIME.efaturaTimeScale) : 1;
+  var _efQueue = Promise.resolve(), _efLast = null;
+  function efSleep(ms) { return new Promise(function (r) { setTimeout(r, ms * EF_SCALE); }); }
+  function efaturaGet(u) {
+    function attempt(n) {
+      var gap = _efLast === null ? 0 : Math.max(0, EFATURA_GAP_MS - (Date.now() - _efLast) / EF_SCALE);
+      return efSleep(gap).then(function () { return getJSON(u); }).then(function (j) {
+        _efLast = Date.now(); return j;
+      }, function (e) {
+        _efLast = Date.now();
+        if (e) e.attempts = n + 1;
+        if (!e || e.status !== 429 || n >= EFATURA_RETRY_MS.length) throw e;
+        return efSleep(e.retryAfter ? e.retryAfter * 1000 : EFATURA_RETRY_MS[n]).then(function () { return attempt(n + 1); });
+      });
+    }
+    var turn = _efQueue.then(function () { return attempt(0); });
+    _efQueue = turn.catch(function () {});
+    return turn;
+  }
   /* Fetch every invoice for a sector in [ini,fim] (SAME YEAR). obterDocumentosAdquirente caps at 300
    * and reports the true count in totalElementos - so if we got fewer than that, the range is capped
    * and we split it in half and recurse. Halves stay inside the year, so no "mesmo ano" error. This
    * GUARANTEES completeness (rows.length >= totalElementos) instead of silently truncating. */
   function fetchRange(sec, ini, fim) {
     var u = "/json/obterDocumentosAdquirente.action?dataInicioFilter=" + ini + "&dataFimFilter=" + fim + "&ambitoAquisicaoFilter=" + sec;
-    return getJSON(u).then(function (j) {
+    return efaturaGet(u).then(function (j) {
       if (j && (j.expiredSession === true || j.success === false)) throw new Error("sess\u00e3o do e-Fatura expirada");
       var rows = (j && (j.linhas || j.documentos)) || []; if (!Array.isArray(rows)) rows = [];
       var hasTotal = !!(j && j.totalElementos != null);
@@ -1080,9 +1110,9 @@
     log.push({ at: new Date().toISOString(), stage: stage, partition: partition, code: code || null });
     window.__FISCALIDADE_HANDOFF_DIAGNOSTICS__ = log.slice(-20);
   }
-  function profileMessage(css, title, detail) {
+  function profileMessage(css, title, detail, extraHtml) {
     var body = document.getElementById("efh-body");
-    if (body) body.innerHTML = '<div class="' + css + '"><b>' + title + '</b> ' + detail + '</div>';
+    if (body) body.innerHTML = '<div class="' + css + '"><b>' + title + '</b> ' + detail + '</div>' + (extraHtml || "");
   }
   function closeGuidedOfficialAfterAccepted() {
     // Only tabs created by /perfil are eligible. Keep every failed/pending tab open so login or a
@@ -1141,7 +1171,7 @@
         profileDiagnostic("accepted", pid, event.data.intake || "required");
         try { target.focus(); } catch (e) {}
         profileMessage("efh-ok", "Leitura conclu\u00edda.",
-          "O perfil completo ficou neste navegador e o contributo minimizado foi aceite.");
+          "O perfil completo ficou neste navegador e o contributo minimizado foi aceite.", reAuditFalhasHtml(data));
         closeGuidedOfficialAfterAccepted();
       }
       if (event.data.type === contract.rejectedType && event.data.partition === pid &&
@@ -1267,9 +1297,13 @@
     return r.text().then(function (t) {
       if (/text\/html/i.test(ct) || /^\s*</.test(t) || /acesso\.gov\.pt|loginForm/i.test(t))
         throw readError("session_required", "A sess\u00e3o desta p\u00e1gina expirou. Faz login aqui e tenta de novo.", r.status);
-      if (!r.ok)
-        throw readError("official_http_" + r.status,
+      if (!r.ok) {
+        var httpError = readError("official_http_" + r.status,
           "A p\u00e1gina oficial respondeu com erro " + r.status + ". Tenta novamente dentro de momentos.", r.status);
+        var retryAfter = r.status === 429 ? Number(r.headers.get("retry-after")) : 0;
+        if (retryAfter > 0) httpError.retryAfter = Math.min(retryAfter, 120);
+        throw httpError;
+      }
       if (!String(t || "").trim())
         throw readError("empty_response", "A p\u00e1gina oficial devolveu uma resposta vazia. Atualiza a p\u00e1gina e tenta de novo.", r.status);
       var j;
@@ -1553,6 +1587,28 @@
       source: "/integrada/presentation (ecraActividade n\u00e3o exposto)" });
   }
 
+  // A paced read takes a minute or two; say why while it runs. The read's own result replaces it.
+  function efProgress(text) {
+    var rb = document.getElementById("fb-read");
+    if (rb) { rb.title = text; return; }
+    var body = document.getElementById("efh-body");
+    if (body) body.textContent = text;
+  }
+  // PT-PT notice for a past year the re-audit could not read (reAuditFalhados). /perfil words it
+  // the same way (perfil.html reAuditFalhaTexto).
+  function reAuditFalhaTexto(f) {
+    var porque = f.motivo === "limite_pedidos"
+      ? "o Portal das Finan\u00e7as limitou os pedidos" + (f.tentativas > 1 ? " (" + f.tentativas + " tentativas)" : "")
+      : f.motivo === "sessao" ? "a sess\u00e3o do e-Fatura expirou a meio da leitura" : "a leitura falhou";
+    return "N\u00e3o foi poss\u00edvel ler as faturas de " + f.ano + ": " + porque +
+      ". Volta a ler o e-Fatura daqui a uns minutos para veres este ano.";
+  }
+  function reAuditFalhasHtml(data) {
+    return ((data && data.reAuditFalhados) || []).map(function (f) {
+      return '<div style="font-size:11px;color:#8a6100;margin:2px 0">' + esc(reAuditFalhaTexto(f)) + '</div>';
+    }).join("");
+  }
+
   function readEfatura() {
     var u = "/json/obterDocumentosAdquirente.action?dataInicioFilter=" + year + "-01-01&dataFimFilter=" + year + "-12-31";
     // The same recursive reader used by the classifier is mandatory here too. The plain endpoint
@@ -1563,22 +1619,30 @@
         if (x.estadoBeneficio === "P") pend++;
         var a = x.actividadeEmitente; if (a) byAct[a] = (byAct[a] || 0) + 1;
       });
-      // Re-audit the recent past income years (the same endpoint, per year). Caps assume an
-      // INDIVIDUAL filer (mono/joint not known here); /perfil can refine. Best-effort: a year that
-      // fails (no data / lapsed) just drops out.
-      var anos = [year - 1, year - 2, year - 3];
-      return Promise.all(anos.map(function (a) {
-        return reAuditAno(a, {}).catch(function () { return null; });
-      })).then(function (ra) {
+      // Re-audit the recent past income years (the same endpoint, per year), ONE AT A TIME through
+      // the paced queue (efaturaGet). Caps assume an INDIVIDUAL filer (mono/joint not known here);
+      // /perfil can refine. A year counts only whole: if any of its requests still fails, the year
+      // is left out of reAudit and listed in reAuditFalhados, so the person is told it is missing
+      // instead of reading its absence as "nothing to recover".
+      var anos = [year - 1, year - 2, year - 3], ra = [], falhados = [];
+      efProgress("A ler os anos anteriores no e-Fatura. O Portal s\u00f3 aceita cerca de 2 pedidos a cada 15 segundos, por isso a leitura demora 1 a 2 minutos...");
+      return anos.reduce(function (p, a) {
+        return p.then(function () {
+          return reAuditAno(a, {}).then(function (audit) { ra.push(audit); }, function (e) {
+            falhados.push({ ano: a, motivo: (e && e.status === 429) ? "limite_pedidos"
+                : (e && e.code === "session_required") ? "sessao" : "erro",
+              tentativas: (e && e.attempts) || 1 });
+          });
+        });
+      }, Promise.resolve()).then(function () {
         var companies = marketCompanyYear(rows, year);
         ra.forEach(function (audit) {
-          if (!audit) return;
           companies = companies.concat(audit._market || []);
           delete audit._market;
         });
         return { data: { ano: year, totalFaturas: rows.length,
                          porClassificar: pend, atividades: byAct,
-                         reAudit: ra.filter(Boolean) }, source: u,
+                         reAudit: ra, reAuditFalhados: falhados }, source: u,
                  market: { version: 1, companies: companies } };
       });
     });
@@ -2318,7 +2382,8 @@
     }
     var d = prof.detalhes;
     if (d.efatura)
-      h += '<div style="font-size:12px;color:#333;margin:2px 0">e-Fatura ' + esc(d.efatura.ano) + ': <b>' + esc(d.efatura.porClassificar) + '</b> por classificar de ' + esc(d.efatura.totalFaturas) + '.</div>';
+      h += '<div style="font-size:12px;color:#333;margin:2px 0">e-Fatura ' + esc(d.efatura.ano) + ': <b>' + esc(d.efatura.porClassificar) + '</b> por classificar de ' + esc(d.efatura.totalFaturas) + '.</div>' +
+        reAuditFalhasHtml(d.efatura);
     if (d.rendas) {
       h += '<div style="font-size:12px;color:#333;margin:2px 0">Arrendamento: <b>' + esc(d.rendas.activos) + '</b> contrato(s) activo(s) de ' + esc(d.rendas.contratos) +
            (d.rendas.recibos != null ? ', ' + esc(d.rendas.recibos) + ' recibo(s)' : '') + '.</div>';
@@ -2424,7 +2489,7 @@
              : (res.data.declaracoes != null ? ("atividade " + (res.data.cessada === true ? "cessada" : res.data.cessada === false ? "aberta" : "?")) : "lido"))))))));
       document.getElementById("efh-body").innerHTML =
         '<div style="font-size:14px"><b>\u2713 Li ' + esc(cur.label) + '</b>' + (n ? " (" + esc(n) + ")" : "") +
-        '.<br>A abrir a tua situa\u00e7\u00e3o...</div>';
+        '.<br>A abrir a tua situa\u00e7\u00e3o...</div>' + reAuditFalhasHtml(res.data);
       deliverProfile(cur.id, res.data, _shapes, res.market || null);
     }).catch(function (e) {
       var s = profLoad();

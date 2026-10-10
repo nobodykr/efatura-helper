@@ -36,8 +36,13 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
     if (url.startsWith("https://fiscalida.de/perfil"))
       return route.fulfill({ contentType:"text/html; charset=utf-8", body:profile,
         headers:{ "cross-origin-opener-policy":"same-origin-allow-popups" } });
-    if (url.includes("faturas.portaldasfinancas.gov.pt/json/obterDocumentosAdquirente.action"))
+    if (url.includes("faturas.portaldasfinancas.gov.pt/json/obterDocumentosAdquirente.action")) {
+      // Two years before the current one keeps answering http-429, as the AT does above its limit:
+      // the real /perfil must say that year could not be read.
+      if (url.includes("dataInicioFilter=" + (new Date().getFullYear() - 2) + "-"))
+        return route.fulfill({ status:429, contentType:"application/json", body:"{}" });
       return route.fulfill({ contentType:"application/json", body:JSON.stringify({ linhas:[], totalElementos:0 }) });
+    }
     if (url.startsWith("https://faturas.portaldasfinancas.gov.pt/"))
       return route.fulfill({ contentType:"text/html; charset=utf-8", body:"<!doctype html><body>e-Fatura</body>" });
     if (url.startsWith("https://sitfiscal.portaldasfinancas.gov.pt/integrada/presentation")) {
@@ -69,7 +74,12 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
   const officialPage = await officialOpened;
   await officialPage.waitForLoadState("domcontentloaded");
   const officialClosed = officialPage.waitForEvent("close", { timeout:5000 });
-  await officialPage.evaluate((bookmarklet) => { location.href = bookmarklet; }, href);
+  // e-Fatura requests are paced 8 s apart (tool.js efaturaGet). The installer merges an existing
+  // __FISCALIDADE_CONFIG__, so the test time scale keeps this flow inside its timeouts.
+  await officialPage.evaluate((bookmarklet) => {
+    window.__FISCALIDADE_CONFIG__ = { efaturaTimeScale: 0.001 };
+    location.href = bookmarklet;
+  }, href);
   await officialPage.waitForSelector("#efh-panel", { timeout:15000 });
   const panel = await officialPage.locator("#efh-panel").innerText();
   if (!/Fatura Boa/.test(panel)) throw new Error("current tool panel did not execute");
@@ -94,6 +104,13 @@ if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
     return store.partitions && store.partitions.efatura && store.partitions.efatura.status === "done";
   }, null, { timeout:5000 });
   await officialClosed;
+  const missingYear = new Date().getFullYear() - 2;
+  const notice = "Não foi possível ler as faturas de " + missingYear + ": o Portal das Finanças limitou os pedidos (3 tentativas)";
+  try {
+    await firstProfile.waitForFunction((text) => document.body.textContent.indexOf(text) >= 0, notice, { timeout:5000 });
+  } catch (error) {
+    throw new Error("/perfil does not say that " + missingYear + " could not be read");
+  }
 
   // Start the exceptional integrated flow with a clean profile so the progress assertion is exact.
   await firstProfile.evaluate(() => {

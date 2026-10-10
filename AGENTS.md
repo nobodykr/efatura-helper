@@ -13,6 +13,9 @@ minimized contributions. Static site on Cloudflare Pages (`index.html`, `tool.js
 `npm test` (node run-tests.mjs; needs a browser, a missing one fails the run). A fresh worktree has
 no `node_modules`: run `npm ci` first, or about 30 checks fail on `Cannot find module 'jsdom'`.
 Market service: `python3 -m unittest market.test_storage`.
+e-Fatura requests are paced 8 s apart with 429 retries after 15 s and 30 s (tool.js `efaturaGet`), so a
+test that reads e-Fatura more than once sets `__FISCALIDADE_CONFIG__.efaturaTimeScale` (for example 0.001)
+before loading tool.js; the bookmarklet and the extension never set it.
 
 ## Runs
 Containers `fiscalidade-market` and `fiscalidade-market-tunnel`, compose in `market/docker-compose.yml`.
