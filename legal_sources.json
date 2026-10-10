@@ -1341,6 +1341,123 @@
         "produz efeitos no dia 1 de janeiro de 2026"
       ],
       "source_note": "Lido em 2026-10-09 na pagina do diploma no DRE."
+    },
+    {
+      "type": "artigo",
+      "critical": true,
+      "reviewed_at": "2026-10-10",
+      "id": "cirs-12b",
+      "governs": "IRS Jovem from income year 2025: eligibility, ten income years, exemption schedule and shared cap",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs12b.aspx",
+      "expect": [
+        "12.º-B",
+        "até 35 anos de idade",
+        "nos 10 primeiros anos de obtenção de rendimentos",
+        "que não seja considerado dependente",
+        "mediante opção na declaração de rendimentos",
+        "Não se aplica nos anos em que não sejam auferidos rendimentos das categorias A e B",
+        "com o limite de 55 vezes o valor do IAS",
+        "100 % no primeiro ano de obtenção de rendimentos",
+        "75 % do segundo ao quarto ano de obtenção de rendimentos",
+        "50 % do quinto ao sétimo ano de obtenção de rendimentos",
+        "25 % do oitavo ao décimo ano de obtenção de rendimentos",
+        "Beneficiem ou tenham beneficiado do regime do residente não habitual",
+        "Beneficiem ou tenham beneficiado do incentivo fiscal à investigação científica e inovação",
+        "Tenham optado pela tributação nos termos do artigo 12.º-A",
+        "Não tenham a sua situação tributária regularizada",
+        "determina o englobamento dos rendimentos isentos"
+      ],
+      "expect_by_year": {
+        "2025": [
+          "até 35 anos de idade",
+          "nos 10 primeiros anos de obtenção de rendimentos",
+          "que não seja considerado dependente",
+          "mediante opção na declaração de rendimentos",
+          "Não se aplica nos anos em que não sejam auferidos rendimentos das categorias A e B",
+          "com o limite de 55 vezes o valor do IAS",
+          "100 % no primeiro ano de obtenção de rendimentos",
+          "75 % do segundo ao quarto ano de obtenção de rendimentos",
+          "50 % do quinto ao sétimo ano de obtenção de rendimentos",
+          "25 % do oitavo ao décimo ano de obtenção de rendimentos",
+          "Beneficiem ou tenham beneficiado do regime do residente não habitual",
+          "Beneficiem ou tenham beneficiado do incentivo fiscal à investigação científica e inovação",
+          "Tenham optado pela tributação nos termos do artigo 12.º-A",
+          "Não tenham a sua situação tributária regularizada",
+          "determina o englobamento dos rendimentos isentos"
+        ],
+        "2026": [
+          "até 35 anos de idade",
+          "nos 10 primeiros anos de obtenção de rendimentos",
+          "que não seja considerado dependente",
+          "mediante opção na declaração de rendimentos",
+          "Não se aplica nos anos em que não sejam auferidos rendimentos das categorias A e B",
+          "com o limite de 55 vezes o valor do IAS",
+          "100 % no primeiro ano de obtenção de rendimentos",
+          "75 % do segundo ao quarto ano de obtenção de rendimentos",
+          "50 % do quinto ao sétimo ano de obtenção de rendimentos",
+          "25 % do oitavo ao décimo ano de obtenção de rendimentos",
+          "Beneficiem ou tenham beneficiado do regime do residente não habitual",
+          "Beneficiem ou tenham beneficiado do incentivo fiscal à investigação científica e inovação",
+          "Tenham optado pela tributação nos termos do artigo 12.º-A",
+          "Não tenham a sua situação tributária regularizada",
+          "determina o englobamento dos rendimentos isentos"
+        ]
+      },
+      "source_note": "AT current article cross-checked against Lei 45-A/2024 article 89 and the DR consolidated article amendment list on 10/10/2026. Last amendment shown: Lei 45-A/2024, effective 01/01/2025. Earlier years intentionally unverified in the new keys; they use a distinct education-linked regime."
+    },
+    {
+      "type": "artigo",
+      "critical": true,
+      "reviewed_at": "2026-10-10",
+      "id": "lei45a-2024-irs-jovem",
+      "governs": "IRS Jovem amended wording and transition counting all previous non-dependent A/B income years",
+      "url": "https://diariodarepublica.pt/dr/detalhe/lei/45-a-2024-901667918",
+      "expect": [
+        "Artigo 116.º",
+        "ao ano subsequente ao número de anos de obtenção de rendimentos das categorias A ou B já decorridos, não se considerando para estes efeitos os anos em que tenham sido considerados dependentes",
+        "até 35 anos de idade",
+        "nos 10 primeiros anos de obtenção de rendimentos",
+        "com o limite de 55 vezes o valor do IAS",
+        "100 % no primeiro ano de obtenção de rendimentos",
+        "75 % do segundo ao quarto ano de obtenção de rendimentos",
+        "50 % do quinto ao sétimo ano de obtenção de rendimentos",
+        "25 % do oitavo ao décimo ano de obtenção de rendimentos"
+      ],
+      "source_note": "Immutable promulgated law: article 89 changes CIRS 12-B; article 116(2) gives the transition. This source does not itself state the AT clarification about article 58 filing dispensation."
+    },
+    {
+      "type": "artigo",
+      "critical": true,
+      "reviewed_at": "2026-10-10",
+      "id": "cirs-22-progressividade",
+      "governs": "Exempt income remains in the general-rate base without deductions",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/informacao_fiscal/codigos_tributarios/cirs_rep/Pages/irs22.aspx",
+      "expect": [
+        "Artigo 22.º",
+        "Os rendimentos isentos são considerados, sem deduções",
+        "para determinação das taxas a aplicar ao restante rendimento coletável"
+      ],
+      "expect_by_year": {
+        "2025": [
+          "Os rendimentos isentos são considerados, sem deduções",
+          "para determinação das taxas a aplicar ao restante rendimento coletável"
+        ],
+        "2026": [
+          "Os rendimentos isentos são considerados, sem deduções",
+          "para determinação das taxas a aplicar ao restante rendimento coletável"
+        ]
+      },
+      "source_note": "Paragraphs 4 and 7(a), cross-checked against the DR consolidated CIRS. The 2025 amendment changes paragraph 9, not these rules. Does not establish how a specific deduction is allocated."
+    },
+    {
+      "id": "at-irs-jovem-2025-folheto",
+      "governs": "AT administrative clarification of income-year counting, including article 58 dispensation",
+      "url": "https://info.portaldasfinancas.gov.pt/pt/apoio_contribuinte/Folhetos_informativos/Documents/Folheto_IRS_jovem_2025.pdf",
+      "type": "folheto",
+      "critical": true,
+      "verify": false,
+      "verify_note": "PDF reviewed manually on 10/10/2026, current 20-page edition; HTML checker does not parse PDFs. Pages 3-4 exclude filing-dispensation years, case 5 page 9 illustrates non-filing under CIRS 58.",
+      "source_note": "This URL is mutable. The reviewed edition references Decreto Regulamentar 5-A/2026 on page 5. Do not confuse it with older editions or treat administrative clarification as quoted statutory wording."
     }
   ],
   "watch": [
