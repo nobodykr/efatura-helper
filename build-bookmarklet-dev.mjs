@@ -38,7 +38,7 @@ const installer = `<!doctype html><html lang="pt"><meta charset="utf-8">` +
   `.fav{display:inline-block;background:#034ad8;color:white;padding:12px 18px;border-radius:6px;font-weight:700;text-decoration:none}` +
   `.back{color:#034ad8}code{word-break:break-all}.note{padding:12px 14px;background:#f3f6fa;border-radius:6px}` +
   `</style><main><p><a class="back" href="/perfil">Voltar ao perfil</a></p>` +
-  `<h1>Favorito Fiscalidade DEV</h1><p>Versão <b>${release}</b> · contrato ${contractVersion}</p>` +
+  `<h1>Favorito Fiscalidade DEV</h1><p>Versão <b>${release}</b> - contrato ${contractVersion}</p>` +
   `<p>Arrasta o botão azul para a barra de favoritos. Depois volta a <a href="/perfil">/perfil</a>, carrega em Começar/Continuar atualização e usa o favorito no separador oficial que a Fiscalidade abriu.</p>` +
   `<p><a class="fav" href="${escaped}">Ler e voltar à Fiscalidade - DEV</a></p>` +
   `<p class="note">O favorito abre/reutiliza <code>fiscalida.de/perfil</code>. Se o acesso gated pedir autenticação, conclui-a nesse separador; a leitura tenta ligar-se durante 120 segundos.</p>` +
