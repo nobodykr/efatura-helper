@@ -26,4 +26,5 @@ A PR that changes `tool.js` merges with a merge commit, never a squash: `version
 
 ## Deploy
 Level 1 procedure. Never compose in `market/` (the hook blocks it; security restarts go through
-`agent-prod-recreate`). The static site is deployed by hand with wrangler per DEPLOY.md.
+`agent-prod-recreate`). The static site is deployed by hand with wrangler per DEPLOY.md, through `cf-token` (the API token,
+not the wrangler login).
