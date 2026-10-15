@@ -1,7 +1,7 @@
-// Every PNG we hand out (OG card, apple icon, store and outreach screenshots, and the extension icons
-// when a build has rendered them) must carry only allowlisted metadata, checked with the shared
+// Every PNG and SVG we hand out (OG card, icons, logos, store and outreach screenshots, and the extension
+// icons when a build has rendered them) must carry only allowlisted metadata, checked with the shared
 // checker vendored in docs/tooling (canonical copy: homelab-infra tools/export_metadata, never edit
-// the vendored file). Assets are PNG only here: the three third-party SVGs are tracked separately.
+// the vendored file).
 const { execFileSync } = require("child_process");
 const { createHash } = require("crypto");
 const { readFileSync, readdirSync, existsSync } = require("fs");
@@ -13,21 +13,21 @@ const SKIP = new Set(["node_modules", "dist", ".git", ".wrangler", "market"]);
 
 function assert(ok, message) { if (!ok) throw new Error(message); }
 
-function pngs(dir) {
+function images(dir) {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (SKIP.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) found.push(...pngs(full));
-    else if (entry.name.endsWith(".png")) found.push(full);
+    if (entry.isDirectory()) found.push(...images(full));
+    else if (/\.(png|svg)$/.test(entry.name)) found.push(full);
   }
   return found.sort();
 }
 
 assert(createHash("sha256").update(readFileSync(CHECKER)).digest("hex") === CHECKER_SHA256, "vendored export_metadata.py differs from the pinned canonical copy");
 
-const files = pngs(__dirname);
-assert(["apple-icon.png", "assets/og.png"].every((f) => files.includes(path.join(__dirname, f))), "OG card or apple icon PNG missing");
+const files = images(__dirname);
+assert(["apple-icon.png", "assets/og.png", "icon.svg", "assets/revolut-appicon.svg"].every((f) => files.includes(path.join(__dirname, f))), "OG card, icon or logo missing");
 if (existsSync(path.join(__dirname, "extension", "icon128.png"))) {
   assert(files.includes(path.join(__dirname, "extension", "icon128.png")), "extension icons not picked up");
 }
@@ -36,6 +36,6 @@ if (existsSync(path.join(__dirname, "extension", "icon128.png"))) {
 try {
   execFileSync("python3", ["-B", CHECKER, "check", ...files], { encoding: "utf8" });
 } catch (error) {
-  throw new Error("PNG metadata findings:\n" + String(error.stdout || error));
+  throw new Error("Image metadata findings:\n" + String(error.stdout || error));
 }
-console.log("  " + files.length + " PNG files carry only allowlisted metadata");
+console.log("  " + files.length + " PNG and SVG files carry only allowlisted metadata");
