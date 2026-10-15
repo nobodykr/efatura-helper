@@ -1,4 +1,6 @@
-// Render the raster favicons from icon.svg (the DA monogram).
+// Render the raster favicons from icon.svg: the Fiscalidade mark, the neon F in the empresadb house
+// style (mask, blue to cyan gradient, signature cut) on a dark plate so it stays visible on a light
+// browser tab. The SVG itself carries no comments (shared export metadata rule).
 //
 //   node make-icons.mjs
 //
