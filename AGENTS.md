@@ -1,6 +1,7 @@
 # efatura-helper
 
-Level: 1 (customers depend on it). How level 1 ships: /mnt/data/apps/AGENTS.md.
+Level: 1 (customers depend on it). How level 1 ships:
+`homelab-infra/agent-skills/homelab-release/references/app-levels.md`.
 fiscalida.de is not live yet; the site and any public bookmarklet stay gated.
 
 ## What it is
